@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Env Vars:
+# REPOSITORY: name of the image registry/namespace to store the images
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+
+# Build the image
+docker build -t ${REPOSITORY}/helloworld .
+
+# And push it
+docker push ${REPOSITORY}/helloworld

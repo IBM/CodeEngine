@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# This will build and run all demos
+
+set -e
+for file in `find . -name run | sort` ; do (
+  echo -e "\n### `dirname $file`\n"
+  cd `dirname $file`
+  [[ -e ./build ]] && ./build
+  ./run
+  if [[ -n "$REPOSITORY" ]]; then
+    unset REPOSITORY &&  ./run
+  fi
+) done
+
+echo "All done!"

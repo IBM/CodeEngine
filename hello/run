@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Env Vars:
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+ic ce app delete -n hello -f --wait=true > /dev/null 2>&1 || true
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+
+# Create the app
+ic ce app create -n hello --image ${REPOSITORY}/hello
+
+# Get the URL of the app for later use
+URL=$(ic ce app get -n hello -o jsonpath={.status.url})
+
+# Now call it
+curl -s $URL
+
+if ! [[ "$(curl -s $URL)" == "Hello World" ]]; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# Clean up
+ic ce app delete -n hello -f
