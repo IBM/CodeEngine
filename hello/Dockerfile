@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:12-alpine
 RUN npm install
 COPY hello.js .
 EXPOSE 8080
