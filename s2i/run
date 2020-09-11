@@ -1,0 +1,53 @@
+#!/bin/bash
+
+function clean() {
+  set +x
+  echo Cleaning...
+  ic cr namespace-rm $ICR_NS -f > /dev/null 2>&1 || true
+  ic ce app delete -n s2i-app -f --wait=true > /dev/null 2>&1 || true
+  ic iam api-key-delete s2i-sample -f > /dev/null 2>&1 || true
+  ic ce secret delete -n mycreds -f > /dev/null 2>&1 || true
+  ic ce build delete -n myrun -f > /dev/null 2>&1 || true
+  ic ce builddef delete -n mybuild -f > /dev/null 2>&1 || true
+  rm -f out || true
+}
+
+# Define our ICR Namespace env var for later use
+ID=$(ic account show | grep "Account ID:" | sed "s/^.*:  *//")
+ICR_NS=s2i-${ID:0:25}
+
+# Clean up previous run
+clean
+
+set -ex
+
+# Create an ICR namespace to hold our new image
+ic cr namespace-add $ICR_NS
+
+# Create an apikey, put it in a secret. Used to push/pull image to ICR
+ic iam api-key-create s2i-sample | \
+  grep "API Key" | sed 's/^.*Key  *//' | \
+  xargs ic ce secret create -n mycreds -r us.icr.io -u iamapikey -p 
+
+# Define the build of this dir in this github repo
+ic ce builddef create -n mybuild -i us.icr.io/$ICR_NS/app --secret mycreds \
+  --source https://github.com/IBM/CodeEngine --context-dir s2i
+
+# Now kick off the build itself
+ic ce build run -n myrun --builddef mybuild
+
+# Wait for it to finish
+while true ; do
+  ic ce build get -n myrun > out
+  grep Succeeded out && break
+  grep "exited with" out && cat out && exit 1
+  sleep 10
+done
+
+# Test the image we just built - deploy an app and 'curl' it
+ic ce app create -n s2i-app --image us.icr.io/$ICR_NS/app --rs mycreds
+URL=$(ic ce app get -n s2i-app -o jsonpath={.status.url})
+curl -s $URL
+
+# Clean
+clean
