@@ -6,11 +6,18 @@ set -e
 for file in `find . -name run | sort` ; do (
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
+
+  # If 'build' exists, build the image(s)
   [[ -e ./build ]] && ./build
+
+  # Run the sample with whatever REPOSITORY we're pointing to
   ./run
+
+  # Now, run the pre-built image if previous 'run' used a different one
   if [[ -n "$REPOSITORY" ]]; then
     unset REPOSITORY &&  ./run
   fi
+
 ) done
 
 echo "All done!"

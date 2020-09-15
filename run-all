@@ -6,7 +6,10 @@ set -e
 for file in `find . -name run | sort` ; do (
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
+
+  # Run the sample
   ./run
+
 ) done
 
 echo "All done!"

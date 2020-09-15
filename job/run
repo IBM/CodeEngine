@@ -5,7 +5,7 @@
 # REPOSITORY: name of the image registry/namespace to get the images
 
 # Clean up previous run
-ic ce job delete -n job -f > /dev/null 2>&1 || true
+ic ce jobrun delete -n job -f > /dev/null 2>&1 || true
 ic ce app delete -n app -f > /dev/null 2>&1 || true
 
 set -ex
@@ -19,10 +19,10 @@ ic ce app create -n app --min=1 --max=1 --image ${REPOSITORY}/j2a-app
 URL=$(ic ce app get -n app -o jsonpath={.status.url})
 
 # Create/run the job, passing in the project/namespace
-ic ce job run -n job --as=${COUNT} --image ${REPOSITORY}/j2a-job
+ic ce jobrun submit -n job --ai=1-${COUNT} --image ${REPOSITORY}/j2a-job
 
 # Wait for it to finish...
-until ic ce job get -n job -o jsonpath={.status.succeeded} | grep $COUNT; do
+until ic ce jobrun get -n job -o jsonpath={.status.succeeded} | grep $COUNT; do
   sleep 3
 done
 
@@ -33,5 +33,5 @@ if ! [[ "Count: $((COUNT*10))" == "$(curl -s $URL)" ]]; then
 fi
 
 # Clean up
-ic ce job delete -n job -f
+ic ce jobrun delete -n job -f
 ic ce app delete -n app -f
