@@ -7,6 +7,9 @@ for file in `find . -name run | sort` ; do (
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
 
+  # Skip this dir
+  [[ -e ./SKIP ]] && echo "SKIPPING $file " && continue
+
   # If 'build' exists, build the image(s)
   [[ -e ./build ]] && ./build
 
