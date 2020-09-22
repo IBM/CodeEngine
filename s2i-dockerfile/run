@@ -31,7 +31,7 @@ ic iam api-key-create s2i-sample | \
 
 # Define the build of this dir in this github repo
 ic ce build create -n mybuild -i us.icr.io/$ICR_NS/app --rs icr \
-  --source https://github.com/IBM/CodeEngine --context-dir s2i
+  --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
 
 # Now kick off the build itself
 ic ce buildrun submit -n myrun --build mybuild
