@@ -42,6 +42,10 @@ $ ic ce project create --name demos --target
 - [job](job)<br>
   This will demostrate how to create a simple Batch Job and how to have it
   communicate with an Application running within the same project.
+- [s2i-buildpacks](s2i-buildpacks)<br>
+  This will show how to use the source-to-image feature of Code Engine to
+  build an app from a git repo (using a Buildpack), push it to a private
+  registry, and then deploy an app using that image.
 - [s2i-dockerfile](s2i-dockerfile)<br>
   This will show how to use the source-to-image feature of Code Engine to
   build an app from a git repo (using a Dockerfile), push it to a private
