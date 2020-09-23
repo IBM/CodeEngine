@@ -6,7 +6,7 @@ import (
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "\n\nI was built by Dockerfile with Code Engine!\n\n\n")
+	fmt.Fprintf(w, "\n\nI was built with a Dockerfile by Code Engine!\n\n\n")
 }
 
 func main() {
