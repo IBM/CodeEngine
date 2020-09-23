@@ -4,7 +4,7 @@ function clean() {
   set +x
   echo Cleaning...
   ic cr namespace-rm "${ICR_NS}" -f > /dev/null 2>&1 || true
-  ic ce app delete -n s2i-dockerfile -f --wto=0 > /dev/null 2>&1 || true
+  ic ce app delete -n s2i-buildpacks -f --wto=0 > /dev/null 2>&1 || true
   ic iam api-key-delete s2i-sample -f > /dev/null 2>&1 || true
   ic ce registry delete -n icr -f > /dev/null 2>&1 || true
   ic ce buildrun delete -n myrun -f > /dev/null 2>&1 || true
@@ -31,7 +31,7 @@ ic iam api-key-create s2i-sample | \
 
 # Define the build of this dir in this github repo
 ic ce build create -n mybuild -i "us.icr.io/${ICR_NS}/app" --rs icr \
-  --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
+  --source https://github.com/IBM/CodeEngine --context-dir s2i-buildpacks --strategy buildpacks
 
 # Now kick off the build itself
 ic ce buildrun submit -n myrun --build mybuild
@@ -45,8 +45,8 @@ while true ; do
 done
 
 # Test the image we just built - deploy an app and 'curl' it
-ic ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs icr
-URL=$(ic ce app get -n s2i-dockerfile -o jsonpath={.status.url})
+ic ce app create -n s2i-buildpacks --image "us.icr.io/${ICR_NS}/app" --rs icr
+URL=$(ic ce app get -n s2i-buildpacks -o jsonpath={.status.url})
 curl -s "${URL}"
 
 # Clean

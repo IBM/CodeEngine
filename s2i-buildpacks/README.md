@@ -1,11 +1,10 @@
-# Code Engine Source-to-Image Dockerfile support
+# Code Engine Source-to-Image Buildpacks support
 
-This sample shows how to use the Code Engine source-to-image Dockerfile feature
+This sample shows how to use the Code Engine source-to-image Buildpacks feature
 to build your application from a git repo, push the image into a registry,
-and then deploy it as a Code Engine application. This will assume that there's
-a Dockerfile in the root of the git repo that will be used to build the image. 
+and then deploy it as a Code Engine application. It doesn't require a Dockerfile in the git repo. 
 
-More details can be found in [Code Engine Docs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-plan-build).
+More details and supported runtimes and versions can be found in [Code Engine Docs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-plan-build).
 
 The exact steps taken in [`run`](./run) are:
 - Login and create an ICR (IBM Container Registry) namespace to store the resulting
