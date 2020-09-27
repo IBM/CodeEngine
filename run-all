@@ -7,8 +7,11 @@ for file in `find . -name run | sort` ; do (
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
 
-  # Run the sample
-  ./run
+  # Skip this dir
+  [[ -e ./SKIP ]] && echo "SKIPPING $file " && continue
+
+  # Run the sample with whatever REPOSITORY we're pointing to
+  ./run "$@"
 
 ) done
 

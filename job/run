@@ -5,8 +5,15 @@
 # REPOSITORY: name of the image registry/namespace to get the images
 
 # Clean up previous run
-ic ce jobrun delete -n job -f > /dev/null 2>&1 || true
-ic ce app delete -n app -f > /dev/null 2>&1 || true
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce jobrun delete -n job -f > /dev/null 2>&1 || true
+  ic ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
 
 set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
@@ -33,5 +40,4 @@ if ! [[ "Count: $((COUNT*10))" == "$(curl -s $URL)" ]]; then
 fi
 
 # Clean up
-ic ce jobrun delete -n job -f
-ic ce app delete -n app -f
+clean

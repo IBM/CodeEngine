@@ -4,7 +4,14 @@
 # REPOSITORY: name of the image registry/namespace to get the images
 
 # Clean up previous run
-ic ce app delete -n hello -f --wait=true > /dev/null 2>&1 || true
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce app delete -n hello -f --wto=0 > /dev/null 2>&1 || true
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
 
 set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
@@ -24,4 +31,4 @@ if ! [[ "$(curl -s $URL)" == "Hello World" ]]; then
 fi
 
 # Clean up
-ic ce app delete -n hello -f
+clean

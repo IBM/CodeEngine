@@ -17,6 +17,8 @@ followed is:
   your own you'll need to set the `REPOSITORY` environment variable.
   This means that you should be able to just execute `run` without running
   `build` first, and it'll just use the pre-built images from `ibmcom`.
+  - invoking `run clean` should clean up from any previous execution without
+    re-running the sample.
 
 Most samples will try to be relatively small to focus on one particular
 task so that it can be re-used easily and integrated into a larger use-case.

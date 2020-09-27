@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Clean up previous run
 function clean() {
   set +x
   echo Cleaning...
@@ -16,8 +17,8 @@ function clean() {
 ID=$(ic account show | grep "Account ID:" | sed "s/^.*:  *//")
 ICR_NS=s2i-${ID:0:25}
 
-# Clean up previous run
 clean
+[[ "$1" == "clean" ]] && exit 0
 
 set -ex
 
