@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Env Vars:
+# REPOSITORY: name of the image registry/namespace to store the images
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+
+# First build the app's image and push it
+docker build -t ${REPOSITORY}/j2a-app -f Dockerfile.app .
+docker push ${REPOSITORY}/j2a-app
+
+# Now build the job's
+docker build -t ${REPOSITORY}/j2a-job -f Dockerfile .
+docker push ${REPOSITORY}/j2a-job

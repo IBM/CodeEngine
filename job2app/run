@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Env Vars:
+# COUNT: number of instances of the job to run
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce jobrun delete -n job -f > /dev/null 2>&1 || true
+  ic ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+export COUNT=${COUNT:-50}
+
+# Create the app
+ic ce app create -n app --min=1 --max=1 --image ${REPOSITORY}/j2a-app
+
+# Get metadata about the app for later use
+URL=$(ic ce app get -n app -o jsonpath={.status.url})
+
+# Create/run the job, passing in the project/namespace
+ic ce jobrun submit -n job --ai=1-${COUNT} --image ${REPOSITORY}/j2a-job
+
+# Wait for it to finish...
+until ic ce jobrun get -n job -o jsonpath={.status.succeeded} | grep $COUNT; do
+  sleep 3
+done
+
+# Check the app to see how many times it was hit
+if ! [[ "Count: $((COUNT*10))" == "$(curl -s $URL)" ]]; then
+  echo "Should be $((COUNT*10))"
+  exit 1
+fi
+
+# Clean up
+clean

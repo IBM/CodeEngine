@@ -6,10 +6,6 @@
 set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
-# First build the app's image and push it
-docker build -t ${REPOSITORY}/j2a-app -f Dockerfile.app .
-docker push ${REPOSITORY}/j2a-app
-
-# Now build the job's
-docker build -t ${REPOSITORY}/j2a-job -f Dockerfile .
-docker push ${REPOSITORY}/j2a-job
+# Build the job image and push it
+docker build -t ${REPOSITORY}/firstjob -f Dockerfile .
+docker push ${REPOSITORY}/firstjob

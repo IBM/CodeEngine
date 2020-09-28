@@ -1,15 +1,17 @@
 #!/bin/bash
 
 # Env Vars:
-# COUNT: number of instances of the job to run
+# NUM: number of instances of the job to run
 # REPOSITORY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
   set +x
   echo Cleaning...
-  ic ce jobrun delete -n job -f > /dev/null 2>&1 || true
-  ic ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+  ic ce job delete -n myjob -f > /dev/null 2>&1 || true
+  ic ce jobrun delete -n doit  -f > /dev/null 2>&1 || true
+  ic ce jobrun delete -n doit2 -f > /dev/null 2>&1 || true
+  rm -f out
 }
 
 clean
@@ -17,27 +19,37 @@ clean
 
 set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
-export COUNT=${COUNT:-50}
+export NUM=${COUNT:-10}
 
-# Create the app
-ic ce app create -n app --min=1 --max=1 --image ${REPOSITORY}/j2a-app
+# Create a Job definition
+ic ce job create --name myjob --array-indices=1-${NUM} \
+  --image ${REPOSITORY}/firstjob
 
-# Get metadata about the app for later use
-URL=$(ic ce app get -n app -o jsonpath={.status.url})
-
-# Create/run the job, passing in the project/namespace
-ic ce jobrun submit -n job --ai=1-${COUNT} --image ${REPOSITORY}/j2a-job
+# Now submit the job using that definition
+ic ce jobrun submit --name doit --job myjob
 
 # Wait for it to finish...
-until ic ce jobrun get -n job -o jsonpath={.status.succeeded} | grep $COUNT; do
+until ic ce jobrun get --name doit -o jsonpath={.status.succeeded} | grep $NUM
+do
   sleep 3
 done
 
-# Check the app to see how many times the app was hit
-if ! [[ "Count: $((COUNT*10))" == "$(curl -s $URL)" ]]; then
-  echo "Should be $((COUNT*10))"
-  exit 1
-fi
+# Now submit a job w/o creating a job definition first
+ic ce jobrun submit --name doit2 --array-indices=1-${NUM} \
+  --image ${REPOSITORY}/firstjob
+
+# Wait for it to finish...
+until ic ce jobrun get --name doit2 -o jsonpath={.status.succeeded} | grep $NUM
+do
+  sleep 3
+done
+
+# Show the stats about the job
+ic ce jobrun get --name doit2
+
+# Now look at a view of the logs to make sure it worked
+ic ce jobrun logs --instance doit2-1-0
+ic ce jobrun logs --instance doit2-2-0 | grep "Hi from"
 
 # Clean up
 clean

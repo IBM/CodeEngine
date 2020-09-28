@@ -32,7 +32,7 @@ func Debug(doit bool, format string, args ...interface{}) {
 
 func main() {
 	// If env var CRASH is set then crash immediately.
-	// If it's value is of the form HH:MM then crash at the specified time
+	// If its value is of the form HH:MM then crash at the specified time
 	// time. The time is based on time returned from: http://time.nist.gov:13
 	if date := os.Getenv("CRASH"); date != "" { // Just crash!
 		// get time: curl http://time.nist.gov:13
@@ -102,7 +102,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		// If 'fail' query parameter is there then return it's value
+		// If 'fail' query parameter is there then return its value
 		// as the HTTP return code, defaults to '500'
 		if t, ok := r.URL.Query()["fail"]; ok {
 			status := 500

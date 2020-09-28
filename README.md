@@ -42,6 +42,10 @@ $ ic ce project create --name demos --target
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
 - [job](job)<br>
+  This will create a batch job that will print basic debugging information to
+  the logs, and then show those logs. It'll create the job with and without
+  a job definition to show both options.
+- [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
   communicate with an Application running within the same project.
 - [s2i-buildpacks](s2i-buildpacks)<br>

@@ -1,12 +1,11 @@
-# Job2App
+# Job
 
-This sample serves two purposes:
-- show how to create a simple Batch Job ([`job.go`](./job.go))
-- how to have that Job call an Application running in the same project. This
-  will use the private network within the project - meaning the private
-  endpoint of the app, not a public-facing one.
+This sample shows up to run a batch job. It will create the batch job two ways:
+1 - first, it'll create a Job definition (the config informatin about a job)
+    and then it submits that Job to actually do the work.
+2 - second, it'll submit the Job directly without creating the definition
+    first. Both will generate the same results though.
 
-When the Job is run, each instance will call the App 10 times. Which means
-by setting the `array-indices` to a range of 50, the App should be hit 500
-times. At the end of `run` it will ask the App for the number of times it
-was called, to verify the count.
+Each instance of each Job submitted will print, to its logs, its "index",
+which is defined by its `JOB_INDEX` environment variable. The `run` script
+will print some of the log files to show this.
