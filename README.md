@@ -34,7 +34,7 @@ It is also assumed that you have a Code Engine project already created, e.g.:
 $ ic ce project create --name demos --target
 ```
 
-### Samples
+## Samples
 
 #### Apps
 - [hello](hello)<br>
@@ -45,12 +45,12 @@ $ ic ce project create --name demos --target
 
 #### Batch Jobs
 - [job](job)<br>
-  This will create a batch job that will print basic debugging information to
+  This will create a Batch Job that will print basic debugging information to
   the logs, and then show those logs. It'll create the job with and without
   a job definition to show both options.
 - [bind-job](bind-job)<br>
   This will service an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to a batch job so we can access it from the job. The
+  Engine to bind it to a Batch Job so we can access it from the job. The
   credentials, etc. will be injected into the job via environment variables.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
@@ -59,12 +59,12 @@ $ ic ce project create --name demos --target
 #### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
   This will show how to use the source-to-image feature of Code Engine to
-  build an app from a git repo (using a Buildpack), push it to a private
-  registry, and then deploy an app using that image.
+  build an Application from a git repo (using a Buildpack), push it to a
+  private registry, and then deploy an Application using that image.
 - [s2i-dockerfile](s2i-dockerfile)<br>
   This will show how to use the source-to-image feature of Code Engine to
-  build an app from a git repo (using a Dockerfile), push it to a private
-  registry, and then deploy an app using that image.
+  build an Application from a git repo (using a Dockerfile), push it to a
+  private registry, and then deploy an app using that image.
 
 #### Misc
 - [sessions](sessions)<br>
@@ -72,7 +72,7 @@ $ ic ce project create --name demos --target
   in an instance of Redis, also running within Code Engine. Demonstrates the
   use of non-http components and private networking between components.
 
-### Resources
+## Resources
 
 - [IBM Cloud Code Engine](https://cloud.ibm.com/codeengine)
 - For questions/comments join us on Slack:<br>
