@@ -36,23 +36,27 @@ $ ic ce project create --name demos --target
 
 ### Samples
 
+#### Apps
 - [hello](hello)<br>
   Very basic "hello world!" type of application written in Node.js. Start here!
 - [helloworld](helloworld)<br>
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
-  <hr>
-- [bind-job](bind-job)<br>
-  This will service an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to a batch job so we can access it from the job. The
-  credentials, etc. will be injected into the job via environment variables.
+
+#### Batch Jobs
 - [job](job)<br>
   This will create a batch job that will print basic debugging information to
   the logs, and then show those logs. It'll create the job with and without
   a job definition to show both options.
+- [bind-job](bind-job)<br>
+  This will service an instance of DB2 in the IBM Cloud and then ask Code
+  Engine to bind it to a batch job so we can access it from the job. The
+  credentials, etc. will be injected into the job via environment variables.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
   communicate with an Application running within the same project.
+
+#### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
   This will show how to use the source-to-image feature of Code Engine to
   build an app from a git repo (using a Buildpack), push it to a private
@@ -61,6 +65,8 @@ $ ic ce project create --name demos --target
   This will show how to use the source-to-image feature of Code Engine to
   build an app from a git repo (using a Dockerfile), push it to a private
   registry, and then deploy an app using that image.
+
+#### Misc
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the
