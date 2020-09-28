@@ -19,7 +19,7 @@ clean
 
 set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
-export NUM=${COUNT:-10}
+export NUM=${NUM:-10}
 
 # Create a Job definition
 ic ce job create --name myjob --array-indices=1-${NUM} \
@@ -48,8 +48,12 @@ done
 ic ce jobrun get --name doit2
 
 # Now look at a view of the logs to make sure it worked
-ic ce jobrun logs --instance doit2-1-0
-ic ce jobrun logs --instance doit2-2-0 | grep "Hi from"
+ic ce jobrun logs --instance doit2-1-0 | tee out
+
+if ! grep "Hi from"  out > /dev/null ; then
+  echo "Missing expected outout"
+  exit 1
+fi
 
 # Clean up
 clean

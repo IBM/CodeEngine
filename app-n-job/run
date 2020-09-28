@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Env Vars:
+# NUM: number of instances of the job to run
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce app delete -n myapp -f --wto=0 > /dev/null 2>&1 || true
+  ic ce jobrun delete -n myjob -f > /dev/null 2>&1 || true
+  rm -f out
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+export NUM=${NUM:-10}
+
+# First create an app based on our image
+ic ce app create -n myapp --image ${REPOSITORY}/app-n-job
+
+# Get the URL of the app
+URL=$(ic ce app get -n myapp -o jsonpath={.status.url})
+
+# And call it
+curl -s $URL | tee out
+
+if ! grep "Hello from.*app" out > /dev/null ; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# And now use the same image as a batch job
+ic ce jobrun submit --name myjob --ai=1-$NUM --image ${REPOSITORY}/app-n-job
+
+# Wait for it to finish...
+until ic ce jobrun get --name myjob -o jsonpath={.status.succeeded} | grep $NUM
+do
+  sleep 3
+done
+
+ic ce jobrun logs --instance myjob-1-0 | tee out
+
+if ! grep "Hello from.*job"  out > /dev/null ; then
+  echo "Missing expected outout"
+  exit 1
+fi
+
+# Clean up
+clean

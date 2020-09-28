@@ -46,12 +46,15 @@ $ ic ce project create --name demos --target
 #### Batch Jobs
 - [job](job)<br>
   This will create a Batch Job that will print basic debugging information to
-  the logs, and then show those logs. It'll create the job with and without
-  a job definition to show both options.
+  the logs, and then show those logs. It'll create the Batch Job with and
+  without a Job definition to show both options.
+- [app-n-job](aoo-n-job)<br>
+  This will use the same image for both an Application and a Batch Job.
+  Just to show that it's possible.
 - [bind-job](bind-job)<br>
   This will service an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to a Batch Job so we can access it from the job. The
-  credentials, etc. will be injected into the job via environment variables.
+  Engine to bind it to a Batch Job so we can access it from the Job. The
+  credentials, etc. will be injected into the Job via environment variables.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
   communicate with an Application running within the same project.
