@@ -48,7 +48,7 @@ $ ic ce project create --name demos --target
   This will create a Batch Job that will print basic debugging information to
   the logs, and then show those logs. It'll create the Batch Job with and
   without a Job definition to show both options.
-- [app-n-job](aoo-n-job)<br>
+- [app-n-job](app-n-job)<br>
   This will use the same image for both an Application and a Batch Job.
   Just to show that it's possible.
 - [bind-job](bind-job)<br>
