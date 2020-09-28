@@ -41,6 +41,11 @@ $ ic ce project create --name demos --target
 - [helloworld](helloworld)<br>
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
+
+- [bind-job](bind-job)<br>
+  This will service an instance of DB2 in the IBM Cloud and then ask Code
+  Engine to bind it to a batch job so we can access it from the job. The
+  credentials, etc. will be injected into the job via environment variables.
 - [job](job)<br>
   This will create a batch job that will print basic debugging information to
   the logs, and then show those logs. It'll create the job with and without
