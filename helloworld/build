@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright Contributors to the Code Engine Samples project
+
 # Env Vars:
 # REPOSITORY: name of the image registry/namespace to store the images
 

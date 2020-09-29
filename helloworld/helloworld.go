@@ -1,25 +1,23 @@
 package main
 
+// Copyright Contributors to the Code Engine Samples project
+
 import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func Curl(url string) (string, error) {
-	cmd := exec.Command("curl", "--http0.9", "-s", url)
-	res, err := cmd.CombinedOutput()
-	return string(res), err
-}
-
+// GlobalDebug can be set with env variable "DEBUG".
+// Print debug output if true.
 var GlobalDebug = (os.Getenv("DEBUG") != "")
 
+// Debug prints debug output to stderr.
 func Debug(doit bool, format string, args ...interface{}) {
 	// If either is 'true' then print it
 	if !GlobalDebug && !doit {
@@ -30,46 +28,7 @@ func Debug(doit bool, format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, format, args...)
 }
 
-func main() {
-	// If env var CRASH is set then crash immediately.
-	// If it's value is of the form HH:MM then crash at the specified time
-	// time. The time is based on time returned from: http://time.nist.gov:13
-	if date := os.Getenv("CRASH"); date != "" { // Just crash!
-		// get time: curl http://time.nist.gov:13
-		// result  : 58859 20-01-11 21:28:24 00 0 0 129.3 UTC(NIST) *
-		if len(date) > 3 && date[2] == ':' {
-			if now, err := Curl("http://time.nist.gov:13"); err == nil {
-				parts := strings.SplitN(now, " ", 4)
-				if len(parts) > 3 {
-					now = parts[2] // Just time part
-					now = now[:len(date)]
-					if now > date {
-						os.Exit(1)
-					}
-				}
-			} else {
-				Debug(true, "Curl: %s\n%s", now, err)
-			}
-		} else {
-			os.Exit(1)
-		}
-	}
-
-	// hostname := os.Getenv("HOSTNAME")
-	msg := os.Getenv("MSG")
-	if msg == "" {
-		target := os.Getenv("TARGET")
-		if target == "" {
-			target = "World"
-		}
-		msg = "Hello " + target + " from"
-	}
-
-	envs := os.Environ()
-	sort.StringSlice(envs).Sort()
-	env := strings.Join(envs, "\n")
-	Debug(false, "Envs:\n%s", env)
-
+func application(msg string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		body := []byte{}
 		debug := false
@@ -116,23 +75,7 @@ func main() {
 
 		if len(body) == 0 {
 			w.Header().Add("Content-Type", "text/plain")
-			// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
-			fmt.Fprintf(w, `%s:
-  ___  __  ____  ____             
- / __)/  \(    \(  __)            
-( (__(  O )) D ( ) _)             
- \___)\__/(____/(____)            
- ____  __ _   ___  __  __ _  ____ 
-(  __)(  ( \ / __)(  )(  ( \(  __)
- ) _) /    /( (_ \ )( /    / ) _) 
-(____)\_)__) \___/(__)\_)__)(____)
-
-`, msg)
-			fmt.Fprintf(w, "Some Env Vars:\n")
-			fmt.Fprintf(w, "--------------\n")
-			for _, env := range envs {
-				fmt.Fprintf(w, "%s\n", env)
-			}
+			fmt.Fprint(w, msg)
 		} else {
 			fmt.Fprintf(w, string(body)+"\n")
 		}
@@ -149,4 +92,71 @@ func main() {
 
 	Debug(true, "Listening on port 8080")
 	http.ListenAndServe(":8080", nil)
+}
+
+func main() {
+	// If env var CRASH is set then crash immediately.
+	// If it's value is of the form HH:MM then crash at the specified time.
+	if crashtime := os.Getenv("CRASH"); crashtime != "" { // Just crash!
+		if len(crashtime) == 5 && crashtime[2] == ':' {
+			now := time.Now().UTC().Format("15:04")
+			Debug(true, "Crash time: %s, now: %s", crashtime, now)
+			if now > crashtime {
+				os.Exit(1)
+			}
+		} else {
+			Debug(true, "Crash time: '%s', crash immediately", crashtime)
+			os.Exit(1)
+		}
+	}
+
+	// Prepare a greeting message.
+	msg := os.Getenv("MSG")
+	if msg == "" {
+		target := os.Getenv("TARGET")
+		if target == "" {
+			target = "World"
+		}
+		msg = "Hello " + target + " from"
+	}
+
+	// Append Code Engine ASCII art.
+	// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
+	msg = msg + `:
+  ___  __  ____  ____             
+ / __)/  \(    \(  __)            
+( (__(  O )) D ( ) _)             
+ \___)\__/(____/(____)            
+ ____  __ _   ___  __  __ _  ____ 
+(  __)(  ( \ / __)(  )(  ( \(  __)
+ ) _) /    /( (_ \ )( /    / ) _) 
+(____)\_)__) \___/(__)\_)__)(____)
+
+`
+
+	// Prepare the list of environment variables for output.
+	// If env variable 'JOB_INDEX' is contained, this must be a job.
+	// Otherwise, it's an application.
+	env := os.Environ()
+	sort.StringSlice(env).Sort()
+	envs := ""
+	app := true
+	for _, e := range env {
+		envs = envs + e + "\n"
+
+		// Split into key-value pairs and introspect keys.
+		kv := strings.SplitN(e, "=", 2)
+		if len(kv) >= 1 && strings.ToUpper(kv[0]) == "JOB_INDEX" {
+			app = false
+		}
+	}
+
+	// Now prepare the full message
+	msg = msg + "Some Env Vars:\n--------------\n" + envs
+
+	if app {
+		application(msg)
+	} else {
+		fmt.Print(msg)
+	}
 }
