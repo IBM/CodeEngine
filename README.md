@@ -69,6 +69,11 @@ $ ic ce project create --name demos --target
   build an Application from a git repo (using a Dockerfile), push it to a
   private registry, and then deploy an app using that image.
 
+#### Eventing
+- [ping](ping)<br>
+  This will show how to setup a simple Ping(cron) Event Source and send
+  its events to an Application.
+
 #### Misc
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept

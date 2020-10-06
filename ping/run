@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Env Vars:
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +x
+  echo Cleaning... 
+  ic ce sub ping delete -n pinger -f --wait=true > /dev/null 2>&1 || true
+  ic ce app delete -n pingecho -f --wto=0 > /dev/null 2>&1 || true
+  rm -f out
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+
+# Create the app
+ic ce app create -n pingecho --image ${REPOSITORY}/ping
+
+# Setup the Ping (cron) Event Source, send event every minute
+ic ce sub ping create -n pinger -d pingecho \
+  --data '{"mydata":"hello world"}' -s '* * * * *'
+
+# Extract the instance name from `ic ce app get`
+ic ce app get -n pingecho | tee out
+name=$(grep "ping.*Running" out | tail -1 | sed "s/ [12].*//")
+echo Instance name: $name
+
+# Now wait until we get the event - shouldn't take more than a minute
+while true ; do
+  ic ce app logs --instance $name > out
+  grep "hello world" out > /dev/null 2>&1 && break
+  sleep 10
+done
+
+echo "Log from 'pingecho' app:"
+cat out
+
+# Clean up
+clean
