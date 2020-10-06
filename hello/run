@@ -23,9 +23,9 @@ ic ce app create -n hello --image ${REPOSITORY}/hello
 URL=$(ic ce app get -n hello -o jsonpath={.status.url})
 
 # Now call it
-curl -s $URL
+curl -Ls $URL
 
-if ! [[ "$(curl -s $URL)" == "Hello World" ]]; then
+if ! [[ "$(curl -Ls $URL)" == "Hello World" ]]; then
   echo "Unexpected output"
   exit 1
 fi

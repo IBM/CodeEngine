@@ -27,7 +27,7 @@ ic ce app create -n myapp --image ${REPOSITORY}/app-n-job
 URL=$(ic ce app get -n myapp -o jsonpath={.status.url})
 
 # And call it
-curl -s $URL | tee out
+curl -Ls $URL | tee out
 
 if ! grep "Hello from.*app" out > /dev/null ; then
   echo "Unexpected output"

@@ -34,7 +34,7 @@ until ic ce jobrun get -n job -o jsonpath={.status.succeeded} | grep $COUNT; do
 done
 
 # Check the app to see how many times it was hit
-if ! [[ "Count: $((COUNT*10))" == "$(curl -s $URL)" ]]; then
+if ! [[ "Count: $((COUNT*10))" == "$(curl -Ls $URL)" ]]; then
   echo "Should be $((COUNT*10))"
   exit 1
 fi

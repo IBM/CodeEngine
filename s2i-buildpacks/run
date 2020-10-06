@@ -49,7 +49,7 @@ done
 # Test the image we just built - deploy an app and 'curl' it
 ic ce app create -n s2i-buildpacks --image "us.icr.io/${ICR_NS}/app" --rs icr
 URL=$(ic ce app get -n s2i-buildpacks -o jsonpath={.status.url})
-curl -s "${URL}" | tee out
+curl -Ls "${URL}" | tee out
 
 if ! grep "I was built"  out > /dev/null ; then
   echo "Missing expected outout"
