@@ -51,6 +51,9 @@ $ ic ce project create --name demos --target
 - [app-n-job](app-n-job)<br>
   This will use the same image for both an Application and a Batch Job.
   Just to show that it's possible.
+- [app2job](app2job)<br>
+  This will show how to submit a Job from an Application based on an incoming
+  HTTP request to the Application.
 - [bind-job](bind-job)<br>
   This will service an instance of DB2 in the IBM Cloud and then ask Code
   Engine to bind it to a Batch Job so we can access it from the Job. The

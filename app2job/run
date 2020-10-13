@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Env Vars:
+# COUNT: number of instances of the job to run
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce job delete -n myjob -f > /dev/null 2>&1 || true
+  ic ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+  rm -f out
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+export COUNT=${COUNT:-50}
+
+# Create the app
+ic ce app create -n app --image ${REPOSITORY}/a2j-app
+
+# Get metadata about the app for later use
+URL=$(ic ce app get -n app -o jsonpath={.status.url})
+
+# Create the job definition
+ic ce job create -n myjob --ai=1-${COUNT} --image ${REPOSITORY}/a2j-job
+
+# Now, curl the app and see if it creates the job
+curl -s ${URL/http/https}/myjob -X PUT | tee out
+jobrun=$(cat out)
+
+while ! ic ce jobrun get -n ${jobrun} | grep "Succeeded.*${COUNT}" ; do
+  sleep 2
+done
+
+# Verify job ran ok
+ic ce jobrun logs -i ${jobrun}-${COUNT}-0 | grep "JOB_INDEX.*${COUNT}"
+
+# Clean up
+clean
