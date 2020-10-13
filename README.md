@@ -42,6 +42,10 @@ $ ic ce project create --name demos --target
 - [helloworld](helloworld)<br>
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
+- [bind-app](bind-app)<br>
+  This will create an instance of DB2 in the IBM Cloud and then ask Code
+  Engine to bind it to an Application so we can access it from the App. The
+  credentials, etc. will be injected into the App via environment variables.
 
 #### Batch Jobs
 - [job](job)<br>
@@ -55,7 +59,7 @@ $ ic ce project create --name demos --target
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
 - [bind-job](bind-job)<br>
-  This will service an instance of DB2 in the IBM Cloud and then ask Code
+  This will create an instance of DB2 in the IBM Cloud and then ask Code
   Engine to bind it to a Batch Job so we can access it from the Job. The
   credentials, etc. will be injected into the Job via environment variables.
 - [job2app](job2app)<br>
