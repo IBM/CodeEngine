@@ -29,12 +29,7 @@ ic ce app create -n app --image ${REPOSITORY}/bind-app
 URL=$(ic ce app get -n app -o jsonpath={.status.url})
 
 # Bind the service credentials to the app
-ic ce app bind --name app --service-instance mydb --wto=60
-
-# Wait for the bind to finish (will be replaced with --wait option soon)
-while ! curl -Ls ${URL} | grep VCAP_SERVICES > /dev/null 2>&1 ; do
-  sleep 3
-done
+ic ce app bind --name app --service-instance mydb
 
 # Curl the app to make sure it had the creds
 curl -Ls ${URL} | tee out
