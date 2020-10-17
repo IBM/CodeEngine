@@ -30,7 +30,7 @@ ic ce job create --name myjob --array-indices=1-${NUM} \
   --image ${REPOSITORY}/bind-job
 
 # Bind the service instance to the job
-ic ce job bind --name myjob --service-instance mydb --wait-timeout=60
+ic ce job bind --name myjob --service-instance mydb
 
 # Now submit the job using that definition
 ic ce jobrun submit --name myrun --job myjob
