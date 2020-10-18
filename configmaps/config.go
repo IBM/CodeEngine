@@ -14,7 +14,7 @@ func main() {
 		sort.Strings(envs)
 
 		// And print them
-		fmt.Printf("Environment variables - look for the ones with MY_")
+		fmt.Printf("Environment variables:\n")
 		for _, e := range envs {
 			fmt.Printf("%s\n", e)
 		}

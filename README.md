@@ -82,13 +82,16 @@ $ ic ce project create --name demos --target
   its events to an Application.
 
 #### Misc
+- [configmaps](configmaps)<br>
+  Shows how to define and inject a ConfigMap as environment variables
+  into an Application.
+- [secrets](secrets)<br>
+  Shows how to define and inject a Secret as environment variables
+  into an Application.
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the
   use of non-http components and private networking between components.
-- [mapenv](mapenv)<br>
-  Shows how to inject a Secret and a ConfigMap as environment variables
-  into an Application.
 
 ## Resources
 

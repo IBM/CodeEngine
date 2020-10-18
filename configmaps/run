@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Env Vars:
+# REPOSITORY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +x
+  echo Cleaning...
+  ic ce app delete -n configapp -f --wto=0 > /dev/null 2>&1 || true
+  ic ce configmap delete -n myconfig -f > /dev/null 2>&1 || true
+  rm -f out
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REPOSITORY=${REPOSITORY:-ibmcom}
+
+# Create a ConfigMap with all possible ways of populating the data:
+# 1 - literal name/value pair from command line
+# 2 - name/value pairs read from a file
+# 3 - name/value pair wherer 'value' is the contents of a file (twice)
+
+ic ce configmap create --name myconfig \
+  --from-literal MY_CONFIG_KNOB=42 \
+  --from-env-file data \
+  --from-file file \
+  --from-file MY_FILE=file
+
+# Create the app
+ic ce app create -n configapp --image ${REPOSITORY}/ce-config \
+  --env-from-configmap myconfig
+
+# Get the URL of the app for later use
+URL=$(ic ce app get -n configapp -o jsonpath={.status.url})
+
+# Just force it to log something by hitting it
+curl -Ls $URL
+
+# Extract the instance name from `ic ce app get`
+ic ce app get -n configapp | tee out
+name=$(grep "configapp.*Running" out | tail -1 | sed "s/ [12].*//")
+echo Instance name: $name
+
+# Now check the logs to see if the env vars were set
+ic ce app logs --instance $name | tee out
+grep MY_ out
+if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# Check to see if the context of "file" are assign to the "file" env var.
+if ! [[ $(grep '^file=In Congress' out | wc -l) == "1" ]]; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# Clean up
+clean
