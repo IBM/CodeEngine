@@ -33,6 +33,10 @@ It is also assumed that you have a Code Engine project already created, e.g.:
 ```
 $ ic ce project create --name demos --target
 ```
+and that you have it selected:
+```
+$ ic ce project select --name demos
+```
 
 ## Samples
 
