@@ -7,3 +7,5 @@ and the corresponding "value" in the configMap will be the "value" of that
 environment variable.
 
 The application will log (print to stdout) all of its environment variables.
+
+Note: the same basic logic will work for Batch Jobs as well.
