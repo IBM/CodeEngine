@@ -27,15 +27,13 @@ It is assumed that the following are installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for
+  the rare sample that might need to dive really deep behind the scenes
 - [`docker`](https://docker.io/) if you choose to build the images yourself
 
-It is also assumed that you have a Code Engine project already created, e.g.:
+It is also assumed that you have a Code Engine project already created and
+selected, e.g.:
 ```
-$ ic ce project create --name demos --target
-```
-and that you have it selected:
-```
-$ ic ce project select --name demos
+$ ic ce project create --name demos --select
 ```
 
 ## Samples
