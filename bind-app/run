@@ -7,8 +7,8 @@
 function clean() {
   set +x
   echo Cleaning...
-  ic ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
-  ic resource service-instance-delete mydb -f > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud resource service-instance-delete mydb -f > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -20,16 +20,16 @@ set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Create an instance of DB2
-ic resource service-instance-create mydb dashdb-for-transactions free us-south
+ibmcloud resource service-instance-create mydb dashdb-for-transactions free us-south
 
 # Create the app
-ic ce app create -n app --image ${REPOSITORY}/bind-app
+ibmcloud ce app create -n app --image ${REPOSITORY}/bind-app
 
 # Get the URL of the app for later use
-URL=$(ic ce app get -n app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n app -o jsonpath={.status.url})
 
 # Bind the service credentials to the app
-ic ce app bind --name app --service-instance mydb
+ibmcloud ce app bind --name app --service-instance mydb
 
 # Curl the app to make sure it had the creds
 curl -Ls ${URL} | tee out

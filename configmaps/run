@@ -7,8 +7,8 @@
 function clean() {
   set +x
   echo Cleaning...
-  ic ce app delete -n configapp -f --wto=0 > /dev/null 2>&1 || true
-  ic ce configmap delete -n myconfig -f > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n configapp -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce configmap delete -n myconfig -f > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -23,29 +23,29 @@ export REPOSITORY=${REPOSITORY:-ibmcom}
 # 2 - name/value pairs read from a file
 # 3 - name/value pair wherer 'value' is the contents of a file (twice)
 
-ic ce configmap create --name myconfig \
+ibmcloud ce configmap create --name myconfig \
   --from-literal MY_CONFIG_KNOB=42 \
   --from-env-file data \
   --from-file file \
   --from-file MY_FILE=file
 
 # Create the app
-ic ce app create -n configapp --image ${REPOSITORY}/ce-config \
+ibmcloud ce app create -n configapp --image ${REPOSITORY}/ce-config \
   --env-from-configmap myconfig
 
 # Get the URL of the app for later use
-URL=$(ic ce app get -n configapp -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n configapp -o jsonpath={.status.url})
 
 # Just force it to log something by hitting it
 curl -Ls $URL
 
-# Extract the instance name from `ic ce app get`
-ic ce app get -n configapp | tee out
+# Extract the instance name from `ibmcloud ce app get`
+ibmcloud ce app get -n configapp | tee out
 name=$(grep "configapp.*Running" out | tail -1 | sed "s/ [12].*//")
 echo Instance name: $name
 
 # Now check the logs to see if the env vars were set
-ic ce app logs --instance $name | tee out
+ibmcloud ce app logs --instance $name | tee out
 grep MY_ out
 if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
   echo "Unexpected output"

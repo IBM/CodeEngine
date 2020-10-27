@@ -4,17 +4,17 @@
 function clean() {
   set +x
   echo Cleaning...
-  ic cr namespace-rm "${ICR_NS}" -f > /dev/null 2>&1 || true
-  ic ce app delete -n s2i-dockerfile -f --wto=0 > /dev/null 2>&1 || true
-  ic iam api-key-delete s2i-sample -f > /dev/null 2>&1 || true
-  ic ce registry delete -n icr -f > /dev/null 2>&1 || true
-  ic ce buildrun delete -n myrun -f > /dev/null 2>&1 || true
-  ic ce build delete -n mybuild -f > /dev/null 2>&1 || true
+  ibmcloud cr namespace-rm "${ICR_NS}" -f > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n s2i-dockerfile -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud iam api-key-delete s2i-sample -f > /dev/null 2>&1 || true
+  ibmcloud ce registry delete -n icr -f > /dev/null 2>&1 || true
+  ibmcloud ce buildrun delete -n myrun -f > /dev/null 2>&1 || true
+  ibmcloud ce build delete -n mybuild -f > /dev/null 2>&1 || true
   rm -f out .ce-reg-secret || true
 }
 
 # Define our ICR Namespace env var for later use
-ID=$(ic account show | grep "Account ID:" | sed "s/^.*:  *//")
+ID=$(ibmcloud account show | grep "Account ID:" | sed "s/^.*:  *//")
 ICR_NS=s2i-${ID:0:25}
 
 clean
@@ -23,32 +23,32 @@ clean
 set -ex
 
 # Create an ICR namespace to hold our new image
-ic cr namespace-add $ICR_NS
+ibmcloud cr namespace-add $ICR_NS
 
 # Create an apikey, put it in a registry secret. Used to push/pull image to ICR
-ic iam api-key-create s2i-sample | \
+ibmcloud iam api-key-create s2i-sample | \
   grep "API Key" | sed 's/^.*Key  *//' | sed "s/ *$//" > .ce-reg-secret
-ic ce registry create -n icr -s us.icr.io -u iamapikey \
+ibmcloud ce registry create -n icr -s us.icr.io -u iamapikey \
   --password-from-file .ce-reg-secret
 
 # Define the build of this dir in this github repo
-ic ce build create -n mybuild -i "us.icr.io/${ICR_NS}/app" --rs icr \
+ibmcloud ce build create -n mybuild -i "us.icr.io/${ICR_NS}/app" --rs icr \
   --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
 
 # Now kick off the build itself
-ic ce buildrun submit -n myrun --build mybuild
+ibmcloud ce buildrun submit -n myrun --build mybuild
 
 # Wait for it to finish
 while true ; do
-  ic ce buildrun get -n myrun > out
+  ibmcloud ce buildrun get -n myrun > out
   grep Succeeded out && break
   grep "exited with" out && cat out && exit 1
   sleep 10
 done
 
 # Test the image we just built - deploy an app and 'curl' it
-ic ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs icr
-URL=$(ic ce app get -n s2i-dockerfile -o jsonpath={.status.url})
+ibmcloud ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs icr
+URL=$(ibmcloud ce app get -n s2i-dockerfile -o jsonpath={.status.url})
 curl -Ls "${URL}" | tee out
 
 if ! grep "I was built"  out > /dev/null ; then

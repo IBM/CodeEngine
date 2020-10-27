@@ -7,8 +7,8 @@
 function clean() {
   set +x
   echo Cleaning...
-  ic ce app delete -n redis -f --wto=0 > /dev/null 2>&1 || true
-  ic ce app delete -n myapp -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n redis -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n myapp -f --wto=0 > /dev/null 2>&1 || true
 }
 
 clean
@@ -18,19 +18,19 @@ set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Deploy Redis as an app. Make sure we only ever have 1 instance running
-ic ce app create -n redis --image redis --user 999 --cl --min=1 --max=1 \
+ibmcloud ce app create -n redis --image redis --user 999 --cl --min=1 --max=1 \
   --port 6379
 
 # Get the Redis pod's IP address so we can hit it directly
-`ic ce project current  | grep export`  # since we call kubectl
+`ibmcloud ce project current  | grep export`  # since we call kubectl
 POD=$(kubectl get pods | grep -i redis.*running | sed "s/ .*$//")
 IP=$(kubectl get pod/$POD -o custom-columns=ip:.status.podIP --no-headers)
 
 # Create the stateful app and pass it the Redis IP
-ic ce app create -n myapp -i ${REPOSITORY}/sessions -e IP=$IP --cn=5 --min=3
+ibmcloud ce app create -n myapp -i ${REPOSITORY}/sessions -e IP=$IP --cn=5 --min=3
 
 # Get the URL of the app for later use
-URL=$(ic ce app get -n myapp -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n myapp -o jsonpath={.status.url})
 
 # Now call the app to make sure it works
 curl -Ls $URL

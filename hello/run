@@ -7,7 +7,7 @@
 function clean() {
   set +x
   echo Cleaning...
-  ic ce app delete -n hello -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n hello -f --wto=0 > /dev/null 2>&1 || true
 }
 
 clean
@@ -17,10 +17,10 @@ set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Create the app
-ic ce app create -n hello --image ${REPOSITORY}/hello
+ibmcloud ce app create -n hello --image ${REPOSITORY}/hello
 
 # Get the URL of the app for later use
-URL=$(ic ce app get -n hello -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n hello -o jsonpath={.status.url})
 
 # Now call it
 curl -Ls $URL
