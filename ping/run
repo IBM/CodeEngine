@@ -19,7 +19,7 @@ set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Create the app
-ibmcloud ce app create -n pingecho --image ${REPOSITORY}/ping
+ibmcloud ce app create -n pingecho --image ${REPOSITORY}/ping --min-scale=1
 
 # Setup the Ping (cron) Event Source, send event every minute
 ibmcloud ce sub ping create -n pinger -d pingecho \
