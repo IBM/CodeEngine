@@ -51,7 +51,7 @@ set -e
   echo
 )) 2>&1 | tee run-all.out
 
-res=0
+res="0"
 for file in `find . -name run | sort` ; do
     dir=`dirname $file`
 	dir=${dir:2}  # remove leading ./
@@ -76,7 +76,7 @@ cat run-all.out
 rm run-all.out
 echo
 
-if [[ "$rc" == "0" ]]; then
+if [[ "$res" == "0" ]]; then
   echo "PASSED"
 else
   echo "FAILED!"
