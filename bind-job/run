@@ -8,9 +8,9 @@
 function clean() {
   set +x
   echo Cleaning...
-  ibmcloud ce job delete -n myjob -f > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n myjobrun -f > /dev/null 2>&1 || true
-  ibmcloud resource service-instance-delete mydb -f > /dev/null 2>&1 || true
+  ibmcloud ce job delete -n bj-job -f > /dev/null 2>&1 || true
+  ibmcloud ce jobrun delete -n bj-jobrun -f > /dev/null 2>&1 || true
+  ibmcloud resource service-instance-delete bj-db -f > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -23,17 +23,17 @@ export REPOSITORY=${REPOSITORY:-ibmcom}
 export NUM=${COUNT:-10}
 
 # Create an instance of DB2
-ibmcloud resource service-instance-create mydb dashdb-for-transactions free us-south
+ibmcloud resource service-instance-create bj-db dashdb-for-transactions free us-south
 
 # Create a Job definition
-ibmcloud ce job create --name myjob --array-indices=1-${NUM} \
+ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \
   --image ${REPOSITORY}/bind-job
 
 # Bind the service instance to the job
-ibmcloud ce job bind --name myjob --service-instance mydb
+ibmcloud ce job bind --name bj-job --service-instance bj-db
 
 # Now submit the job using that definition
-ibmcloud ce jobrun submit --name myrun --job myjob
+ibmcloud ce jobrun submit --name myrun --job bj-job
 
 # Wait for it to finish...
 until ibmcloud ce jobrun get --name myrun -o jsonpath={.status.succeeded} | grep $NUM

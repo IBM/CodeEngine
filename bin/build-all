@@ -7,6 +7,8 @@
 # will fail due to an auth failure. Which means, you also need to be logged
 # into that registry before you run it.
 
+cd $(dirname $0)/..
+
 set -e
 for file in `find . -name run | sort` ; do (
 
@@ -18,9 +20,6 @@ for file in `find . -name run | sort` ; do (
 
   # If 'build' exists, build the image(s)
   [[ -e ./build ]] && ./build
-
-  # Run the sample
-  ./run
 
 ) done
 

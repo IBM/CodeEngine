@@ -7,8 +7,8 @@
 function clean() {
   set +x
   echo Cleaning... 
-  ibmcloud ce sub ping delete -n pinger -f --wait=true > /dev/null 2>&1 || true
-  ibmcloud ce app delete -n pingecho -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce sub ping delete -n ping-sub -f --wait=true > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n ping-app -f --wto=0 > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -19,14 +19,14 @@ set -ex
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Create the app
-ibmcloud ce app create -n pingecho --image ${REPOSITORY}/ping --min-scale=1
+ibmcloud ce app create -n ping-app --image ${REPOSITORY}/ping --min-scale=1
 
 # Setup the Ping (cron) Event Source, send event every minute
-ibmcloud ce sub ping create -n pinger -d pingecho \
+ibmcloud ce sub ping create -n ping-sub -d ping-app \
   --data '{"mydata":"hello world"}' -s '* * * * *'
 
 # Extract the instance name from `ibmcloud ce app get`
-ibmcloud ce app get -n pingecho | tee out
+ibmcloud ce app get -n ping-app | tee out
 name=$(grep "ping.*Running" out | tail -1 | sed "s/ [12].*//")
 echo Instance name: $name
 
@@ -37,7 +37,7 @@ while true ; do
   sleep 10
 done
 
-echo "Log from 'pingecho' app:"
+echo "Log from 'ping-app' app:"
 cat out
 
 # Clean up

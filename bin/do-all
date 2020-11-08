@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# This will build and run all demos.
+#
+# NOTE: to run this you MUST set the REPOSITORY environment variable to
+# your own image registry/namespace otherwise the `docker push` commands
+# will fail due to an auth failure. Which means, you also need to be logged
+# into that registry before you run it.
+
+cd $(dirname $0)/..
+
+set -e
+for file in `find . -name run | sort` ; do (
+
+  echo -e "\n### `dirname $file`\n"
+  cd `dirname $file`
+
+  # Skip this dir
+  [[ -e ./SKIP ]] && echo "SKIPPING `dirname $file`" && continue
+
+  # If 'build' exists, build the image(s)
+  [[ -e ./build ]] && ./build
+
+  # Run the sample
+  ./run
+
+) done
+
+echo "All done!"

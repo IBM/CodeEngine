@@ -22,7 +22,7 @@ func main() {
 	wg := sync.WaitGroup{}
 
 	// URL to the App
-	url := "http://app." + string(namespace) + ".svc.cluster.local"
+	url := "http://j2a-app." + string(namespace) + ".svc.cluster.local"
 
 	// Do all requests to the App in parallel - why not?
 	for i := 0; i < count; i++ {

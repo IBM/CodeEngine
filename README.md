@@ -10,7 +10,9 @@ followed is:
 - a `build` script shows how each container image used in the sample is built.
   By default, the script will push the image to the `ibmcom` namespace on
   DockerHub, so to use this yourself you'll need to set the `REPOSITORY`
-  environment variable to your own registry and/or namespace.
+  environment variable to your own registry and/or namespace. Also, you
+  MUST use a registry that allows for anonymous/public downloads of your
+  images,since as of now these scripts do not support using private images.
 - a `run` script will execute the sample. Most will also include logic to
   verify the output to ensure everything is working as expected. As with
   `build`, it will default to using the `ibmcom` container images, so to use

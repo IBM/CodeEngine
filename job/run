@@ -8,9 +8,9 @@
 function clean() {
   set +x
   echo Cleaning...
-  ibmcloud ce job delete -n myjob -f > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n doit  -f > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n doit2 -f > /dev/null 2>&1 || true
+  ibmcloud ce job delete -n job-job -f > /dev/null 2>&1 || true
+  ibmcloud ce jobrun delete -n job-doit  -f > /dev/null 2>&1 || true
+  ibmcloud ce jobrun delete -n job-doit2 -f > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -22,33 +22,33 @@ export REPOSITORY=${REPOSITORY:-ibmcom}
 export NUM=${NUM:-10}
 
 # Create a Job definition
-ibmcloud ce job create --name myjob --array-indices=1-${NUM} \
+ibmcloud ce job create --name job-job --array-indices=1-${NUM} \
   --image ${REPOSITORY}/firstjob
 
 # Now submit the job using that definition
-ibmcloud ce jobrun submit --name doit --job myjob
+ibmcloud ce jobrun submit --name job-doit --job job-job
 
 # Wait for it to finish...
-until ibmcloud ce jobrun get --name doit -o jsonpath={.status.succeeded} | grep $NUM
+until ibmcloud ce jobrun get --name job-doit -o jsonpath={.status.succeeded} | grep $NUM
 do
   sleep 3
 done
 
 # Now submit a job w/o creating a job definition first
-ibmcloud ce jobrun submit --name doit2 --array-indices=1-${NUM} \
+ibmcloud ce jobrun submit --name job-doit2 --array-indices=1-${NUM} \
   --image ${REPOSITORY}/firstjob
 
 # Wait for it to finish...
-until ibmcloud ce jobrun get --name doit2 -o jsonpath={.status.succeeded} | grep $NUM
+until ibmcloud ce jobrun get --name job-doit2 -o jsonpath={.status.succeeded} | grep $NUM
 do
   sleep 3
 done
 
 # Show the stats about the job
-ibmcloud ce jobrun get --name doit2
+ibmcloud ce jobrun get --name job-doit2
 
 # Now look at a view of the logs to make sure it worked
-ibmcloud ce jobrun logs --instance doit2-1-0 | tee out
+ibmcloud ce jobrun logs --instance job-doit2-1-0 | tee out
 
 if ! grep "Hi from"  out > /dev/null ; then
   echo "Missing expected outout"

@@ -8,8 +8,8 @@
 function clean() {
   set +x
   echo Cleaning...
-  ibmcloud ce job delete -n myjob -f > /dev/null 2>&1 || true
-  ibmcloud ce app delete -n app -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce job delete -n a2j-job -f > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n a2j-app -f --wto=0 > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -21,16 +21,16 @@ export REPOSITORY=${REPOSITORY:-ibmcom}
 export COUNT=${COUNT:-50}
 
 # Create the app
-ibmcloud ce app create -n app --image ${REPOSITORY}/a2j-app
+ibmcloud ce app create -n a2j-app --image ${REPOSITORY}/a2j-app
 
 # Get metadata about the app for later use
-URL=$(ibmcloud ce app get -n app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n a2j-app -o jsonpath={.status.url})
 
 # Create the job definition
-ibmcloud ce job create -n myjob --ai=1-${COUNT} --image ${REPOSITORY}/a2j-job
+ibmcloud ce job create -n a2j-job --ai=1-${COUNT} --image ${REPOSITORY}/a2j-job
 
 # Now, curl the app and see if it creates the job
-curl -s ${URL/http/https}/myjob -X PUT | tee out
+curl -s ${URL/http/https}/a2j-job -X PUT | tee out
 jobrun=$(cat out)
 
 while ! ibmcloud ce jobrun get -n ${jobrun} | grep "Succeeded.*${COUNT}" ; do

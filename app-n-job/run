@@ -8,8 +8,8 @@
 function clean() {
   set +x
   echo Cleaning...
-  ibmcloud ce app delete -n myapp -f --wto=0 > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n myjob -f > /dev/null 2>&1 || true
+  ibmcloud ce app delete -n anj-app -f --wto=0 > /dev/null 2>&1 || true
+  ibmcloud ce jobrun delete -n anj-job -f > /dev/null 2>&1 || true
   rm -f out
 }
 
@@ -21,10 +21,10 @@ export REPOSITORY=${REPOSITORY:-ibmcom}
 export NUM=${NUM:-10}
 
 # First create an app based on our image
-ibmcloud ce app create -n myapp --image ${REPOSITORY}/app-n-job
+ibmcloud ce app create -n anj-app --image ${REPOSITORY}/app-n-job
 
 # Get the URL of the app
-URL=$(ibmcloud ce app get -n myapp -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n anj-app -o jsonpath={.status.url})
 
 # And call it
 curl -Ls $URL | tee out
@@ -35,15 +35,15 @@ if ! grep "Hello from.*app" out > /dev/null ; then
 fi
 
 # And now use the same image as a batch job
-ibmcloud ce jobrun submit --name myjob --ai=1-$NUM --image ${REPOSITORY}/app-n-job
+ibmcloud ce jobrun submit --name anj-job --ai=1-$NUM --image ${REPOSITORY}/app-n-job
 
 # Wait for it to finish...
-until ibmcloud ce jobrun get --name myjob -o jsonpath={.status.succeeded} | grep $NUM
+until ibmcloud ce jobrun get --name anj-job -o jsonpath={.status.succeeded} | grep $NUM
 do
   sleep 3
 done
 
-ibmcloud ce jobrun logs --instance myjob-1-0 | tee out
+ibmcloud ce jobrun logs --instance anj-job-1-0 | tee out
 
 if ! grep "Hello from.*job"  out > /dev/null ; then
   echo "Missing expected outout"
