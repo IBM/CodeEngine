@@ -48,6 +48,7 @@ set -e
       fi
     )
   done
+  echo
 )) 2>&1 | tee run-all.out
 
 res=0
@@ -55,15 +56,18 @@ for file in `find . -name run | sort` ; do
     dir=`dirname $file`
 	dir=${dir:2}  # remove leading ./
 
+    if [[ -e ${dir}.fail ]]; then
+	  rm ${dir}.fail
+	  res=1
+	  echo -e "\n### $dir\n" >> run-all.out
+	  tail ${dir}.out >> run-all.out
+	  echo >> run-all.out
+	fi
+
 	if [[ -e ${dir}.out ]]; then
 	  echo -e "\n### $dir\n"
 	  cat ${dir}.out
 	  rm ${dir}.out
-	fi
-
-    if [[ -e ${dir}.fail ]]; then
-	  rm ${dir}.fail
-	  res=1
 	fi
 done
 
