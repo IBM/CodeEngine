@@ -4,6 +4,9 @@
 
 cd $(dirname $0)/..
 
+echo "Cleaning..."
+bin/run-all clean > /dev/null 2>&1
+
 set -e
 (time (
   for file in `find . -name run | sort` ; do
