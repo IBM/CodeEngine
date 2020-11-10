@@ -11,11 +11,16 @@ set -e
 (time (
   for file in `find . -name run | sort` ; do
     dir=`dirname $file`
-	dir=${dir:2}  # remove leading ./
+    dir=${dir:2}  # remove leading ./
 
     # Skip this dir 'cause we're asked or if it's to be run sequentially
     [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
     [[ -e ${dir}/.SEQ ]] && echo "Delaying $dir " && continue
+
+    # Only allow 5 at a time
+    while (( $(jobs -rp | wc -l) > 4 )); do
+      sleep 1
+    done
 
     # Run the sample with whatever REPOSITORY we're pointing to
     echo "Running $dir"
@@ -25,7 +30,7 @@ set -e
         echo "PASS: $dir"
       else
         echo "FAIL: $dir ($dir.out)"
-		echo FAIL > ../$dir.fail
+        echo FAIL > ../$dir.fail
       fi
     ) &
   done
@@ -34,7 +39,7 @@ set -e
   echo
   for file in `find . -name run | sort` ; do
     dir=`dirname $file`
-	dir=${dir:2}  # remove leading ./
+    dir=${dir:2}  # remove leading ./
 
     # Only process samples that are meant to be run sequentially
     [[ ! -e ${dir}/.SEQ ]] && continue
@@ -47,7 +52,7 @@ set -e
         echo "PASS: $dir"
       else
         echo "FAIL: $dir ($dir.out)"
-		echo FAIL > ../$dir.fail
+        echo FAIL > ../$dir.fail
       fi
     )
   done
@@ -57,21 +62,21 @@ set -e
 res="0"
 for file in `find . -name run | sort` ; do
     dir=`dirname $file`
-	dir=${dir:2}  # remove leading ./
+    dir=${dir:2}  # remove leading ./
 
     if [[ -e ${dir}.fail ]]; then
-	  rm ${dir}.fail
-	  res=1
-	  echo -e "\n### $dir\n" >> run-all.out
-	  tail ${dir}.out >> run-all.out
-	  echo >> run-all.out
-	fi
+      rm ${dir}.fail
+      res=1
+      echo -e "\n### $dir\n" >> run-all.out
+      tail ${dir}.out >> run-all.out
+      echo >> run-all.out
+    fi
 
-	if [[ -e ${dir}.out ]]; then
-	  echo -e "\n### $dir\n"
-	  cat ${dir}.out
-	  rm ${dir}.out
-	fi
+    if [[ -e ${dir}.out ]]; then
+      echo -e "\n### $dir\n"
+      cat ${dir}.out
+      rm ${dir}.out
+    fi
 done
 
 echo
