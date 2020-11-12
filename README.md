@@ -85,6 +85,9 @@ $ ibmcloud ce project create --name demos --select
 - [ping](ping)<br>
   This will show how to setup a simple Ping(cron) Event Source and send
   its events to an Application.
+- [cos-event](cos-event)<br>
+  This will show how to setup a COS Event Source and send its events to
+  an Application.
 
 #### Misc
 - [configmaps](configmaps)<br>
