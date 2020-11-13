@@ -4,14 +4,13 @@
 # REPOSITORY: name of the image registry/namespace to get the images
 # COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to use
 
-# Use a dynamic bucket name because COS prevents bucket name reuse for
-# 15 minutes after bucket deletion
-function bucket_name() {
+function project_name() {
+  ibmcloud ce project current | awk -F: '/Project Name/{ print $2 }'
+}
+
+function project_id() {
   set +x
-  PROJECT=$1
-  BASE=$(ibmcloud ce project get --name ${PROJECT}| awk '/^ID/{ print $2 }')
-  EPOCH=$(date +%s)
-  echo "${BASE}-${EPOCH}"
+  ibmcloud ce project get --name $(project_name)| awk '/^ID/{ print $2 }'
   set -x
 }
 
@@ -19,8 +18,7 @@ function bucket_name() {
 function clean() {
   set +x
   DCOS=$1
-  BUCKET_NAME=$2
-  POLICY=$3
+  POLICY=$2
   echo "Cleaning...be patient"
 
   # Delete the event subscription
@@ -35,9 +33,7 @@ function clean() {
   ibmcloud ce app delete --name cos-app --force > /dev/null 2>&1 || true
 
   # Delete the COS bucket
-  if [[ $BUCKET_NAME != "" ]]; then
-    ibmcloud cos bucket-delete --bucket $BUCKET_NAME --force > /dev/null 2>&1 || true
-  fi
+  ibmcloud cos bucket-delete --bucket $(project_id) --force > /dev/null 2>&1 || true
 
   # Delete the COS instance
   if [[ $DCOS -gt 0 ]]; then
@@ -51,9 +47,6 @@ clean 0
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-CE_PROJECT=$(ibmcloud ce project current | awk -F: '/Project Name/{ print $2 }')
-echo "Using Code Engine project ${CE_PROJECT}..."
-
 export REPOSITORY=${REPOSITORY:-ibmcom}
 
 # Create a COS instance unless one has been specified for use, mark it for deletion
@@ -71,11 +64,11 @@ ibmcloud cos config auth --method IAM
 # Create the IAM authorization policy to allow us to receive notifications from COS
 POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
  cloud-object-storage "Notifications Manager" \
- --source-service-instance-name ${CE_PROJECT} \
+ --source-service-instance-name $(project_name) \
  --target-service-instance-id ${COS_ID} | awk '/^Authorization/{ print $3 }')
 
 # Create our bucket
-BUCKET=$(bucket_name ${CE_PROJECT})
+BUCKET=$(project_id)
 ibmcloud cos bucket-create --bucket $BUCKET --ibm-service-instance-id $COS_ID
 
 # Create the app
@@ -98,7 +91,7 @@ while true ; do
 
   # Delete the file from COS (another event)
   ibmcloud cos object-delete --bucket ${BUCKET} --key "README.md" --force
-  
+
   ibmcloud ce app logs --instance $INSTANCE > out
   grep "README.md" out > /dev/null 2>&1 && break
   sleep 10
@@ -110,14 +103,9 @@ cat out
 echo "=============="
 echo "Event stats:"
 
-URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app | sed -e 's/http/https/')
+URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app)
 
-JQ=$(which jq)
-if [[ $JQ == "" ]]; then
-  curl ${URL}/stats
-else
-  curl ${URL}/stats 2>/dev/null | jq
-fi
+curl -Ls ${URL}/stats
 
 # Clean up
-clean $DELETE_COS $BUCKET $POLICY_ID
+clean $DELETE_COS $POLICY_ID

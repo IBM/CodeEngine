@@ -41,7 +41,7 @@ func main() {
 	}
 
 	http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
-		responseBytes, _ := json.Marshal(stats)
+		responseBytes, _ := json.MarshalIndent(stats, "", "  ")
 		w.Write(responseBytes)
 	})
 
@@ -49,15 +49,13 @@ func main() {
 		daTime := time.Now().Format("2006-01-02 15:04:05")
 		body := []byte{}
 
-		if r.Body != nil {
-			body, _ = ioutil.ReadAll(r.Body)
-			var event COSEvent
-			json.Unmarshal(body, &event)
+		body, _ = ioutil.ReadAll(r.Body)
+		var event COSEvent
+		json.Unmarshal(body, &event)
 
-			stats.ByBucket[event.Bucket] += 1
-			stats.ByType[event.Operation] += 1
-			stats.ByObject[event.Key] += 1
-		}
+		stats.ByBucket[event.Bucket] += 1
+		stats.ByType[event.Operation] += 1
+		stats.ByObject[event.Key] += 1
 
 		fmt.Printf("%s - Received:\n", daTime)
 		fmt.Printf("\nBody: %s\n", string(body))
