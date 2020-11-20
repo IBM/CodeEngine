@@ -41,7 +41,7 @@ ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild
 # Wait for it to finish
 while true ; do
   ibmcloud ce buildrun get -n s2i-drun > out
-  grep Succeeded out && break
+  grep "Succeeded.*True" out && break
   grep "exited with" out && cat out && exit 1
   sleep 10
 done
