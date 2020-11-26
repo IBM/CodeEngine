@@ -29,6 +29,8 @@ task so that it can be re-used easily and integrated into a larger use-case.
 It is assumed that the following are installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
+- [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
+  for samples which use IBM Cloud Object Storage
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for
   the rare sample that might need to dive really deep behind the scenes
 - [`docker`](https://docker.io/) if you choose to build the images yourself
@@ -85,6 +87,9 @@ $ ibmcloud ce project create --name demos --select
 - [ping](ping)<br>
   This will show how to setup a simple Ping(cron) Event Source and send
   its events to an Application.
+- [cos-event](cos-event)<br>
+  This will show how to setup a COS Event Source and send its events to
+  an Application.
 
 #### Misc
 - [configmaps](configmaps)<br>
