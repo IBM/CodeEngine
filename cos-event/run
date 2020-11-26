@@ -4,40 +4,39 @@
 # REPOSITORY: name of the image registry/namespace to get the images
 # COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to use
 
-function project_name() {
-  ibmcloud ce project current | awk -F: '/Project Name/{ print $2 }'
-}
-
-function project_id() {
-  set +x
-  ibmcloud ce project get --name $(project_name)| awk '/^ID/{ print $2 }'
-  set -x
-}
+export REPOSITORY=${REPOSITORY:-ibmcom}
+export PROJECT_NAME=$(ibmcloud ce project current | \
+  awk -F: '/Project Name/{ print $2 }')
+export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
+  awk '/^ID/{ print $2 }')
 
 # Clean up previous run
 function clean() {
   set +x
   DCOS=$1
   POLICY=$2
-  echo "Cleaning...be patient"
+  echo "Cleaning..."
 
   # Delete the event subscription
   ibmcloud ce sub cos delete -n cos-sub -f --wait=true > /dev/null 2>&1 || true
 
   # Delete the IAM auth policy
   if [[ $POLICY != "" ]]; then
-    ibmcloud iam authorization-policy-delete $POLICY --force > /dev/null 2>&1 || true
+    ibmcloud iam authorization-policy-delete $POLICY --force \
+	  > /dev/null 2>&1 || true
   fi
 
   # Delete the app
   ibmcloud ce app delete --name cos-app --force > /dev/null 2>&1 || true
 
   # Delete the COS bucket
-  ibmcloud cos bucket-delete --bucket $(project_id) --force > /dev/null 2>&1 || true
+  ibmcloud cos bucket-delete --bucket ${PROJECT_ID} --force \
+    > /dev/null 2>&1 || true
 
   # Delete the COS instance
   if [[ $DCOS -gt 0 ]]; then
-    ibmcloud resource service-instance-delete codeengine-cos -f -q > /dev/null 2>&1 || true
+    ibmcloud resource service-instance-delete codeengine-cos -f -q \
+	  > /dev/null 2>&1 || true
   fi
 
   rm -f out
@@ -47,13 +46,15 @@ clean 0
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
 
-# Create a COS instance unless one has been specified for use, mark it for deletion
+# Create a COS instance unless one has been specified for use, mark it for
+# deletion
 DELETE_COS=0
 if [[ $COS_ID == "" ]]; then
-  ibmcloud resource service-instance-create codeengine-cos cloud-object-storage lite global
-  COS_ID=$(ibmcloud resource service-instance codeengine-cos | awk '/^ID/{ print $2 }')
+  ibmcloud resource service-instance-create codeengine-cos \
+    cloud-object-storage lite global
+  COS_ID=$(ibmcloud resource service-instance codeengine-cos | \
+    awk '/^ID/{ print $2 }')
   DELETE_COS=1
 fi
 
@@ -61,31 +62,31 @@ fi
 ibmcloud cos config crn --crn $COS_ID --force
 ibmcloud cos config auth --method IAM
 
-# Create the IAM authorization policy to allow us to receive notifications from COS
+# Create the IAM authorization policy to allow us to receive notifications
+# from COS
 POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
  cloud-object-storage "Notifications Manager" \
- --source-service-instance-name $(project_name) \
+ --source-service-instance-name ${PROJECT_NAME} \
  --target-service-instance-id ${COS_ID} | awk '/^Authorization/{ print $3 }')
 
 # Create our bucket
-BUCKET=$(project_id)
+export BUCKET=${PROJECT_ID}
 ibmcloud cos bucket-create --bucket $BUCKET --ibm-service-instance-id $COS_ID
 
-# Create the app
-ibmcloud ce app create -n cos-app --image ${REPOSITORY}/cos-listen --min-scale=1 --max-scale=1
+# Create the app && save its URL for later
+ibmcloud ce app create -n cos-app --image ${REPOSITORY}/cos-listen \
+  --min-scale=1 --max-scale=1
+URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app)
 
 # Setup the COS Event Source
 ibmcloud ce sub cos create -n cos-sub -d cos-app -b ${BUCKET}
 
-
 # Extract the instance name from `ibmcloud ce app get`
-INSTANCE=$(ibmcloud ce app get --name cos-app | awk '/cos.*Running/{ print $1 }')
+INSTANCE=$(ibmcloud ce app get --name cos-app| awk '/cos.*Running/{ print $1 }')
 echo Instance name: $INSTANCE
-
 
 # Now wait until we get the event - shouldn't take more than a minute
 while true ; do
-
   # Upload a file to COS (this will generate an event)
   ibmcloud cos object-put --bucket ${BUCKET} --key "README.md" --body README.md
 
@@ -102,8 +103,6 @@ cat out
 
 echo "=============="
 echo "Event stats:"
-
-URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app)
 
 curl -Ls ${URL}/stats
 
