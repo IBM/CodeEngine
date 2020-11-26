@@ -30,7 +30,7 @@ URL=$(ibmcloud ce app get -n a2j-app -o jsonpath={.status.url})
 ibmcloud ce job create -n a2j-job --ai=1-${COUNT} --image ${REPOSITORY}/a2j-job
 
 # Now, curl the app and see if it creates the job
-curl -s ${URL/http/https}/a2j-job -X PUT | tee out
+curl -s ${URL}/a2j-job -X PUT | tee out
 jobrun=$(cat out)
 
 while ! ibmcloud ce jobrun get -n ${jobrun} | grep "Succeeded.*${COUNT}" ; do
