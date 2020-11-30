@@ -2,26 +2,26 @@
 
 # Env Vars:
 # REPOSITORY: name of the image registry/namespace to get the images
-# COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to use
+# COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to
+# use
 
 export REPOSITORY=${REPOSITORY:-ibmcom}
 export PROJECT_NAME=$(ibmcloud ce project current | \
   awk -F: '/Project Name/{ print $2 }')
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')
+export POLICY_ID=""
 
 # Clean up previous run
 function clean() {
   set +x
-  DCOS=$1
-  POLICY=$2
   echo "Cleaning..."
 
   # Delete the event subscription
   ibmcloud ce sub cos delete -n cos-sub -f --wait=true > /dev/null 2>&1 || true
 
   # Delete the IAM auth policy
-  if [[ $POLICY != "" ]]; then
+  if [[ -n "$POLICY_ID" ]]; then
     ibmcloud iam authorization-policy-delete $POLICY --force \
 	  > /dev/null 2>&1 || true
   fi
@@ -33,8 +33,8 @@ function clean() {
   ibmcloud cos bucket-delete --bucket ${PROJECT_ID} --force \
     > /dev/null 2>&1 || true
 
-  # Delete the COS instance
-  if [[ $DCOS -gt 0 ]]; then
+  # Delete the COS instance unless the instance was given to us
+  if [[ -z "$COS_ID" ]]; then
     ibmcloud resource service-instance-delete codeengine-cos -f -q \
 	  > /dev/null 2>&1 || true
   fi
@@ -42,36 +42,34 @@ function clean() {
   rm -f out
 }
 
-clean 0
+clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
 
-# Create a COS instance unless one has been specified for use, mark it for
-# deletion
-DELETE_COS=0
-if [[ $COS_ID == "" ]]; then
+CID=${COS_ID}
+
+# Create a COS instance unless one has been specified for use
+if [[ $CID == "" ]]; then
   ibmcloud resource service-instance-create codeengine-cos \
     cloud-object-storage lite global
-  COS_ID=$(ibmcloud resource service-instance codeengine-cos | \
+  CID=$(ibmcloud resource service-instance codeengine-cos | \
     awk '/^ID/{ print $2 }')
-  DELETE_COS=1
 fi
 
 # Set the COS config to use this instance
-ibmcloud cos config crn --crn $COS_ID --force
+ibmcloud cos config crn --crn $CID --force
 ibmcloud cos config auth --method IAM
 
-# Create the IAM authorization policy to allow us to receive notifications
-# from COS
+# Create IAM authorization policy so we can receive notifications from COS
 POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
  cloud-object-storage "Notifications Manager" \
  --source-service-instance-name ${PROJECT_NAME} \
- --target-service-instance-id ${COS_ID} | awk '/^Authorization/{ print $3 }')
+ --target-service-instance-id ${CID} | awk '/^Authorization/{ print $3 }')
 
 # Create our bucket
 export BUCKET=${PROJECT_ID}
-ibmcloud cos bucket-create --bucket $BUCKET --ibm-service-instance-id $COS_ID
+ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 
 # Create the app && save its URL for later
 ibmcloud ce app create -n cos-app --image ${REPOSITORY}/cos-listen \
@@ -107,4 +105,4 @@ echo "Event stats:"
 curl -Ls ${URL}/stats
 
 # Clean up
-clean $DELETE_COS $POLICY_ID
+clean
