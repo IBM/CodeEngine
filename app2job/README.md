@@ -9,3 +9,13 @@ The Application will wait for an HTTP PUT request containing the name of the
 Job definition in its HTTP Path. It will then use that Job definition name
 to submit a new Job. When the job is done, it will then check the logs of the
 Job to verify it worked correctly.
+
+- - -
+
+As noted in [the main README](../README.md), this sample has two pieces:
+
+- a `build` script which will build the container image used
+- a `run` script which deploys a new Application using that image
+
+The main purpose of this example is the `run` script, but the `build`
+script is included for complete educational (and reuse) purposes. 

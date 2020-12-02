@@ -9,3 +9,13 @@ set of environment variables. But as the App owner you only need to look at
 the new environment variables that will be added to the App.
 
 In this sample we'll create an instance of a DB2 service.
+
+- - -
+
+As noted in [the main README](../README.md), this sample has two pieces:
+
+- a `build` script which will build the container image used
+- a `run` script which deploys a new Application using that image
+
+The main purpose of this example is the `run` script, but the `build`
+script is included for complete educational (and reuse) purposes. 

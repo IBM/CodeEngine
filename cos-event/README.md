@@ -22,3 +22,13 @@ CRN/ID (the value in the first column of each row). If you leave this
 variable unset, the `run` script will attempt to create a `lite` (free of
 charge) COS instance for you, which it will then delete upon completion. It
 will not delete any existing instance you specify via the `COS_ID` variable.
+
+- - -
+
+As noted in [the main README](../README.md), this sample has two pieces:
+
+- a `build` script which will build the container image used
+- a `run` script which deploys a new Application using that image
+
+The main purpose of this example is the `run` script, but the `build`
+script is included for complete educational (and reuse) purposes. 
