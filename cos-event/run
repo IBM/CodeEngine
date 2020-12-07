@@ -7,10 +7,11 @@
 
 export REPOSITORY=${REPOSITORY:-ibmcom}
 export PROJECT_NAME=$(ibmcloud ce project current | \
-  awk -F: '/Project Name/{ print $2 }')
+  awk -F: '/Project Name/{ print $2 }' | sed "s/ *$//")
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')
 export POLICY_ID=""
+export BUCKET=${PROJECT_NAME}-${PROJECT_ID}
 
 # Clean up previous run
 function clean() {
@@ -30,7 +31,7 @@ function clean() {
   ibmcloud ce app delete --name cos-app --force > /dev/null 2>&1 || true
 
   # Delete the COS bucket
-  ibmcloud cos bucket-delete --bucket ${PROJECT_ID} --force \
+  ibmcloud cos bucket-delete --bucket ${BUCKET} --force \
     > /dev/null 2>&1 || true
 
   # Delete the COS instance unless the instance was given to us
@@ -68,7 +69,6 @@ POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
  --target-service-instance-id ${CID} | awk '/^Authorization/{ print $3 }')
 
 # Create our bucket
-export BUCKET=${PROJECT_ID}
 ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 
 # Create the app && save its URL for later
