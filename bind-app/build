@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to store the images
+# REGISTRY: name of the image registry/namespace to store the images
 #
-# NOTE: to run this you MUST set the REPOSITORY environment variable to
+# NOTE: to run this you MUST set the REGISTRY environment variable to
 # your own image registry/namespace otherwise the `docker push` commands
 # will fail due to an auth failure. Which means, you also need to be logged
 # into that registry before you run it.
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
 # First build the app's image and push it
-docker build -t ${REPOSITORY}/bind-app -f Dockerfile .
-docker push ${REPOSITORY}/bind-app
+docker build -t ${REGISTRY}/bind-app -f Dockerfile .
+docker push ${REGISTRY}/bind-app

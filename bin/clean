@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# This will clean all demos in parallel
+
+cd $(dirname $0)/..
+
+set -e
+for file in `find . -name run | sort` ; do
+  dir=`dirname $file`
+  dir=${dir:2}  # remove leading ./
+
+  # Skip this dir 'cause we're asked or if it's to be run sequentially
+  [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
+
+  # Run the sample with whatever REGISTRY we're pointing to
+  echo "> $dir"
+  (
+    cd $dir
+    ./run clean
+  ) &
+done
+wait

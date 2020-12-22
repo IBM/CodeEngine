@@ -1,33 +1,34 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning... 
-  ibmcloud ce sub ping delete -n ping-sub -f --wait=true > /dev/null 2>&1 || true
-  ibmcloud ce app delete -n ping-app -f --wto=0 > /dev/null 2>&1 || true
+  (
+  ibmcloud ce sub ping delete -n ping-sub -f --wait=true
+  ibmcloud ce app delete -n ping-app -f --wto=0
   rm -f out
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
 # Create the app
-ibmcloud ce app create -n ping-app --image ${REPOSITORY}/ping --min-scale=1
+ibmcloud ce app create -n ping-app --image ${REGISTRY}/ping --min-scale=1
 
 # Setup the Ping (cron) Event Source, send event every minute
 ibmcloud ce sub ping create -n ping-sub -d ping-app \
   --data '{"mydata":"hello world"}' -s '* * * * *'
 
 # Extract the instance name from `ibmcloud ce app get`
-ibmcloud ce app get -n ping-app | tee out
-name=$(grep "ping.*Running" out | tail -1 | sed "s/ [12].*//")
+name=$(ibmcloud ce app get -n ping-app | awk '/ping.*Running/{ print $1 }')
 echo Instance name: $name
 
 # Now wait until we get the event - shouldn't take more than a minute

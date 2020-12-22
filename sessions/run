@@ -1,21 +1,23 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning...
-  ibmcloud ce app delete -n session-redis -f --wto=0 > /dev/null 2>&1 || true
-  ibmcloud ce app delete -n session-app -f --wto=0 > /dev/null 2>&1 || true
+  (
+  ibmcloud ce app delete -n session-redis -f --wto=0
+  ibmcloud ce app delete -n session-app -f --wto=0
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
 # Deploy redis as an app. Make sure we only ever have 1 instance running
 ibmcloud ce app create -n session-redis --image redis --user 999 --cl --min=1 --max=1 \
@@ -29,7 +31,7 @@ POD=$(kubectl get pods | grep -i session-redis.*running | sed "s/ .*$//")
 IP=$(kubectl get pod/$POD -o custom-columns=ip:.status.podIP --no-headers)
 
 # Create the stateful app and pass it the session-redis IP
-ibmcloud ce app create -n session-app -i ${REPOSITORY}/sessions -e IP=$IP --cn=5 --min=3
+ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 --min=3
 
 # Get the URL of the app for later use
 URL=$(ibmcloud ce app get -n session-app -o jsonpath={.status.url})

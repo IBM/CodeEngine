@@ -5,7 +5,7 @@
 cd $(dirname $0)/..
 
 echo "Cleaning..."
-bin/run-all clean > /dev/null 2>&1
+bin/clean > /dev/null 2>&1
 
 set -e
 (time (
@@ -22,7 +22,7 @@ set -e
       sleep 1
     done
 
-    # Run the sample with whatever REPOSITORY we're pointing to
+    # Run the sample with whatever REGISTRY we're pointing to
     echo "Running $dir"
     (
       cd $dir
@@ -44,7 +44,7 @@ set -e
     # Only process samples that are meant to be run sequentially
     [[ ! -e ${dir}/.SEQ ]] && continue
 
-    # Run the sample with whatever REPOSITORY we're pointing to
+    # Run the sample with whatever REGISTRY we're pointing to
     echo "Running $dir"
     (
       cd $dir

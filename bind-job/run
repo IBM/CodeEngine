@@ -2,16 +2,20 @@
 
 # Env Vars:
 # NUM: number of instances of the job to run
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning...
-  ibmcloud ce job delete -n bj-job -f > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n bj-jobrun -f > /dev/null 2>&1 || true
-  ibmcloud resource service-instance-delete bj-db -f > /dev/null 2>&1 || true
+  (
+  ibmcloud ce job delete -n bj-job -f
+  ibmcloud ce jobrun delete -n bj-jobrun -f
+  ibmcloud resource service-instance-delete bj-db -f
+  ibmcloud secret delete -n secret-ibm-cloud-operator -f
+  ibmcloud configmap delete -n config-ibm-cloud-operator -f
   rm -f out
+  ) > /dev/null 2>&1
 }
 
 clean
@@ -19,7 +23,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 export NUM=${COUNT:-10}
 
 # Create an instance of DB2
@@ -27,7 +31,7 @@ ibmcloud resource service-instance-create bj-db dashdb-for-transactions free us-
 
 # Create a Job definition
 ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \
-  --image ${REPOSITORY}/bind-job
+  --image ${REGISTRY}/bind-job
 
 # Bind the service instance to the job
 ibmcloud ce job bind --name bj-job --service-instance bj-db

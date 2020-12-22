@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 # COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to
 # use
 
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 export PROJECT_NAME=$(ibmcloud ce project current | \
   awk -F: '/Project Name/{ print $2 }' | sed "s/ *$//")
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
@@ -15,32 +15,22 @@ export BUCKET=${PROJECT_NAME}-${PROJECT_ID}
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo "Cleaning..."
 
-  # Delete the event subscription
-  ibmcloud ce sub cos delete -n cos-sub -f --wait=true > /dev/null 2>&1 || true
-
-  # Delete the IAM auth policy
+  (
+  ibmcloud ce sub cos delete -n cos-sub -f --wait=true
   if [[ -n "$POLICY_ID" ]]; then
-    ibmcloud iam authorization-policy-delete $POLICY --force \
-	  > /dev/null 2>&1 || true
+    ibmcloud iam authorization-policy-delete $POLICY --force
   fi
-
-  # Delete the app
-  ibmcloud ce app delete --name cos-app --force > /dev/null 2>&1 || true
-
-  # Delete the COS bucket
-  ibmcloud cos bucket-delete --bucket ${BUCKET} --force \
-    > /dev/null 2>&1 || true
-
-  # Delete the COS instance unless the instance was given to us
+  ibmcloud ce app delete --name cos-app --force
+  ibmcloud cos bucket-delete --bucket ${BUCKET} --force
   if [[ -z "$COS_ID" ]]; then
-    ibmcloud resource service-instance-delete codeengine-cos -f -q \
-	  > /dev/null 2>&1 || true
+    # Delete the COS instance unless the instance was given to us
+    ibmcloud resource service-instance-delete codeengine-cos -f -q
   fi
-
   rm -f out
+  ) > /dev/null 2>&1
 }
 
 clean
@@ -72,7 +62,7 @@ POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
 ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 
 # Create the app && save its URL for later
-ibmcloud ce app create -n cos-app --image ${REPOSITORY}/cos-listen \
+ibmcloud ce app create -n cos-app --image ${REGISTRY}/cos-listen \
   --min-scale=1 --max-scale=1
 URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app)
 

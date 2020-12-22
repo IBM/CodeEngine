@@ -2,26 +2,28 @@
 
 # Env Vars:
 # NUM: number of instances of the job to run
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning...
-  ibmcloud ce app delete -n anj-app -f --wto=0 > /dev/null 2>&1 || true
-  ibmcloud ce jobrun delete -n anj-job -f > /dev/null 2>&1 || true
+  (
+  ibmcloud ce app delete -n anj-app -f --wto=0
+  ibmcloud ce jobrun delete -n anj-job -f
   rm -f out
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 export NUM=${NUM:-10}
 
 # First create an app based on our image
-ibmcloud ce app create -n anj-app --image ${REPOSITORY}/app-n-job
+ibmcloud ce app create -n anj-app --image ${REGISTRY}/app-n-job
 
 # Get the URL of the app
 URL=$(ibmcloud ce app get -n anj-app -o jsonpath={.status.url})
@@ -35,7 +37,7 @@ if ! grep "Hello from.*app" out > /dev/null ; then
 fi
 
 # And now use the same image as a batch job
-ibmcloud ce jobrun submit --name anj-job --ai=1-$NUM --image ${REPOSITORY}/app-n-job
+ibmcloud ce jobrun submit --name anj-job --ai=1-$NUM --image ${REGISTRY}/app-n-job
 
 # Wait for it to finish...
 until ibmcloud ce jobrun get --name anj-job -o jsonpath={.status.succeeded} | grep $NUM

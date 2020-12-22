@@ -1,22 +1,24 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
   set +ex
   echo Cleaning...
-  ibmcloud ce app delete -n lister -f > /dev/null 2>&1
-  ibmcloud ce secret delete -n keys -f > /dev/null 2>&1
-  ibmcloud iam api-key-delete cecli -f > /dev/null 2>&1
+  (
+  ibmcloud ce app delete -n lister -f
+  ibmcloud ce secret delete -n keys -f
+  ibmcloud iam api-key-delete cecli -f
   rm -f out .apikey
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
 set -ex
 
@@ -36,7 +38,7 @@ rm .apikey   #  erase it since we don't need it any more
 # Note that the App will take a little longer than normal to start-up because we
 # setup the cloud CLI environment (eg. login) before starting the HTTP server.
 # Need to give it a little more CPU than the default.
-ibmcloud ce app create -n lister --image $REPOSITORY/cecli \
+ibmcloud ce app create -n lister --image $REGISTRY/cecli \
   --env-sec keys --cpu .4
 
 # Save App's URL for later

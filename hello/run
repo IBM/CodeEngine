@@ -1,23 +1,25 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning...
-  ibmcloud ce app delete -n hello -f --wto=0 > /dev/null 2>&1 || true
+  (
+  ibmcloud ce app delete -n hello -f --wto=0
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
-# Create the app
-ibmcloud ce app create -n hello --image ${REPOSITORY}/hello
+# Create the app (use $REGISTRY_SECRET if defined)
+ibmcloud ce app create -n hello --image ${REGISTRY}/hello
 
 # Get the URL of the app for later use
 URL=$(ibmcloud ce app get -n hello -o jsonpath={.status.url})

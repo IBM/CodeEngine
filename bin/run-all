@@ -12,7 +12,7 @@ for file in `find . -name run | sort` ; do (
   # Skip this dir
   [[ -e ./SKIP ]] && echo "SKIPPING $file " && continue
 
-  # Run the sample with whatever REPOSITORY we're pointing to
+  # Run the sample with whatever REGISTRY we're pointing to
   ./run "$@"
 
 ) done

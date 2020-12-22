@@ -1,22 +1,24 @@
 #!/bin/bash
 
 # Env Vars:
-# REPOSITORY: name of the image registry/namespace to get the images
+# REGISTRY: name of the image registry/namespace to get the images
 
 # Clean up previous run
 function clean() {
-  set +x
+  set +ex
   echo Cleaning...
-  ibmcloud ce app delete -n cm-app -f --wto=0 > /dev/null 2>&1 || true
-  ibmcloud ce configmap delete -n cm-config -f > /dev/null 2>&1 || true
+  (
+  ibmcloud ce app delete -n cm-app -f --wto=0
+  ibmcloud ce configmap delete -n cm-config -f
   rm -f out
+  ) > /dev/null 2>&1
 }
 
 clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REPOSITORY=${REPOSITORY:-ibmcom}
+export REGISTRY=${REGISTRY:-ibmcom}
 
 # Create a ConfigMap with all possible ways of populating the data:
 # 1 - literal name/value pair from command line
@@ -30,7 +32,7 @@ ibmcloud ce configmap create --name cm-config \
   --from-file MY_FILE=file
 
 # Create the app
-ibmcloud ce app create -n cm-app --image ${REPOSITORY}/ce-config \
+ibmcloud ce app create -n cm-app --image ${REGISTRY}/ce-config \
   --env-from-configmap cm-config
 
 # Get the URL of the app for later use
@@ -40,8 +42,7 @@ URL=$(ibmcloud ce app get -n cm-app -o jsonpath={.status.url})
 curl -Ls $URL
 
 # Extract the instance name from `ibmcloud ce app get`
-ibmcloud ce app get -n cm-app | tee out
-name=$(grep "cm-app.*Running" out | tail -1 | sed "s/ [12].*//")
+name=$(ibmcloud ce app get -n cm-app | awk '/cm-app.*Running/{ print $1 }')
 echo Instance name: $name
 
 # Now check the logs to see if the env vars were set
