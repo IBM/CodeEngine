@@ -11,7 +11,7 @@ function clean() {
   (
   ibmcloud ce job delete -n bj-job -f
   ibmcloud ce jobrun delete -n bj-jobrun -f
-  ibmcloud resource service-instance-delete bj-db -f
+  ibmcloud resource service-instance-delete bj-db -f --recursive
   ibmcloud secret delete -n secret-ibm-cloud-operator -f
   ibmcloud configmap delete -n config-ibm-cloud-operator -f
   rm -f out

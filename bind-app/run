@@ -9,7 +9,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce app delete -n ba-app -f --wto=0
-  ibmcloud resource service-instance-delete ba-db -f
+  ibmcloud resource service-instance-delete ba-db -f --recursive
   ibmcloud secret delete -n secret-ibm-cloud-operator -f
   ibmcloud configmap delete -n config-ibm-cloud-operator -f
   rm -f out
