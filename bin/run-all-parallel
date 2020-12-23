@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # This will run (w/o building) all demos in parallel
+MAX=${MAX:-5}
 
 cd $(dirname $0)/..
 
@@ -17,8 +18,8 @@ set -e
     [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
     [[ -e ${dir}/.SEQ ]] && echo "Delaying $dir " && continue
 
-    # Only allow 5 at a time
-    while (( $(jobs -rp | wc -l) > 4 )); do
+    # Only allow $MAX at a time
+    while (( $(jobs -rp | wc -l) >= $MAX )); do
       sleep 1
     done
 
