@@ -34,6 +34,10 @@ func main() {
 	// If env var CRASH is set then crash immediately.
 	// If its value is of the form HH:MM then crash at the specified time
 	// time. The time is based on time returned from: http://time.nist.gov:13
+	// This is useful for testing what happens if the app crashes during
+	// startup. And the 'time' aspect of it allows for only certain instances
+	// of the app to crash - for example, we want the app to be created ok
+	// but then after a minute have any new instances crash.
 	if date := os.Getenv("CRASH"); date != "" { // Just crash!
 		// get time: curl http://time.nist.gov:13
 		// result  : 58859 20-01-11 21:28:24 00 0 0 129.3 UTC(NIST) *
@@ -55,7 +59,6 @@ func main() {
 		}
 	}
 
-	// hostname := os.Getenv("HOSTNAME")
 	msg := os.Getenv("MSG")
 	if msg == "" {
 		target := os.Getenv("TARGET")
@@ -65,21 +68,21 @@ func main() {
 		msg = "Hello " + target + " from"
 	}
 
+	// Get the list of env vars, and sort them for easy reading
 	envs := os.Environ()
 	sort.StringSlice(envs).Sort()
-	env := strings.Join(envs, "\n")
-	Debug(false, "Envs:\n%s", env)
+	Debug(false, "Envs:\n%s", strings.Join(envs, "\n"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		body := []byte{}
 		debug := false
 
-		// If there's a body then echo it back to the client
+		// If there's a body then read it in for later use
 		if r.Body != nil {
 			body, _ = ioutil.ReadAll(r.Body)
 		}
 
-		// Turn on debugging is the 'debug' query param is there. Just for
+		// Turn on debugging if the 'debug' query param is there. Just for
 		// this request tho - unless global debug is set.
 		if _, ok := r.URL.Query()["debug"]; ok {
 			debug = true
@@ -96,7 +99,7 @@ func main() {
 			time.Sleep(time.Duration(len) * time.Second)
 		}
 
-		// If the 'crash' query parameter is passed in the crash!
+		// If the 'crash' query parameter is passed in then crash!
 		if r.URL.Query().Get("crash") != "" {
 			Debug(debug, "Crashing...")
 			os.Exit(1)
@@ -114,6 +117,8 @@ func main() {
 			w.WriteHeader(status)
 		}
 
+		// If there's no 'body' then just print something neat.
+		// But if there is a body, echo it back to the client.
 		if len(body) == 0 {
 			w.Header().Add("Content-Type", "text/plain")
 			// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
@@ -139,7 +144,7 @@ func main() {
 	})
 
 	// HTTP_DELAY will pause for 'delay' seconds before starting the
-	// HTTP server. This is useful for simulating a log readiness probe
+	// HTTP server. This is useful for simulating a long readiness probe
 	if delay := os.Getenv("HTTP_DELAY"); delay != "" {
 		if sec, _ := strconv.Atoi(delay); sec != 0 {
 			Debug(false, "Sleeping %d seconds", sec)
