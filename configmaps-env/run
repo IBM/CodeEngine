@@ -8,8 +8,8 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n sec-app -f --wto=0
-  ibmcloud ce secret delete -n sec-secret -f
+  ibmcloud ce app delete -n cm-app-env -f --wto=0
+  ibmcloud ce configmap delete -n cm-config-env -f
   rm -f out
   ) > /dev/null 2>&1
 }
@@ -20,33 +20,29 @@ clean
 set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
-# Create a Secret with all possible ways of populating the data:
+# Create a ConfigMap with all possible ways of populating the data:
 # 1 - literal name/value pair from command line
 # 2 - name/value pairs read from a file
 # 3 - name/value pair wherer 'value' is the contents of a file (twice)
 
-ibmcloud ce secret create --name sec-secret \
-  --from-literal MY_SECRET_VALUE=42 \
+ibmcloud ce configmap create --name cm-config-env \
+  --from-literal MY_CONFIG_KNOB=42 \
   --from-env-file data \
   --from-file file \
   --from-file MY_FILE=file
 
 # Create the app
-ibmcloud ce app create -n sec-app --image ${REGISTRY}/ce-secret \
-  --env-from-secret sec-secret
+ibmcloud ce app create -n cm-app-env --image ${REGISTRY}/ce-config-env \
+  --env-from-configmap cm-config-env
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n sec-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n cm-app-env -o jsonpath={.status.url})
 
 # Just force it to log something by hitting it
 curl -Ls $URL
 
-# Extract the instance name from `ibmcloud ce app get`
-name=$(ibmcloud ce app get -n sec-app | awk '/sec-app.*Running/{ print $1 }')
-echo Instance name: $name
-
 # Now check the logs to see if the env vars were set
-ibmcloud ce app logs --instance $name | tee out
+ibmcloud ce app logs -n cm-app-env | tee out
 grep MY_ out
 if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
   echo "Unexpected output"

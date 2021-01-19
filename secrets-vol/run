@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +ex
+  echo Cleaning...
+  (
+  ibmcloud ce app delete -n sec-app-vol -f --wto=0
+  ibmcloud ce secret delete -n sec-secret-vol -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcom}
+
+# Create a Secret with all possible ways of populating the data:
+# 1 - literal name/value pair from command line
+# 2 - name/value pairs read from a file
+# 3 - name/value pair wherer 'value' is the contents of a file (twice)
+
+ibmcloud ce secret create --name sec-secret-vol \
+  --from-literal MY_SECRET_VALUE=42 \
+  --from-env-file data \
+  --from-file file \
+  --from-file MY_FILE=file
+
+# Create the app
+ibmcloud ce app create -n sec-app-vol --image ${REGISTRY}/ce-secret-vol \
+  --mount-secret /mysecrets=sec-secret-vol
+
+# Get the URL of the app for later use
+URL=$(ibmcloud ce app get -n sec-app-vol -o jsonpath={.status.url})
+
+# Just force it to log something by hitting it
+curl -Ls $URL
+
+# Extract the instance name from `ibmcloud ce app get`
+name=$(ibmcloud ce app get -n sec-app-vol | awk '/sec-app-vol.*Running/{ print $1 }')
+echo Instance name: $name
+
+# Now check the logs to see if the env vars were set
+ibmcloud ce app logs --instance $name | tee out
+grep MY_ out
+if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# Check to see if the context of "file" are assign to the "file" env var.
+if ! [[ $(grep '^file: In Congress' out | wc -l) == "1" ]]; then
+  echo "Unexpected output"
+  exit 1
+fi
+
+# Clean up
+clean

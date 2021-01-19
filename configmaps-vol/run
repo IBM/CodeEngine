@@ -8,8 +8,8 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n cm-app -f --wto=0
-  ibmcloud ce configmap delete -n cm-config -f
+  ibmcloud ce app delete -n cm-app-vol -f --wto=0
+  ibmcloud ce configmap delete -n cm-config-vol -f
   rm -f out
   ) > /dev/null 2>&1
 }
@@ -25,28 +25,24 @@ export REGISTRY=${REGISTRY:-ibmcom}
 # 2 - name/value pairs read from a file
 # 3 - name/value pair wherer 'value' is the contents of a file (twice)
 
-ibmcloud ce configmap create --name cm-config \
+ibmcloud ce configmap create --name cm-config-vol \
   --from-literal MY_CONFIG_KNOB=42 \
   --from-env-file data \
   --from-file file \
   --from-file MY_FILE=file
 
 # Create the app
-ibmcloud ce app create -n cm-app --image ${REGISTRY}/ce-config \
-  --env-from-configmap cm-config
+ibmcloud ce app create -n cm-app-vol --image ${REGISTRY}/ce-config-vol \
+  --mount-configmap /myconfig=cm-config-vol
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n cm-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n cm-app-vol -o jsonpath={.status.url})
 
 # Just force it to log something by hitting it
 curl -Ls $URL
 
-# Extract the instance name from `ibmcloud ce app get`
-name=$(ibmcloud ce app get -n cm-app | awk '/cm-app.*Running/{ print $1 }')
-echo Instance name: $name
-
 # Now check the logs to see if the env vars were set
-ibmcloud ce app logs --instance $name | tee out
+ibmcloud ce app logs -n cm-app-vol | tee out
 grep MY_ out
 if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
   echo "Unexpected output"
@@ -54,7 +50,7 @@ if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
 fi
 
 # Check to see if the context of "file" are assign to the "file" env var.
-if ! [[ $(grep '^file=In Congress' out | wc -l) == "1" ]]; then
+if ! [[ $(grep '^file: In Congress' out | wc -l) == "1" ]]; then
   echo "Unexpected output"
   exit 1
 fi

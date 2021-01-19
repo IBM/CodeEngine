@@ -94,12 +94,16 @@ $ ibmcloud ce project create --name demos --select
   an Application.
 
 #### Misc
-- [configmaps](configmaps)<br>
+- [configmaps-env](configmaps-env)<br>
   Shows how to define and inject a ConfigMap as environment variables
   into an Application.
-- [secrets](secrets)<br>
+- [configmaps-vol](configmaps-vol)<br>
+  Shows how to define and inject a ConfigMap as a volume into an Application.
+- [secrets-env](secrets-env)<br>
   Shows how to define and inject a Secret as environment variables
   into an Application.
+- [secrets-vol](secrets-vol)<br>
+  Shows how to define and inject a Secret as a volume into an Application.
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the

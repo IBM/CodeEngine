@@ -12,7 +12,7 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # Build the image
-docker build -t ${REGISTRY}/ce-config .
+docker build -t ${REGISTRY}/ce-secret-env .
 
 # And push it
-docker push ${REGISTRY}/ce-config
+docker push ${REGISTRY}/ce-secret-env
