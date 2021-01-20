@@ -26,7 +26,7 @@ ibmcloud ce app create -n session-redis --image redis --user 999 --cl --min=1 --
 # Get the session-redis pod's IP address so we can hit it directly.
 # We can't talk to the normal infrastructure/gateway/load-balancer since
 # those will only handle HTTP requests and talking to Redis isn't HTTP
-IP=$(ic ce app get -n session-redis -o jsonpath='{.instances[].status.podIP}')
+IP=$(ibmcloud ce app get -n session-redis -o jsonpath='{.instances[].status.podIP}')
 
 # Create the stateful app and pass it the session-redis IP
 ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 --min=3

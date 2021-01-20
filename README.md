@@ -36,7 +36,7 @@ It is assumed that the following are installed:
 It is also assumed that you have a Code Engine project already created and
 selected, e.g.:
 ```
-$ ibmcloud ce project create --name demos --select
+$ ibmcloud ce project create --name demos
 ```
 
 ## Samples
