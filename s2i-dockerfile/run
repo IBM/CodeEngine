@@ -11,10 +11,13 @@ function clean() {
   (
   ibmcloud cr namespace-rm "${ICR_NS}" -f
   ibmcloud ce app delete -n s2i-dockerfile -f --wto=0
-  ibmcloud iam api-key-delete s2i-dapi -f
   ibmcloud ce registry delete -n s2i-dicr -f
   ibmcloud ce buildrun delete -n s2i-drun -f
   ibmcloud ce build delete -n s2i-dbuild -f
+  ibmcloud iam api-keys | grep s2i-dapi | sed "s/.*\(ApiKey\)/\1/" | while read a
+  do
+    ibmcloud iam api-key-delete -f $a
+  done
   rm -f out .ce-reg-secret || true
   ) > /dev/null 2>&1
 }

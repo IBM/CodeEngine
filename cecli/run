@@ -10,7 +10,10 @@ function clean() {
   (
   ibmcloud ce app delete -n lister -f
   ibmcloud ce secret delete -n keys -f
-  ibmcloud iam api-key-delete cecli -f
+  ibmcloud iam api-keys | grep cecli | sed "s/.*\(ApiKey\)/\1/" | while read a
+    do ibmcloud iam api-key-delete -f $a
+  done
+
   rm -f out .apikey
   ) > /dev/null 2>&1
 }
