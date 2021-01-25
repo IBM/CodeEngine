@@ -27,7 +27,7 @@ function clean() {
   ibmcloud cos bucket-delete --bucket ${BUCKET} --force
   if [[ -z "$COS_ID" ]]; then
     # Delete the COS instance unless the instance was given to us
-    ibmcloud resource service-instance-delete codeengine-cos -f -q
+    ibmcloud resource service-instance-delete ce-cos-event -f -q
   fi
   rm -f out
   ) > /dev/null 2>&1
@@ -42,9 +42,9 @@ CID=${COS_ID}
 
 # Create a COS instance unless one has been specified for use
 if [[ $CID == "" ]]; then
-  ibmcloud resource service-instance-create codeengine-cos \
+  ibmcloud resource service-instance-create ce-cos-event \
     cloud-object-storage lite global
-  CID=$(ibmcloud resource service-instance codeengine-cos | \
+  CID=$(ibmcloud resource service-instance ce-cos-event | \
     awk '/^ID/{ print $2 }')
 fi
 
