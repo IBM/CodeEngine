@@ -113,7 +113,7 @@ func main() {
 			if t != nil && t[0] != "" {
 				status, _ = strconv.Atoi(t[0])
 			}
-			Debug(debug, "Failing %d", status)
+			Debug(debug, "Failing with: %d", status)
 			w.WriteHeader(status)
 		}
 
