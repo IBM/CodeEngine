@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +ex
+  echo Cleaning...
+  (
+  ibmcloud ce app delete -n ws-server -f
+  ibmcloud ce jobrun delete -n ws-client -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcom}
+
+# Create the websocket server app
+ibmcloud ce app create -n ws-server --image ${REGISTRY}/ws-server
+
+# Get the URL of the app for later use
+URL=$(ibmcloud ce app get -n ws-server -o jsonpath={.status.url})
+
+# Now submit a job to run the client, passing in the URL to the App as an arg.
+# Change the protocol on the App from https to wss (secure websocket).
+# And wait for the job to finish.
+ibmcloud ce jobrun submit -n ws-client --image ${REGISTRY}/ws-client \
+  --arg ${URL/https/wss} --wait --wait-timeout=500
+
+# Get the overall status of the job and verify that the client exited properly
+ibmcloud ce jobrun get -n ws-client | tee out
+grep "client-0-0 .* Succeeded" out > /dev/null
+
+# Check the client logs to ensure it got the right response from the server
+ibmcloud ce jobrun logs -n ws-client | tee out
+grep "Client read.*0987654321" out > /dev/null
+
+# Clean up
+clean

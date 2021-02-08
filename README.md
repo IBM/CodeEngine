@@ -114,6 +114,8 @@ $ ibmcloud ce project create --name demos
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the
   use of non-http components and private networking between components.
+- [websocket](websocket)<nr>
+  Shows how to interact with an Application via WebSockets.
 
 ## Resources
 

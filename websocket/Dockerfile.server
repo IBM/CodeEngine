@@ -1,0 +1,12 @@
+FROM golang:alpine
+# Need git so the "go get" can download the needed packages
+RUN apk add --no-cache git
+COPY server.go /src/
+WORKDIR /src
+RUN go get -d .
+RUN go build -o /server server.go
+
+# Copy the exe into a smaller base image
+FROM alpine
+COPY --from=0 /server /server
+ENTRYPOINT [  "/server" ]
