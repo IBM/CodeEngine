@@ -55,6 +55,12 @@ $ ibmcloud ce project create --name demos
   Show how to invoke the Code Engine CLI from within an App. This can be used
   to then start additional Code Engine resources (Apps/Jobs) dynamically.
   Same logic could be used in Batch Jobs.
+- [sessions](sessions)<br>
+  Starts a stateful application that scales based on load. The state is kept
+  in an instance of Redis, also running within Code Engine. Demonstrates the
+  use of non-http components and private networking between components.
+- [websocket](websocket)<nr>
+  Shows how to interact with an Application via WebSockets.
 
 #### Batch Jobs
 - [job](job)<br>
@@ -110,12 +116,6 @@ $ ibmcloud ce project create --name demos
   into an Application.
 - [secrets-vol](secrets-vol)<br>
   Shows how to define and inject a Secret as a volume into an Application.
-- [sessions](sessions)<br>
-  Starts a stateful application that scales based on load. The state is kept
-  in an instance of Redis, also running within Code Engine. Demonstrates the
-  use of non-http components and private networking between components.
-- [websocket](websocket)<nr>
-  Shows how to interact with an Application via WebSockets.
 
 ## Resources
 
