@@ -19,7 +19,7 @@ var KubeURL = Kube + "/apis/codeengine.cloud.ibm.com/v1beta1/namespaces/"
 
 // Look at the predefined files in the Application's filesystem for
 // creds and certs for how to talk to Kubernetes
-func prep() {
+func init() {
 	var err error
 	var buf []byte
 
@@ -107,7 +107,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	prep()
 	http.HandleFunc("/", Handler)
 	fmt.Print("Listening on port 8080\n")
 	http.ListenAndServe(":8080", nil)
