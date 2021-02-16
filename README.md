@@ -14,6 +14,10 @@ followed is:
   MUST use a registry that allows for anonymous/public downloads of your
   images, since as of now (to keep the scripts simple) they do not deal
   with private registry access tokens by default.
+  - However, if you do decide to push your images into a registry that
+    is private, you'll need to modify the `run` scripts to specify the
+	`--registry-secret` option on the app and job creation commands to point
+	to your secret that includes the registry credentials.
 - a `run` script will execute the sample. Most will also include logic to
   verify the output to ensure everything is working as expected. As with
   `build`, it will default to using the `ibmcom` container images, so to use
