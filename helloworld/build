@@ -16,3 +16,7 @@ docker build -t ${REGISTRY}/helloworld .
 
 # And push it
 docker push ${REGISTRY}/helloworld
+
+# Copy the image so it's also called ${REGISTRY}/codeengine, and push it
+docker tag ${REGISTRY}/helloworld ${REGISTRY}/codeengine
+docker push ${REGISTRY}/codeengine

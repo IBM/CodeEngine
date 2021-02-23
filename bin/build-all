@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This will build and run all demos.
+# This will build and all demos.
 #
 # NOTE: to run this you MUST set the REGISTRY environment variable to
 # your own image registry/namespace otherwise the `docker push` commands
@@ -10,7 +10,7 @@
 cd $(dirname $0)/..
 
 set -e
-for file in `find . -name run | sort` ; do (
+for file in `find . -name build | sort` ; do (
 
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`

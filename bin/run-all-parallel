@@ -8,6 +8,8 @@ cd $(dirname $0)/..
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
 
+rm -f run-all.out run-fail.out
+
 set -e
 (time (
   for file in `find . -name run | sort` ; do
@@ -60,34 +62,30 @@ set -e
   echo
 )) 2>&1 | tee run-all.out
 
-res="0"
 for file in `find . -name run | sort` ; do
     dir=`dirname $file`
     dir=${dir:2}  # remove leading ./
 
     if [[ -e ${dir}.fail ]]; then
       rm ${dir}.fail
-      res=1
-      echo -e "\n### $dir\n" >> run-all.out
-      tail ${dir}.out >> run-all.out
-      echo >> run-all.out
+      echo -e "\n### $dir\n" >> run-fail.out
+      tail ${dir}.out >> run-fail.out
     fi
 
     if [[ -e ${dir}.out ]]; then
-      echo -e "\n### $dir\n"
-      cat ${dir}.out
+      echo -e "\n### $dir\n" >> run-all.out
+      cat ${dir}.out >> run-all.out
+      echo >> run-all.out
       rm ${dir}.out
     fi
 done
 
-echo
-cat run-all.out
-rm run-all.out
-echo
-
-if [[ "$res" == "0" ]]; then
-  echo "PASSED"
+if [[ ! -e run-fail.out ]]; then
+  echo -e "\nPASSED"
 else
-  echo "FAILED!"
+  echo -e "\n### Failing tests:"
+  cat run-fail.out
+  rm run-fail.out
+  echo -e "\nFAILED!"
   exit 1
 fi

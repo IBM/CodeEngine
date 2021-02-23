@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set +x
+set -e
+
+# Make sure we're pointing to a Code Engine project
+ic ce project current > out 2>&1 || (cat out && rm out && exit 1)
+rm out
+
+# If $REGISTRY_SECRET is defined, then define $REG_SEC so we can use it later
+# on, and prepend it with the `--rs` flag
+if [[ -n "$REGISTRY_SECRET" ]]; then
+  export REG_SEC="--rs $REGISTRY_SECRET"
+fi

@@ -9,6 +9,8 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce app delete -n helloworld -f --wto=0
+  ibmcloud ce jobrun delete -n hi-job -f
+  rm -f out
   ) > /dev/null 2>&1
 }
 
@@ -31,6 +33,11 @@ if ! [[ "$(curl -Ls ${URL} --post301 -d "Hi")" == "Hi" ]]; then
   echo "Unexpected output"
   exit 1
 fi
+
+# Since the image can be used as a job too, test it
+ibmcloud ce jobrun submit --name hi-job --ai=1 --image ${REGISTRY}/helloworld \
+  --wait --wait-timeout=500
+ibmcloud ce jobrun logs -n hi-job | tee out | grep "Hello from.*job" || exit 1
 
 # Clean up
 clean
