@@ -1,4 +1,5 @@
 FROM golang:alpine
+COPY ./helloworld /helloworld
 COPY codeengine.go /
 RUN go build -o /codeengine /codeengine.go
 
