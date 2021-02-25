@@ -36,14 +36,8 @@ ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \
 # Bind the service instance to the job
 ibmcloud ce job bind --name bj-job --service-instance bj-db
 
-# Now submit the job using that definition
-ibmcloud ce jobrun submit --name myrun --job bj-job
-
-# Wait for it to finish...
-until ibmcloud ce jobrun get --name myrun -o jsonpath={.status.succeeded} | grep $NUM
-do
-  sleep 3
-done
+# Now submit the job using that definition -- wait to finish
+ibmcloud ce jobrun submit --name myrun --job bj-job --wait
 
 # Now look at a view of the logs to make sure it worked
 ibmcloud ce jobrun logs --instance myrun-1-0 | tee out

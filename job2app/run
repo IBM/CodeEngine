@@ -27,13 +27,9 @@ ibmcloud ce app create -n j2a-app --min=1 --max=1 --image ${REGISTRY}/j2a-app
 # Get metadata about the app for later use
 URL=$(ibmcloud ce app get -n j2a-app -o jsonpath={.status.url})
 
-# Create/run the job, passing in the project/namespace
-ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} --image ${REGISTRY}/j2a-job
-
-# Wait for it to finish...
-until ibmcloud ce jobrun get -n j2a-job -o jsonpath={.status.succeeded} | grep $COUNT; do
-  sleep 3
-done
+# Create/run the job, passing in the project/namespace - and wait to finish
+ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} \
+  --image ${REGISTRY}/j2a-job --wait
 
 # Check the app to see how many times it was hit
 if ! [[ "Count: $((COUNT*10))" == "$(curl -Ls $URL)" ]]; then

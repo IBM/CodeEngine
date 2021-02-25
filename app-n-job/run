@@ -36,14 +36,9 @@ if ! grep "Hello from.*app" out > /dev/null ; then
   exit 1
 fi
 
-# And now use the same image as a batch job
-ibmcloud ce jobrun submit --name anj-job --ai=1-$NUM --image ${REGISTRY}/app-n-job
-
-# Wait for it to finish...
-until ibmcloud ce jobrun get --name anj-job -o jsonpath={.status.succeeded} | grep $NUM
-do
-  sleep 3
-done
+# And now use the same image as a batch job - and wait to finish
+ibmcloud ce jobrun submit --name anj-job --ai=1-$NUM \
+  --image ${REGISTRY}/app-n-job --wait
 
 ibmcloud ce jobrun logs --instance anj-job-1-0 | tee out
 

@@ -42,15 +42,7 @@ ibmcloud ce build create -n s2i-bbuild -i "us.icr.io/${ICR_NS}/app" --rs s2i-bic
   --strategy buildpacks
 
 # Now kick off the build itself
-ibmcloud ce buildrun submit -n s2i-brun --build s2i-bbuild
-
-# Wait for it to finish
-while true ; do
-  ibmcloud ce buildrun get -n s2i-brun > out
-  grep "Status.*Succeeded" out && break
-  grep "Status.*Failed" out && cat out && exit 1
-  sleep 10
-done
+ibmcloud ce buildrun submit -n s2i-brun --build s2i-bbuild --wait --wto 500
 
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-bapp --image "us.icr.io/${ICR_NS}/app" --rs s2i-bicr

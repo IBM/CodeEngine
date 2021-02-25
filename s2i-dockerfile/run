@@ -41,15 +41,7 @@ ibmcloud ce build create -n s2i-dbuild -i "us.icr.io/${ICR_NS}/app" --rs s2i-dic
   --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
 
 # Now kick off the build itself
-ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild
-
-# Wait for it to finish
-while true ; do
-  ibmcloud ce buildrun get -n s2i-drun > out
-  grep "Status.*Succeeded" out && break
-  grep "Status.*Failed" out && cat out && exit 1
-  sleep 10
-done
+ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild --wait --wto 500
 
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs s2i-dicr
