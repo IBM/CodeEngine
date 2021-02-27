@@ -8,7 +8,7 @@ cd $(dirname $0)/..
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
 
-rm -f run-all.out run-fail.out
+rm -f run-all.out run-fail.out *.fail *.out
 
 set -e
 (time (

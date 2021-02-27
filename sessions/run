@@ -8,8 +8,8 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n session-redis -f --wto=0
-  ibmcloud ce app delete -n session-app -f --wto=0
+  ibmcloud ce app delete -n session-redis -f
+  ibmcloud ce app delete -n session-app -f
   ) > /dev/null 2>&1
 }
 
@@ -37,7 +37,7 @@ IP=$(ibmcloud ce app get -n session-redis -o jsonpath='{.instances[].status.podI
 ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 --min=3
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n session-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n session-app -o url)
 
 # Now call the app to make sure it works
 curl -Ls $URL

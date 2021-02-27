@@ -8,7 +8,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n sec-app-env -f --wto=0
+  ibmcloud ce app delete -n sec-app-env -f
   ibmcloud ce secret delete -n sec-secret-env -f
   rm -f out
   ) > /dev/null 2>&1
@@ -36,7 +36,7 @@ ibmcloud ce app create -n sec-app-env --image ${REGISTRY}/ce-secret-env \
   --env-from-secret sec-secret-env
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n sec-app-env -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n sec-app-env -o url)
 
 # Just force it to log something by hitting it
 curl -Ls $URL

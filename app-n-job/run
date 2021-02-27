@@ -9,7 +9,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n anj-app -f --wto=0
+  ibmcloud ce app delete -n anj-app -f
   ibmcloud ce jobrun delete -n anj-job -f
   rm -f out
   ) > /dev/null 2>&1
@@ -26,7 +26,7 @@ export NUM=${NUM:-10}
 ibmcloud ce app create -n anj-app --image ${REGISTRY}/app-n-job
 
 # Get the URL of the app
-URL=$(ibmcloud ce app get -n anj-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n anj-app -o url)
 
 # And call it
 curl -Ls $URL | tee out

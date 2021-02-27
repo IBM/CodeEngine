@@ -10,7 +10,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud cr namespace-rm "${ICR_NS}" -f
-  ibmcloud ce app delete -n s2i-bapp -f --wto=0
+  ibmcloud ce app delete -n s2i-bapp -f
   ibmcloud ce registry delete -n s2i-bicr -f
   ibmcloud ce buildrun delete -n s2i-brun -f
   ibmcloud ce build delete -n s2i-bbuild -f
@@ -42,11 +42,11 @@ ibmcloud ce build create -n s2i-bbuild -i "us.icr.io/${ICR_NS}/app" --rs s2i-bic
   --strategy buildpacks
 
 # Now kick off the build itself
-ibmcloud ce buildrun submit -n s2i-brun --build s2i-bbuild --wait --wto 500
+ibmcloud ce buildrun submit -n s2i-brun --build s2i-bbuild --wait
 
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-bapp --image "us.icr.io/${ICR_NS}/app" --rs s2i-bicr
-URL=$(ibmcloud ce app get -n s2i-bapp -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n s2i-bapp -o url)
 curl -Ls "${URL}" | tee out
 
 if ! grep "I was built"  out > /dev/null ; then

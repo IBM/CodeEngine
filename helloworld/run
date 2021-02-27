@@ -8,7 +8,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n helloworld -f --wto=0
+  ibmcloud ce app delete -n helloworld -f
   ibmcloud ce jobrun delete -n hi-job -f
   rm -f out
   ) > /dev/null 2>&1
@@ -24,7 +24,7 @@ export REGISTRY=${REGISTRY:-ibmcom}
 ibmcloud ce app create -n helloworld --image ${REGISTRY}/helloworld
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n helloworld -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n helloworld -o url)
 
 # Now call it
 curl -Ls $URL
@@ -36,7 +36,7 @@ fi
 
 # Since the image can be used as a job too, test it
 ibmcloud ce jobrun submit --name hi-job --ai=1 --image ${REGISTRY}/helloworld \
-  --wait --wait-timeout=500
+  --wait
 ibmcloud ce jobrun logs -n hi-job | tee out | grep "Hello from.*job" || exit 1
 
 # Clean up

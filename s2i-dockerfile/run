@@ -10,7 +10,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud cr namespace-rm "${ICR_NS}" -f
-  ibmcloud ce app delete -n s2i-dockerfile -f --wto=0
+  ibmcloud ce app delete -n s2i-dockerfile -f
   ibmcloud ce registry delete -n s2i-dicr -f
   ibmcloud ce buildrun delete -n s2i-drun -f
   ibmcloud ce build delete -n s2i-dbuild -f
@@ -41,11 +41,11 @@ ibmcloud ce build create -n s2i-dbuild -i "us.icr.io/${ICR_NS}/app" --rs s2i-dic
   --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
 
 # Now kick off the build itself
-ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild --wait --wto 500
+ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild --wait
 
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs s2i-dicr
-URL=$(ibmcloud ce app get -n s2i-dockerfile -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n s2i-dockerfile -o url)
 curl -Ls "${URL}" | tee out
 
 if ! grep "I was built"  out > /dev/null ; then

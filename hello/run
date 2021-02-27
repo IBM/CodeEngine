@@ -8,7 +8,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n hello -f --wto=0
+  ibmcloud ce app delete -n hello -f
   ) > /dev/null 2>&1
 }
 
@@ -18,11 +18,11 @@ clean
 set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
-# Create the app (use $REGISTRY_SECRET if defined)
+# Create the app
 ibmcloud ce app create -n hello --image ${REGISTRY}/hello
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n hello -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n hello -o url)
 
 # Now call it
 curl -Ls $URL

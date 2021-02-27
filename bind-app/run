@@ -8,7 +8,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n ba-app -f --wto=0
+  ibmcloud ce app delete -n ba-app -f
   ibmcloud resource service-instance-delete ba-db -f --recursive
   ibmcloud secret delete -n secret-ibm-cloud-operator -f
   ibmcloud configmap delete -n config-ibm-cloud-operator -f
@@ -30,7 +30,7 @@ ibmcloud resource service-instance-create ba-db dashdb-for-transactions free us-
 ibmcloud ce app create -n ba-app --image ${REGISTRY}/bind-app
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n ba-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n ba-app -o url)
 
 # Bind the service credentials to the app
 ibmcloud ce app bind --name ba-app --service-instance ba-db

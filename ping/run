@@ -9,7 +9,7 @@ function clean() {
   echo Cleaning... 
   (
   ibmcloud ce sub ping delete -n ping-sub -f --wait=true
-  ibmcloud ce app delete -n ping-app -f --wto=0
+  ibmcloud ce app delete -n ping-app -f
   rm -f out
   ) > /dev/null 2>&1
 }

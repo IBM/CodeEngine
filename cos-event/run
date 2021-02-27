@@ -64,7 +64,7 @@ ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 # Create the app && save its URL for later
 ibmcloud ce app create -n cos-app --image ${REGISTRY}/cos-listen \
   --min-scale=1 --max-scale=1
-URL=$(ibmcloud ce app get --output jsonpath='{.status.url}' --name cos-app)
+URL=$(ibmcloud ce app get --output url --name cos-app)
 
 # Setup the COS Event Source
 ibmcloud ce sub cos create -n cos-sub -d cos-app -b ${BUCKET}

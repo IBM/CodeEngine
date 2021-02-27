@@ -8,7 +8,7 @@ function clean() {
   set +ex
   echo Cleaning...
   (
-  ibmcloud ce app delete -n cm-app-vol -f --wto=0
+  ibmcloud ce app delete -n cm-app-vol -f
   ibmcloud ce configmap delete -n cm-config-vol -f
   rm -f out
   ) > /dev/null 2>&1
@@ -36,7 +36,7 @@ ibmcloud ce app create -n cm-app-vol --image ${REGISTRY}/ce-config-vol \
   --mount-configmap /myconfig=cm-config-vol
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n cm-app-vol -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n cm-app-vol -o url)
 
 # Just force it to log something by hitting it
 curl -Ls $URL

@@ -10,7 +10,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce jobrun delete -n j2a-job -f
-  ibmcloud ce app delete -n j2a-app -f --wto=0
+  ibmcloud ce app delete -n j2a-app -f
   ) > /dev/null 2>&1
 }
 
@@ -25,7 +25,7 @@ export COUNT=${COUNT:-50}
 ibmcloud ce app create -n j2a-app --min=1 --max=1 --image ${REGISTRY}/j2a-app
 
 # Get metadata about the app for later use
-URL=$(ibmcloud ce app get -n j2a-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n j2a-app -o url)
 
 # Create/run the job, passing in the project/namespace - and wait to finish
 ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} \

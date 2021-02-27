@@ -24,13 +24,13 @@ export REGISTRY=${REGISTRY:-ibmcom}
 ibmcloud ce app create -n ws-server --image ${REGISTRY}/ws-server
 
 # Get the URL of the app for later use
-URL=$(ibmcloud ce app get -n ws-server -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n ws-server -o url)
 
 # Now submit a job to run the client, passing in the URL to the App as an arg.
 # Change the protocol on the App from https to wss (secure websocket).
 # And wait for the job to finish.
 ibmcloud ce jobrun submit -n ws-client --image ${REGISTRY}/ws-client \
-  --arg ${URL/https/wss} --wait --wait-timeout=500
+  --arg ${URL/https/wss} --wait
 
 # Get the overall status of the job and verify that the client exited properly
 ibmcloud ce jobrun get -n ws-client | tee out

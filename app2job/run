@@ -10,7 +10,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce job delete -n a2j-job -f
-  ibmcloud ce app delete -n a2j-app -f --wto=0
+  ibmcloud ce app delete -n a2j-app -f
   rm -f out
   ) > /dev/null 2>&1
 }
@@ -26,7 +26,7 @@ export COUNT=${COUNT:-50}
 ibmcloud ce app create -n a2j-app --image ${REGISTRY}/a2j-app
 
 # Get metadata about the app for later use
-URL=$(ibmcloud ce app get -n a2j-app -o jsonpath={.status.url})
+URL=$(ibmcloud ce app get -n a2j-app -o url)
 
 # Create the job definition
 ibmcloud ce job create -n a2j-job --ai=1-${COUNT} --image ${REGISTRY}/a2j-job
