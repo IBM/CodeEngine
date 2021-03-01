@@ -59,6 +59,9 @@ $ ibmcloud ce project create --name demos
   Show how to invoke the Code Engine CLI from within an App. This can be used
   to then start additional Code Engine resources (Apps/Jobs) dynamically.
   Same logic could be used in Batch Jobs.
+- [private](private)<br>
+  Show how to create a "private" application that is only accessible from
+  within the project (no external/internet access).
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the

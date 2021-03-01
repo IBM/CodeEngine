@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +ex
+  echo Cleaning...
+  (
+  ibmcloud ce app delete -n frontend -f
+  ibmcloud ce app delete -n backend -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcom}
+
+# Create our frontend and backend apps.
+# Note that the "backend" app is "cluster local", meaning that it does
+# not get assign a public facing URL. Only the "frontend" app can access it
+ibmcloud ce app create -n backend --image ${REGISTRY}/priv-back --cluster-local
+ibmcloud ce app create -n frontend --image ${REGISTRY}/priv-front
+
+# Get the URL of the app for later use
+URL=$(ibmcloud ce app get -n frontend -o url)
+
+# Now call it (stop if curl fails)
+curl -f -Ls $URL | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
+
+# Verify the frontend got the right output from the backend
+if ! grep "The time is now" out > /dev/null ; then
+  echo "Missing expected output"
+  exit 1
+fi
+
+# Clean up
+clean
