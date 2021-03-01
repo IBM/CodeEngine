@@ -27,13 +27,9 @@ ibmcloud ce app create -n ping-app --image ${REGISTRY}/ping --min-scale=1
 ibmcloud ce sub ping create -n ping-sub -d ping-app \
   --data '{"mydata":"hello world"}' -s '* * * * *'
 
-# Extract the instance name from `ibmcloud ce app get`
-name=$(ibmcloud ce app get -n ping-app | awk '/ping.*Running/{ print $1 }')
-echo Instance name: $name
-
 # Now wait until we get the event - shouldn't take more than a minute
 while true ; do
-  ibmcloud ce app logs --instance $name > out
+  ibmcloud ce app logs --name ping-app > out
   grep "hello world" out > /dev/null 2>&1 && break
   sleep 10
 done

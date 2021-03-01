@@ -16,10 +16,10 @@ for file in `find . -name build | sort` ; do (
   cd `dirname $file`
 
   # Skip this dir
-  [[ -e ./SKIP ]] && echo "SKIPPING `dirname $file`" && continue
+  [[ -e .SKIP ]] && echo "SKIPPING `dirname $file`" && continue
 
-  # If 'build' exists, build the image(s)
-  [[ -e ./build ]] && ./build
+  # Build the image(s)
+  ./build
 
 ) done
 

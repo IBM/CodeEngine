@@ -69,10 +69,6 @@ URL=$(ibmcloud ce app get --output url --name cos-app)
 # Setup the COS Event Source
 ibmcloud ce sub cos create -n cos-sub -d cos-app -b ${BUCKET}
 
-# Extract the instance name from `ibmcloud ce app get`
-INSTANCE=$(ibmcloud ce app get --name cos-app| awk '/cos.*Running/{ print $1 }')
-echo Instance name: $INSTANCE
-
 # Now wait until we get the event - shouldn't take more than a minute
 while true ; do
   # Upload a file to COS (this will generate an event)
@@ -81,7 +77,7 @@ while true ; do
   # Delete the file from COS (another event)
   ibmcloud cos object-delete --bucket ${BUCKET} --key "README.md" --force
 
-  ibmcloud ce app logs --instance $INSTANCE > out
+  ibmcloud ce app logs --name cos-app > out
   grep "README.md" out > /dev/null 2>&1 && break
   sleep 10
 done
