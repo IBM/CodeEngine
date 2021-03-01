@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,7 +11,6 @@ import (
 
 var IP = os.Getenv("IP")
 var client = NewClient()
-var ctx = context.Background()
 
 func NewClient() *redis.Client {
 	return redis.NewClient(&redis.Options{
@@ -25,7 +23,7 @@ func NewClient() *redis.Client {
 func Lock() {
 	fmt.Printf("Waiting for lock\n")
 	for {
-		b, err := client.SetNX(ctx, "lock", "lock", time.Second*10).Result()
+		b, err := client.SetNX("lock", "lock", time.Second*10).Result()
 		fmt.Printf("b,err = %v, %v\n", b, err)
 		if b {
 			break
@@ -37,18 +35,18 @@ func Lock() {
 
 func Unlock() {
 	fmt.Printf("Unlocking\n")
-	client.Del(ctx, "lock")
+	client.Del("lock")
 	fmt.Printf("Unlocked\n")
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	Lock()
-	count, err := client.Get(ctx, "count").Int()
+	count, err := client.Get("count").Int()
 	if err != nil && err.Error() != "redis: nil" {
 		fmt.Fprintf(w, "Err: %v\n", err)
 	}
 	count = count + 1
-	client.Set(ctx, "count", count, 0)
+	client.Set("count", count, 0)
 	Unlock()
 
 	fmt.Fprintf(w, "Counter: %v  ", count)

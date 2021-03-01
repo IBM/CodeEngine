@@ -1,9 +1,7 @@
 FROM golang:alpine
-# Need git so the "go get" cand download the needed packages
-RUN apk add --no-cache git
 COPY client.go /src/
 WORKDIR /src
-RUN go get -d .
+RUN go mod init main && go mod tidy
 RUN go build -o /client client.go
 
 # Copy the exe into a smaller base image
