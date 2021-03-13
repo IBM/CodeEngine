@@ -10,7 +10,7 @@ for file in `find . -name run | sort` ; do (
   cd `dirname $file`
 
   # Skip this dir
-  [[ -e ./SKIP ]] && echo "SKIPPING $file " && continue
+  [[ -e ./.SKIP ]] && echo "SKIPPING $file " && continue
 
   # Run the sample with whatever REGISTRY we're pointing to
   ./run "$@"
