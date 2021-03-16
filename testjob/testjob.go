@@ -23,7 +23,7 @@ func main() {
 	// Just for debugging... show the env vars if DEBUG is set
 	envs := os.Environ()
 	sort.StringSlice(envs).Sort()
-	fmt.Printf("Envs:\n%s", strings.Join(envs, "\n"))
+	fmt.Printf("Envs:\n%s\n", strings.Join(envs, "\n"))
 
 	// If the 'SLEEP' env var is set then sleep for that many seconds
 	if t := os.Getenv("SLEEP"); t != "" {
