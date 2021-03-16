@@ -40,18 +40,18 @@ ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 -
 URL=$(ibmcloud ce app get -n session-app -o url)
 
 # Now call the app to make sure it works
-curl -Ls $URL
+curl -fs $URL
 
 # Now call it 98 more times in parallel. Notice the hostname changes
 set +x
 for i in `seq 1 98` ; do
-  curl -Ls $URL &
+  curl -fs $URL &
 done
 wait
 set -x
 
 # Verify the app was hit 100 times total
-if ! [[ "$(curl -Ls $URL)" == "Counter: 100 "* ]]; then
+if ! [[ "$(curl -fs $URL)" == "Counter: 100 "* ]]; then
   echo "Unexpected output - should have started with 'Counter: 100'"
   exit 1
 fi

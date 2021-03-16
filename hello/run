@@ -25,9 +25,10 @@ ibmcloud ce app create -n hello --image ${REGISTRY}/hello
 URL=$(ibmcloud ce app get -n hello -o url)
 
 # Now call it
-curl -Ls $URL
+curl -fs $URL | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 
-if ! [[ "$(curl -Ls $URL)" == "Hello World" ]]; then
+if ! [[ "$(cat out)" == "Hello World" ]]; then
   echo "Unexpected output"
   exit 1
 fi

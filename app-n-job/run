@@ -29,7 +29,8 @@ ibmcloud ce app create -n anj-app --image ${REGISTRY}/app-n-job
 URL=$(ibmcloud ce app get -n anj-app -o url)
 
 # And call it
-curl -Ls $URL | tee out
+curl -fs $URL | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 
 if ! grep "Hello from.*app" out > /dev/null ; then
   echo "Unexpected output"

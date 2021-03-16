@@ -36,7 +36,8 @@ URL=$(ibmcloud ce app get -n ba-app -o url)
 ibmcloud ce app bind --name ba-app --service-instance ba-db
 
 # Curl the app to make sure it had the creds
-curl -Ls ${URL} | tee out
+curl -fs ${URL} | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 
 if ! grep VCAP_SERVICES out > /dev/null ; then
   echo "Missing VCAP_SERVICES in App's env vars"

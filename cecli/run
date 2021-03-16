@@ -48,7 +48,8 @@ ibmcloud ce app create -n lister --image $REGISTRY/cecli \
 APP=$(ibmcloud ce app get -n lister -o url)
 
 # Call the app - if it works it should return the output of the 'app list' cmd
-curl -s $APP/list | tee out
+curl -fs $APP/list | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 
 # Verify we see our App in the output
 grep "^lister " out

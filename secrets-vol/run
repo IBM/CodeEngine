@@ -39,7 +39,7 @@ ibmcloud ce app create -n sec-app-vol --image ${REGISTRY}/ce-secret-vol \
 URL=$(ibmcloud ce app get -n sec-app-vol -o url)
 
 # Just force it to log something by hitting it
-curl -Ls $URL
+curl -fs $URL
 
 # Extract the instance name from `ibmcloud ce app get`
 name=$(ibmcloud ce app get -n sec-app-vol | awk '/sec-app-vol.*Running/{ print $1 }')

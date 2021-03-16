@@ -47,7 +47,8 @@ ibmcloud ce buildrun submit -n s2i-brun --build s2i-bbuild --wait
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-bapp --image "us.icr.io/${ICR_NS}/app" --rs s2i-bicr
 URL=$(ibmcloud ce app get -n s2i-bapp -o url)
-curl -Ls "${URL}" | tee out
+curl -fs "${URL}" | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 
 if ! grep "I was built"  out > /dev/null ; then
   echo "Missing expected outout"

@@ -88,7 +88,7 @@ cat out
 echo "=============="
 echo "Event stats:"
 
-curl -Ls ${URL}/stats
+curl -fs ${URL}/stats
 
 # Clean up
 clean

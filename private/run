@@ -30,7 +30,7 @@ ibmcloud ce app create -n frontend --image ${REGISTRY}/priv-front
 URL=$(ibmcloud ce app get -n frontend -o url)
 
 # Now call it (stop if curl fails)
-curl -f -Ls $URL | tee out
+curl -fs $URL | tee out
 [[ "${PIPESTATUS[0]}" == "0" ]]
 
 # Verify the frontend got the right output from the backend

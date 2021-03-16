@@ -39,10 +39,11 @@ ibmcloud ce app create -n cm-app-vol --image ${REGISTRY}/ce-config-vol \
 URL=$(ibmcloud ce app get -n cm-app-vol -o url)
 
 # Just force it to log something by hitting it
-curl -Ls $URL
+curl -fs $URL
 
 # Now check the logs to see if the env vars were set
 ibmcloud ce app logs -n cm-app-vol | tee out
+[[ "${PIPESTATUS[0]}" == "0" ]]
 grep MY_ out
 if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
   echo "Unexpected output"
