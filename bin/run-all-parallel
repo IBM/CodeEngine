@@ -76,7 +76,7 @@ for file in `find . -name run | sort` ; do
       echo -e "\n### $dir\n" >> run-all.out
       cat ${dir}.out >> run-all.out
       echo >> run-all.out
-      rm ${dir}.out
+      # rm ${dir}.out
     fi
 done
 

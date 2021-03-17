@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -27,15 +28,20 @@ func main() {
 	// Do all requests to the App in parallel - why not?
 	for i := 0; i < count; i++ {
 		wg.Add(1)
-		go func() {
+		go func(i int) {
 			defer wg.Done()
-			res, err := http.Post(url, "", nil)
+			for j := 0; j < 10; j++ {
+				res, err := http.Post(url, "", nil)
 
-			// Something went wrong
-			if err != nil || res.StatusCode > 299 {
+				if err == nil && res.StatusCode/100 == 2 {
+					break
+				}
+
+				// Something went wrong, pause and try again
 				fmt.Fprintf(os.Stderr, "%d: %s\n%#v\n", i, err, res)
+				time.Sleep(time.Second)
 			}
-		}()
+		}(i)
 	}
 
 	// Wait for all threads to finish before we exit

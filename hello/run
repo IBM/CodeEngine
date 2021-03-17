@@ -9,6 +9,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce app delete -n hello -f
+  rm -f out
   ) > /dev/null 2>&1
 }
 
