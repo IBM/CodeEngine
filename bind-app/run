@@ -39,8 +39,8 @@ ibmcloud ce app bind --name ba-app --service-instance ba-db
 curl -fs ${URL} | tee out
 [[ "${PIPESTATUS[0]}" == "0" ]]
 
-if ! grep VCAP_SERVICES out > /dev/null ; then
-  echo "Missing VCAP_SERVICES in App's env vars"
+if ! grep CE_SERVICES out > /dev/null ; then
+  echo "Missing CE_SERVICES in App's env vars"
   exit 1
 fi
 

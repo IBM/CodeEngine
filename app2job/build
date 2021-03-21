@@ -2,6 +2,7 @@
 
 # Env Vars:
 # REGISTRY: name of the image registry/namespace to store the images
+# NOCACHE: set this to "--no-cache" to turn off the Docker build cache
 #
 # NOTE: to run this you MUST set the REGISTRY environment variable to
 # your own image registry/namespace otherwise the `docker push` commands
@@ -12,9 +13,9 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # First build the app's image and push it
-docker build -t ${REGISTRY}/a2j-app -f Dockerfile.app .
+docker build ${NOCACHE} -t ${REGISTRY}/a2j-app -f Dockerfile.app .
 docker push ${REGISTRY}/a2j-app
 
 # Now build the job's
-docker build -t ${REGISTRY}/a2j-job -f Dockerfile.job .
+docker build ${NOCACHE} -t ${REGISTRY}/a2j-job -f Dockerfile.job .
 docker push ${REGISTRY}/a2j-job

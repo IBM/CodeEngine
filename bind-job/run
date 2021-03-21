@@ -42,8 +42,8 @@ ibmcloud ce jobrun submit --name myrun --job bj-job --wait
 # Now look at a view of the logs to make sure it worked
 ibmcloud ce jobrun logs --instance myrun-1-0 | tee out
 
-if ! grep VCAP_SERVICES out > /dev/null ; then
-  echo "Missing VCAP_SERVICES in App's env vars"
+if ! grep CE_SERVICES out > /dev/null ; then
+  echo "Missing CE_SERVICES in App's env vars"
   exit 1
 fi
 

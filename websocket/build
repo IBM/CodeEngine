@@ -2,6 +2,7 @@
 
 # Env Vars:
 # REGISTRY: name of the image registry/namespace to store the images
+# NOCACHE: set this to "--no-cache" to turn off the Docker build cache
 #
 # NOTE: to run this you MUST set the REGISTRY environment variable to
 # your own image registry/namespace otherwise the `docker push` commands
@@ -12,8 +13,8 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # Build the images
-docker build -f Dockerfile.server -t ${REGISTRY}/ws-server .
-docker build -f Dockerfile.client -t ${REGISTRY}/ws-client .
+docker build -f Dockerfile.server ${NOCACHE} -t ${REGISTRY}/ws-server .
+docker build -f Dockerfile.client ${NOCACHE} -t ${REGISTRY}/ws-client .
 
 # And push it
 docker push ${REGISTRY}/ws-server

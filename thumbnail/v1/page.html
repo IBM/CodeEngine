@@ -1,0 +1,260 @@
+<html>
+  <title>Thumbnail Generator</title>
+  <style/css>
+    body {
+      background-color: beige ;
+      padding: 0px ;
+      margin: 20px ;
+    }
+    #form {
+      margin-bottom: 10px ;
+    }
+    .button {
+      display: inline-block ;
+      padding: 10px ;
+      background: #ccc ;
+      cursor: pointer ;
+      border-radius: 5px ;
+      border: 1px solid #ccc ;
+    }
+    .button:hover {
+      backgrond: #ddd ;
+    }
+    #fileInput {
+      display: none ;
+    }
+    .pict {
+      display: block ;
+      margin-bottom: 5px ;
+    }
+    #container {
+      display: flex ;
+      flex-direction: row ;
+      flex-wrap: nowrap ;
+      align-items: stretch ;
+      justify-content: center ;
+    }
+    #samples {
+      display: flex ;
+      flex-direction: column ;
+      flex-wrap: nowrap ;
+      justify-content: flex-start ;
+    }
+    #drop {
+      display: flex ;
+      flex-direction: column ;
+      flex-wrap: nowrap ;
+      // align-items: center ;
+      // align-content: flex-end ;
+      justify-content: flex-start ;
+      font-family: sans-serif ;
+      font-weight: bold ;
+      margin-left: 20px ;
+    }
+    #imagePreview {
+      border: 3px dashed #ccc ;
+      border-radius: 20px ;
+      min-width: 400px ;
+      min-height: 40px ;
+      max-width: 400px ;
+      max-height: 800px ;
+      // padding: 20px ;
+      margin-top: 10px ;
+      margin-bottom: 10px ;
+      // text-align: center;
+      // line-height: 8;
+      // font-size: 12;
+      // color: #939393 ;
+      // font-family: courier ;
+      background-color: whitesmoke ;
+    }
+    #picker {
+      font-size: 16 ;
+      border-radius: 10px ;
+      padding-left: 20px ;
+      padding-right: 20px ;
+    }
+    button:hover {
+      background-color: #ddd ;
+    }
+    button:disabled {
+      background-color: #ccc ;
+      color: gray ;
+    }
+    #imagePreview.highlight {
+      border-color: purple ;
+    }
+    #action {
+      display: flex ;
+      flex-direction: column ;
+      flex-wrap: nowrap ;
+      align-items: center ;
+      justify-content: flex-start ;
+      margin-left: 20px ;
+      margin-top: 83px ;
+    }
+    #generate {
+      font-size: 16 ;
+      width: 110px ;
+      border-radius: 10px ;
+    }
+    #progress {
+      display: block ;
+      margin-top: 10px ;
+      max-width: 110px ;
+    }
+    #output {
+      display: flex ;
+      flex-direction: column ;
+      flex-wrap: nowrap ;
+      justify-content: flex-start ;
+      margin-left: 20px ;
+      //new margin-top: 33px ;
+      font-family: sans-serif ;
+      font-weight: bold ;
+      text-align: center ;
+    }
+    #thumbnail {
+      border: 2px dashed #ccc ;
+      border-radius: 20px ;
+      margin-top: 43px ;
+      margin-bottom: 10px ;
+      background-color: whitesmoke ;
+      width: 50px ;
+      height: 50px ;
+    }
+  </style/css>
+  <body>
+    <center><h1>Thumbnail Generator<h1></center>
+    <div id=container>
+      <div id=samples>
+        <image class=pict width=50 src="./images/dog1.jpg">
+        <image class=pict width=50 src="./images/dog2.jpg">
+        <image class=pict width=50 src="./images/dog3.jpg">
+        <image class=pict width=50 src="./images/dog4.jpg">
+        <image class=pict width=50 src="./images/dog5.jpg">
+        <image class=pict width=50 src="./images/dog6.jpg">
+        <image class=pict width=50 src="./images/dog7.jpg">
+        <image class=pict width=50 src="./images/dog8.jpg">
+      </div>
+      <div id="drop">
+        <form id="form">
+          Drag an image from the left to the box:<br>
+          <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this.files[0])">
+          <image id="imagePreview"><br>
+          or:
+          <button type=button id=picker onclick="fileInput.click()">
+            Choose an image...
+          </button>
+          <font size=-1>(jpg, gif, png)</font>
+        </form>
+      </div>
+      <div id="action">
+      <button id=generate onclick="calcThumbnail()">Generate Thumbnail</button>
+      <span id=progress></span>
+      </div>
+      <div id="output">
+        <image id="thumbnail">
+      </div>
+    </div>
+  </body>
+  <script>
+    generate.disabled = true ;
+
+    function calcThumbnail() {
+      thumbnail.src = "" ;
+      progress.innerText = "Processing...";
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      var img = document.getElementById("imagePreview");
+      canvas.height = img.naturalHeight;
+      canvas.width = img.naturalWidth;
+      context.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
+      try {
+        var data = canvas.toBlob(function(blob){
+          var url = "./thumbnail" ;
+          var xhr = new XMLHttpRequest();
+          xhr.responseType = "blob" ;
+          xhr.open("POST", url, true);
+    
+          xhr.addEventListener('readystatechange', function(e) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+              var reader = new FileReader();
+              reader.onload = function () {
+                document.getElementById('thumbnail').src =  reader.result ;
+                progress.innerText = "";
+              }
+              reader.readAsDataURL(xhr.response);
+            } else if (xhr.readyState == 4) {
+              console.log("Error:" + xhr.status);
+              var reader = new FileReader();
+              reader.onload = function () {
+                var b64 = reader.result ;
+                b64 = b64.substring(b64.indexOf(',')+1);
+                progress.innerText = atob(b64);
+              }
+              reader.readAsDataURL(xhr.response);
+            }
+          });
+          xhr.send(blob);
+        });
+      } catch(exp) {
+        progress.innerText = exp ;
+      }
+    }
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function highlight(e) {
+      imagePreview.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+      imagePreview.classList.remove('highlight');
+    }
+
+    function doDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var items = e.dataTransfer.items ;
+      var item = items[0];
+
+      var url = e.dataTransfer.getData('URL');
+      if (url == "") url = e.dataTransfer.getData('Text');
+      if (url != "" ){
+        document.getElementById('imagePreview').src = url ;
+        generate.disabled = false ;
+        progress.innerText = "" ;
+      } else {
+        previewImage(e.dataTransfer.files[0]);
+      }
+    }
+
+    function previewImage(file) {
+      if (file != null) {
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = function() {
+          document.getElementById('imagePreview').src = reader.result ;
+        }
+        generate.disabled = false ;
+        progress.innerText = "" ;
+      }
+    }
+
+    imagePreview.addEventListener('dragenter', preventDefaults, false);
+    imagePreview.addEventListener('dragover', preventDefaults, false);
+    imagePreview.addEventListener('dragleave', preventDefaults, false);
+
+    imagePreview.addEventListener('dragenter', highlight, false)
+    imagePreview.addEventListener('dragover', highlight, false)
+
+    imagePreview.addEventListener('dragleave', unhighlight, false)
+    imagePreview.addEventListener('drop', unhighlight, false)
+
+    imagePreview.addEventListener('drop', doDrop, false)
+  </script>
+</html>

@@ -5,6 +5,9 @@
 cd $(dirname $0)/..
 
 set -e
+
+rm -f run-all.out run-fail.out *.fail *.out
+
 for file in `find . -name run | sort` ; do
   dir=`dirname $file`
   dir=${dir:2}  # remove leading ./
@@ -12,7 +15,6 @@ for file in `find . -name run | sort` ; do
   # Skip this dir 'cause we're asked or if it's to be run sequentially
   [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
 
-  # Run the sample with whatever REGISTRY we're pointing to
   echo "> $dir"
   (
     cd $dir

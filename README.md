@@ -1,49 +1,78 @@
-# Samples for IBM Cloud Code Engine
+# Tutorials and Samples for IBM Cloud Code Engine
 
-This repository contains samples for how to use
-[IBM Cloud Code Engine](https://cloud.ibm.com/codeengine).
+This respository is split into two types of educational material: Tutorials
+and Samples.
 
-These samples are designed such that they should be able to be fully built
-and used by anyone. Unless otherwise noted the overall pattern that will be
-followed is:
+Tutorials are meant to be complete end-to-end scenarios designed
+to teach you about [Code Engine](https://ibm.com/cloud/code-engine) as if you
+have limited knowledge of Cloud Native technologies. Each provides a
+step-by-step guide walking you through the process of deploying a certain
+type of workload - explaining, in detail, each step in the process. The goal
+is to not simply have you copy-n-paste each command but rather to understand
+the "whys" of what's going on so you can apply what you've learned to one
+of your own projects.
 
-- a `build` script shows how each container image used in the sample is built.
-  By default, the script will push the image to the `ibmcom` namespace on
-  DockerHub, so to use this yourself you'll need to set the `REGISTRY`
-  environment variable to your own registry and/or namespace. Also, you
-  MUST use a registry that allows for anonymous/public downloads of your
-  images, since as of now (to keep the scripts simple) they do not deal
-  with private registry access tokens by default.
-  - However, if you do decide to push your images into a registry that
-    is private, you'll need to modify the `run` scripts to specify the
-	`--registry-secret` option on the app and job creation commands to point
-	to your secret that includes the registry credentials.
-- a `run` script will execute the sample. Most will also include logic to
-  verify the output to ensure everything is working as expected. As with
-  `build`, it will default to using the `ibmcom` container images, so to use
-  your own you'll need to set the `REGISTRY` environment variable.
-  This means that you should be able to just execute `run` without running
-  `build` first, and it'll just use the pre-built images from `ibmcom`.
-  - invoking `run clean` should clean up from any previous execution without
-    re-running the sample.
+Samples are meant to be "quick-start" tasks that help developers
+perform one very specific task. They do not include extra verbose help text
+or explanations, rather they are designed for people who have a basic
+understanding of Cloud Native technologies and want a quick reminder of how
+to perform a certain task in the Code Engine environment. Most samples will
+be relatively small so that it can be re-used easily and integrated into a
+larger use-case.
 
-Most samples will try to be relatively small to focus on one particular
-task so that it can be re-used easily and integrated into a larger use-case.
+### Getting Started
 
-It is assumed that the following are installed:
+#### Cloud Shell
+
+The easiest way to run these are via the
+[IBM Cloud Shell](https://cloud.ibm.com/shell). Simply open up a new Cloud
+Shell, clone the repository (`git clone https://github.com/IBM/CodeEngine`)
+and then `cd` into the directory of interest.
+
+To ensure you have the latest versions of each CLI plugin, run:
+```
+$ ic plugin update --all --force
+```
+
+#### Your Own Machine
+
+If you choose to use your own machine, then the following need to be installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
   for samples which use IBM Cloud Object Storage
-- [`docker`](https://docker.io/) if you choose to build the images yourself
+- [`docker`](https://docker.io/) if you choose to build the images yourself.
+  For novices, skip this.
 
-It is also assumed that you have a Code Engine project already created and
-selected, e.g.:
+As with the Cloud Shell option, clone the repository
+(`git clone https://github.com/IBM/CodeEngine`) and then `cd` into the
+directory of interest.
+
+#### Let's go!
+
+Most of the material in here assumes you aleady have a Code Engine
+[project](https://cloud.ibm.com/docs/codeengine#term-summary) already created.
+If you do not, go ahead and create one like this:
+
 ```
 $ ibmcloud ce project create --name demos
 ```
 
+With that, `cd` into the directory of interest, and read the README to see how
+to get started.
+
+## Tutorials
+
+- [Thumbnail Generator](thumbnail)<br>
+  Walks through the complete growth path of an application from the prototype
+  stage through to production - demonstrating how to switch from an in-app
+  processor to one where the data is persisted and processed via an
+  event-driven architecture.
+
 ## Samples
+
+The samples are grouped by the main category of functionality that it
+is demonstrating.
 
 #### Apps
 - [hello](hello)<br>
@@ -128,9 +157,35 @@ $ ibmcloud ce project create --name demos
 - [secrets-vol](secrets-vol)<br>
   Shows how to define and inject a Secret as a volume into an Application.
 
-## Resources
+## Layout of the repository
 
-- [IBM Cloud Code Engine](https://cloud.ibm.com/codeengine)
+These are designed such that they should be able to be fully built
+and used by anyone. Unless otherwise noted the overall pattern that will be
+followed is:
+
+- a `build` script shows how each container image used in the sample is built.
+  By default, the script will push the image to the `ibmcom` namespace on
+  DockerHub, so to use this yourself you'll need to set the `REGISTRY`
+  environment variable to your own registry and/or namespace. Also, you
+  MUST use a registry that allows for anonymous/public downloads of your
+  images, since as of now (to keep the scripts simple) they do not deal
+  with private registry access tokens by default.
+  - However, if you do decide to push your images into a registry that
+    is private, you'll need to modify the `run` scripts to specify the
+	`--registry-secret` option on the app and job creation commands to point
+	to your secret that includes the registry credentials.
+- a `run` script will execute the sample. Most will also include logic to
+  verify the output to ensure everything is working as expected. As with
+  `build`, it will default to using the `ibmcom` container images, so to use
+  your own you'll need to set the `REGISTRY` environment variable.
+  This means that you should be able to just execute `run` without running
+  `build` first, and it'll just use the pre-built images from `ibmcom`.
+  - invoking `run clean` should clean up from any previous execution without
+    re-running the sample.
+
+## Additional Resources
+
+- [IBM Cloud Code Engine](https://ibm.com/cloud/code-engine)
 - For questions/comments join us on Slack:<br>
   [Register](https://cloud.ibm.com/kubernetes/slack) |
   [Login](https://ibm-cloud-success.slack.com/) and join us on the

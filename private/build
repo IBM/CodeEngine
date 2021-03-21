@@ -2,6 +2,7 @@
 
 # Env Vars:
 # REGISTRY: name of the image registry/namespace to store the images
+# NOCACHE: set this to "--no-cache" to turn off the Docker build cache
 #
 # NOTE: to run this you MUST set the REGISTRY environment variable to
 # your own image registry/namespace otherwise the `docker push` commands
@@ -12,8 +13,8 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # Build the image
-docker build -t ${REGISTRY}/priv-front -f Dockerfile.frontend .
-docker build -t ${REGISTRY}/priv-back -f Dockerfile.backend .
+docker build ${NOCACHE} -t ${REGISTRY}/priv-front -f Dockerfile.frontend .
+docker build ${NOCACHE} -t ${REGISTRY}/priv-back -f Dockerfile.backend .
 
 # And push it
 docker push ${REGISTRY}/priv-front

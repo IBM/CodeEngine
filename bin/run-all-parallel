@@ -45,6 +45,7 @@ set -e
     dir=${dir:2}  # remove leading ./
 
     # Only process samples that are meant to be run sequentially
+    [[ -e ${dir}/.SKIP ]] && continue
     [[ ! -e ${dir}/.SEQ ]] && continue
 
     # Run the sample with whatever REGISTRY we're pointing to
