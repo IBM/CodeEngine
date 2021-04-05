@@ -28,12 +28,12 @@ You can work through this tutorial using the
 [IBM Cloud Shell](https://cloud.ibm.com/shell) app in your browser, or
 you can install the necessary CLI tools on your own machine.
 
-If you [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
+If you use [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
 run:
 ```
 $ ibmcloud plugin update --all --force
 ```
-to ensure you have the latest versions.
+to ensure you have the latest versions of the CLI plugins.
 
 If you use your own machine you'll need to install the following:
 following are installed:
@@ -62,8 +62,8 @@ to the developer. For example, perhaps they're all part of the same product.
 How workloads
 are split across projects is up to the developer, but one thing to remember
 is that workloads within a project can talk to each other over a private
-network, while talking across projects do not. Something to consider when
-grouping things.
+network, while talking across projects will not. That's something to consider
+when grouping things.
 
 If you already have a project then you can skip this first command if you'd
 like, but if you have not created one yet then let's create one:
@@ -82,6 +82,8 @@ In this tutorial we've already pre-built most of the container images
 for you, so let's immediately go ahead and deploy our initial verison of
 the webapp by creating a Code Engine application.
 
+Before weo do that though, it's important to undestand a bit about the
+types of workloads that Code Engine supports.
 Code Engine supports two types of workloads: Applications and Batch Jobs.
 Applications are any workloads that typically respond to incoming messages.
 Whether those messages are API calls, web page requests, events, or any other
@@ -93,10 +95,11 @@ when your application is actually running, and nothing when it is scaled to
 zero.
 
 Batch jobs are slightly different from applications in that they do not
-typically respond to incoming messages. Oftern referred to as "run to
+typically respond to incoming messages. Often referred to as "run to
 completion" tasks, batch jobs are meant to be created, then they execute a
-particular operation, and then when done they exit. With that, let's now
-return to deploying our application.
+particular operation, and then when done they exit.
+
+With that, let's now return to deploying our application.
 
 To do this we only need to provide two pieces of information:
 - the name of our application - `thumbnail` in this case
@@ -133,7 +136,7 @@ $ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 It's a very basic application where you can drag-n-drop one of the images into
  the first box, or upload your own image if you wish. Once there is an image
 in there, go ahead and hit the "Generate Thumbnail" button to process the
-image. The resulting thumbnail should appear in the right hand box.
+image. The resulting thumbnail should appear in the right-hand box.
 
 Let's pause here for a moment to understand what we just did. With just two
 pieces of information (application name and container image) we've now
@@ -154,7 +157,7 @@ many different sources and we need to keep both the orignal and processed
 data for our records - meaning we need to save both the image and its
 thumbnail.
 
-In this end, what this really means is that our web application might
+In the end, what this really means is that our web application might
 eventually go away or it could be just one of many ways in which our
 datastore is populated. So it's role switches from "the processor" to just a
 web front-end application.
@@ -163,7 +166,7 @@ The other change in processing logic we're going to make is to move the
 thumbnail processing out of the webapp, again since it might not be the only
 way images are put into our datastore, and into a seperate workload that
 we'll invoke outside of the webapp. But more on that later, for now let's
-focus on settingn up the datastore.
+focus on setting up the datastore.
 
 As mentioned, our datastore is going to be Cloud Object Storage so we'll
 need to first create a new instance of that service:
@@ -175,21 +178,21 @@ $ ibmcloud resource service-instance-create thumbnail-cos \
 Creating service instance thumbnail-cos in resource group default of account John Doe's Account as abc@us.ibm.com...
 OK
 Service instance thumbnail-cos was created.
-                     
-Name:             thumbnail-cos  
-ID:               crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::  
-GUID:             49ceebdf-28dc-46df-bbe2-809a680cebbe  
-Location:         global  
-State:            active  
-Type:             service_instance   
-Sub Type:            
-Allow Cleanup:    false   
-Locked:           false   
-Created at:       2021-04-02T18:30:31Z   
-Updated at:       2021-04-02T18:30:31Z   
-Last Operation:                   
-                  Status    create succeeded      
-                  Message   Completed create instance operation 
+
+Name:             thumbnail-cos
+ID:               crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::
+GUID:             49ceebdf-28dc-46df-bbe2-809a680cebbe
+Location:         global
+State:            active
+Type:             service_instance
+Sub Type:
+Allow Cleanup:    false
+Locked:           false
+Created at:       2021-04-02T18:30:31Z
+Updated at:       2021-04-02T18:30:31Z
+Last Operation:
+                  Status    create succeeded
+                  Message   Completed create instance operation
 ```
 
 From this output you'll need to save the `ID` value for a future command.
@@ -207,7 +210,7 @@ need to configure it to:
 - tell it which authentication mechanism we'll use when talking to it since it
   supports multiple types
 
-First, let's direct all uses to our COS instance:
+First, let's direct all COS CLI uses to our COS instance:
 ```
 $ ibmcloud cos config crn --crn $COS_ID --force
 
@@ -237,26 +240,26 @@ $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
 Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@us.ibm.com...
 OK
 Authorization policy ece5ed46-546c-4ea6-89a1-d2ee331f9c51 was created.
-                              
-ID:                        ece5ed46-546c-4ea6-89a1-d2ee331f9c51   
-Source service name:       codeengine   
-Source service instance:   4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6   
-Target service name:       cloud-object-storage   
-Target service instance:   49ceebdf-28dc-46df-bbe2-809a680cebbe   
-Roles:                     Notifications Manager   
+
+ID:                        ece5ed46-546c-4ea6-89a1-d2ee331f9c51
+Source service name:       codeengine
+Source service instance:   4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
+Target service name:       cloud-object-storage
+Target service instance:   49ceebdf-28dc-46df-bbe2-809a680cebbe
+Roles:                     Notifications Manager
 ```
 
-Let's save the ID of this authorization policy for later user:
+Let's save the ID of this authorization policy so we can delete it later:
 
 ```
 $ export POLICY_ID=ece5ed46-546c-4ea6-89a1-d2ee331f9c51
 ```
 <!-- export POLICY_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
 
-Now we can get back to setting things up for our application. First, let's
+Now we can get back to setting COS up for our application. First, let's
 go ahead and create a new bucket into which our data will be stored. To do
 this you'll need to provide a unique name for your bucket. It needs to be
-globally unique across all buckets in the IBM Cloud. In the snippet below
+globally unique across all buckets in the IBM Cloud. In the command below
 we'll use the "Source service instance" value from the previous command's
 output appended with "thumbnail" (This just happens to also be the ID of our
 Code Engine project). But first we'll save that name in an
@@ -285,7 +288,7 @@ application's migration.
 
 With our datastore ready, we can now deploy the second version of our
 application. This version looks very similar to the first but instead of
-calling the `MakeThumbnail` function immediately, it'll put the uploaded into
+calling the `MakeThumbnail` function immediately, it'll put the uploaded image
 into our bucket. We'll invoke the `MakeThumbnail` function at a later
 point in time.
 
@@ -297,7 +300,8 @@ environment variable called `BUCKET` to get the bucket name. We could have
 just hard-coded the bucket name into the application, but being able to
 modify the name dynamically without changing the source code is better.
 
-With that let's update our application:
+With that let's update our application to use a newer version of our
+code, which is available from the "v2" version of our container image:
 ```
 $ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
     --env BUCKET=$BUCKET
@@ -320,6 +324,10 @@ settings up the credentials and auto-injecting them into applicaiton as
 environment variables. If you look in the `main` function in
 [`v2/app.go`](v2/app.go) you'll see the first thing it does it get those
 values for later use.
+
+Look for the `os.Getenv("CLOUD_OBJECT_STORAGE_APIKEY")` and
+`os.Getenv("CLOUD_OBJECT_STORAGE_RESOURCE_INSTANCE_ID")` calls. These will
+get the API Key used to access COS, and the COS instance ID for our bucket.
 
 In Code Engine we use the `bind` operation to connect our workloads up to
 service instances - all we need is the application name and service instance
@@ -362,7 +370,7 @@ by looking at [`v2/job.go`](v2/job.go). Like the other images, it's been
 pre-built for you so all we need to do is create our batch job.
 
 The arguments to the `job create` command are:
-- `thumbnail-job`: the name we're assuming to the job
+- `thumbnail-job`: the name we're assigning to the job
 - `ibmcom/thumbnail-job`: the name of the pre-built container image
 - `BUCKET`: the environment variable that the code will look for to get the
   name of the bucket in which the images are stored. Same as with the
@@ -388,7 +396,7 @@ So we'll need to issue another `bind` command to ask Code Engine to
 auto-inject those for us:
 
 ```
-$ ibmcloud ce job bind --name thumbnail-job --si thumbnail-cos
+$ ibmcloud ce job bind --name thumbnail-job --service-instance thumbnail-cos
 
 Binding service instance...
 Waiting for service binding to become ready...
@@ -413,16 +421,16 @@ support processing images regardless of how they are put into our datastore,
 and it can process the entire bucket of them at will via our batch job.
 However, the batch job process is a bit too manual for our needs. We could
 hook it up to a timer based invocation mechanism, and that's appropriate
-for some system, but for our needs we need it to be a bit more reactive, or
+for some system, but for our needs we want it to be a bit more reactive, or
 "event driven".
 
 In other words, our requirements are that we'd like to have each image
-processed immediately as it us upload into COS. To achieve this were going
+processed immediately as it is uploaded into COS. To achieve this were going
 to have COS send us an event each time there is a new image uploaded into the
-bucket, and then we'll process the image right then.
+bucket, and then we'll process the image right away.
 
 In order to make this happen we're going to deploy a second application to
-reeive those events. We could have reused the webapp application for this but
+receive those events. We could have reused the webapp application for this but
 in order to have a clear seperation of concerns we'll create a new one. Then
 each can scale independently as needed.
 
@@ -432,10 +440,10 @@ there's a little bit of setup we need to do.
 
 First, we'll need to create a place to store our newly created container
 image. We're going to use IBM's Container Registry (ICR). In there we'll first
-create a "namespace", which is similar to a folder on your desktop, to 
+create a "namespace", which is similar to a folder on your desktop, to
 place our image.
 
-To run the command all we need to do is tell it the name of our
+To do this all we need to do is tell it the name of our
 namespace, we'll use `thumbnail-ns`:
 
 ```
@@ -449,32 +457,31 @@ OK
 ```
 
 Next we need to create a set of credentials that our build process will use
-to talk to the Registry - we'll store those in a file called `apilkey` and
-we'll give the API Key a name of `thumbnail-ns-APIKEY` so we can delete it
-later:
+to talk to the Registry. We'll give those credntials a name of
+`thumbnail-icr-APIKEY` so we can delete it later when we're done:
 
 ```
-$ ibmcloud iam api-key-create thumbnail-ns-APIKEY
+$ ibmcloud iam api-key-create thumbnail-icr-APIKEY
 
-Creating API key thumbnail-ns-APIKEY under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
+Creating API key thumbnail-icr-APIKEY under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
 OK
-API key thumbnail-ns-APIKEY was created
+API key thumbnail-icr-APIKEY was created
 Successfully save API key information to apikey
 
 Please preserve the API key! It cannot be retrieved after it's created.
-                 
-ID            ApiKey-aeff919a-99e7-402a-9552-4924f7535832   
-Name          thumbnail-ns-APIKEY   
-Description      
-Created At    2021-04-04T17:16+0000   
-API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE   
-Locked        false 
+
+ID            ApiKey-aeff919a-99e7-402a-9552-4924f7535832
+Name          thumbnail-icr-APIKEY
+Description
+Created At    2021-04-04T17:16+0000
+API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
+Locked        false
 ```
 <!-- export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g") -->
 
 The final setup we need to do is to tell Code Engine how to talk to
 the Registry on our behalf using the API key we just created. To do this
-you'll need to copy the "API key" from the previous output into the following
+you'll need to copy the "API Key" from the previous output into the following
 command in place of the `$APIKEY`:
 
 ```
@@ -487,25 +494,26 @@ OK
 Now we can actually define our build for the new application. The parameters
 to this command are:
 - `--name`: the name of the build definition we're setting up (`eventer-build`)
-- `--image`: the name of the container image we're going to build. Notice that
-  it including the name of the ICR registry (`us.icr.io`), the name of the
+- `--image`: the name of the container image we're going to build
+  (`us.icr.io/thumbnail-ns/eventer`). Notice that
+  it includes the name of the ICR registry (`us.icr.io`), the name of the
   namespace (`thumbnail-ns`) and finally the name of the image itself
   (`eventer`)
-- `--source`: the location of the git repo where our source code can be found.
-- `--registry-secret`: the registry access we just created in the previous
-  command
+- `--source`: the location of the git repo where our source code can be found
+- `--registry-secret`: the registry access secret we just created in the
+  previous command
 - `--context-dir`: the location in the git repo where our code resides. If it's
   at the root of the repo then this parameter would not be necessary
- 
-With that, let's run the command to defien the build:
+
+With that, let's run the command to define the build:
 
 ```
 $ ibmcloud ce build create --name eventer-build \
     --image us.icr.io/thumbnail-ns/eventer \
-	--source https://github.com/IBM/CodeEngine \
-	--registry-secret icr --context-dir thumbnail/eventer
+    --source https://github.com/IBM/CodeEngine \
+    --registry-secret icr --context-dir thumbnail/eventer
 
-Creating build 'eventer'...
+Creating build 'eventer-build'...
 OK
 ```
 
@@ -513,14 +521,14 @@ Similar to the batch job we created, this command just defined how to do the
 build, it didn't actually invoke it. This allows us to run it over and over
 without neededing to specificy all of the parameters each time.
 
-Let's invoke it via the `buildrun submit` command passing in the name
+Let's invoke it via the `buildrun submit` command, passing in the name
 of the build we just created. Notice we'll also use the `--wait` flag
 so we can see the build output as it happens and we'll know when it's done:
 
 ```
 $ ibmcloud ce buildrun submit --build eventer-build --wait
 
-Submitting build run 'eventer-run-210402-183139464'...
+Submitting build run 'eventer-build-run-210402-183139464'...
 Waiting for build run to complete...
 Build run succeeded status: 'Unknown'
 Build run succeeded status: 'Unknown'
@@ -532,11 +540,12 @@ Build run succeeded status: 'Unknown'
 Build run succeeded status: 'Unknown'
 Build run succeeded status: 'True'
 Build run completed successfully.
-Run 'ibmcloud ce buildrun get -n eventer-run-210402-183139464' to check the build run status.
+Run 'ibmcloud ce buildrun get -n eventer-build-run-210402-183139464' to check the build run status.
 OK
 ```
 
-Now we can finally deploy our new applcation. You'll notice that the command
+Now we can finally deploy our new applcation to receive the events. You'll
+notice that the command
 looks very similar to the `app create` command we used for the webapp, but
 there is one additional parameter (`--registry-secret`) that we need to pass-in
 because the image is stored in our private ICR namespaces, so Code Engine will
@@ -577,14 +586,15 @@ Waiting for load balancer to be ready
 OK
 ```
 
-There's one last thing we need to do. We need to tell COS to send "eventer"
-an event each time a new image is uploaded into our bucket. To do this we'll
+There's one last thing we need to do. We need to tell COS to send an event
+to our "eventer" application each time a new image is uploaded into our
+bucket. To do this we'll
 create a "subscription". A subscription is simply a request to receive events
 from a particular event producer - COS in this case. The parameters we pass
-to the subscription create command are:
+to the `subscription create` command are:
 - `--name`: the name of the subscription
 - `--bucket`: the name of the bucket that we want to watch
-- `--destination`: the name of the applicatio to which events are sent, so
+- `--destination`: the name of the application to which events are sent, so
   "eventer" in this case
 
 Let's create our subscription:
@@ -629,12 +639,14 @@ Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1
 ```
 <!-- ibmcloud cos objects --bucket $BUCKET | grep dog > /dev/null 2>&1 -->
 
-Of course, you can still upload images from the webapp too if you're like.
+Of course, you can still upload images from the webapp too if you'd like.
 Either way, the `eventer` application will receive the event from COS and
 process the image.
 
 You can use the "Clear bucket" button on the webapp if you'd like to erase
 the contents of the bucket.
+
+### Cleaning up
 
 And with that we can now erase all of the objects we created.
 
@@ -655,7 +667,7 @@ $ ibmcloud cr namespace-rm thumbnail-ns --force
 ```
 Delete the API key we used:
 ```
-$ ibmcloud iam api-key-delete thumbnail-ns-APIKEY --force
+$ ibmcloud iam api-key-delete thumbnail-icr-APIKEY --force
 ```
 Remove the authorization we setup between COS and Code Engine:
 ```
@@ -671,19 +683,20 @@ can delete it now:
 > ibmcloud ce project delete -n thumbnail --force --hard
 ```
 
-This command might take a moment, so let's refresh our memory on what
-happened in this tutorial, we:
+Let's refresh our memory on what happened in this tutorial, we:
 - created an internet facing application with just a reference to a
-  contaier image. While we didn't show it, if the load on the application
+  contaier image. While we didn't demonstrate it, if the load on the application
   increased, Code Engine would have scaled it up and down automatically.
   Including down to zero if it was idle.
-- createa an instance of COS and a bucket to store the images
+- created an instance of COS and a bucket to store the images
 - updated the application to a second version with no downtime, and made it
   so the application stored the images, and thumbnails, in the bucket
 - created a batch job to process all of the images in the bucket on demand
 - created a second application to react to events from COS so that we can
   process the images immediately as they're uploaded to COS instead of waiting
   for the batch job to run
+- created a "build" that built this second application from our git repo for
+  us
 
 We hope you found this quick tutorial informative and if you want to learn
 more about Code Engine please visit our
