@@ -127,7 +127,16 @@ Let's also save this URL as environment variable so we can use it later:
 ```
 $ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
+
 [//]: export URL=$(tail -1 out)
+
+test
+
+[//]: # export URL=$(tail -1 out)
+
+test
+
+<!-- export URL=$(tail -1 out) -->
 
 It's a very basic application where you can drag-n-drop one of the images into
  the first box, or upload your own image if you wish. Once there is an image
@@ -636,6 +645,7 @@ You can use the "Clear bucket" button on the webapp if you'd like to erase
 the contents of the bucket.
 
 And with that we can now erase all of the objects we created.
+
 [//]: clean
 
 Let's start by deleting all of Code Engine resources we created:
