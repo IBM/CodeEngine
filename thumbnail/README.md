@@ -128,14 +128,6 @@ Let's also save this URL as environment variable so we can use it later:
 $ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
 
-[//]: export URL=$(tail -1 out)
-
-test
-
-[//]: # export URL=$(tail -1 out)
-
-test
-
 <!-- export URL=$(tail -1 out) -->
 
 It's a very basic application where you can drag-n-drop one of the images into
@@ -206,7 +198,7 @@ So to make life easier, let's save it as an environment variable:
 ```
 $ export COS_ID=crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::
 ```
-[//]: export COS_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g")
+<!-- export COS_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
 
 The images will be stored in "buckets" (similar to folders in your computer).
 To manage these we'll be using the Cloud Object Storage (COS) CLI and we'll
@@ -259,7 +251,7 @@ Let's save the ID of this authorization policy for later user:
 ```
 $ export POLICY_ID=ece5ed46-546c-4ea6-89a1-d2ee331f9c51
 ```
-[//]: export POLICY_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g")
+<!-- export POLICY_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
 
 Now we can get back to setting things up for our application. First, let's
 go ahead and create a new bucket into which our data will be stored. To do
@@ -273,7 +265,7 @@ environment variable for easy use:
 ```
 $ export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
 ```
-[//]: export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail
+<!-- export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail -->
 
 Now let's ask COS to create our bucket:
 
@@ -478,7 +470,7 @@ Created At    2021-04-04T17:16+0000
 API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE   
 Locked        false 
 ```
-[//]: export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g")
+<!-- export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g") -->
 
 The final setup we need to do is to tell Code Engine how to talk to
 the Registry on our behalf using the API key we just created. To do this
@@ -635,7 +627,7 @@ $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
 ```
-[//]: ibmcloud cos objects --bucket $BUCKET | grep dog > /dev/null 2>&1
+<!-- ibmcloud cos objects --bucket $BUCKET | grep dog > /dev/null 2>&1 -->
 
 Of course, you can still upload images from the webapp too if you're like.
 Either way, the `eventer` application will receive the event from COS and
@@ -646,7 +638,7 @@ the contents of the bucket.
 
 And with that we can now erase all of the objects we created.
 
-[//]: clean
+<!-- clean -->
 
 Let's start by deleting all of Code Engine resources we created:
 ```

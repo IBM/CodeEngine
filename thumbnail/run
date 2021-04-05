@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Clean old run just in case it didn't exit cleanly
+echo Cleaning...
 ../bin/run-tutorial clean > /dev/null 2>&1
 
 # Stop if all we're interested in is cleaning
