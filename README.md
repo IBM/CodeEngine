@@ -25,14 +25,15 @@ larger use-case.
 #### Cloud Shell
 
 The easiest way to run these are via the
-[IBM Cloud Shell](https://cloud.ibm.com/shell). Simply open up a new Cloud
-Shell, clone the repository (`git clone https://github.com/IBM/CodeEngine`)
-and then `cd` into the directory of interest.
+[IBM Cloud Shell](https://cloud.ibm.com/shell). This is a browser based
+command line that will have all of the IBM Cloud CLI components pre-installed
+for you.
 
 To ensure you have the latest versions of each CLI plugin, run:
 ```
-$ ic plugin update --all --force
+$ ibmcloud plugin update --all --force
 ```
+once you're in the shell.
 
 #### Your Own Machine
 
@@ -44,11 +45,18 @@ If you choose to use your own machine, then the following need to be installed:
 - [`docker`](https://docker.io/) if you choose to build the images yourself.
   For novices, skip this.
 
-As with the Cloud Shell option, clone the repository
-(`git clone https://github.com/IBM/CodeEngine`) and then `cd` into the
-directory of interest.
-
 #### Let's go!
+
+Once you have your environment ready, look at the README for the Tutorial
+or Sample of interest to know if you'll need to clone this git repository
+first. Most of the Samples will require it since it involves executing their
+`run` script. The tutorials will try to avoid this requirement.
+
+If you need, or want, to clone this repo simple execute:
+```
+$ git clone https://github.com/IBM/CodeEngine
+```
+and then `cd` into the `CodeEngine` directory.
 
 Most of the material in here assumes you aleady have a Code Engine
 [project](https://cloud.ibm.com/docs/codeengine#term-summary) already created.
