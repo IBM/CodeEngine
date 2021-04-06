@@ -25,6 +25,9 @@ function clean() {
 clean
 [[ "$1" == "clean" ]] && exit 0
 
+# Grab the ICR server location based no our region
+export ICR=$(ibmcloud cr info | sed -n 's/.*Registry   *\(.*icr.io\).*/\1/p')
+
 set -ex
 
 # Create an ICR namespace to hold our new image
@@ -33,18 +36,18 @@ ibmcloud cr namespace-add $ICR_NS
 # Create an apikey, put it in a registry secret. Used to push/pull image to ICR
 ibmcloud iam api-key-create s2i-dapi | \
   grep "API Key" | sed 's/^.*Key  *//' | sed "s/ *$//" > .ce-reg-secret
-ibmcloud ce registry create -n s2i-dicr -s us.icr.io -u iamapikey \
+ibmcloud ce registry create -n s2i-dicr -s $ICR -u iamapikey \
   --password-from-file .ce-reg-secret
 
 # Define the build of this dir in this github repo
-ibmcloud ce build create -n s2i-dbuild -i "us.icr.io/${ICR_NS}/app" --rs s2i-dicr \
+ibmcloud ce build create -n s2i-dbuild -i "$ICR/${ICR_NS}/app" --rs s2i-dicr \
   --source https://github.com/IBM/CodeEngine --context-dir s2i-dockerfile
 
 # Now kick off the build itself
 ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild --wait
 
 # Test the image we just built - deploy an app and 'curl' it
-ibmcloud ce app create -n s2i-dockerfile --image "us.icr.io/${ICR_NS}/app" --rs s2i-dicr
+ibmcloud ce app create -n s2i-dockerfile --image "$ICR/${ICR_NS}/app" --rs s2i-dicr
 URL=$(ibmcloud ce app get -n s2i-dockerfile -o url)
 curl -fs "${URL}" | tee out
 [[ "${PIPESTATUS[0]}" == "0" ]]

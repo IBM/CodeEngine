@@ -33,7 +33,7 @@ func Run(out *string, cmdStr string, args ...interface{}) string {
 func main() {
 	// These are run during the start-up of the container so that
 	// we don't have the pay the cost of this on each HTTP request
-	Run(nil, "ibmcloud login -r us-south --apikey %s -g %s",
+	Run(nil, "ibmcloud login -r "+os.Getenv("REGION")+" --apikey %s -g %s",
 		strings.TrimSpace(os.Getenv("APIKEY")),
 		strings.TrimSpace(os.Getenv("GROUP")))
 	Run(nil, "ibmcloud ce project select -n %s", os.Getenv("PROJECT"))

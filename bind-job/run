@@ -3,6 +3,7 @@
 # Env Vars:
 # NUM: number of instances of the job to run
 # REGISTRY: name of the image registry/namespace to get the images
+# REGION: the IBM Cloud Region in which we're running
 
 # Clean up previous run
 function clean() {
@@ -25,9 +26,11 @@ clean
 set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 export NUM=${COUNT:-10}
+export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 
 # Create an instance of DB2
-ibmcloud resource service-instance-create bj-db dashdb-for-transactions free us-south
+ibmcloud resource service-instance-create bj-db dashdb-for-transactions free \
+  $REGION
 
 # Create a Job definition
 ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \

@@ -2,6 +2,7 @@
 
 # Env Vars:
 # REGISTRY: name of the image registry/namespace to get the images
+# REGION: the IBM Cloud Region in which we're running
 
 # Clean up previous run
 function clean() {
@@ -22,9 +23,11 @@ clean
 
 set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
+export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 
 # Create an instance of DB2
-ibmcloud resource service-instance-create ba-db dashdb-for-transactions free us-south
+ibmcloud resource service-instance-create ba-db dashdb-for-transactions free \
+  $REGION
 
 # Create the app
 ibmcloud ce app create -n ba-app --image ${REGISTRY}/bind-app

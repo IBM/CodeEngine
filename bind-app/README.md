@@ -10,6 +10,9 @@ the new environment variables that will be added to the App.
 
 In this sample we'll create an instance of a DB2 service.
 
+Note: this sample will not work in the "eu-de" region because it uses a free
+tier of the DB2 service which is not available in that region.
+
 - - -
 
 As noted in [the main README](../README.md), this sample has two pieces:

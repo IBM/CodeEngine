@@ -28,12 +28,14 @@ set -ex
 # Create an API Key so that our App can use it to talk to Code Engine
 ibmcloud iam api-key-create -q cecli | awk '/API Key/{ print $3 }' > .apikey
 
-# Create a 'secret' to hold our API Key, Project name, and Resource Group
+# Create a 'secret' to hold our API Key, Project name, Resource Group and
+# Region
 ibmcloud ce secret create -n keys \
   --from-file APIKEY=.apikey \
   --from-literal PROJECT=$(ibmcloud ce project current | \
     awk '/Name:/{ print $3 }') \
-  --from-literal GROUP=$(ibmcloud target | awk '/group:/{ print $3 }')
+  --from-literal GROUP=$(ibmcloud target | awk '/group:/{ print $3 }') \
+  --from-literal REGION=$(ibmcloud target | awk '/Region:/{ print $2 }')
 
 rm .apikey   #  erase it since we don't need it any more
 
@@ -42,7 +44,7 @@ rm .apikey   #  erase it since we don't need it any more
 # setup the cloud CLI environment (eg. login) before starting the HTTP server.
 # Need to give it a little more CPU than the default.
 ibmcloud ce app create -n lister --image $REGISTRY/cecli \
-  --env-sec keys --cpu .4
+  --env-sec keys --cpu .5
 
 # Save App's URL for later
 APP=$(ibmcloud ce app get -n lister -o url)

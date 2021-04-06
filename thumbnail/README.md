@@ -25,7 +25,7 @@ The overall growth path that our application will take is:
 ## Initial Setup
 
 You can work through this tutorial using the
-[IBM Cloud Shell](https://cloud.ibm.com/shell) app in your browser, or
+[IBM Cloud Shell](https://cloud.ibm.com/shell) application in your browser, or
 you can install the necessary CLI tools on your own machine.
 
 If you use [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
@@ -261,9 +261,10 @@ go ahead and create a new bucket into which our data will be stored. To do
 this you'll need to provide a unique name for your bucket. It needs to be
 globally unique across all buckets in the IBM Cloud. In the command below
 we'll use the "Source service instance" value from the previous command's
-output appended with "thumbnail" (This just happens to also be the ID of our
-Code Engine project). But first we'll save that name in an
-environment variable for easy use:
+output appended with "thumbnail" (this just happens to also be the ID of our
+Code Engine project), but you can technically use any value you want as long
+as it's unique. Let's save that name in an environment variable for
+easy use:
 
 ```
 $ export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
@@ -293,34 +294,17 @@ into our bucket. We'll invoke the `MakeThumbnail` function at a later
 point in time.
 
 As with version 1 of our application, the container image is already built for
-us so we just need to tell Code Engine to use it. Howwever, there is one other
+us so we just need to tell Code Engine to use it. However, there is one other
 change we need to make at the same time. This version of the application will
 need to be told which bucket to use for the images. It will look for an
 environment variable called `BUCKET` to get the bucket name. We could have
 just hard-coded the bucket name into the application, but being able to
 modify the name dynamically without changing the source code is better.
 
-With that let's update our application to use a newer version of our
-code, which is available from the "v2" version of our container image:
-```
-$ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
-    --env BUCKET=$BUCKET
-
-Updating application 'thumbnail' to latest revision.
-The Configuration is still working to reflect the latest desired specification.
-Traffic is not yet migrated to the latest revision.
-Ingress has not yet been reconciled.
-Waiting for load balancer to be ready
-Run 'ibmcloud ce application get -n thumbnail' to check the application status.
-OK
-
-https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
-```
-
-Before the application can access the bucket it'll need a little more
+However, before the application can access the bucket it'll need a little more
 information about how to talk to COS - for example, it'll need the credentials
-to authenticate to our COS instance. Code Engine can help here by automatically
-settings up the credentials and auto-injecting them into applicaiton as
+to authenticate to our COS instance. Code Engine can help here by
+settings up the credentials and auto-injecting them into the applicaiton as
 environment variables. If you look in the `main` function in
 [`v2/app.go`](v2/app.go) you'll see the first thing it does it get those
 values for later use.
@@ -356,6 +340,26 @@ Only then will Code Engine migrate all traffic from the old revision to the
 new one. This means that users of your application will never experience any
 downtime during this switch-over. Eventually the old revision of your code
 will be scaled down.
+
+Even though we haven't upgraded our application code yet, having those
+COS and BUCKET environment variables already set does not harm. But, let's
+now go ahead and upgrade to the latest ("v2") version of our code, and
+remeber to pass in the bucket name as an environment variable:
+
+```
+$ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
+    --env BUCKET=$BUCKET
+
+Updating application 'thumbnail' to latest revision.
+The Configuration is still working to reflect the latest desired specification.
+Traffic is not yet migrated to the latest revision.
+Ingress has not yet been reconciled.
+Waiting for load balancer to be ready
+Run 'ibmcloud ce application get -n thumbnail' to check the application status.
+OK
+
+https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+```
 
 Technically you can use the application right now, but if you upload an
 image you won't see the thiumbnail because that logic has been moved out
@@ -456,6 +460,17 @@ Successfully added namespace 'thumbnail-ns'
 OK
 ```
 
+If you're running this tutorial outside of the United States then the location
+of the ICR server will not be `us.icr.io` in the output from the previous
+command. To keep things generic/easier, we'll set the `ICR` environment
+variable to the location of your ICR server and use that whenever we reference
+the images you're going to build in the remainder of this tutorial:
+
+```
+$ export ICR=us.icr.io
+```
+<!-- export ICR=$(sed -n 's/^.*in registry \\(.*\\)\\.\\.\\.$/\\1/p' < out) -->
+
 Next we need to create a set of credentials that our build process will use
 to talk to the Registry. We'll give those credntials a name of
 `thumbnail-icr-APIKEY` so we can delete it later when we're done:
@@ -485,7 +500,7 @@ you'll need to copy the "API Key" from the previous output into the following
 command in place of the `$APIKEY`:
 
 ```
-$ ibmcloud ce registry create --name icr --password $APIKEY --server us.icr.io
+$ ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
 
 Creating image registry access secret 'icr'...
 OK
@@ -495,8 +510,8 @@ Now we can actually define our build for the new application. The parameters
 to this command are:
 - `--name`: the name of the build definition we're setting up (`eventer-build`)
 - `--image`: the name of the container image we're going to build
-  (`us.icr.io/thumbnail-ns/eventer`). Notice that
-  it includes the name of the ICR registry (`us.icr.io`), the name of the
+  (`$ICR/thumbnail-ns/eventer`). Notice that
+  it includes the name of the ICR registry (`$ICR`), the name of the
   namespace (`thumbnail-ns`) and finally the name of the image itself
   (`eventer`)
 - `--source`: the location of the git repo where our source code can be found
@@ -509,9 +524,10 @@ With that, let's run the command to define the build:
 
 ```
 $ ibmcloud ce build create --name eventer-build \
-    --image us.icr.io/thumbnail-ns/eventer \
+    --image $ICR/thumbnail-ns/eventer \
     --source https://github.com/IBM/CodeEngine \
-    --registry-secret icr --context-dir thumbnail/eventer
+    --registry-secret icr \
+    --context-dir thumbnail/eventer
 
 Creating build 'eventer-build'...
 OK
@@ -548,11 +564,11 @@ Now we can finally deploy our new applcation to receive the events. You'll
 notice that the command
 looks very similar to the `app create` command we used for the webapp, but
 there is one additional parameter (`--registry-secret`) that we need to pass-in
-because the image is stored in our private ICR namespaces, so Code Engine will
-need access to it - similar to the build process:
+because the image is stored in our private ICR namespace, so Code Engine will
+need credentials to access it - similar to the build process:
 
 ```
-$ ibmcloud ce app create --name eventer --image us.icr.io/thumbnail-ns/eventer \
+$ ibmcloud ce app create --name eventer --image $ICR/thumbnail-ns/eventer \
     --registry-secret icr
 
 Creating application 'eventer'...
@@ -606,6 +622,18 @@ $ ibmcloud ce sub cos create --name coswatch --bucket $BUCKET \
 Creating COS event subscription 'coswatch'...
 Run 'ibmcloud ce subscription cos get -n coswatch' to check the COS event subscription status.
 OK
+```
+
+While everything is hook-up right now, you'll notice that the "Thumbnail
+Job Runner" button is there visible, even though it shouldn't be needed
+any more. However, instead of completely removing it from the code we allowed
+for it to be conditionally visible via another environment variable called
+`HIDE_BUTTON`. If it's set (to any non-empty string) then the button should
+vanish from the webapp's page. Let's go ahead and update our application one
+last time to see it disappear:
+
+```
+> ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 ```
 
 That's it. Go back to the web page, upload an image and you should see the
