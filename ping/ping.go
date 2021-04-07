@@ -17,7 +17,7 @@ func main() {
 			body, _ = ioutil.ReadAll(r.Body)
 		}
 
-		fmt.Printf("%s - Received:\n", daTime)
+		fmt.Printf("%s - Received(path: %s):\n", daTime, r.URL.Path)
 
 		// Sort the HTTP Headers
 		keys := []string{}
