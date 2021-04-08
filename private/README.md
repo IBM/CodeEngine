@@ -5,9 +5,9 @@ from within the Code Engine product. Meaning, it does not have an external
 endpoint/URL that is reachable from the internal.
 
 In this example we'll create 2 apps, `frontend` and `backend`. `frontend`
-will be a normall app, accessible from the internet. `backedn` is private and
+will be a normall app, accessible from the internet. `backend` is private and
 is only accessible to `frontend`. Calling `frontend` will `curl` the `backend`
-app and then include that in it's output back to the user.
+app and then include its response in the output back to the user.
 
 - - -
 
