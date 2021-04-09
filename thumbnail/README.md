@@ -24,6 +24,10 @@ The overall growth path that our application will take is:
 
 ## Initial Setup
 
+See the [main README](../README.md) for additional information about
+[getting started](../README.md#getting-started), but the main points are
+described below.
+
 You can work through this tutorial using the
 [IBM Cloud Shell](https://cloud.ibm.com/shell) service in your browser, or
 you can install the necessary CLI tools on your own machine.
