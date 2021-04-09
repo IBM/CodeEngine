@@ -25,7 +25,7 @@ The overall growth path that our application will take is:
 ## Initial Setup
 
 You can work through this tutorial using the
-[IBM Cloud Shell](https://cloud.ibm.com/shell) application in your browser, or
+[IBM Cloud Shell](https://cloud.ibm.com/shell) service in your browser, or
 you can install the necessary CLI tools on your own machine.
 
 If you use [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
@@ -40,6 +40,13 @@ following are installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
+
+Make sure you have your IBM Cloud resource group specified - see the
+```
+$ ibmcloud resource groups
+$ ibmcloud target --help
+```
+commands for more information.
 
 ## Part 1 - Deploying our first application
 

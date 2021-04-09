@@ -25,7 +25,7 @@ larger use-case.
 #### Cloud Shell
 
 The easiest way to run these are via the
-[IBM Cloud Shell](https://cloud.ibm.com/shell). This is a browser based
+[IBM Cloud Shell](https://cloud.ibm.com/shell)service . This is a browser based
 command line that will have all of the IBM Cloud CLI components pre-installed
 for you.
 
@@ -57,6 +57,14 @@ If you need, or want, to clone this repo simple execute:
 $ git clone https://github.com/IBM/CodeEngine
 ```
 and then `cd` into the `CodeEngine` directory.
+
+If you have not already specified your IBM Cloud resourec group, then
+see the
+```
+$ ibmcloud resource group
+$ ibmcloud target --help
+```
+commands for more information. Often it is called `default` or `Default`.
 
 Most of the material in here assumes you aleady have a Code Engine
 [project](https://cloud.ibm.com/docs/codeengine#term-summary) already created.
