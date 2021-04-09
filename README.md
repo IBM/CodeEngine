@@ -29,7 +29,7 @@ don't plan on going beyond the
 #### Cloud Shell
 
 The easiest way to run these are via the
-[IBM Cloud Shell](https://cloud.ibm.com/shell)service . This is a browser based
+[IBM Cloud Shell](https://cloud.ibm.com/shell) service. This is a browser based
 command line that will have all of the IBM Cloud CLI components pre-installed
 for you.
 
@@ -62,8 +62,8 @@ $ git clone https://github.com/IBM/CodeEngine
 ```
 and then `cd` into the `CodeEngine` directory.
 
-If you have not already specified your IBM Cloud resourec group, then
-see the
+If you have not already specified your IBM Cloud resource group, then
+see the:
 ```
 $ ibmcloud resource group
 $ ibmcloud target --help

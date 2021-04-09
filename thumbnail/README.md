@@ -45,7 +45,7 @@ following are installed:
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
 
-Make sure you have your IBM Cloud resource group specified - see the
+Make sure you have your IBM Cloud resource group specified - see the:
 ```
 $ ibmcloud resource groups
 $ ibmcloud target --help
