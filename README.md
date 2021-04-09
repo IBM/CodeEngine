@@ -22,6 +22,10 @@ larger use-case.
 
 ### Getting Started
 
+Code Engine requires that you use an IBM Cloud "paid account", even if you
+don't plan on going beyond the
+[free tier](https://www.ibm.com/cloud/code-engine/pricing).
+
 #### Cloud Shell
 
 The easiest way to run these are via the
