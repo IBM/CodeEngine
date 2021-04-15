@@ -47,8 +47,8 @@ following are installed:
 
 Make sure you have your IBM Cloud resource group specified - see the:
 ```
-$ ibmcloud resource groups
-$ ibmcloud target --help
+> ibmcloud resource groups
+> ibmcloud target --help
 ```
 commands for more information.
 
@@ -145,7 +145,7 @@ $ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 <!-- export URL=$(tail -1 out) -->
 
 It's a very basic application where you can drag-n-drop one of the images into
- the first box, or upload your own image if you wish. Once there is an image
+the first box, or upload your own image if you wish. Once there is an image
 in there, go ahead and hit the "Generate Thumbnail" button to process the
 image. The resulting thumbnail should appear in the right-hand box.
 
@@ -241,11 +241,34 @@ Successfully switched to IAM-based authentication. The program will access your 
 ```
 
 One final COS setup step is that we'll need to give our Code Engine project
-permission to access our COS instance - notice we're using the `ID` from the previous step above:
+permission to access our COS instance.
+
+To do this we'll first need the Service Instance ID of our Code Engine project.
+To get that we'll use the following command:
+
+```
+$ ibmcloud ce project list
+
+Getting projects...
+OK
+
+Name       ID                                    Status  Selected  Tags  Region    Resource Group  Age
+thumbnail  4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6  active  true            us-south  default         10m
+```
+
+And we'll need to save the `ID` value corresponding to our project. Let's
+save that in an environment variable called `CE_ID`:
+```
+$ export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
+```
+<!-- export CE_ID=$(sed -n 's/^[^ ]* *\\([^ ]*\\) *active *true.*/\\1/p' < out) -->
+
+We can now setup our authorization policy using both the `CE_ID` we just
+obtained, and the Cloud Object Storage ID (`COS_ID`) from a previous command:
 
 ```
 $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
-    "Notifications Manager" --source-service-instance-name thumbnail-cos \
+    "Notifications Manager" --source-service-instance-id $CE_ID \
     --target-service-instance-id $COS_ID
 
 Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@us.ibm.com...
@@ -373,7 +396,7 @@ https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
 
 Technically you can use the application right now, but if you upload an
-image you won't see the thiumbnail because that logic has been moved out
+image you won't see the thumbnail because that logic has been moved out
 of the webapp, as was mentioned in the previous section.
 
 The processing of the images will now be done in a "Batch Job". Batch jobs
@@ -636,7 +659,7 @@ OK
 ```
 
 While everything is hook-up right now, you'll notice that the "Thumbnail
-Job Runner" button is there visible, even though it shouldn't be needed
+Job Runner" button is still visible, even though it shouldn't be needed
 any more. However, instead of completely removing it from the code we allowed
 for it to be conditionally visible via another environment variable called
 `HIDE_BUTTON`. If it's set (to any non-empty string) then the button should
