@@ -295,15 +295,15 @@ go ahead and create a new bucket into which our data will be stored. To do
 this you'll need to provide a unique name for your bucket. It needs to be
 globally unique across all buckets in the IBM Cloud. In the command below
 we'll use the "Source service instance" value from the previous command's
-output appended with "thumbnail" (this just happens to also be the ID of our
-Code Engine project), but you can technically use any value you want as long
-as it's unique. Let's save that name in an environment variable for
+output (this just happens to also be the ID of our Code Engine project)
+appended with "-thumbnail", but you can technically use any value you want as
+long as it's unique. Let's save that name in an environment variable for
 easy use:
 
 ```
 $ export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
 ```
-<!-- export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail -->
+<!-- export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail-$RANDOM -->
 
 Now let's ask COS to create our bucket:
 
@@ -735,7 +735,20 @@ Remove the authorization we setup between COS and Code Engine:
 ```
 $ ibmcloud iam authorization-policy-delete $POLICY_ID --force
 ```
-Delete the COS instance (incuding the bucket and the images):
+Delete all of the images in your bucket by first listing all of them:
+```
+$ ibmcloud cos objects --bucket $BUCKET
+```
+And then delete each one - replacing `$KEY` with the key/name of each:
+```
+> ibmcloud cos object-delete --bucket $BUCKET --key $KEY
+```
+<!-- ibmcloud cos objects --bucket $BUCKET --output json | sed -n 's/.*"Key": "\\(.*\\)",.*/\\1/p' | while read k ; do ibmcloud cos object-delete --bucket $BUCKET --key $k --force ; done -->
+Delete the COS bucket:
+```
+$ ibmcloud cos bucket-delete --bucket $BUCKET --force
+```
+Delete the COS instance:
 ```
 $ ibmcloud resource service-instance-delete thumbnail-cos --force
 ```
