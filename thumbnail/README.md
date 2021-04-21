@@ -175,7 +175,7 @@ web front-end application.
 
 The other change in processing logic we're going to make is to move the
 thumbnail processing out of the webapp, again since it might not be the only
-way images are put into our datastore, and into a seperate workload that
+way images are put into our datastore, and into a separate workload that
 we'll invoke outside of the webapp. But more on that later, for now let's
 focus on setting up the datastore.
 
@@ -403,7 +403,7 @@ The processing of the images will now be done in a "Batch Job". Batch jobs
 are pieces of code that will run once and then exit when done - unlike
 applications that wait for additional work to come in via HTTP requests.
 In this case we've moved the `MakeThumbnail` logic out of the webapp and
-into a seperate container image - which, if you're interested, you can see
+into a separate container image - which, if you're interested, you can see
 by looking at [`v2/job.go`](v2/job.go). Like the other images, it's been
 pre-built for you so all we need to do is create our batch job.
 
@@ -469,7 +469,7 @@ bucket, and then we'll process the image right away.
 
 In order to make this happen we're going to deploy a second application to
 receive those events. We could have reused the webapp application for this but
-in order to have a clear seperation of concerns we'll create a new one. Then
+in order to have a clear separation of concerns we'll create a new one. Then
 each can scale independently as needed.
 
 Rather than using a pre-built image, this time we're going to leverage
