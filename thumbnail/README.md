@@ -93,7 +93,7 @@ In this tutorial we've already pre-built most of the container images
 for you, so let's immediately go ahead and deploy our initial verison of
 the webapp by creating a Code Engine application.
 
-Before weo do that though, it's important to undestand a bit about the
+Before we do that though, it's important to understand a bit about the
 types of workloads that Code Engine supports.
 Code Engine supports two types of workloads: Applications and Batch Jobs.
 Applications are any workloads that typically respond to incoming messages.
