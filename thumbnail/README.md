@@ -338,9 +338,9 @@ modify the name dynamically without changing the source code is better.
 However, before the application can access the bucket it'll need a little more
 information about how to talk to COS - for example, it'll need the credentials
 to authenticate to our COS instance. Code Engine can help here by
-settings up the credentials and auto-injecting them into the applicaiton as
+settings up the credentials and auto-injecting them into the application as
 environment variables. If you look in the `main` function in
-[`v2/app.go`](v2/app.go) you'll see the first thing it does it get those
+[`v2/app.go`](v2/app.go) you'll see the first thing it does is get those
 values for later use.
 
 Look for the `os.Getenv("CLOUD_OBJECT_STORAGE_APIKEY")` and
