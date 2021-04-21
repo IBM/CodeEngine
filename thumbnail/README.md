@@ -39,8 +39,8 @@ $ ibmcloud plugin update --all --force
 ```
 to ensure you have the latest versions of the CLI plugins.
 
-If you use your own machine you'll need to install the following:
-following are installed:
+If you use your own machine you'll need to install the following (if not
+already installed):
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
