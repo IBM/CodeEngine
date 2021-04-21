@@ -170,7 +170,7 @@ thumbnail.
 
 In the end, what this really means is that our web application might
 eventually go away or it could be just one of many ways in which our
-datastore is populated. So it's role switches from "the processor" to just a
+datastore is populated. So its role switches from "the processor" to just a
 web front-end application.
 
 The other change in processing logic we're going to make is to move the
