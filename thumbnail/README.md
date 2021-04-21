@@ -378,7 +378,7 @@ will be scaled down.
 Even though we haven't upgraded our application code yet, having those
 COS and BUCKET environment variables already set does not harm. But, let's
 now go ahead and upgrade to the latest ("v2") version of our code, and
-remeber to pass in the bucket name as an environment variable:
+remember to pass in the bucket name as an environment variable:
 
 ```
 $ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
@@ -425,7 +425,7 @@ OK
 It is important to note that the previous command just defines the job, it
 doesn't actually execute it. By creating the defintion of the job in advance
 we can easily run it whenever we need to via a `job submit` command without
-having to enter all of the parametrs each time. However, in our case the
+having to enter all of the parameters each time. However, in our case the
 webapp will be submitting the job for us each time the user presses the
 "Thumbnail Job Runner" button on the web page.
 
@@ -445,7 +445,7 @@ OK
 
 Now if you go back to the webpage you'll be able to generate thumbnails
 for the images you upload by pressing the "Thumbnail Job Runner" button.
-It'll take a second or two for the job to be started and do it's work but
+It'll take a second or two for the job to be started and do its work but
 you should eventually see the thumbnails appear on the web page.
 
 You've now successfully completed part 3 of the tutorial.
@@ -454,7 +454,7 @@ You've now successfully completed part 3 of the tutorial.
 
 In this last portion of the tutorial we'll be making the final migration
 to our application. As of now the application is more robust than it was
-when we first strarted. It can save the images and thumbmails, it can
+when we first strarted. It can save the images and thumbnails, it can
 support processing images regardless of how they are put into our datastore,
 and it can process the entire bucket of them at will via our batch job.
 However, the batch job process is a bit too manual for our needs. We could
@@ -569,7 +569,7 @@ OK
 
 Similar to the batch job we created, this command just defined how to do the
 build, it didn't actually invoke it. This allows us to run it over and over
-without neededing to specificy all of the parameters each time.
+without neededing to specify all of the parameters each time.
 
 Let's invoke it via the `buildrun submit` command, passing in the name
 of the build we just created. Notice we'll also use the `--wait` flag
@@ -594,7 +594,7 @@ Run 'ibmcloud ce buildrun get -n eventer-build-run-210402-183139464' to check th
 OK
 ```
 
-Now we can finally deploy our new applcation to receive the events. You'll
+Now we can finally deploy our new application to receive the events. You'll
 notice that the command
 looks very similar to the `app create` command we used for the webapp, but
 there is one additional parameter (`--registry-secret`) that we need to pass-in
@@ -658,7 +658,7 @@ Run 'ibmcloud ce subscription cos get -n coswatch' to check the COS event subscr
 OK
 ```
 
-While everything is hook-up right now, you'll notice that the "Thumbnail
+While everything is hooked-up right now, you'll notice that the "Thumbnail
 Job Runner" button is still visible, even though it shouldn't be needed
 any more. However, instead of completely removing it from the code we allowed
 for it to be conditionally visible via another environment variable called
@@ -760,9 +760,9 @@ can delete it now:
 
 Let's refresh our memory on what happened in this tutorial, we:
 - created an internet facing application with just a reference to a
-  contaier image. While we didn't demonstrate it, if the load on the application
-  increased, Code Engine would have scaled it up and down automatically.
-  Including down to zero if it was idle.
+  container image. While we didn't demonstrate it, if the load on the
+  application increased, Code Engine would have scaled it up and down
+  automatically, including down to zero if it was idle.
 - created an instance of COS and a bucket to store the images
 - updated the application to a second version with no downtime, and made it
   so the application stored the images, and thumbnails, in the bucket
