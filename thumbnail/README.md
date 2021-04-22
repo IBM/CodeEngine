@@ -12,7 +12,7 @@ around the application and how Code Engine can make that easier.
 
 The overall growth path that our application will take is:
 - deploy a simple webapp as a prototype to prove that our core "thumbnail"
-  processing logic works. Eveything is self-contained in this one webapp.
+  processing logic works. Everything is self-contained in this one webapp.
 - add some persistence so that as images are uploaded they are saved for
   safe keeping and so that we can off-load the processing to a background
   process since in many scenarios the "transformation" logic may take a while.
@@ -57,8 +57,8 @@ commands for more information.
 Before we begin let's first discuss how the image transformation (i.e.
 thumbnail generator) works. It's rather simple, it takes an image (as an
 array of bytes) and then returns the thumbnail, again as an array of bytes.
-As mentioned in the introduction, the code here isn't realy that important,
-and can easily be replaced with other (more complex) logic, buf if you're
+As mentioned in the introduction, the code here isn't really that important,
+and can easily be replaced with other (more complex) logic, but if you're
 interested you can see the logic in the [`MakeThumbnail`](v1/app.go) function.
 
 In this first step we'll be deploying a webapp that wrappers this
@@ -90,7 +90,7 @@ OK
 ```
 
 In this tutorial we've already pre-built most of the container images
-for you, so let's immediately go ahead and deploy our initial verison of
+for you, so let's immediately go ahead and deploy our initial version of
 the webapp by creating a Code Engine application.
 
 Before we do that though, it's important to understand a bit about the
@@ -164,7 +164,7 @@ to change things a bit so that instead of assuming the incoming images are
 coming from a web page, we're going to get them from a persistent store - or
 in this case IBM Cloud Object Storage. We're doing this because in our
 production environment the data we're going to process might be coming from
-many different sources and we need to keep both the orignal and processed
+many different sources and we need to keep both the original and processed
 data for our records - meaning we need to save both the image and its
 thumbnail.
 
@@ -423,7 +423,7 @@ OK
 ```
 
 It is important to note that the previous command just defines the job, it
-doesn't actually execute it. By creating the defintion of the job in advance
+doesn't actually execute it. By creating the definition of the job in advance
 we can easily run it whenever we need to via a `job submit` command without
 having to enter all of the parameters each time. However, in our case the
 webapp will be submitting the job for us each time the user presses the
@@ -454,7 +454,7 @@ You've now successfully completed part 3 of the tutorial.
 
 In this last portion of the tutorial we'll be making the final migration
 to our application. As of now the application is more robust than it was
-when we first strarted. It can save the images and thumbnails, it can
+when we first started. It can save the images and thumbnails, it can
 support processing images regardless of how they are put into our datastore,
 and it can process the entire bucket of them at will via our batch job.
 However, the batch job process is a bit too manual for our needs. We could
@@ -506,7 +506,7 @@ $ export ICR=us.icr.io
 <!-- export ICR=$(sed -n 's/^.*in registry \\(.*\\)\\.\\.\\.$/\\1/p' < out) -->
 
 Next we need to create a set of credentials that our build process will use
-to talk to the Registry. We'll give those credntials a name of
+to talk to the Registry. We'll give those credwntials a name of
 `thumbnail-icr-APIKEY` so we can delete it later when we're done:
 
 ```
@@ -569,7 +569,7 @@ OK
 
 Similar to the batch job we created, this command just defined how to do the
 build, it didn't actually invoke it. This allows us to run it over and over
-without neededing to specify all of the parameters each time.
+without needing to specify all of the parameters each time.
 
 Let's invoke it via the `buildrun submit` command, passing in the name
 of the build we just created. Notice we'll also use the `--wait` flag
