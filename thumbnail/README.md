@@ -89,13 +89,21 @@ Now selecting project 'thumbnail'.
 OK
 ```
 
+By default creating the project will also "select" it so that all future
+`ibmcloud ce` commands will be scoped to the project. If you are using
+an existing project make sure you've selected it via the `ibmcloud ce
+project select` command.
+
 In this tutorial we've already pre-built most of the container images
 for you, so let's immediately go ahead and deploy our initial version of
 the webapp by creating a Code Engine application.
 
 Before we do that though, it's important to understand a bit about the
 types of workloads that Code Engine supports.
-Code Engine supports two types of workloads: Applications and Batch Jobs.
+Code Engine supports two types of workloads:
+- Applications
+- Batch Jobs
+
 Applications are any workloads that typically respond to incoming messages.
 Whether those messages are API calls, web page requests, events, or any other
 HTTP request, Applications process those messages. Code Engine will then
@@ -113,10 +121,12 @@ particular operation, and then when done they exit.
 With that, let's now return to deploying our application.
 
 To do this we only need to provide two pieces of information:
-- the name of our application - `thumbnail` in this case
-- the container image to use - `ibmcom/thumbnail`
+- the name of our application - `thumbnail` in this case.
+  You could name it anything you want, but below we'll use this name
+- the container image to use - `ibmcom/thumbnail`. This is a pre-built
+  container image in a public container register (DockerHub)
 
-and we'll use the Code Engine (ce) `app create` command:
+And then we'll use the Code Engine (ce) `app create` command:
 
 ```
 $ ibmcloud ce app create --name thumbnail --image ibmcom/thumbnail
@@ -241,7 +251,10 @@ Successfully switched to IAM-based authentication. The program will access your 
 ```
 
 One final COS setup step is that we'll need to give our Code Engine project
-permission to access our COS instance.
+permission to access our COS instance. By default, and for security reasons,
+access to your COS buckets is restricted and can not be accessed by any other
+cloud components without your explicit permission. In this case, we need to
+authorize access to your COS bucket from your Code Engine project.
 
 To do this we'll first need the Service Instance ID of our Code Engine project.
 To get that we'll use the following command:
@@ -350,7 +363,8 @@ get the API Key used to access COS, and the COS instance ID for our bucket.
 In Code Engine we use the `bind` operation to connect our workloads up to
 service instances - all we need is the application name and service instance
 name that we used in the `resource service-instance-create` command in the
-previous section, Code Engine will do the rest:
+previous section, Code Engine will then inject these environment variables for
+us:
 
 ```
 $ ibmcloud ce app bind --name thumbnail --service-instance thumbnail-cos
@@ -394,6 +408,23 @@ OK
 
 https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
+
+Now that that application has been updated, you might have noticed that the
+webpage looks a little bit different. There are a few things to be aware of:
+- Dragging (or uploading) an image into the left-most box does not upload
+  it automatically to the server (object storage). You are given an
+  opportunity to view it first
+- Once you're ok with the image, you then can then press the "Upload Image"
+  button to upload it to the object storage
+- You should see the resulting image in the "Images / Thumbnails" box on the
+  right. However, the corresponding thumbnail image should show "N/A" until
+  you ask for the thumbnail to be generated
+- Note that you can upload as many images as you want before you generate
+  the thumbnails for them
+- You will generate the thumbnails via the "Thumbnails Job Runner" button,
+  but that hasn't been enabled yet. We'll do that next
+- And finally, you'll notice a "Clear Bucket" button which can be used to
+  erase the contents of the object storage bucket if you want
 
 Technically you can use the application right now, but if you upload an
 image you won't see the thumbnail because that logic has been moved out
@@ -472,9 +503,9 @@ receive those events. We could have reused the webapp application for this but
 in order to have a clear separation of concerns we'll create a new one. Then
 each can scale independently as needed.
 
-Rather than using a pre-built image, this time we're going to leverage
-Code Engine's "build" feature and build it ourselves. In order to do this
-there's a little bit of setup we need to do.
+Rather than using a pre-built container image, this time we're going to
+leverage Code Engine's "build" feature and build it ourselves. In order to do
+this there's a little bit of setup we need to do.
 
 First, we'll need to create a place to store our newly created container
 image. We're going to use IBM's Container Registry (ICR). In there we'll first
@@ -507,20 +538,20 @@ $ export ICR=us.icr.io
 
 Next we need to create a set of credentials that our build process will use
 to talk to the Registry. We'll give those credwntials a name of
-`thumbnail-icr-APIKEY` so we can delete it later when we're done:
+`thumbnail-icr-apikey` so we can delete it later when we're done:
 
 ```
-$ ibmcloud iam api-key-create thumbnail-icr-APIKEY
+$ ibmcloud iam api-key-create thumbnail-icr-apikey
 
-Creating API key thumbnail-icr-APIKEY under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
+Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
 OK
-API key thumbnail-icr-APIKEY was created
+API key thumbnail-icr-apikey was created
 Successfully save API key information to apikey
 
 Please preserve the API key! It cannot be retrieved after it's created.
 
 ID            ApiKey-aeff919a-99e7-402a-9552-4924f7535832
-Name          thumbnail-icr-APIKEY
+Name          thumbnail-icr-apikey
 Description
 Created At    2021-04-04T17:16+0000
 API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
@@ -530,8 +561,9 @@ Locked        false
 
 The final setup we need to do is to tell Code Engine how to talk to
 the Registry on our behalf using the API key we just created. To do this
-you'll need to copy the "API Key" from the previous output into the following
-command in place of the `$APIKEY`:
+you'll need to copy the "API Key" value (the `jtL0Z2...` string in the sample
+above) from the previous output into the following command in place of the
+`$APIKEY`:
 
 ```
 $ ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
@@ -540,8 +572,8 @@ Creating image registry access secret 'icr'...
 OK
 ```
 
-Now we can actually define our build for the new application. The parameters
-to this command are:
+Now we can actually define the build process of our new container image for
+the new application. The parameters to this command are:
 - `--name`: the name of the build definition we're setting up (`eventer-build`)
 - `--image`: the name of the container image we're going to build
   (`$ICR/thumbnail-ns/eventer`). Notice that
@@ -554,7 +586,7 @@ to this command are:
 - `--context-dir`: the location in the git repo where our code resides. If it's
   at the root of the repo then this parameter would not be necessary
 
-With that, let's run the command to define the build:
+With that, let's run the command to define the build process:
 
 ```
 $ ibmcloud ce build create --name eventer-build \
@@ -729,7 +761,7 @@ $ ibmcloud cr namespace-rm thumbnail-ns --force
 ```
 Delete the API key we used:
 ```
-$ ibmcloud iam api-key-delete thumbnail-icr-APIKEY --force
+$ ibmcloud iam api-key-delete thumbnail-icr-apikey --force
 ```
 Remove the authorization we setup between COS and Code Engine:
 ```
