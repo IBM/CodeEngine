@@ -92,6 +92,11 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("Got an event: %s", string(body))
 
+	if COSClient == nil {
+		log.Printf("Can't process since we're missing the COS connection")
+		return
+	}
+
 	bucketName := event.Bucket
 	objectName := event.Notification.ObjectName
 

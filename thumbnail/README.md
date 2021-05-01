@@ -649,13 +649,22 @@ OK
 Now we can finally deploy our new application to receive the events. You'll
 notice that the command
 looks very similar to the `app create` command we used for the webapp, but
-there is one additional parameter (`--registry-secret`) that we need to pass-in
-because the image is stored in our private ICR namespace, so Code Engine will
-need credentials to access it - similar to the build process:
+there are extra parameters. First is `--registry-secret`. This is similar
+to what we did during the build process, we need to pass in the credentials
+to our private ICR namespace so that Code Engine can access our image.
+There's also a `--cluster-local` parameter. This tells Code Engine to make
+our new application "private" - meaning there is no external (internet facing)
+endpoint available for it. By doing this it will only be accessible to other
+workloads in our Code Engine project, and to the Code Engine eventing
+infrastructure.  Since the only incoming traffic will
+be events from COS, we don't need it to be visible outside of our project.
+Note that this only impacts incoming traffic, the application can still
+initiate connections to the internet if it wants to.
+With that, let's create the application:
 
 ```
 $ ibmcloud ce app create --name eventer --image $ICR/thumbnail-ns/eventer \
-    --registry-secret icr
+    --registry-secret icr --cluster-local
 
 Creating application 'eventer'...
 The Configuration is still working to reflect the latest desired specification.
