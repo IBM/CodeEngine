@@ -34,7 +34,7 @@ you can install the necessary CLI tools on your own machine.
 
 If you use [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
 run:
-```
+```console
 $ ibmcloud plugin update --all --force
 ```
 to ensure you have the latest versions of the CLI plugins.
@@ -45,12 +45,32 @@ already installed):
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
 
-Make sure you have your IBM Cloud resource group specified - see the:
+Finally, make sure you have an IBM Cloud resource group specified. You can see
+ the list of available resource groups via:
+```console
+> ibmcloud resoure groups
+
+Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@us.ibm.com...
+OK
+Name      ID                                 Default Group   State
+default   f23e5930aa034c1a86ee479af10c5005   true            ACTIVE
 ```
-> ibmcloud resource groups
-> ibmcloud target --help
+
+And then select one:
+```console
+> ibmcloud target -g default
+
+Targeted resource group default
+
+API endpoint:      https://cloud.ibm.com
+Region:            us-south
+User:              abc@us.ibm.com
+Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
+Resource group:    default
+CF API endpoint:
+Org:
+Space:
 ```
-commands for more information.
 
 ## Part 1 - Deploying our first application
 
@@ -79,7 +99,7 @@ when grouping things.
 If you already have a project then you can skip this first command if you'd
 like, but if you have not created one yet then let's create one:
 
-```
+```console
 > ibmcloud ce project create --name thumbnail
 
 Creating project 'thumbnail'...
@@ -128,7 +148,7 @@ To do this we only need to provide two pieces of information:
 
 And then we'll use the Code Engine (ce) `app create` command:
 
-```
+```console
 $ ibmcloud ce app create --name thumbnail --image ibmcom/thumbnail
 
 Creating application 'thumbnail'...
@@ -148,7 +168,7 @@ application is now running. Go ahead and copy this URL into your browser
 and you should see our thumbnail application.
 
 Let's also save this URL as environment variable so we can use it later:
-```
+```console
 $ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
 
@@ -192,7 +212,7 @@ focus on setting up the datastore.
 As mentioned, our datastore is going to be Cloud Object Storage so we'll
 need to first create a new instance of that service:
 
-```
+```console
 $ ibmcloud resource service-instance-create thumbnail-cos \
     cloud-object-storage lite global
 
@@ -219,7 +239,7 @@ Last Operation:
 From this output you'll need to save the `ID` value for a future command.
 So to make life easier, let's save it as an environment variable:
 
-```
+```console
 $ export COS_ID=crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::
 ```
 <!-- export COS_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
@@ -232,7 +252,7 @@ need to configure it to:
   supports multiple types
 
 First, let's direct all COS CLI uses to our COS instance:
-```
+```console
 $ ibmcloud cos config crn --crn $COS_ID --force
 
 Saving new Service Instance ID...
@@ -243,7 +263,7 @@ Successfully stored your service instance ID.
 Now, let's use the "IAM" authentication method which will use the same API Key
 that the rest of our CLI commands will use:
 
-```
+```console
 $ ibmcloud cos config auth --method IAM
 
 OK
@@ -259,7 +279,7 @@ authorize access to your COS bucket from your Code Engine project.
 To do this we'll first need the Service Instance ID of our Code Engine project.
 To get that we'll use the following command:
 
-```
+```console
 $ ibmcloud ce project list
 
 Getting projects...
@@ -271,7 +291,7 @@ thumbnail  4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6  active  true            us-sout
 
 And we'll need to save the `ID` value corresponding to our project. Let's
 save that in an environment variable called `CE_ID`:
-```
+```console
 $ export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 ```
 <!-- export CE_ID=$(sed -n 's/^[^ ]* *\\([^ ]*\\) *active *true.*/\\1/p' < out) -->
@@ -279,7 +299,7 @@ $ export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 We can now setup our authorization policy using both the `CE_ID` we just
 obtained, and the Cloud Object Storage ID (`COS_ID`) from a previous command:
 
-```
+```console
 $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
     "Notifications Manager" --source-service-instance-id $CE_ID \
     --target-service-instance-id $COS_ID
@@ -298,7 +318,7 @@ Roles:                     Notifications Manager
 
 Let's save the ID of this authorization policy so we can delete it later:
 
-```
+```console
 $ export POLICY_ID=ece5ed46-546c-4ea6-89a1-d2ee331f9c51
 ```
 <!-- export POLICY_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
@@ -313,14 +333,14 @@ appended with "-thumbnail", but you can technically use any value you want as
 long as it's unique. Let's save that name in an environment variable for
 easy use:
 
-```
+```console
 $ export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
 ```
 <!-- export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail-$RANDOM -->
 
 Now let's ask COS to create our bucket:
 
-```
+```console
 $ ibmcloud cos bucket-create --bucket $BUCKET
 
 OK
@@ -366,7 +386,7 @@ name that we used in the `resource service-instance-create` command in the
 previous section, Code Engine will then inject these environment variables for
 us:
 
-```
+```console
 $ ibmcloud ce app bind --name thumbnail --service-instance thumbnail-cos
 
 Binding service instance...
@@ -394,7 +414,7 @@ COS and BUCKET environment variables already set does not harm. But, let's
 now go ahead and upgrade to the latest ("v2") version of our code, and
 remember to pass in the bucket name as an environment variable:
 
-```
+```console
 $ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
     --env BUCKET=$BUCKET
 
@@ -445,7 +465,7 @@ The arguments to the `job create` command are:
   name of the bucket in which the images are stored. Same as with the
   application.
 
-```
+```console
 $ ibmcloud ce job create --name thumbnail-job --image ibmcom/thumbnail-job \
     --env BUCKET=$BUCKET
 
@@ -464,7 +484,7 @@ As with the application, the job will need credentials to talk to COS.
 So we'll need to issue another `bind` command to ask Code Engine to
 auto-inject those for us:
 
-```
+```console
 $ ibmcloud ce job bind --name thumbnail-job --service-instance thumbnail-cos
 
 Binding service instance...
@@ -515,7 +535,7 @@ place our image.
 To do this all we need to do is tell it the name of our
 namespace, we'll use `thumbnail-ns`:
 
-```
+```console
 $ ibmcloud cr namespace-add thumbnail-ns
 
 Adding namespace 'thumbnail-ns' in resource group 'default' for account John Doe's Account in registry us.icr.io...
@@ -531,7 +551,7 @@ command. To keep things generic/easier, we'll set the `ICR` environment
 variable to the location of your ICR server and use that whenever we reference
 the images you're going to build in the remainder of this tutorial:
 
-```
+```console
 $ export ICR=us.icr.io
 ```
 <!-- export ICR=$(sed -n 's/^.*in registry \\(.*\\)\\.\\.\\.$/\\1/p' < out) -->
@@ -540,7 +560,7 @@ Next we need to create a set of credentials that our build process will use
 to talk to the Registry. We'll give those credwntials a name of
 `thumbnail-icr-apikey` so we can delete it later when we're done:
 
-```
+```console
 $ ibmcloud iam api-key-create thumbnail-icr-apikey
 
 Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
@@ -565,7 +585,7 @@ you'll need to copy the "API Key" value (the `jtL0Z2...` string in the sample
 above) from the previous output into the following command in place of the
 `$APIKEY`:
 
-```
+```console
 $ ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
 
 Creating image registry access secret 'icr'...
@@ -588,7 +608,7 @@ the new application. The parameters to this command are:
 
 With that, let's run the command to define the build process:
 
-```
+```console
 $ ibmcloud ce build create --name eventer-build \
     --image $ICR/thumbnail-ns/eventer \
     --source https://github.com/IBM/CodeEngine \
@@ -607,7 +627,7 @@ Let's invoke it via the `buildrun submit` command, passing in the name
 of the build we just created. Notice we'll also use the `--wait` flag
 so we can see the build output as it happens and we'll know when it's done:
 
-```
+```console
 $ ibmcloud ce buildrun submit --build eventer-build --wait
 
 Submitting build run 'eventer-build-run-210402-183139464'...
@@ -633,7 +653,7 @@ there is one additional parameter (`--registry-secret`) that we need to pass-in
 because the image is stored in our private ICR namespace, so Code Engine will
 need credentials to access it - similar to the build process:
 
-```
+```console
 $ ibmcloud ce app create --name eventer --image $ICR/thumbnail-ns/eventer \
     --registry-secret icr
 
@@ -653,7 +673,7 @@ As you might have guessed, just like the first application and the batch job,
 the "eventer" application needs credentials to talk to COS as well, we let's
 "bind" it to the COS instance:
 
-```
+```console
 $ ibmcloud ce app bind --name eventer --service-instance thumbnail-cos
 
 Binding service instance...
@@ -681,7 +701,7 @@ to the `subscription create` command are:
 
 Let's create our subscription:
 
-```
+```console
 $ ibmcloud ce sub cos create --name coswatch --bucket $BUCKET \
     --destination eventer
 
@@ -698,7 +718,7 @@ for it to be conditionally visible via another environment variable called
 vanish from the webapp's page. Let's go ahead and update our application one
 last time to see it disappear:
 
-```
+```console
 > ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 ```
 
@@ -715,7 +735,7 @@ thumbnail processor works even without uploading images via the webapp.
 First, let's download an image to our local system by using one of the
 pre-defined images from our webapp:
 
-```
+```console
 $ curl -fs $URL/images/dog1.jpg > dog
 ```
 
@@ -725,7 +745,7 @@ automatically appear on there as the webapp refreshes (`key` is the name
 of the object in COS, and `$RANDOM` will ensure that each time the command
 is called a unique key name is used):
 
-```
+```console
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
 
 OK
@@ -747,7 +767,7 @@ And with that we can now erase all of the objects we created.
 <!-- clean -->
 
 Let's start by deleting all of Code Engine resources we created:
-```
+```console
 $ ibmcloud ce sub cos delete --name coswatch --force
 $ ibmcloud ce build delete --name eventer-build -force
 $ ibmcloud ce app delete --name thumbnail --force
