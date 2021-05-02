@@ -136,7 +136,11 @@ zero.
 Batch jobs are slightly different from applications in that they do not
 typically respond to incoming messages. Often referred to as "run to
 completion" tasks, batch jobs are meant to be created, then they execute a
-particular operation, and then when done they exit.
+particular operation, and then when done they exit. Unlike applications,
+batch jobs will not automatically scale. Rather, the number of instances
+are specified when the job is executed. So, aside from not receiving inbound
+traffic, and the mechanism by which they scale, batch jobs are similar
+to applications in all other aspects.
 
 With that, let's now return to deploying our application.
 
@@ -754,13 +758,15 @@ automatically appear on there as the webapp refreshes (`key` is the name
 of the object in COS, and `$RANDOM` will ensure that each time the command
 is called a unique key name is used):
 
+<!-- sleep 60 -->
 ```
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
+<!-- sleep 10 -->
 
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
 ```
-<!-- ibmcloud cos objects --bucket $BUCKET | grep dog > /dev/null 2>&1 -->
+<!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null 2>&1 -->
 
 Of course, you can still upload images from the webapp too if you'd like.
 Either way, the `eventer` application will receive the event from COS and
@@ -774,6 +780,7 @@ the contents of the bucket.
 And with that we can now erase all of the objects we created.
 
 <!-- clean -->
+<!-- export BUCKET=${BUCKET:-fake-bucket} -->
 
 Let's start by deleting all of Code Engine resources we created:
 ```

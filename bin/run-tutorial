@@ -25,8 +25,9 @@ while read -u 3 line ; do
     if [[ "$CLEAN" == "" || "$FOUND_CLEAN" != "" ]]; then
       env | sort > origenv
       # echo '#' $line
-      $EVAL $line || { echo "Failed: $line" ; exit 1 ; }
-      set +e ; env | sort | diff origenv - | grep -v '^[0-9]\+a' ; set -e
+      # $EVAL $line || { echo "Failed: $line" ; exit 1 ; }
+      $EVAL $line || [[ -n "$FOUND_CLEAN" ]] || { echo "Fail: $line";exit 1 ; }
+      ( set +e ; env | sort | diff origenv - | grep -v '^[0-9]\+a' ; exit 0 )
       echo
     fi
   else
