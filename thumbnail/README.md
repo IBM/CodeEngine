@@ -48,7 +48,7 @@ already installed):
 Finally, make sure you have an IBM Cloud resource group specified. You can see
  the list of available resource groups via:
 ```
-> ibmcloud resoure groups
+> ibmcloud resource groups
 
 Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@us.ibm.com...
 OK
