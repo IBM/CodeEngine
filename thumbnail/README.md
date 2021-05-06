@@ -534,17 +534,25 @@ this there's a little bit of setup we need to do.
 First, we'll need to create a place to store our newly created container
 image. We're going to use IBM's Container Registry (ICR). In there we'll first
 create a "namespace", which is similar to a folder on your desktop, to
-place our image.
-
-To do this all we need to do is tell it the name of our
-namespace, we'll use `thumbnail-ns`:
+place our image. Namespaces in ICR must be unique across all users in a region
+so we'll need to make sure we use a unique name. For our purposes we'll prefix
+a human readable name with the ID of our Code Engine project - to do that
+we can reuse the first 8 characters of our `CE_ID` environment variable we
+already created and create a new environment variable called `ICR_NS`:
 
 ```
-$ ibmcloud cr namespace-add thumbnail-ns
+> export ICR_NS=${CE_ID:0:8}-thumbnail-ns
+```
+<!-- export ICR_NS=${CE_ID:0:8}-thumbnail-cs -->
 
-Adding namespace 'thumbnail-ns' in resource group 'default' for account John Doe's Account in registry us.icr.io...
+Now, let's go ahead and create the new ICR namespace:
 
-Successfully added namespace 'thumbnail-ns'
+```
+$ ibmcloud cr namespace-add $ICR_NS
+
+Adding namespace '4b9e6ea8-thumbnail-ns' in resource group 'default' for account John Doe's Account in registry us.icr.io...
+
+Successfully added namespace '4b9e6ea8-thumbnail-ns'
 
 OK
 ```
@@ -600,10 +608,9 @@ Now we can actually define the build process of our new container image for
 the new application. The parameters to this command are:
 - `--name`: the name of the build definition we're setting up (`eventer-build`)
 - `--image`: the name of the container image we're going to build
-  (`$ICR/thumbnail-ns/eventer`). Notice that
-  it includes the name of the ICR registry (`$ICR`), the name of the
-  namespace (`thumbnail-ns`) and finally the name of the image itself
-  (`eventer`)
+  (`$ICR/$ICR_NS/eventer`). Notice that
+  it includes the name of the ICR registry, and the namespace (`$ICR_NS`)
+  and finally the name of the image itself (`eventer`)
 - `--source`: the location of the git repo where our source code can be found
 - `--registry-secret`: the registry access secret we just created in the
   previous command
@@ -614,7 +621,7 @@ With that, let's run the command to define the build process:
 
 ```
 $ ibmcloud ce build create --name eventer-build \
-    --image $ICR/thumbnail-ns/eventer \
+    --image $ICR/$ICR_NS/eventer \
     --source https://github.com/IBM/CodeEngine \
     --registry-secret icr \
     --context-dir thumbnail/eventer
@@ -667,7 +674,7 @@ initiate connections to the internet if it wants to.
 With that, let's create the application:
 
 ```
-$ ibmcloud ce app create --name eventer --image $ICR/thumbnail-ns/eventer \
+$ ibmcloud ce app create --name eventer --image $ICR/$ICR_NS/eventer \
     --registry-secret icr --cluster-local
 
 Creating application 'eventer'...
@@ -793,7 +800,7 @@ $ ibmcloud ce registry delete --name icr --force
 ```
 Then the ICR namespace (and the container image we built):
 ```
-$ ibmcloud cr namespace-rm thumbnail-ns --force
+$ ibmcloud cr namespace-rm $ICR_NS --force
 ```
 Delete the API key we used:
 ```
