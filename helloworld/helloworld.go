@@ -174,6 +174,15 @@ func main() {
 	// Otherwise we're an App and we need to start the HTTP server
 	// to processing incoming requests
 	if jobIndex := os.Getenv("JOB_INDEX"); jobIndex != "" {
+		sleep := os.Getenv("SLEEP")
+		if sleep != "" {
+			len, _ := strconv.Atoi(sleep)
+			if len > 0 {
+				Debug(false, "Sleeping %d", len)
+				time.Sleep(time.Duration(len) * time.Second)
+			}
+		}
+
 		fmt.Printf("Hello from helloworld! I'm a batch job! Index: %s\n\n",
 			jobIndex)
 		PrintMessage(os.Stdout)
