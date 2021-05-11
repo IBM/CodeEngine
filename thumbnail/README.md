@@ -35,7 +35,7 @@ you can install the necessary CLI tools on your own machine.
 If you use [Cloud Shell](https://cloud.ibm.com/shell) then make sure you
 run:
 ```
-$ ibmcloud plugin update --all --force
+> ibmcloud plugin update --all --force
 ```
 to ensure you have the latest versions of the CLI plugins.
 
@@ -44,6 +44,25 @@ already installed):
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
+
+If you are running this tutorial as part of the IBM THINK 2021 conference,
+you may want to consider running in the UK region by setting the region
+to `eu-gb`:
+
+```
+> ibmcloud target -r eu-gb
+
+Switched to region eu-gb
+
+API endpoint:      https://cloud.ibm.com
+Region:            eu-gb
+User:              abc@us.ibm.com
+Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
+Resource group:    default
+CF API endpoint:
+Org:
+Space:
+```
 
 Finally, make sure you have an IBM Cloud resource group specified. You can see
  the list of available resource groups via:
@@ -173,9 +192,8 @@ and you should see our thumbnail application.
 
 Let's also save this URL as environment variable so we can use it later:
 ```
-$ export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+> export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
 ```
-
 <!-- export URL=$(tail -1 out) -->
 
 It's a very basic application where you can drag-n-drop one of the images into
