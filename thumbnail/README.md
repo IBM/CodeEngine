@@ -45,10 +45,6 @@ already installed):
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
 
-If you are running this tutorial as part of the IBM THINK 2021 conference,
-you may want to consider running in the UK region by setting the region
-to `eu-gb`:
-
 ```
 > ibmcloud target -r eu-gb
 
@@ -869,3 +865,11 @@ Let's refresh our memory on what happened in this tutorial, we:
 We hope you found this quick tutorial informative and if you want to learn
 more about Code Engine please visit our
 [web site](https://ibm.com/cloud/code-engine).
+
+For additional tutorials, and samples, please see our
+[Code Engine github repo](https://github.com/IBM/CodeEngine). In particular,
+if you're interested in:
+- COS samples, look for the ones that start with `cos`
+- Service Bindings, look for the `bind-` samples
+- Building images, look for `s2i-` samples
+
