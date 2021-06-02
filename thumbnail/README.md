@@ -837,6 +837,7 @@ Delete the COS bucket:
 ```
 $ ibmcloud cos bucket-delete --bucket $BUCKET --force
 ```
+<!-- ibmcloud resource service-keys --instance-name thumbnail-cos | grep " active " | sed "s/ .*//" | while read k ; do ibmcloud resource service-key-delete $k --force ; done -->
 Delete the COS instance:
 ```
 $ ibmcloud resource service-instance-delete thumbnail-cos --force
