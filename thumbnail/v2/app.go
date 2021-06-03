@@ -128,6 +128,10 @@ func (ol COSObjs) Swap(i, j int)      { ol[i], ol[j] = ol[j], ol[i] }
 func (ol COSObjs) Less(i, j int) bool { return ol[i].LastModified < ol[j].LastModified }
 
 func HandleHTTP(w http.ResponseWriter, r *http.Request) {
+	for strings.HasPrefix(r.URL.Path, "//") {
+		r.URL.Path = r.URL.Path[1:]
+	}
+
 	switch r.URL.Path {
 	case "/":
 		if page, err := os.ReadFile("page.html"); err != nil {
