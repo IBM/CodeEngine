@@ -127,6 +127,9 @@ is demonstrating.
   This is another simple Batch Job sample, similar to the previous one, but
   shows how to use environment variables to modify the behavior of the runtime
   of the job.
+- [pingjob](pingjob)<br>
+  This will create a Batch Job that will be invoked based on a cron/Ping
+  event. Meaning, it'll be executed based on a timer.
 - [app-n-job](app-n-job)<br>
   This will use the same image for both an Application and a Batch Job.
   Just to show that it's possible.

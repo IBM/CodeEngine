@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+
+# Clean up previous run
+function clean() {
+  set +ex
+  echo Cleaning... 
+  (
+  ibmcloud ce sub ping delete -n ping-job-sub -f --wait=true
+  ibmcloud ce job delete -n ping-job -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcom}
+
+# Create a Job - just it's definition. The "running" instance of it
+# will be created when the event is sent to it.
+ibmcloud ce job create -n ping-job --image ${REGISTRY}/pingjob
+
+# Setup the Ping (cron) Event Source, send event every minute
+ibmcloud ce sub ping create -n ping-job-sub -d ping-job \
+  --destination-type job --data '{"mydata":"hello world"}' -s '* * * * *'
+
+# Now wait until we get the event - shouldn't take more than a minute
+while true ; do
+  name=$(ibmcloud ce jobrun list | grep ping-job | head -1 | sed "s/ .*//")
+  [[ -z "$name" ]] && sleep 1 && continue
+  ibmcloud ce jobrun logs --name $name > out
+  grep "hello world" out > /dev/null 2>&1 && break
+  sleep 10
+done
+
+echo "Log from 'ping-job-sub' job:"
+cat out
+
+# Clean up
+clean
