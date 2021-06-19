@@ -6,8 +6,7 @@
 # use
 
 export REGISTRY=${REGISTRY:-ibmcom}
-export PROJECT_NAME=$(ibmcloud ce project current | \
-  awk -F: '/Project Name/{ print $2 }' | sed "s/ *$//")
+export PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')
 export POLICY_ID=""
@@ -21,7 +20,7 @@ function clean() {
   (
   ibmcloud ce sub cos delete -n cos-sub -f --wait=true
   if [[ -n "$POLICY_ID" ]]; then
-    ibmcloud iam authorization-policy-delete $POLICY --force
+    ibmcloud iam authorization-policy-delete $POLICY_ID --force
   fi
   ibmcloud ce app delete --name cos-app --force
   ibmcloud cos bucket-delete --bucket ${BUCKET} --force

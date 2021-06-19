@@ -6,9 +6,7 @@
 # use
 
 REGISTRY=${REGISTRY:-ibmcom}
-PROJECT_NAME=$(ibmcloud ce project current | \
-  awk -F: '/Project Name/{ print $2 }' | \
-  sed -e 's/^[[:space:]]*//' -e "s/[[:space:]]*$//")
+PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 PROJECT_REGION=$(ibmcloud ce project current | \
   awk -F: '/^Region/{ print $2 }' | sed -e 's/^[[:space:]]*//' -e "s/[[:space:]]*$//")
 POLICY_ID=""
@@ -28,7 +26,7 @@ function clean() {
 
   # Delete the IAM auth policy
   if [[ -n "$POLICY_ID" ]]; then
-    ibmcloud iam authorization-policy-delete $POLICY --force
+    ibmcloud iam authorization-policy-delete $POLICY_ID --force
   fi
 
   # Delete the app, config map, secret

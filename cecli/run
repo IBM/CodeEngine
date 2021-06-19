@@ -32,8 +32,7 @@ ibmcloud iam api-key-create -q cecli | awk '/API Key/{ print $3 }' > .apikey
 # Region
 ibmcloud ce secret create -n keys \
   --from-file APIKEY=.apikey \
-  --from-literal PROJECT=$(ibmcloud ce project current | \
-    awk '/Name:/{ print $3 }') \
+  --from-literal PROJECT=$(ibmcloud ce project current|awk '/^Name/{ print $2 }') \
   --from-literal GROUP=$(ibmcloud target | awk '/group:/{ print $3 }') \
   --from-literal REGION=$(ibmcloud target | awk '/Region:/{ print $2 }')
 
