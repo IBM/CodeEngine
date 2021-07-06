@@ -100,6 +100,9 @@ is demonstrating.
 - [helloworld](helloworld)<br>
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
+- [auth](auth)<br>
+  This shows how to setup an nginx proxy in-front of a private application
+  to ensure that only authorized people can access it.
 - [bind-app](bind-app)<br>
   This will create an instance of DB2 in the IBM Cloud and then ask Code
   Engine to bind it to an Application so we can access it from the App. The

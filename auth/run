@@ -1,0 +1,36 @@
+#!/bin/bash
+
+function clean() {
+  set +ex
+  echo Cleaning...
+  (
+  ibmcloud ce app delete -n auth-proxy -f
+  ibmcloud ce app delete -n auth-app -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+
+export REGISTRY=${REGISTRY:-ibmcom}
+
+# Create our business logic app - don't expose it on the internet
+ibmcloud ce app create -n auth-app --image $REGISTRY/auth-app --cluster-local
+
+# Now create our proxy/authorization app, this one is exposed on the internet
+ibmcloud ce app create -n auth-proxy --image $REGISTRY/auth-proxy
+
+# Get its URL
+URL=$(ibmcloud ce app get -n auth-proxy -o url)
+
+# Now call the proxy app twice, first with proper credentials...
+curl -fqu user:please $URL
+
+# Now call again w/o credential, it should fail
+curl -fq $URL && echo "It was supposed to fail" && exit 1
+
+# Clean up
+clean

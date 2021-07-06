@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -ex
+
+# Replace all "NS" in the config file with the Code Engine subdomain (k8s ns)
+sed -i "s/NS/$CE_SUBDOMAIN/g" /etc/nginx/conf.d/default.conf
+
+# Now run nginx
+nginx-debug -g "daemon off;"
