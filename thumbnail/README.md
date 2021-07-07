@@ -782,6 +782,7 @@ is called a unique key name is used):
 <!-- sleep 60 -->
 ```
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
+<!-- rm -f dog -->
 <!-- sleep 10 -->
 
 OK

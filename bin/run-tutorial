@@ -44,4 +44,4 @@ while read -u 3 line ; do
     fi
   fi
 done  3< README.md
-rm -f out origenv dog
+rm -f out origenv
