@@ -788,7 +788,7 @@ $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
 ```
-<!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null 2>&1 -->
+<!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null -->
 
 Of course, you can still upload images from the webapp too if you'd like.
 Either way, the `eventer` application will receive the event from COS and
