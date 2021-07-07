@@ -29,6 +29,15 @@ export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 ibmcloud resource service-instance-create ba-db dashdb-for-transactions free \
   $REGION
 
+# Wait for the service instance to be ready
+set +x
+echo "Waiting for DB to become available..."
+while ! ibmcloud resource service-instance ba-db | grep "State.*active" ; do
+  sleep 1
+done > /dev/null
+echo
+set -x
+
 # Create the app
 ibmcloud ce app create -n ba-app --image ${REGISTRY}/bind-app
 

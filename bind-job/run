@@ -32,6 +32,15 @@ export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 ibmcloud resource service-instance-create bj-db dashdb-for-transactions free \
   $REGION
 
+# Wait for the service instance to be ready
+set +x
+echo "Waiting for DB to become available..."
+while ! ibmcloud resource service-instance bj-db | grep "State.*active" ; do
+  sleep 5 
+done > /dev/null
+echo
+set -x
+
 # Create a Job definition
 ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \
   --image ${REGISTRY}/bind-job
