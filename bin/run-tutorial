@@ -14,12 +14,18 @@ while read -u 3 line ; do
   fi
   prev=""
 
+  # Skip all non-user-commands and comment-commands
   [[ "$line" != "\$"* && "$line" != "<!-- "* ]] && continue
 
+  # Override the "ibmcom" if a REGISTRY was specified
+  [[ -v REGISTRY ]] && line=${line/ibmcom/$REGISTRY}
+
   if [[ "$line" == "<!-- "* ]]; then
+    # Comment command
     line=${line:5}
     line=${line%% -->}
 
+    # Marks the start of our "clean" commands, so turn off "stop on error"
     [[ "$line" == "clean" ]] && FOUND_CLEAN="true" && set +e && continue
 
     if [[ "$CLEAN" == "" || "$FOUND_CLEAN" != "" ]]; then
@@ -31,6 +37,7 @@ while read -u 3 line ; do
       cat dif ; [[ -s dif ]] && echo ; rm -f dif
     fi
   else
+    # User command
     if [[ "$CLEAN" == "" || "$FOUND_CLEAN" != "" ]]; then
       line=${line:2}
       echo -n '$' $line" "
