@@ -13,7 +13,7 @@ for file in `find . -name run | sort` ; do (
   [[ -e ./.SKIP ]] && echo "SKIPPING $file " && continue
 
   # Run the sample with whatever REGISTRY we're pointing to
-  ./run "$@"
+  timeout 10m ./run "$@"
   rc=$?
   if [[ "$rc" != "0" ]]; then
     echo exit: $rc
