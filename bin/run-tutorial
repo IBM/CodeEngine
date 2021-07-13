@@ -34,7 +34,13 @@ while read -u 3 line ; do
       env | sort > origenv
       # echo '#' $line
       # $EVAL $line || { echo "Failed: $line" ; exit 1 ; }
-      $EVAL $line || [[ -n "$FOUND_CLEAN" ]] || { echo "Fail: $line";exit 1 ; }
+      if ! $EVAL $line ; then
+        if ! [[ -n "$FOUND_CLEAN" ]]; then
+          echo "Fail: $line"
+          exit 1
+        fi
+      fi
+      # $EVAL $line || [[ -n "$FOUND_CLEAN" ]] || { echo "Fail: $line";exit 1 ; }
       (set +e ; env | sort | diff origenv - | grep -v '^[0-9]\+a'>dif ; exit 0)
       cat dif ; [[ -s dif ]] && echo ; rm -f dif
     fi
