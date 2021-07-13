@@ -34,6 +34,7 @@ while read -u 3 line ; do
       env | sort > origenv
       # echo '#' $line
       # $EVAL $line || { echo "Failed: $line" ; exit 1 ; }
+	  echo ">> $line"
       if ! $EVAL $line ; then
         if ! [[ -n "$FOUND_CLEAN" ]]; then
           echo "Fail: $line"
