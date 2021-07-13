@@ -52,7 +52,8 @@ while read -u 3 line ; do
       echo -n '$' $line" "
       test -n "$PAUSE" && { read -sn 1 a; [[ "$a" == "r" ]] && PAUSE=""; }; echo
       start=$(date +%s)
-      $EVAL $line 2>&1 | ( ( [[ "$line" == "export"* ]] && cat ) || tee out )
+      # $EVAL $line 2>&1 | ( ( [[ "$line" == "export"* ]] && cat ) || tee out )
+      $EVAL $line
       end=$(date +%s)
       [[ -n $SHOWTIME ]] && echo "# Time: $((end-start))s"
       echo
