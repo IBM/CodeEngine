@@ -6,6 +6,8 @@ set -e -o pipefail
 [[ "$1" == "clean" ]] && CLEAN="true"
 [[ "$DRYRUN" != "" ]] && EVAL=":" || EVAL="eval"
 
+set -x
+
 while read -u 3 line ; do
   line="$prev$line"
   if [[ "$line" == *"\\" ]]; then
