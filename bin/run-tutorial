@@ -6,8 +6,6 @@ set -e -o pipefail
 [[ "$1" == "clean" ]] && CLEAN="true"
 [[ "$DRYRUN" != "" ]] && EVAL=":" || EVAL="eval"
 
-set -x
-
 while read -u 3 line ; do
   line="$prev$line"
   if [[ "$line" == *"\\" ]]; then
@@ -34,12 +32,13 @@ while read -u 3 line ; do
       env | sort > origenv
       # echo '#' $line
       # $EVAL $line || { echo "Failed: $line" ; exit 1 ; }
-	  echo ">> $line"
-      if ! $EVAL $line ; then
-        if ! [[ -n "$FOUND_CLEAN" ]]; then
-          echo "Fail: $line"
-          exit 1
-        fi
+      set +e
+      $EVAL $line
+      rc=$?
+      set -e
+      if [[ $rc != "0" && -z $FOUND_CLEAN ]]; then
+        echo "Fail: $line"
+        exit 1
       fi
       # $EVAL $line || [[ -n "$FOUND_CLEAN" ]] || { echo "Fail: $line";exit 1 ; }
       (set +e ; env | sort | diff origenv - | grep -v '^[0-9]\+a'>dif ; exit 0)
@@ -47,13 +46,26 @@ while read -u 3 line ; do
     fi
   else
     # User command
-    if [[ "$CLEAN" == "" || "$FOUND_CLEAN" != "" ]]; then
+    if [[ "$CLEAN" == "" || -n "$FOUND_CLEAN" ]]; then
       line=${line:2}
       echo -n '$' $line" "
       test -n "$PAUSE" && { read -sn 1 a; [[ "$a" == "r" ]] && PAUSE=""; }; echo
       start=$(date +%s)
+      set +e
       # $EVAL $line 2>&1 | ( ( [[ "$line" == "export"* ]] && cat ) || tee out )
-      $EVAL $line
+      if [[ "$line" == "export"* ]]; then
+        $EVAL $line
+        rc=$?
+      else
+        ($EVAL $line) > out 2>&1
+        rc=$?
+        cat out
+      fi
+      set -e
+      if [[ $rc != "0" && -z $FOUND_CLEAN ]]; then
+        echo "Fail: $line"
+        exit 1
+      fi
       end=$(date +%s)
       [[ -n $SHOWTIME ]] && echo "# Time: $((end-start))s"
       echo
