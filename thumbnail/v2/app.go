@@ -288,7 +288,7 @@ func main() {
 	log.Printf("JOB_NAME: %s\n", JobName)
 	log.Printf("COS APIKEY: %s\n", apiKey[:5])
 	log.Printf("COS SVCID: %s\n", svcID[:5])
-	log.Printf("HIDE_BUTTON: %v\n", HideButton)
+	log.Printf("HIDE_BUTTON: %v\n", HideButton) // ...
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", nil)
