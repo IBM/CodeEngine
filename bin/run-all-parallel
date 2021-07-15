@@ -74,7 +74,7 @@ for file in `find . -name run | sort` ; do
     if [[ -e ${dir}.fail ]]; then
       rm ${dir}.fail
       echo -e "\n### $dir\n" >> run-fail.out
-      tail ${dir}.out >> run-fail.out
+      tail -50 ${dir}.out >> run-fail.out
     fi
 
     if [[ -e ${dir}.out ]]; then
