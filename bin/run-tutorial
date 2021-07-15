@@ -57,9 +57,8 @@ while read -u 3 line ; do
         $EVAL $line
         rc=$?
       else
-        ($EVAL $line) > out 2>&1
+        ($EVAL $line) 2>&1 | tee out
         rc=$?
-        cat out
       fi
       set -e
       if [[ $rc != "0" && -z $FOUND_CLEAN ]]; then
