@@ -42,7 +42,7 @@ while read -u 3 line ; do
       fi
       # $EVAL $line || [[ -n "$FOUND_CLEAN" ]] || { echo "Fail: $line";exit 1 ; }
       (set +e ; env | sort | diff origenv - | grep -v '^[0-9]\+a'>dif ; exit 0)
-      cat dif ; [[ -s dif ]] && echo ; rm -f dif
+      cat dif ; [[ -s dif ]] && echo ; rm -f dif origenv
     fi
   else
     # User command
@@ -73,4 +73,4 @@ while read -u 3 line ; do
     fi
   fi
 done  3< README.md
-rm -f out origenv
+rm -f out
