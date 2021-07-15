@@ -3,6 +3,7 @@
 # use PAUSE=1 to pause on each command
 
 set -e -o pipefail
+set -x
 [[ "$1" == "clean" ]] && CLEAN="true"
 [[ "$DRYRUN" != "" ]] && EVAL=":" || EVAL="eval"
 
