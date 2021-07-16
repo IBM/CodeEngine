@@ -29,7 +29,7 @@ set -e
     echo "Running $dir"
     (
       cd $dir
-      if timeout 10m ./run "$@" > ../$dir.out 2>&1 ; then
+      if timeout 20m ./run "$@" > ../$dir.out 2>&1 ; then
         echo "PASS: $dir"
       else
         echo "FAIL: $dir ($dir.out)"
@@ -54,7 +54,7 @@ set -e
     echo "Running $dir"
     (
       cd $dir
-      if timeout 10m ./run "$@" > ../$dir.out 2>&1 ; then
+      if timeout 20m ./run "$@" > ../$dir.out 2>&1 ; then
         echo "PASS: $dir"
       else
         echo "FAIL: $dir ($dir.out)"
