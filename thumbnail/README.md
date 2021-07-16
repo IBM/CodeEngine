@@ -783,11 +783,12 @@ is called a unique key name is used):
 ```
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
 <!-- rm -f dog -->
-<!-- sleep 30 -->
+<!-- sleep 90 -->
 
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
 ```
+<!-- curl -fs $URL/bucket -->
 <!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null -->
 
 Of course, you can still upload images from the webapp too if you'd like.
