@@ -779,11 +779,11 @@ automatically appear on there as the webapp refreshes (`key` is the name
 of the object in COS, and `$RANDOM` will ensure that each time the command
 is called a unique key name is used):
 
-<!-- sleep 60 -->
+<!-- sleep 90 -->
 ```
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
 <!-- rm -f dog -->
-<!-- sleep 90 -->
+<!-- sleep 20 -->
 
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
