@@ -103,6 +103,9 @@ is demonstrating.
 - [auth](auth)<br>
   This shows how to setup an nginx proxy in-front of a private application
   to ensure that only authorized people can access it.
+- [bash](bash)<br>
+  This shows how you can create an application from a bash script without
+  the need to write your own HTTP server.
 - [bind-app](bind-app)<br>
   This will create an instance of DB2 in the IBM Cloud and then ask Code
   Engine to bind it to an Application so we can access it from the App. The
