@@ -38,8 +38,8 @@ function clean() {
   ) > /dev/null 2>&1
 }
 
-# clean
-[[ "$1" == "clean" ]] && clean && exit 0
+clean
+[[ "$1" == "clean" ]] && exit 0
 
 set -e
 
@@ -77,10 +77,12 @@ comment --pause "Run the batch job in the app"
 doit ibmcloud cr namespace-add $ICR_NS
 export ICR=$(sed -n 's/^.*in registry \(.*\)\.\.\.$/\1/p' < out)
 
-doit ibmcloud iam api-key-create thumbnail-icr-apikey
-export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g")
+doit ibmcloud iam api-key-create thumbnail-icr-apikey > out1
+export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out1 | sed "s/ *//g")
+sed "s/^\(API Key[ ^t]*\).*/\1XXX/" < out1
+rm -f out1
 
-doit ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
+doit --showcmd="ibmcloud ce registry create --name icr --password XXX --server $ICR" ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
 
 doit ibmcloud ce build create --name eventer-build \
     --image $ICR/$ICR_NS/eventer \
@@ -102,15 +104,27 @@ doit ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 comment --pause "All done! Go to app and upload an image"
 
 # If we're not pausing then assume we're just testing
-if [[ -n $SKIP ]]; then
-  comment testing
-  sleep 60  # give the COS subscription time to be fully ready
-  doit curl -fs $URL/images/dog1.jpg > dog
-  doit ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
-  rm -f dog
-  sleep 10
-  doit curl -fs $URL/bucket \| grep dog.*thumb
+if [[ -n $skip ]]; then
+  comment Testing
+  DOG1=dog$RANDOM
+  DOG2=dug$RANDOM
+  comment Download a dog image from the app
+  doit curl -fs $URL/images/dog1.jpg \> dog
+
+  comment Test the batchjob first
+  doit ibmcloud cos object-put --bucket $BUCKET --key $DOG1 --body dog
+  doit curl -fs $URL/calcthumbnails
+  doit sleep 10
+  doit curl -fs $URL/bucket \| grep ${DOG1}.*thumb
+
+  comment Now test the eventer
+  # give the COS subscription time to be fully ready
+  doit sleep 60
+  doit ibmcloud cos object-put --bucket $BUCKET --key $DOG2 --body dog
+  doit sleep 10
+  doit curl -fs $URL/bucket \| grep ${DOG2}.*thumb
 
   comment Now clean-up
+  rm -f dog
   clean
 fi
