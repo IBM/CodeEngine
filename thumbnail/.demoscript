@@ -7,7 +7,7 @@
 # USESAVED=2  Use canned output IFF it exists, otherwise run it
 
 # Macs are weird
-MORE=-e
+export MORE=-e
 
 scriptName="${0##.*/}"
 bold=$(tput bold)
