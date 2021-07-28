@@ -43,6 +43,9 @@ clean
 
 set -e
 
+# Setup the COS->CE eventing auth - cheat and do it for all instances
+ibmcloud iam authorization-policy-create codeengine cloud-object-storage "Notifications Manager"  > /dev/null 2>&1 || true
+
 # doit ibmcloud plugin update --all --force
 
 doit --showcmd="ibmcloud ce app create --name thumbnail --image ibmcom/thumbnail" ibmcloud ce app create --name thumbnail --image ibmcom/thumbnail --min-scale=1
