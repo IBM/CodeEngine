@@ -7,7 +7,7 @@
 # USESAVED=2  Use canned output IFF it exists, otherwise run it
 
 # Macs are weird
-export MORE=-e
+[[ $(uname -a) == "Darwin"* ]] && export MORE=-e
 
 scriptName="${0##.*/}"
 bold=$(tput bold)
@@ -18,6 +18,8 @@ save="$SAVE"
 saveTar=$(cd $(dirname "$0");pwd)/${scriptName}.tar
 recover="$RECOVER"
 useSaved="$USESAVED"
+
+lastInputChat=""
 
 trap doit_clean EXIT
 
@@ -81,6 +83,7 @@ function slowTty() {
 
 function readChar() {
     read -s -n 1 ch
+	lastInputChar=$ch
     # deal with escape sequences
     # ESC[5~   and  ESC[6~   are for a mac's page up/down
     case "$ch" in
@@ -297,9 +300,10 @@ function doit() {
       echo -n "${errorMsg}"
       if [[ "${retryonfail}" != "" ]]; then
         # Force them to hit a key since they need to fix stuff
-        echo -n ". Press any key to try again"
+        echo -n ". Press any key to try again ('i' to ignore)"
         readChar
         echo
+		[[ $lastInputChar == "i" ]] && break
         continue
       fi
       echo
