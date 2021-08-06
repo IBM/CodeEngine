@@ -58,7 +58,7 @@ set -e
       else
         echo "FAIL: $dir ($dir.out)"
         echo FAIL > ../$dir.fail
-        [[ -n $INLINE ]] && tail -50 ${dir}.out
+        [[ -n $INLINE ]] && tail -50 ../${dir}.out
       fi
 
 	  ./run clean > /dev/null 2>&1
