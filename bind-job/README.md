@@ -7,10 +7,7 @@ Then it'll create a secret with that information and bind that secret to
 your job. Meaning, it'll make the secret name/value pairs visible as a
 set of environment variables.
 
-In this sample we'll create an instance of a DB2 service.
-
-Note: this sample will not work in the "eu-de" region because it uses a free
-tier of the DB2 service which is not available in that region.
+In this sample we'll create an instance of an Event Streams service.
 
 - - -
 
