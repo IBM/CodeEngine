@@ -28,11 +28,11 @@ set -e
     echo "Running $dir"
     (
       cd $dir
-      if timeout 20m ./run "$@" > ../$dir.out 2>&1 ; then
+      if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
         echo "PASS: $dir"
       else
-        echo "FAIL: $dir ($dir.out)"
-        echo FAIL > ../$dir.fail
+        echo "FAIL: $dir (${dir}.out)"
+        echo FAIL > ../${dir}.fail
         [[ -n $INLINE ]] && tail -50 ../${dir}.out
       fi
 
@@ -53,11 +53,11 @@ set -e
     echo "Running $dir"
     (
       cd $dir
-      if timeout 20m ./run "$@" > ../$dir.out 2>&1 ; then
+      if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
         echo "PASS: $dir"
       else
-        echo "FAIL: $dir ($dir.out)"
-        echo FAIL > ../$dir.fail
+        echo "FAIL: $dir (${dir}.out)"
+        echo FAIL > ../${dir}.fail
         [[ -n $INLINE ]] && tail -50 ../${dir}.out
       fi
 

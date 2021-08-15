@@ -143,8 +143,8 @@ is demonstrating.
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
 - [bind-job](bind-job)<br>
-  This will create an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to a Batch Job so we can access it from the Job. The
+  This will create an instance of Event Streams in the IBM Cloud and then ask
+  Code Engine to bind it to a Batch Job so we can access it from the Job. The
   credentials, etc. will be injected into the Job via environment variables.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
