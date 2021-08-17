@@ -133,8 +133,8 @@ is demonstrating.
   This is another simple Batch Job sample, similar to the previous one, but
   shows how to use environment variables to modify the behavior of the runtime
   of the job.
-- [pingjob](pingjob)<br>
-  This will create a Batch Job that will be invoked based on a cron/Ping
+- [cronjob](cronjob)<br>
+  This will create a Batch Job that will be invoked based on a cron
   event. Meaning, it'll be executed based on a timer.
 - [app-n-job](app-n-job)<br>
   This will use the same image for both an Application and a Batch Job.
@@ -161,8 +161,8 @@ is demonstrating.
   private registry, and then deploy an app using that image.
 
 #### Eventing
-- [ping](ping)<br>
-  This will show how to setup a simple Ping(cron) Event Source and send
+- [cron](cron)<br>
+  This will show how to setup a simple Cron Event Source and send
   its events to an Application.
 - [cos-event](cos-event)<br>
   This will show how to setup a COS Event Source and send its events to
@@ -171,7 +171,7 @@ is demonstrating.
   This will show how you can use eventing to monitor changes in a Cloud
   Object Storage bucket, and then act on those changes by processing any
   new files in the bucket and then uploading a new object into a secondary
-  bucket. It can also get Ping (cron) events to periodically check for missed
+  bucket. It can also get Cron events to periodically check for missed
   files.
 
 #### Misc

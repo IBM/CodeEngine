@@ -1,6 +1,6 @@
-# Ping
+# Cron (aka. Ping)
 
-This sample shows how to create a Ping (cron) Event Source and hook it up
+This sample shows how to create a Cron Event Source and hook it up
 to an Application that will receive its events. An event is sent once a
 minute and will contain just a simple JSON object as the payload.
 
