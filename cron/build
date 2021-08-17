@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/pingjob .
+docker build ${NOCACHE} -t ${REGISTRY}/cron .
 
 # And push it
-docker push ${REGISTRY}/pingjob
+docker push ${REGISTRY}/cron

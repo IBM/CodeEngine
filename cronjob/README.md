@@ -1,6 +1,6 @@
-# PingJob
+# CronJob
 
-This sample shows how to create a Ping (cron) Event Source and hook it up
+This sample shows how to create a Cron Event Source and hook it up
 to a Batch Job. The typical scenario here is that you want to run a certain
 task periodically - usually at a certain time during the day. For example,
 perhaps to do something each day at midnight.

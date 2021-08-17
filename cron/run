@@ -8,8 +8,8 @@ function clean() {
   set +ex
   echo Cleaning... 
   (
-  ibmcloud ce sub ping delete -n ping-sub -f --wait=true
-  ibmcloud ce app delete -n ping-app -f
+  ibmcloud ce sub cron delete -n cron-sub -f --wait=true
+  ibmcloud ce app delete -n cron-app -f
   rm -f out
   ) > /dev/null 2>&1
 }
@@ -21,20 +21,20 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 
 # Create the app
-ibmcloud ce app create -n ping-app --image ${REGISTRY}/ping --min-scale=1
+ibmcloud ce app create -n cron-app --image ${REGISTRY}/cron --min-scale=1
 
-# Setup the Ping (cron) Event Source, send event every minute
-ibmcloud ce sub ping create -n ping-sub -d ping-app \
+# Setup the cron Event Source, send event every minute
+ibmcloud ce sub cron create -n cron-sub -d cron-app \
   --data '{"mydata":"hello world"}' -s '* * * * *'
 
 # Now wait until we get the event - shouldn't take more than a minute
 while true ; do
-  ibmcloud ce app logs --name ping-app > out
+  ibmcloud ce app logs --name cron-app > out
   grep "hello world" out > /dev/null 2>&1 && break
   sleep 10
 done
 
-echo "Log from 'ping-app' app:"
+echo "Log from 'cron-app' app:"
 cat out
 
 # Clean up

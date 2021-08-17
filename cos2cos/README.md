@@ -8,7 +8,7 @@ downloads the object (file), "processes" it, and then uploads the resulting
 file to a separate (preconfigured) destination bucket.  The app then deletes
 the file from the original source bucket.
 
-The app also includes a listener for ping events.  Upon receipt of a ping event,
+The app also includes a listener for cron events.  Upon receipt of a cron event,
 it will inventory the source bucket for files.  Any file found is assumed not to
 have been processed successfully, so the app then
 processes the file as per normal (including deleting it from the source bucket).
@@ -18,8 +18,8 @@ what it is doing/has done:
 
 - `/events/stats`: A GET request against this endpoint returns statistics about events
 in JSON.  This includes counters of COS events processed successfully, COS events
-which resulted in errors (of any type, for any reason), ping events processed
-successfully, and ping events which resulted in errors.
+which resulted in errors (of any type, for any reason), cron events processed
+successfully, and cron events which resulted in errors.
 - `/events/history`: This displays an HTML page showing a list of all events
 received since the application started.  The list includes, for each event,
 information such as the event type, time of receipt, and a list of files
