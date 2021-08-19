@@ -330,7 +330,7 @@ obtained, and the Cloud Object Storage ID (`COS_ID`) from a previous command:
 
 ```
 $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
-    \"Notifications Manager\" --source-service-instance-id $CE_ID \
+    "Notifications Manager" --source-service-instance-id $CE_ID \
     --target-service-instance-id $COS_ID
 
 Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@us.ibm.com...
