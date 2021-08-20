@@ -10,7 +10,7 @@ function clean() {
   echo Cleaning...
   (
   ibmcloud ce app delete -n ba-app -f
-  ibmcloud resource service-instance-delete ba-db -f --recursive
+  ibmcloud resource service-instance-delete ba-es -f --recursive
   ibmcloud secret delete -n secret-ibm-cloud-operator -f
   ibmcloud configmap delete -n config-ibm-cloud-operator -f
   rm -f out
@@ -25,14 +25,13 @@ set -ex
 export REGISTRY=${REGISTRY:-ibmcom}
 export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 
-# Create an instance of DB2
-ibmcloud resource service-instance-create ba-db dashdb-for-transactions free \
-  $REGION
+# Create an instance of Event Streams
+ibmcloud resource service-instance-create ba-es messagehub lite $REGION
 
 # Wait for the service instance to be ready
 set +x
-echo "Waiting for DB to become available..."
-while ! ibmcloud resource service-instance ba-db | grep "State.*active" ; do
+echo "Waiting for Event Streams to become available..."
+while ! ibmcloud resource service-instance ba-es | grep "State.*active" ; do
   sleep 1
 done > /dev/null
 echo
@@ -45,7 +44,7 @@ ibmcloud ce app create -n ba-app --image ${REGISTRY}/bind-app
 URL=$(ibmcloud ce app get -n ba-app -o url)
 
 # Bind the service credentials to the app
-ibmcloud ce app bind --name ba-app --service-instance ba-db
+ibmcloud ce app bind --name ba-app --service-instance ba-es
 
 # Curl the app to make sure it had the creds
 curl -fs ${URL} | tee out

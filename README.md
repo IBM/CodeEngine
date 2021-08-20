@@ -107,9 +107,9 @@ is demonstrating.
   This shows how you can create an application from a bash script without
   the need to write your own HTTP server.
 - [bind-app](bind-app)<br>
-  This will create an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to an Application so we can access it from the App. The
-  credentials, etc. will be injected into the App via environment variables.
+  This will create an instance of Event Streams in the IBM Cloud and then ask
+  Code Engine to bind it to an Application so we can access it from the App.
+  The credentials, etc. will be injected into the App via environment variables.
 - [cecli](cecli)<br>
   Show how to invoke the Code Engine CLI from within an App. This can be used
   to then start additional Code Engine resources (Apps/Jobs) dynamically.
