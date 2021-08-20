@@ -8,7 +8,7 @@ FROM alpine
 # Upgrade the OS, install some common tools
 # Install the IBM Cloud CLI and Code Engine plugin
 
-RUN apk update && apk upgrade && apk add bash curl jq git && \
+RUN apk update && apk upgrade && apk add bash curl jq git ncurses && \
     curl -fsSL https://clis.cloud.ibm.com/install/linux | bash && \
     ln -s /usr/local/bin/ibmcloud /usr/local/bin/ic && \
     ibmcloud plugin install cloud-object-storage && \
