@@ -1,70 +1,72 @@
 #!/bin/bash
 
 # This will run (w/o building) all demos in parallel
-MAX=${MAX:-5}
+MAX=${MAX:-8}
+declare -A dirs
 
 cd $(dirname $0)/..
 
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
+rm -f .dep-*
 
 rm -f run-all.out run-fail.out *.fail *.out
 
+for file in */run ; do
+  dir=`dirname $file`
+  # Skip this dir 'cause we're asked or if it's to be run sequentially
+  [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
+  dirs[$dir]='yes'
+done
+
 set -e
 (time (
-  for file in */run ; do
-    dir=`dirname $file`
-
-    # Skip this dir 'cause we're asked or if it's to be run sequentially
-    [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
-    [[ -e ${dir}/.SEQ ]] && echo "Delaying $dir " && continue
-
+  while [[ ${#dirs[@]} != "0" ]]; do
     # Only allow $MAX at a time
     while (( $(jobs -rp | wc -l) >= $MAX )); do
       sleep 1
     done
 
-    # Run the sample with whatever REGISTRY we're pointing to
-    echo "Running $dir"
-    (
-      cd $dir
-      if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
-        echo "PASS: $dir"
-      else
-        echo "FAIL: $dir (${dir}.out)"
-        echo FAIL > ../${dir}.fail
-        [[ -n $INLINE ]] && tail -50 ../${dir}.out
+    for dir in ${!dirs[@]}; do
+      if [[ -f $dir/.DEPS ]]; then
+        ok="yes"
+        for check in $(cat $dir/.DEPS); do
+          [[ -f ".dep-$check" ]] && ok="no" && break
+        done
+        [[ $ok == "no" ]] && continue
+
+        for check in $(cat $dir/.DEPS); do
+          touch ".dep-$check"
+        done
       fi
 
-	  ./run clean > /dev/null 2>&1
-    ) &
+      echo "Running $dir"
+      unset dirs[$dir]
+      (
+        cd $dir
+        if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
+          echo "PASS: $dir"
+        else
+          echo "FAIL: $dir (${dir}.out)"
+          echo FAIL > ../${dir}.fail
+          [[ -n $INLINE ]] && tail -50 ../${dir}.out
+        fi
+        ./run clean > /dev/null 2>&1
+
+		if [[ -f .DEPS ]]; then
+          for check in $(cat .DEPS); do
+            rm -f "../.dep-$check"
+          done
+		fi
+      ) &
+      break
+    done
+
+    if (( $(jobs -rp | wc -l) < $MAX )) && [[ ${#dirs[@]} != "0" ]] ; then
+      sleep 5
+    fi
   done
   wait
-
-  echo
-  for file in */run ; do
-    dir=`dirname $file`
-
-    # Only process samples that are meant to be run sequentially
-    [[ -e ${dir}/.SKIP ]] && continue
-    [[ ! -e ${dir}/.SEQ ]] && continue
-
-    # Run the sample with whatever REGISTRY we're pointing to
-    echo "Running $dir"
-    (
-      cd $dir
-      if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
-        echo "PASS: $dir"
-      else
-        echo "FAIL: $dir (${dir}.out)"
-        echo FAIL > ../${dir}.fail
-        [[ -n $INLINE ]] && tail -50 ../${dir}.out
-      fi
-
-	  ./run clean > /dev/null 2>&1
-    )
-  done
-  echo
 )) 2>&1 | tee run-all.out
 
 for file in */run ; do
