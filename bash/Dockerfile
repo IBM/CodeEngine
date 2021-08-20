@@ -15,6 +15,7 @@ RUN apk update && apk upgrade && apk add bash curl jq git ncurses && \
     ibmcloud plugin install container-registry && \
     ibmcloud plugin install code-engine
 
+ENV TERM=vt100
 COPY --from=0 server /
 
 WORKDIR /app
