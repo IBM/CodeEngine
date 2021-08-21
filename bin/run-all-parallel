@@ -8,8 +8,8 @@ cd $(dirname $0)/..
 
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
-rm -f .dep-*
 
+rm -f .dep-*
 rm -f run-all.out run-fail.out *.fail *.out
 
 for file in */run ; do
@@ -43,8 +43,6 @@ set -e
       echo "Running $dir"
       unset dirs[$dir]
       (
-	    ibmcloud resource service-instances
-
         cd $dir
         if timeout 20m ./run "$@" > ../${dir}.out 2>&1 ; then
           echo "PASS: $dir"
@@ -64,9 +62,9 @@ set -e
       break
     done
 
-    if (( $(jobs -rp | wc -l) < $MAX )) && [[ ${#dirs[@]} != "0" ]] ; then
-      sleep 5
-    fi
+    # if (( $(jobs -rp | wc -l) < $MAX )) && [[ ${#dirs[@]} != "0" ]] ; then
+      # sleep 5
+    # fi
   done
   wait
 )) 2>&1 | tee run-all.out
