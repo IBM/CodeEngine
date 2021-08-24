@@ -87,11 +87,13 @@ for file in */run ; do
 done
 
 if [[ ! -e run-fail.out ]]; then
-  echo -e "\nPASSED"
+  echo -e "\nPASSED" | tee -a run-all.out
 else
+  (
   echo -e "\n### Failing tests:"
   cat run-fail.out
   rm run-fail.out
   echo -e "\nFAILED!"
+  ) | tee -a run-all.out
   exit 1
 fi
