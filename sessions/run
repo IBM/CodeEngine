@@ -10,6 +10,7 @@ function clean() {
   (
   ibmcloud ce app delete -n session-redis -f
   ibmcloud ce app delete -n session-app -f
+  rm -f out
   ) > /dev/null 2>&1
 }
 
@@ -40,7 +41,7 @@ ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 -
 URL=$(ibmcloud ce app get -n session-app -o url)
 
 # Now call the app to make sure it works
-curl -fs $URL
+curl -fsw "%{http_code}\n" $URL
 
 # Now call it 98 more times in parallel. Notice the hostname changes
 set +x
@@ -51,8 +52,10 @@ wait
 set -x
 
 # Verify the app was hit 100 times total
-if ! [[ "$(curl -fs $URL)" == "Counter: 100 "* ]]; then
-  echo "Unexpected output - should have started with 'Counter: 100'"
+curl -fsw "%{http_code}\n" -o out $URL
+if ! [[ grep "Counter: 100" out > /dev/null ]]; then
+  echo "Unexpected output - should have seen 'Counter: 100'"
+  tail out
   exit 1
 fi
 
