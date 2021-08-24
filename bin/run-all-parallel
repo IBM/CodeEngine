@@ -110,4 +110,4 @@ for file in */run ; do
     fi
 done
 
-[[ $pass == "false" ]] exit 1
+[[ $pass == "false" ]] && exit 1
