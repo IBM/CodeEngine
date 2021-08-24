@@ -53,7 +53,7 @@ set -x
 
 # Verify the app was hit 100 times total
 curl -fsw "%{http_code}\n" -o out $URL
-if ! [[ grep "Counter: 100" out > /dev/null ]]; then
+if ! grep "Counter: 100" out > /dev/null ; then
   echo "Unexpected output - should have seen 'Counter: 100'"
   tail out
   exit 1
