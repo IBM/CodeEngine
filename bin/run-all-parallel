@@ -69,6 +69,30 @@ set -e
   wait
 )) 2>&1 | tee run-all.out
 
+pass="true"
+
+for file in */run ; do
+    dir=`dirname $file`
+
+    if [[ -e ${dir}.fail ]]; then
+	  pass="false"
+	  break
+	fi
+done
+
+if [[ $pass == "true" ]]; then
+  echo -e "\nPASSED"
+else
+  echo -e "\n### Failing tests:"
+  for file in */run ; do
+    if [[ -e ${dir}.fail ]]; then
+	  echo -e "> ${dir}"
+	fi
+  done
+  echo -e "\nFAILED!"
+  echo -e "\n##############\n"
+fi | tee -a run-all.out
+
 for file in */run ; do
     dir=`dirname $file`
 
@@ -86,14 +110,4 @@ for file in */run ; do
     fi
 done
 
-if [[ ! -e run-fail.out ]]; then
-  echo -e "\nPASSED" | tee -a run-all.out
-else
-  (
-  echo -e "\n### Failing tests:"
-  cat run-fail.out
-  rm run-fail.out
-  echo -e "\nFAILED!"
-  ) | tee -a run-all.out
-  exit 1
-fi
+[[ $pass == "false" ]] exit 1
