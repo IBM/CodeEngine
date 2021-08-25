@@ -21,6 +21,7 @@ done
 
 set -e
 (time (
+  date ; echo
   while [[ ${#dirs[@]} != "0" ]]; do
     # Only allow $MAX at a time
     while (( $(jobs -rp | wc -l) >= $MAX )); do
@@ -90,11 +91,25 @@ else
     dir=`dirname $file`
     if [[ -e ${dir}.fail ]]; then
 	  echo -e "> ${dir}"
+
+      echo -e "\n### $dir\n" >> run-all-fail.out
+      cat ${dir}.out >> run-all-fail.out
+	else
+      echo -e "\n### $dir\n" >> run-all-pass.out
+      [[ -e ${dir}.out ]] && cat ${dir}.out >> run-all-pass.out
 	fi
   done
   echo -e "\nFAILED!"
-  echo -e "\n##############\n"
 fi | tee -a run-all.out
+
+# Don't put these in the previous section since I don't want it all
+# going to stdout
+(
+echo -e "\n##### FAILURES #########"
+cat run-all-fail.out >> run-all.out
+echo -e "\n##### PASSING  #########
+cat run-all-pass.out
+) >> run-all.out
 
 for file in */run ; do
     dir=`dirname $file`
@@ -103,13 +118,6 @@ for file in */run ; do
       rm ${dir}.fail
       echo -e "\n### $dir\n" >> run-fail.out
       tail -50 ${dir}.out >> run-fail.out
-    fi
-
-    if [[ -e ${dir}.out ]]; then
-      echo -e "\n### $dir\n" >> run-all.out
-      cat ${dir}.out >> run-all.out
-      echo >> run-all.out
-      # rm ${dir}.out
     fi
 done
 
