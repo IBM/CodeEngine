@@ -69,6 +69,8 @@ set -e
   wait
 )) 2>&1 | tee run-all.out
 
+set -x
+
 pass="true"
 
 for file in */run ; do
@@ -112,3 +114,4 @@ for file in */run ; do
 done
 
 [[ $pass == "false" ]] && exit 1
+exit 0
