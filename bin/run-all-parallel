@@ -21,7 +21,6 @@ done
 
 set -e
 (time (
-  date ; echo
   while [[ ${#dirs[@]} != "0" ]]; do
     # Only allow $MAX at a time
     while (( $(jobs -rp | wc -l) >= $MAX )); do
@@ -80,8 +79,6 @@ for file in */run ; do
 	  break
 	fi
 done
-
-set -x
 
 if [[ $pass == "true" ]]; then
   echo -e "\nPASSED"
