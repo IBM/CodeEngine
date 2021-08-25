@@ -82,6 +82,13 @@ done
 
 if [[ $pass == "true" ]]; then
   echo -e "\nPASSED"
+  for file in */run ; do
+    dir=`dirname $file`
+    if [[ ! -e ${dir}.fail ]]; then
+      echo -e "\n### $dir\n" >> run-all-pass.out
+      [[ -e ${dir}.out ]] && cat ${dir}.out >> run-all-pass.out
+	fi
+  done
 else
   echo -e "\n### Failing tests:"
   for file in */run ; do
