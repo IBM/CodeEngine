@@ -107,7 +107,7 @@ fi | tee -a run-all.out
 (
 echo -e "\n##### FAILURES #########"
 cat run-all-fail.out >> run-all.out
-echo -e "\n##### PASSING  #########
+echo -e "\n##### PASSING  #########"
 cat run-all-pass.out
 ) >> run-all.out
 
