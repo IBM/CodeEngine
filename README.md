@@ -164,6 +164,9 @@ is demonstrating.
 - [cron](cron)<br>
   This will show how to setup a simple Cron Event Source and send
   its events to an Application.
+- [cronjob](cronjob)<br>
+  This will create a Batch Job that will be invoked based on a cron
+  event. Meaning, it'll be executed based on a timer.
 - [cos-event](cos-event)<br>
   This will show how to setup a COS Event Source and send its events to
   an Application.
