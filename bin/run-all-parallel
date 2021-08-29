@@ -7,24 +7,19 @@ declare -A dirs
 cd $(dirname $0)/..
 
 echo "Cleaning..."
-# bin/clean > /dev/null 2>&1
+bin/clean > /dev/null 2>&1
 
 rm -f .dep-*
 rm -f run-all.out run-fail.out *.fail *.out
 
-set -x
 echo TEST_SKIP=$TEST_SKIP
 for file in */run ; do
   dir=`dirname $file`
-  echo dir: $dir
   # Skip this dir 'cause we're asked or if it's to be run sequentially
   [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
   [[ "$TEST_SKIP" == *"$dir"* ]] && echo "Skipping $dir " && continue
-  echo adding $dir
   dirs[$dir]='yes'
 done
-
-exit 0
 
 set -e
 (time (
