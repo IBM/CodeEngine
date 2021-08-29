@@ -16,6 +16,7 @@ for file in */run ; do
   dir=`dirname $file`
   # Skip this dir 'cause we're asked or if it's to be run sequentially
   [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
+  [[ "$TEST_SKIP" == *"$dir"* ]] && "Skipping $dir " && continue
   dirs[$dir]='yes'
 done
 
