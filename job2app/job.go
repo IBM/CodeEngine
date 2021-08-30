@@ -38,7 +38,12 @@ func main() {
 				}
 
 				// Something went wrong, pause and try again
-				fmt.Fprintf(os.Stderr, "%d: %s\n%#v\n", i, err, res)
+				body := []byte{}
+				if res != nil {
+					body, _ = ioutil.ReadAll(res.Body)
+				}
+				fmt.Fprintf(os.Stderr, "%d: err: %s\nhttp res: %#v\nbody:%s",
+					i, err, res, string(body))
 				time.Sleep(time.Second)
 			}
 		}(i)

@@ -27,11 +27,17 @@ ibmcloud ce app create -n helloworld --image ${REGISTRY}/helloworld
 URL=$(ibmcloud ce app get -n helloworld -o url)
 
 # Now call it
-curl -fs $URL | tee out
-[[ "${PIPESTATUS[0]}" == "0" ]]
+curl -w "\n%{http_code}\n" -fs $URL | tee out
+if ! [[ "${PIPESTATUS[0]}" == "0" ]] ; then
+  echo "Expected zero return code"
+  cat out
+  exit 1
+fi
 
-if ! [[ "$(curl -fs ${URL} -d "Hi")" == "Hi" ]]; then
+curl -w "\n%{http_code}\n" -fs $URL -d "Hi" -o out
+if [[ $(cat out) != "Hi" ]]; then
   echo "Unexpected output"
+  cat out
   exit 1
 fi
 
