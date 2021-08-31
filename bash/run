@@ -49,7 +49,7 @@ ibmcloud ce app create -n ce-bash --image $REGISTRY/ce-bash \
 APP=$(ibmcloud ce app get -n ce-bash -o url)
 
 # Call the app - if it works it should return the output of the 'app list' cmd
-curl -fs $APP/ | tee out
+curl -w "\n%{http_code}\n" -fs $APP/ | tee out
 [[ "${PIPESTATUS[0]}" == "0" ]]
 
 # Verify we see our App in the output
