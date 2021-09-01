@@ -2,7 +2,7 @@
 
 # Define our ICR Namespace env var for later use
 ID=$(ibmcloud account show | grep "Account ID:" | sed "s/^.*:  *//")
-ICR_NS=s2i-b-${ID:0:12}
+ICR_NS=s2i-b-${ID:1:12}
 
 # Clean up previous run
 function clean() {
