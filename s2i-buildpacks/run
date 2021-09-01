@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define our ICR Namespace env var for later use
-ID=$(ibmcloud account show | grep "Account ID:" | sed "s/^.*:  *//")
+ID=$(ibmcloud ce project current | sed -n "s/^Subdomain: *\([^ ]*\).*$/\1/p")
 ICR_NS=s2i-b-${ID:1:12}
 
 # Clean up previous run
