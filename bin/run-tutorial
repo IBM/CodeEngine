@@ -50,8 +50,9 @@ while read -u 3 line ; do
     if [[ -z "$CLEAN" || -n "$ignorerc" ]]; then
       line=${line:2}   # remove $
 	  $DOIT $ignorerc $line
+	  rc=$?
 	  set +e
-	  [[ $? != "0" ]] && exit 2
+	  [[ -z "$ignorerc" && $rc != "0" ]] && echo "Unexpected rc: $rc" && exit 2
       [[ "$line" == "exit"* ]] && exit 0
     fi
   fi
