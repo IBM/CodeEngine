@@ -42,14 +42,14 @@ set -e
         done
       fi
 
-      echo "Running $dir"
+      echo "$(date "+%X") Running $dir"
       unset dirs[$dir]
       (
         cd $dir
         if timeout 30m ./run "$@" > ../${dir}.out 2>&1 ; then
-          echo "PASS: $dir"
+          echo "$(date "+%X") PASS: $dir"
         else
-          echo "FAIL: $dir (${dir}.out)"
+          echo "$(date "+%X") FAIL: $dir (${dir}.out)"
           echo FAIL > ../${dir}.fail
           [[ -n $INLINE ]] && tail ../${dir}.out
         fi
