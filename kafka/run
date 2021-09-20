@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+
+function clean() {
+  (
+  set +e
+  ibmcloud ce app delete -n sender -f
+  ibmcloud ce app delete -n receiver -f
+  ibmcloud ce sub kafka delete -n kafkasub -f
+  ibmcloud ce secret delete -n mykeys -f
+  ibmcloud resource service-instance-delete mykafka -f --recursive
+  rm -f creds out
+  ) > /dev/null 2>&1 || true
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcom}
+export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
+
+# This first section sets up an instance of Event Streams (Kafka)
+
+# Create an instance of Event Streams
+ibmcloud resource service-instance-create mykafka messagehub standard $REGION
+
+# Wait for the service instance to be ready
+set +x
+echo "Waiting for Event Streams to become available..."
+while ! ibmcloud resource service-instance mykafka | grep "State.*active" ; do
+  sleep 1
+done > /dev/null
+set -x
+
+# Point to the new instance and create a topic called "topic1"
+ibmcloud es init -i mykafka
+ibmcloud es topic-create topic1
+
+# Wait for the topic to be ready
+set +x
+echo Wait for the topic to be ready
+while ! ibmcloud es topics --json | grep topic1 > /dev/null ; do sleep 1 ; done
+set -x
+
+# Get the credentials to talk to the kafka
+ibmcloud resource service-key-create creds --instance-name mykafka \
+  --output json > creds
+
+# Extract the username, password and brokers from the creds.
+# BROKERS is just a comma separated list of servers
+# BROKERS_OPTS is the same but with "--broker" before each one
+BROKERS=$(grep "broker-" creds | sed 's/[ ",]//g' | tr "\n" "," | sed "s/,$//")
+BROKERS_OPTS=$(grep "broker-" creds | sed 's/[ ",]//g' | sed "s/^/--broker /")
+PASSWORD=$(grep password creds | sed 's/.*: "\(.*\)",.*/\1/g')
+rm -f creds
+
+# Set up a sender app to send messages to kafka, save its URL
+ibmcloud ce app create -n sender --image $REGISTRY/kafka-sender \
+  -e PASSWORD=$PASSWORD -e BROKERS="$BROKERS"
+URL=$(ibmcloud ce app get -n sender -o url)
+
+# Now setup the Code Engine (event receiver) side of things.
+# We start by defining our receiving app and then the subscription
+
+# First setup an app to get the events
+ibmcloud ce app create -n receiver --image $REGISTRY/kafka-receiver
+
+# Store creds (from our Event Stream creds above) in a secret
+ibmcloud ce secret create -n mykeys \
+  --from-literal username=token --from-literal password=$PASSWORD
+
+# Now create the subscription to send the events to the app
+ibmcloud ce sub kafka create -n kafkasub -d receiver --secret mykeys \
+  --topic topic1 $BROKERS_OPTS
+
+# Tell the sender to send events
+curl "$URL?num=5"
+
+# Wait for the events to show up
+while true ; do
+  ibmcloud ce app logs -n receiver | tee out
+  grep "Event data" out && break
+done
+
+echo "Should be 5 events"
+[[ $( grep "Event data" out | wc -l ) == "5" ]]
+
+# Clean up
+clean
