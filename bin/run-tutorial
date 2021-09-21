@@ -28,7 +28,7 @@ while read -u 3 line ; do
   [[ "$line" != "\$"* && "$line" != "<!-- "* ]] && continue
 
   # Override the "ibmcom" if a REGISTRY was specified
-  [[ -v REGISTRY ]] && line=${line/ibmcom/$REGISTRY}
+  [[ -n $REGISTRY ]] && line=${line/ibmcom/$REGISTRY}
 
   if [[ "$line" == "<!-- "* ]]; then
     # Comment command
