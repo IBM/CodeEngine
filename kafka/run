@@ -25,7 +25,7 @@ export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 # This first section sets up an instance of Event Streams (Kafka)
 
 # Create an instance of Event Streams
-ibmcloud resource service-instance-create mykafka messagehub standard $REGION
+ibmcloud resource service-instance-create mykafka messagehub lite $REGION
 
 # Wait for the service instance to be ready
 set +x
