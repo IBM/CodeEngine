@@ -4,7 +4,9 @@
 if [[ -e .demoscript ]]; then
   . .demoscript
 else
-  . <(curl -fs https://raw.githubusercontent.com/duglin/tools/master/demoscript/demoscript)
+  curl -fs https://raw.githubusercontent.com/duglin/tools/master/demoscript/demoscript > /tmp/demoscript-curl
+  . /tmp/demoscript-curl
+  rm -f /tmp/demoscript-curl
 fi
 
 export RETRYONFAIL=true
