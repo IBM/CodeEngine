@@ -45,7 +45,8 @@ If you choose to use your own machine, then the following need to be installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
-  for samples which use IBM Cloud Object Storage
+- [Event Streams plugin (`es`)](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-cli#step5_es_cli)
+  for samples which use IBM Event Streams (Kafka)
 - [`docker`](https://docker.io/) if you choose to build the images yourself.
   For novices, skip this.
 
