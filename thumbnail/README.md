@@ -52,7 +52,7 @@ Switched to region eu-gb
 
 API endpoint:      https://cloud.ibm.com
 Region:            eu-gb
-User:              abc@us.ibm.com
+User:              abc@ibm.com
 Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
 Resource group:    default
 CF API endpoint:
@@ -65,7 +65,7 @@ Finally, make sure you have an IBM Cloud resource group specified. You can see
 ```
 > ibmcloud resource groups
 
-Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@us.ibm.com...
+Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@ibm.com...
 OK
 Name      ID                                 Default Group   State
 default   f23e5930aa034c1a86ee479af10c5005   true            ACTIVE
@@ -78,8 +78,8 @@ And then select one:
 Targeted resource group default
 
 API endpoint:      https://cloud.ibm.com
-Region:            us-south
-User:              abc@us.ibm.com
+Region:            eu-gb
+User:              abc@ibm.com
 Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
 Resource group:    default
 CF API endpoint:
@@ -179,7 +179,7 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get -n thumbnail' to check the application status.
 OK
 
-https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
 
 You'll notice that at the end of the output is a URL. This is where your
@@ -188,9 +188,11 @@ and you should see our thumbnail application.
 
 Let's also save this URL as environment variable so we can use it later:
 ```
-> export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+> export URL=https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
+<!-- comment --pauseafter Go see the cool app -->
 <!-- export URL=$(tail -1 out) -->
+<!-- doit export URL=$URL -->
 
 It's a very basic application where you can drag-n-drop one of the images into
 the first box, or upload your own image if you wish. Once there is an image
@@ -234,7 +236,7 @@ need to first create a new instance of that service:
 $ ibmcloud resource service-instance-create thumbnail-cos \
     cloud-object-storage lite global
 
-Creating service instance thumbnail-cos in resource group default of account John Doe's Account as abc@us.ibm.com...
+Creating service instance thumbnail-cos in resource group default of account John Doe's Account as abc@ibm.com...
 OK
 Service instance thumbnail-cos was created.
 
@@ -258,9 +260,10 @@ From this output you'll need to save the `ID` value for a future command.
 So to make life easier, let's save it as an environment variable:
 
 ```
-$ export COS_ID=crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::
+> export COS_ID=crn:v1:bluemix:public:cloud-object-storage:global:a/7f9dc5344476457f2c0f53244a246d44:49ceebdf-28dc-46df-bbe2-809a680cebbe::
 ```
 <!-- export COS_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
+<!-- doit export COS_ID=$COS_ID -->
 
 The images will be stored in "buckets" (similar to folders in your computer).
 To manage these we'll be using the Cloud Object Storage (COS) CLI and we'll
@@ -298,21 +301,29 @@ To do this we'll first need the Service Instance ID of our Code Engine project.
 To get that we'll use the following command:
 
 ```
-$ ibmcloud ce project list
+$ ibmcloud ce project current
 
-Getting projects...
+Getting the current project context...
 OK
 
-Name       ID                                    Status  Selected  Tags  Region    Resource Group  Age
-thumbnail  4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6  active  true            us-south  default         10m
+Name:       thumbnail
+ID:         4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
+Subdomain:  79gf3v2htsc
+Domain:     eu-gb.codeengine.appdomain.cloud  
+Region:     eu-gb  
+
+Kubernetes Config:    
+Context:               79gf3v2htsc
+Environment Variable:  export KUBECONFIG="/root/.bluemix/plugins/code-engine/thumbnail-4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6.yaml"  
 ```
 
 And we'll need to save the `ID` value corresponding to our project. Let's
 save that in an environment variable called `CE_ID`:
 ```
-$ export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
+> export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 ```
-<!-- export CE_ID=$(sed -n 's/^[^ ]* *\\([^ ]*\\) *active *true.*/\\1/p' < out) -->
+<!-- export CE_ID=$(sed -n 's/ID: *\\([^ ]*\\).*/\\1/p' < out) -->
+<!-- doit export CE_ID=$CE_ID -->
 
 We can now setup our authorization policy using both the `CE_ID` we just
 obtained, and the Cloud Object Storage ID (`COS_ID`) from a previous command:
@@ -322,7 +333,7 @@ $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
     "Notifications Manager" --source-service-instance-id $CE_ID \
     --target-service-instance-id $COS_ID
 
-Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@us.ibm.com...
+Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@ibm.com...
 OK
 Authorization policy ece5ed46-546c-4ea6-89a1-d2ee331f9c51 was created.
 
@@ -337,24 +348,27 @@ Roles:                     Notifications Manager
 Let's save the ID of this authorization policy so we can delete it later:
 
 ```
-$ export POLICY_ID=ece5ed46-546c-4ea6-89a1-d2ee331f9c51
+> export POLICY_ID=ece5ed46-546c-4ea6-89a1-d2ee331f9c51
 ```
 <!-- export POLICY_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
+<!-- doit export POLICY_ID=$POLICY_ID -->
+<!-- echo $POLICY_ID > .policy_id -->
 
 Now we can get back to setting COS up for our application. First, let's
 go ahead and create a new bucket into which our data will be stored. To do
 this you'll need to provide a unique name for your bucket. It needs to be
 globally unique across all buckets in the IBM Cloud. In the command below
-we'll use the "Source service instance" value from the previous command's
-output (this just happens to also be the ID of our Code Engine project)
+we'll use our project's ID
 appended with "-thumbnail", but you can technically use any value you want as
 long as it's unique. Let's save that name in an environment variable for
 easy use:
 
 ```
-$ export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
+> export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
 ```
-<!-- export BUCKET=$(sed -n 's/^Source service instance:[ ^t]*//p' < out | sed "s/ *//g")-thumbnail-$RANDOM -->
+<!-- export BUCKET=$CE_ID-$RANDOM-thumbnail -->
+<!-- doit export BUCKET=$BUCKET -->
+<!-- echo $BUCKET > .bucket -->
 
 Now let's ask COS to create our bucket:
 
@@ -363,7 +377,7 @@ $ ibmcloud cos bucket-create --bucket $BUCKET
 
 OK
 Details about bucket 4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail:
-Region: us-south
+Region: eu-gb
 Class: Standard
 ```
 
@@ -444,8 +458,10 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get -n thumbnail' to check the application status.
 OK
 
-https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
+
+<!-- comment --pauseafter Can now see new app, but job is not connected yet -->
 
 Now that that application has been updated, you might have noticed that the
 webpage looks a little bit different. There are a few things to be aware of:
@@ -517,6 +533,8 @@ for the images you upload by pressing the "Thumbnail Job Runner" button.
 It'll take a second or two for the job to be started and do its work but
 you should eventually see the thumbnails appear on the web page.
 
+<!-- comment --pauseafter Run the batch job in the app -->
+
 You've now successfully completed part 3 of the tutorial.
 
 ## Part 4 - Event-driven image processing
@@ -558,13 +576,15 @@ already created and create a new environment variable called `ICR_NS`:
 > export ICR_NS=${CE_ID:0:8}-thumbnail-ns
 ```
 <!-- export ICR_NS=${CE_ID:0:8}-thumbnail-cs -->
+<!-- doit export ICR_NS=$ICR_NS -->
+<!-- echo $ICR_NS > .icr_ns -->
 
 Now, let's go ahead and create the new ICR namespace:
 
 ```
 $ ibmcloud cr namespace-add $ICR_NS
 
-Adding namespace '4b9e6ea8-thumbnail-ns' in resource group 'default' for account John Doe's Account in registry us.icr.io...
+Adding namespace '4b9e6ea8-thumbnail-ns' in resource group 'default' for account John Doe's Account in registry uk.icr.io...
 
 Successfully added namespace '4b9e6ea8-thumbnail-ns'
 
@@ -578,9 +598,10 @@ variable to the location of your ICR server and use that whenever we reference
 the images you're going to build in the remainder of this tutorial:
 
 ```
-$ export ICR=us.icr.io
+> export ICR=uk.icr.io
 ```
 <!-- export ICR=$(sed -n 's/^.*in registry \\(.*\\)\\.\\.\\.$/\\1/p' < out) -->
+<!-- doit export ICR=$ICR -->
 
 Next we need to create a set of credentials that our build process will use
 to talk to the Registry. We'll give those credwntials a name of
@@ -589,7 +610,7 @@ to talk to the Registry. We'll give those credwntials a name of
 ```
 $ ibmcloud iam api-key-create thumbnail-icr-apikey
 
-Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
+Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@ibm.com...
 OK
 API key thumbnail-icr-apikey was created
 Successfully save API key information to apikey
@@ -602,6 +623,13 @@ Description
 Created At    2021-04-04T17:16+0000
 API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
 Locked        false
+```
+
+Let's save the `thumbnail-icr-apikey` credentials in an environment variable for
+easy use:
+
+```
+> export APIKEY=jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
 ```
 <!-- export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g") -->
 
@@ -700,8 +728,10 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get --name eventer' to check the application status.
 OK
 
-https://eventer.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://eventer.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
+
+<!-- ibmcloud ce app update -n eventer --min-scale=1 > /dev/null 2>&1 & -->
 
 As you might have guessed, just like the first application and the batch job,
 the "eventer" application needs credentials to talk to COS as well, we let's
@@ -753,24 +783,27 @@ vanish from the webapp's page. Let's go ahead and update our application one
 last time to see it disappear:
 
 ```
-> ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
+$ ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 ```
 
 That's it. Go back to the web page, upload an image and you should see the
 thumbnail automatically created without the need to press the Job Runner
 button. And with that you've now completed part 4 of the tutorial.
 
+<!-- comment "All done! Go to app and upload an image" -->
+<!-- if [[ -z "$skip" ]] ; then exit 0 ; fi -->
+
 ## Part 5 - Final steps
 
 This last part of the tutorial doesn't involve learning anything new about
-Code Engine. Instead, first, we're going to demonstrate how the event-driven
+Code Engine. Instead, we're going to demonstrate how the event-driven
 thumbnail processor works even without uploading images via the webapp.
 
 First, let's download an image to our local system by using one of the
 pre-defined images from our webapp:
 
 ```
-$ curl -fs $URL/images/dog1.jpg > dog
+$ curl -fs -o dog $URL/images/dog1.jpg
 ```
 
 Now, let's use the COS CLI to upload the image into our bucket, you'll want to
@@ -779,15 +812,16 @@ automatically appear on there as the webapp refreshes (`key` is the name
 of the object in COS, and `$RANDOM` will ensure that each time the command
 is called a unique key name is used):
 
-<!-- sleep 60 -->
+<!-- if [[ -n "$skip" ]] ; then sleep 90 ; fi -->
 ```
 $ ibmcloud cos object-put --bucket $BUCKET --key dog$RANDOM --body dog
-<!-- sleep 10 -->
+<!-- rm -f dog -->
+<!-- if [[ -n "$skip" ]] ; then sleep 20 ; fi -->
 
 OK
 Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail'.
 ```
-<!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null 2>&1 -->
+<!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null -->
 
 Of course, you can still upload images from the webapp too if you'd like.
 Either way, the `eventer` application will receive the event from COS and
@@ -801,7 +835,13 @@ the contents of the bucket.
 And with that we can now erase all of the objects we created.
 
 <!-- clean -->
-<!-- export BUCKET=${BUCKET:-fake-bucket} -->
+<!-- export BUCKET=${BUCKET:-$(cat .bucket 2> /dev/null )} -->
+<!-- export BUCKET=${BUCKET:-bogus-bucket} -->
+<!-- export POLICY_ID=${POLICY_ID:-$(cat .policy_id 2> /dev/null )} -->
+<!-- export POLICY_ID=${POLICY_ID:-bogus-id} -->
+<!-- export ICR_NS=${ICR_NS:-$(cat .icr_ns 2> /dev/null )} -->
+<!-- export ICR_NS=${ICR_NS:-bogus-ns} -->
+<!-- rm -f .bucket .policy_id .icr_ns -->
 
 Let's start by deleting all of Code Engine resources we created:
 ```
@@ -837,6 +877,7 @@ Delete the COS bucket:
 ```
 $ ibmcloud cos bucket-delete --bucket $BUCKET --force
 ```
+<!-- ibmcloud resource service-keys --instance-name thumbnail-cos | grep " active " | sed "s/ .*//" | while read k ; do ibmcloud resource service-key-delete $k --force ; done -->
 Delete the COS instance:
 ```
 $ ibmcloud resource service-instance-delete thumbnail-cos --force
@@ -872,4 +913,3 @@ if you're interested in:
 - COS samples, look for the ones that start with `cos`
 - Service Bindings, look for the `bind-` samples
 - Building images, look for `s2i-` samples
-
