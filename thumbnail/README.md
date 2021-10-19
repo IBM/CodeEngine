@@ -625,9 +625,6 @@ API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
 Locked        false
 ```
 
-Let's save the `thumbnail-icr-apikey` credentials in an environment variable for
-easy use:
-
 ```
 > export APIKEY=jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
 ```
@@ -635,9 +632,8 @@ easy use:
 
 The final setup we need to do is to tell Code Engine how to talk to
 the Registry on our behalf using the API key we just created. To do this
-you'll need to copy the "API Key" value (the `jtL0Z2...` string in the sample
-above) from the previous output into the following command in place of the
-`$APIKEY`:
+you'll need to save the "API Key" value (the `jtL0Z2...` string in the sample
+above) from the previous output into an environment variable for use in the following command:
 
 ```
 $ ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
