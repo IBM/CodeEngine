@@ -8,10 +8,7 @@ your App. Meaning, it'll make the secret name/value pairs visible as a
 set of environment variables. But as the App owner you only need to look at
 the new environment variables that will be added to the App.
 
-In this sample we'll create an instance of a DB2 service.
-
-Note: this sample will not work in the "eu-de" region because it uses a free
-tier of the DB2 service which is not available in that region.
+In this sample we'll create an instance of an Event Streams service.
 
 - - -
 

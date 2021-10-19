@@ -128,6 +128,10 @@ func (ol COSObjs) Swap(i, j int)      { ol[i], ol[j] = ol[j], ol[i] }
 func (ol COSObjs) Less(i, j int) bool { return ol[i].LastModified < ol[j].LastModified }
 
 func HandleHTTP(w http.ResponseWriter, r *http.Request) {
+	for strings.HasPrefix(r.URL.Path, "//") {
+		r.URL.Path = r.URL.Path[1:]
+	}
+
 	switch r.URL.Path {
 	case "/":
 		if page, err := os.ReadFile("page.html"); err != nil {
@@ -280,13 +284,11 @@ func main() {
 	// Register the http handler for all requests
 	http.HandleFunc("/", HandleHTTP)
 
-	/*
-		log.Printf("BUCKET: %s\n", BucketName)
-		log.Printf("JOB_NAME: %s\n", JobName)
-		log.Printf("COS APIKEY: %s\n", apiKey[:5])
-		log.Printf("COS SVCID: %s\n", svcID[:5])
-		log.Printf("HIDE_BUTTON: %v\n", HideButton)
-	*/
+	log.Printf("BUCKET: %s\n", BucketName)
+	log.Printf("JOB_NAME: %s\n", JobName)
+	log.Printf("COS APIKEY: %s\n", apiKey[:5])
+	log.Printf("COS SVCID: %s\n", svcID[:5])
+	log.Printf("HIDE_BUTTON: %v\n", HideButton) // ...
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", nil)

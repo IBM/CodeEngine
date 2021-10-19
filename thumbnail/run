@@ -2,10 +2,12 @@
 
 # Clean old run just in case it didn't exit cleanly
 echo Cleaning...
-PAUSE="" ../bin/run-tutorial clean > /dev/null 2>&1
+../bin/run-tutorial clean > /dev/null 2>&1
 
 # Stop if all we're interested in is cleaning
 [[ "$1" == "clean" ]] && exit 0
 
 # Run it
+export SKIP=1    # Don't pause on each command
+export DELAY=0   # Don't do slow-typing
 ../bin/run-tutorial $*

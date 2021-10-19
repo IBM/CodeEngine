@@ -42,8 +42,12 @@ URL=$(ibmcloud ce app get -n sec-app-env -o url)
 curl -fs $URL
 
 # Extract the instance name from `ibmcloud ce app get`
-name=$(ibmcloud ce app get -n sec-app-env | awk '/sec-app-env.*Running/{ print $1 }')
+ibmcloud ce app get -n sec-app-env  | tee out
+name=$(cat out | awk '/sec-app-env.*Running/{ print $1 }')
 echo Instance name: $name
+
+clean
+exit 0
 
 # Now check the logs to see if the env vars were set
 ibmcloud ce app logs --instance $name | tee out

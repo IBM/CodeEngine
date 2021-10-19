@@ -12,7 +12,7 @@ function clean() {
   (
   ibmcloud ce job delete -n bj-job -f
   ibmcloud ce jobrun delete -n bj-jobrun -f
-  ibmcloud resource service-instance-delete bj-db -f --recursive
+  ibmcloud resource service-instance-delete bj-es -f --recursive
   ibmcloud secret delete -n secret-ibm-cloud-operator -f
   ibmcloud configmap delete -n config-ibm-cloud-operator -f
   rm -f out
@@ -28,16 +28,25 @@ export REGISTRY=${REGISTRY:-ibmcom}
 export NUM=${COUNT:-10}
 export REGION=$(ibmcloud target | awk '/Region:/{ print $2 }') # Grab region
 
-# Create an instance of DB2
-ibmcloud resource service-instance-create bj-db dashdb-for-transactions free \
+# Create an instance of Event Streams
+ibmcloud resource service-instance-create bj-es messagehub lite \
   $REGION
+
+# Wait for the service instance to be ready
+set +x
+echo "Waiting for Event Streams to become available..."
+while ! ibmcloud resource service-instance bj-es | grep "State.*active" ; do
+  sleep 5 
+done > /dev/null
+echo
+set -x
 
 # Create a Job definition
 ibmcloud ce job create --name bj-job --array-indices=1-${NUM} \
   --image ${REGISTRY}/bind-job
 
 # Bind the service instance to the job
-ibmcloud ce job bind --name bj-job --service-instance bj-db
+ibmcloud ce job bind --name bj-job --service-instance bj-es
 
 # Now submit the job using that definition -- wait to finish
 ibmcloud ce jobrun submit --name myrun --job bj-job --wait

@@ -45,7 +45,8 @@ If you choose to use your own machine, then the following need to be installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
 - [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
-  for samples which use IBM Cloud Object Storage
+- [Event Streams plugin (`es`)](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-cli#step5_es_cli)
+  for samples which use IBM Event Streams (Kafka)
 - [`docker`](https://docker.io/) if you choose to build the images yourself.
   For novices, skip this.
 
@@ -100,10 +101,16 @@ is demonstrating.
 - [helloworld](helloworld)<br>
   Similar to [hello](hello) except this is written in golang and adds a few
   bells-n-whistles to allow you to control what it does when invoked.
+- [auth](auth)<br>
+  This shows how to setup an nginx proxy in-front of a private application
+  to ensure that only authorized people can access it.
+- [bash](bash)<br>
+  This shows how you can create an application from a bash script without
+  the need to write your own HTTP server.
 - [bind-app](bind-app)<br>
-  This will create an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to an Application so we can access it from the App. The
-  credentials, etc. will be injected into the App via environment variables.
+  This will create an instance of Event Streams in the IBM Cloud and then ask
+  Code Engine to bind it to an Application so we can access it from the App.
+  The credentials, etc. will be injected into the App via environment variables.
 - [cecli](cecli)<br>
   Show how to invoke the Code Engine CLI from within an App. This can be used
   to then start additional Code Engine resources (Apps/Jobs) dynamically.
@@ -127,6 +134,9 @@ is demonstrating.
   This is another simple Batch Job sample, similar to the previous one, but
   shows how to use environment variables to modify the behavior of the runtime
   of the job.
+- [cronjob](cronjob)<br>
+  This will create a Batch Job that will be invoked based on a cron
+  event. Meaning, it'll be executed based on a timer.
 - [app-n-job](app-n-job)<br>
   This will use the same image for both an Application and a Batch Job.
   Just to show that it's possible.
@@ -134,8 +144,8 @@ is demonstrating.
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
 - [bind-job](bind-job)<br>
-  This will create an instance of DB2 in the IBM Cloud and then ask Code
-  Engine to bind it to a Batch Job so we can access it from the Job. The
+  This will create an instance of Event Streams in the IBM Cloud and then ask
+  Code Engine to bind it to a Batch Job so we can access it from the Job. The
   credentials, etc. will be injected into the Job via environment variables.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
@@ -152,9 +162,12 @@ is demonstrating.
   private registry, and then deploy an app using that image.
 
 #### Eventing
-- [ping](ping)<br>
-  This will show how to setup a simple Ping(cron) Event Source and send
+- [cron](cron)<br>
+  This will show how to setup a simple Cron Event Source and send
   its events to an Application.
+- [cronjob](cronjob)<br>
+  This will create a Batch Job that will be invoked based on a cron
+  event. Meaning, it'll be executed based on a timer.
 - [cos-event](cos-event)<br>
   This will show how to setup a COS Event Source and send its events to
   an Application.
@@ -162,7 +175,7 @@ is demonstrating.
   This will show how you can use eventing to monitor changes in a Cloud
   Object Storage bucket, and then act on those changes by processing any
   new files in the bucket and then uploading a new object into a secondary
-  bucket. It can also get Ping (cron) events to periodically check for missed
+  bucket. It can also get Cron events to periodically check for missed
   files.
 
 #### Misc

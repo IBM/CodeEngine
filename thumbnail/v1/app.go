@@ -38,6 +38,10 @@ func MakeThumbnail(inBuf []byte) ([]byte, error) {
 }
 
 func HandleHTTP(w http.ResponseWriter, r *http.Request) {
+	for strings.HasPrefix(r.URL.Path, "//") {
+		r.URL.Path = r.URL.Path[1:]
+	}
+
 	log.Printf("Got: %s", r.URL.Path)
 	if r.URL.Path == "/" {
 		page, err := os.ReadFile("page.html")

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Wait until we have connectivity
+while ! curl -fs ibm.com ; do true ; done
+
+set -ex
+
+REGION=$(cat /keys/REGION)
+GROUP=$(cat /keys/GROUP)
+PROJECT=$(cat /keys/PROJECT)
+
+# Login during the "init" so that we don't do it on each HTTP request
+ibmcloud login -r $REGION --apikey @/keys/APIKEY -g $GROUP
+
+# And select our Code Engine project
+ibmcloud ce project select -n $PROJECT

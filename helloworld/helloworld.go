@@ -35,6 +35,11 @@ func Curl(url string) (string, error) {
 var GlobalDebug = (os.Getenv("DEBUG") != "")
 var envs = []string{}
 var msg = ""
+var skips = []string{
+	"KUBERNETES_",
+	"K_CONFIG",
+	"K_SERVICE",
+}
 
 func Debug(doit bool, format string, args ...interface{}) {
 	// If either is 'true' then print it
@@ -47,7 +52,7 @@ func Debug(doit bool, format string, args ...interface{}) {
 }
 
 // Just print an cool essage to the Writer that's passed in
-func PrintMessage(w io.Writer) {
+func PrintMessage(w io.Writer, showAll bool) {
 	fmt.Fprintf(w, "%s:\n", msg)
 	fmt.Fprintln(w, `. ___  __  ____  ____`)
 	fmt.Fprintln(w, `./ __)/  \(    \(  __)`)
@@ -62,6 +67,18 @@ func PrintMessage(w io.Writer) {
 	fmt.Fprintf(w, "Some Env Vars:\n")
 	fmt.Fprintf(w, "--------------\n")
 	for _, env := range envs {
+		if !showAll {
+			skipIt := false
+			for _, skip := range skips {
+				if strings.HasPrefix(env, skip) {
+					skipIt = true
+					break
+				}
+			}
+			if skipIt {
+				continue
+			}
+		}
 		fmt.Fprintf(w, "%s\n", env)
 	}
 }
@@ -70,6 +87,7 @@ func PrintMessage(w io.Writer) {
 func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	body := []byte{}
 	debug := false
+	showAll := (os.Getenv("SHOW") != "")
 
 	// If there's a body then read it in for later use
 	if r.Body != nil {
@@ -80,6 +98,11 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	// this request tho - unless global debug is set.
 	if _, ok := r.URL.Query()["debug"]; ok {
 		debug = true
+	}
+
+	// Allow for people to enable 'showAll' on a per request basis
+	if _, ok := r.URL.Query()["show"]; ok {
+		showAll = true
 	}
 
 	Debug(debug, "%s:\n%s %s\nHeaders:\n%s\n\nBody:\n%s\n",
@@ -116,13 +139,18 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(body) == 0 {
 		w.Header().Add("Content-Type", "text/plain")
 		// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
-		PrintMessage(w)
+		PrintMessage(w, showAll)
 	} else {
 		fmt.Fprintf(w, string(body)+"\n")
 	}
 }
 
 func main() {
+	// Just for fun
+	if os.Getenv("SHOW") == "" {
+		os.Setenv("z", "Set env var 'SHOW' to see all variables")
+	}
+
 	// If env var CRASH is set then crash immediately.
 	// If its value is of the form HH:MM then crash at the specified time
 	// time. The time is based on time returned from: http://time.nist.gov:13
@@ -185,7 +213,7 @@ func main() {
 
 		fmt.Printf("Hello from helloworld! I'm a batch job! Index: %s\n\n",
 			jobIndex)
-		PrintMessage(os.Stdout)
+		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 	} else {
 		// Debug the http handler for all requests

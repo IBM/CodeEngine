@@ -1,96 +1,132 @@
 #!/bin/bash
 
 # This will run (w/o building) all demos in parallel
-MAX=${MAX:-5}
+MAX=${MAX:-8}
+declare -A dirs
 
 cd $(dirname $0)/..
 
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
 
+rm -f .dep-*
 rm -f run-all.out run-fail.out *.fail *.out
+
+echo TEST_SKIP=$TEST_SKIP
+for file in */run ; do
+  dir=`dirname $file`
+  # Skip this dir 'cause we're asked or if it's to be run sequentially
+  [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
+  [[ "$TEST_SKIP" == *"$dir"* ]] && echo "Skipping $dir " && continue
+  dirs[$dir]='yes'
+done
 
 set -e
 (time (
-  for file in `find . -name run | sort` ; do
-    dir=`dirname $file`
-    dir=${dir:2}  # remove leading ./
-
-    # Skip this dir 'cause we're asked or if it's to be run sequentially
-    [[ -e ${dir}/.SKIP ]] && echo "Skipping $dir " && continue
-    [[ -e ${dir}/.SEQ ]] && echo "Delaying $dir " && continue
-
+  while [[ ${#dirs[@]} != "0" ]]; do
     # Only allow $MAX at a time
     while (( $(jobs -rp | wc -l) >= $MAX )); do
       sleep 1
     done
 
-    # Run the sample with whatever REGISTRY we're pointing to
-    echo "Running $dir"
-    (
-      cd $dir
-      if ./run "$@" > ../$dir.out 2>&1 ; then
-        echo "PASS: $dir"
-      else
-        echo "FAIL: $dir ($dir.out)"
-        echo FAIL > ../$dir.fail
+    for dir in ${!dirs[@]}; do
+      if [[ -f $dir/.DEPS ]]; then
+        ok="yes"
+        for check in $(cat $dir/.DEPS); do
+          [[ -f ".dep-$check" ]] && ok="no" && break
+        done
+        [[ $ok == "no" ]] && continue
+
+        for check in $(cat $dir/.DEPS); do
+          touch ".dep-$check"
+        done
       fi
 
-	  ./run clean > /dev/null 2>&1
-    ) &
+      echo "$(date "+%X") Running $dir"
+      unset dirs[$dir]
+      (
+        cd $dir
+        if timeout 30m ./run "$@" > ../${dir}.out 2>&1 ; then
+          echo "$(date "+%X") PASS: $dir"
+        else
+          echo "$(date "+%X") FAIL: $dir (${dir}.out)"
+          echo FAIL > ../${dir}.fail
+          [[ -n $INLINE ]] && tail ../${dir}.out
+        fi
+        ./run clean > /dev/null 2>&1
+
+		if [[ -f .DEPS ]]; then
+          for check in $(cat .DEPS); do
+            rm -f "../.dep-$check"
+          done
+		fi
+      ) &
+      break
+    done
+
+    # if (( $(jobs -rp | wc -l) < $MAX )) && [[ ${#dirs[@]} != "0" ]] ; then
+      # sleep 5
+    # fi
   done
   wait
-
-  echo
-  for file in `find . -name run | sort` ; do
-    dir=`dirname $file`
-    dir=${dir:2}  # remove leading ./
-
-    # Only process samples that are meant to be run sequentially
-    [[ -e ${dir}/.SKIP ]] && continue
-    [[ ! -e ${dir}/.SEQ ]] && continue
-
-    # Run the sample with whatever REGISTRY we're pointing to
-    echo "Running $dir"
-    (
-      cd $dir
-      if ./run "$@" > ../$dir.out 2>&1 ; then
-        echo "PASS: $dir"
-      else
-        echo "FAIL: $dir ($dir.out)"
-        echo FAIL > ../$dir.fail
-      fi
-
-	  ./run clean > /dev/null 2>&1
-    )
-  done
-  echo
 )) 2>&1 | tee run-all.out
 
-for file in `find . -name run | sort` ; do
+pass="true"
+
+for file in */run ; do
     dir=`dirname $file`
-    dir=${dir:2}  # remove leading ./
+
+    if [[ -e ${dir}.fail ]]; then
+	  pass="false"
+	  break
+	fi
+done
+
+if [[ $pass == "true" ]]; then
+  echo -e "\nPASSED"
+  for file in */run ; do
+    dir=`dirname $file`
+    if [[ ! -e ${dir}.fail ]]; then
+      echo -e "\n### $dir\n" >> run-all-pass.out
+      [[ -e ${dir}.out ]] && cat ${dir}.out >> run-all-pass.out
+	fi
+  done
+else
+  echo -e "\n### Failing tests:"
+  for file in */run ; do
+    dir=`dirname $file`
+    if [[ -e ${dir}.fail ]]; then
+	  echo -e "> ${dir}"
+
+      echo -e "\n### $dir\n" >> run-all-fail.out
+      cat ${dir}.out >> run-all-fail.out
+	else
+      echo -e "\n### $dir\n" >> run-all-pass.out
+      [[ -e ${dir}.out ]] && cat ${dir}.out >> run-all-pass.out
+	fi
+  done
+  echo -e "\nFAILED!"
+fi | tee -a run-all.out
+
+# Don't put these in the previous section since I don't want it all
+# going to stdout
+(
+echo -e "\n##### FAILURES #########"
+[[ -e run-all-fail.out ]] && cat run-all-fail.out >> run-all.out
+
+echo -e "\n##### PASSING  #########"
+cat run-all-pass.out
+) >> run-all.out
+
+for file in */run ; do
+    dir=`dirname $file`
 
     if [[ -e ${dir}.fail ]]; then
       rm ${dir}.fail
       echo -e "\n### $dir\n" >> run-fail.out
-      tail ${dir}.out >> run-fail.out
-    fi
-
-    if [[ -e ${dir}.out ]]; then
-      echo -e "\n### $dir\n" >> run-all.out
-      cat ${dir}.out >> run-all.out
-      echo >> run-all.out
-      # rm ${dir}.out
+      tail -50 ${dir}.out >> run-fail.out
     fi
 done
 
-if [[ ! -e run-fail.out ]]; then
-  echo -e "\nPASSED"
-else
-  echo -e "\n### Failing tests:"
-  cat run-fail.out
-  rm run-fail.out
-  echo -e "\nFAILED!"
-  exit 1
-fi
+[[ $pass == "false" ]] && exit 1
+exit 0

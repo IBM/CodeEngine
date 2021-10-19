@@ -48,7 +48,7 @@ class FileHandler():
 
 
 def create_server(cos_client=None, destination_bucket=None, source_bucket=None):
-    event_stats = {'ping': 0, 'ping_error': 0, 'cos': 0, 'cos_error': 0}
+    event_stats = {'cron': 0, 'cron_error': 0, 'cos': 0, 'cos_error': 0}
     event_history = []
     buckets = [source_bucket, destination_bucket]
 
@@ -56,7 +56,7 @@ def create_server(cos_client=None, destination_bucket=None, source_bucket=None):
 
     # Retrieve a table showing each file known to us, along with its state
     # (present, not present, if present version/size/timestamp) within each
-    # known bucket.  We'll use this to build the reconciliation hook for ping
+    # known bucket.  We'll use this to build the reconciliation hook for cron
     # events later.
     @app.route('/files', methods=['GET'])
     def get_files():
@@ -139,21 +139,21 @@ def create_server(cos_client=None, destination_bucket=None, source_bucket=None):
             event_stats['cos_error'] = event_stats['cos_error'] + 1
             abort(400)
 
-    # Any ping event will trigger reconciliation - any file which is present
+    # Any cron event will trigger reconciliation - any file which is present
     # in the source bucket will be assumed not to have been processed,
     # so we'll process it and transfer it.
 
-    @app.route('/events/ping', methods=['POST'])
-    def handle_ping_event():
+    @app.route('/events/cron', methods=['POST'])
+    def handle_cron_event():
         # All we check is that the body is valid JSON, nothing beyond that.
         # It would be trivial to check for specific message body elements
         # and probably advisable in a real world application.
         event = request.get_json(silent=True)
         if event:
-            event_stats['ping'] = event_stats['ping'] + 1
+            event_stats['cron'] = event_stats['cron'] + 1
             event_timestamp = datetime.now()
             history_event = {
-                'id': 'ping-' + str(event_stats['ping']),
+                'id': 'cron-' + str(event_stats['cron']),
                 'timestamp': event_timestamp,
                 'objects': []
             }
@@ -185,7 +185,7 @@ def create_server(cos_client=None, destination_bucket=None, source_bucket=None):
             event_history.append(history_event)
             return 'OK'
         else:
-            event_stats['ping_error'] = event_stats['ping_error'] + 1
+            event_stats['cron_error'] = event_stats['cron_error'] + 1
             abort(400)
 
     return app

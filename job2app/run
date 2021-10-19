@@ -34,6 +34,14 @@ ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} \
 # Check the app to see how many times it was hit
 if ! [[ "Count: $((COUNT*10))" == "$(curl -fs $URL)" ]]; then
   echo "Should be $((COUNT*10))"
+
+  # Show the logs for the job to see if it tells us why all messages didn't
+  # make it.
+  ibmcloud ce jobrun logs -n j2a-job
+
+  # And for completeness, show the logs for the app too, but should be empty
+  ibmcloud ce app logs -n j2a-app
+
   exit 1
 fi
 
