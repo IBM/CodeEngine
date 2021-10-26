@@ -52,7 +52,7 @@ Switched to region eu-gb
 
 API endpoint:      https://cloud.ibm.com
 Region:            eu-gb
-User:              abc@us.ibm.com
+User:              abc@ibm.com
 Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
 Resource group:    default
 CF API endpoint:
@@ -65,7 +65,7 @@ Finally, make sure you have an IBM Cloud resource group specified. You can see
 ```
 > ibmcloud resource groups
 
-Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@us.ibm.com...
+Retrieving all resource groups under account 7f89ab187ae6557f2c0f53244a246d44 as abc@ibm.com...
 OK
 Name      ID                                 Default Group   State
 default   f23e5930aa034c1a86ee479af10c5005   true            ACTIVE
@@ -78,8 +78,8 @@ And then select one:
 Targeted resource group default
 
 API endpoint:      https://cloud.ibm.com
-Region:            us-south
-User:              abc@us.ibm.com
+Region:            eu-gb
+User:              abc@ibm.com
 Account:           John Doe's Account (7f89ab187ae6557f2c0f53244a246d44) <-> 1516981
 Resource group:    default
 CF API endpoint:
@@ -179,7 +179,7 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get -n thumbnail' to check the application status.
 OK
 
-https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
 
 You'll notice that at the end of the output is a URL. This is where your
@@ -188,7 +188,7 @@ and you should see our thumbnail application.
 
 Let's also save this URL as environment variable so we can use it later:
 ```
-> export URL=https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+> export URL=https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
 <!-- comment --pauseafter Go see the cool app -->
 <!-- export URL=$(tail -1 out) -->
@@ -236,7 +236,7 @@ need to first create a new instance of that service:
 $ ibmcloud resource service-instance-create thumbnail-cos \
     cloud-object-storage lite global
 
-Creating service instance thumbnail-cos in resource group default of account John Doe's Account as abc@us.ibm.com...
+Creating service instance thumbnail-cos in resource group default of account John Doe's Account as abc@ibm.com...
 OK
 Service instance thumbnail-cos was created.
 
@@ -309,8 +309,8 @@ OK
 Name:       thumbnail
 ID:         4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 Subdomain:  79gf3v2htsc
-Domain:     us-south.codeengine.appdomain.cloud  
-Region:     us-south  
+Domain:     eu-gb.codeengine.appdomain.cloud  
+Region:     eu-gb  
 
 Kubernetes Config:    
 Context:               79gf3v2htsc
@@ -333,7 +333,7 @@ $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
     "Notifications Manager" --source-service-instance-id $CE_ID \
     --target-service-instance-id $COS_ID
 
-Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@us.ibm.com...
+Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@ibm.com...
 OK
 Authorization policy ece5ed46-546c-4ea6-89a1-d2ee331f9c51 was created.
 
@@ -377,7 +377,7 @@ $ ibmcloud cos bucket-create --bucket $BUCKET
 
 OK
 Details about bucket 4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail:
-Region: us-south
+Region: eu-gb
 Class: Standard
 ```
 
@@ -458,7 +458,7 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get -n thumbnail' to check the application status.
 OK
 
-https://thumbnail.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
 
 <!-- comment --pauseafter Can now see new app, but job is not connected yet -->
@@ -584,7 +584,7 @@ Now, let's go ahead and create the new ICR namespace:
 ```
 $ ibmcloud cr namespace-add $ICR_NS
 
-Adding namespace '4b9e6ea8-thumbnail-ns' in resource group 'default' for account John Doe's Account in registry us.icr.io...
+Adding namespace '4b9e6ea8-thumbnail-ns' in resource group 'default' for account John Doe's Account in registry uk.icr.io...
 
 Successfully added namespace '4b9e6ea8-thumbnail-ns'
 
@@ -598,7 +598,7 @@ variable to the location of your ICR server and use that whenever we reference
 the images you're going to build in the remainder of this tutorial:
 
 ```
-> export ICR=us.icr.io
+> export ICR=uk.icr.io
 ```
 <!-- export ICR=$(sed -n 's/^.*in registry \\(.*\\)\\.\\.\\.$/\\1/p' < out) -->
 <!-- doit export ICR=$ICR -->
@@ -610,7 +610,7 @@ to talk to the Registry. We'll give those credwntials a name of
 ```
 $ ibmcloud iam api-key-create thumbnail-icr-apikey
 
-Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@us.ibm.com...
+Creating API key thumbnail-icr-apikey under 7f9dc5344476457f2c0f53244a246d44 as abc@ibm.com...
 OK
 API key thumbnail-icr-apikey was created
 Successfully save API key information to apikey
@@ -624,13 +624,16 @@ Created At    2021-04-04T17:16+0000
 API Key       jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
 Locked        false
 ```
+
+```
+> export APIKEY=jtL0Z2ynl7RZs0U57lrWPou3xw2hnLo6D3wkORrwCbjE
+```
 <!-- export APIKEY=$(sed -n 's/^API Key[ ^t]*//p' < out | sed "s/ *//g") -->
 
 The final setup we need to do is to tell Code Engine how to talk to
 the Registry on our behalf using the API key we just created. To do this
-you'll need to copy the "API Key" value (the `jtL0Z2...` string in the sample
-above) from the previous output into the following command in place of the
-`$APIKEY`:
+you'll need to save the "API Key" value (the `jtL0Z2...` string in the sample
+above) from the previous output into an environment variable for use in the following command:
 
 ```
 $ ibmcloud ce registry create --name icr --password $APIKEY --server $ICR
@@ -721,7 +724,7 @@ Waiting for load balancer to be ready
 Run 'ibmcloud ce application get --name eventer' to check the application status.
 OK
 
-https://eventer.79gf3v2htsc.us-south.codeengine.appdomain.cloud
+https://eventer.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 ```
 
 <!-- ibmcloud ce app update -n eventer --min-scale=1 > /dev/null 2>&1 & -->
@@ -906,4 +909,3 @@ if you're interested in:
 - COS samples, look for the ones that start with `cos`
 - Service Bindings, look for the `bind-` samples
 - Building images, look for `s2i-` samples
-
