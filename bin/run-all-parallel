@@ -58,7 +58,7 @@ set -e
 		if [[ -f .DEPS ]]; then
           for check in $(cat .DEPS); do
 			# Let COS clean-up the instance before we create a new one
-		    [[ "$check" == "cos" ]] && sleep 600
+		    [[ "$check" == "cos" ]] && sleep 300
 
             rm -f "../.dep-$check"
           done
