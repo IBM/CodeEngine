@@ -869,6 +869,7 @@ And then delete each one - replacing `$KEY` with the key/name of each:
 > ibmcloud cos object-delete --bucket $BUCKET --key $KEY
 ```
 <!-- ibmcloud cos objects --bucket $BUCKET --output json | sed -n 's/.*"Key": "\\(.*\\)",.*/\\1/p' | while read k ; do ibmcloud cos object-delete --bucket $BUCKET --key $k --force ; done -->
+<!-- ibmcloud cos objects --bucket $BUCKET --output json | sed -n 's/.*"Key": "\\(.*\\)",.*/\\1/p' | while read k ; do ibmcloud cos object-delete --bucket $BUCKET --key $k --force ; done -->
 Delete the COS bucket:
 ```
 $ ibmcloud cos bucket-delete --bucket $BUCKET --force
