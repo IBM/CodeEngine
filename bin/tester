@@ -108,7 +108,7 @@ EOF
   set +x
   env | grep SLACK_URL | while read URL ; do
     echo URL: $URL
-    curl -w "%{http_code}\n" -fs ${URL##*=} --data @msg
+	[[ -n ${URL##*=} ]] && curl -w "%{http_code}\n" -fs ${URL##*=} --data @msg
   done
 )
 
