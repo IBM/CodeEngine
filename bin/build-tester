@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ex
+export REGISTRY=${REGISTRY:-ibmcomtest}
+docker build -f Dockerfile.tester -t ${REGISTRY}/ce-tester .
+docker push ${REGISTRY}/ce-tester

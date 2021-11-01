@@ -1,0 +1,4 @@
+FROM ibmcom/ce-bash
+
+COPY tester /
+CMD /tester
