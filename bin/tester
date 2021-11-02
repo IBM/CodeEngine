@@ -39,11 +39,15 @@ env | awk -F= '/^APIKEY=/{ print $2 }' > .key
 ibmcloud login -r us-south --apikey @.key -g $GROUP
 rm .key
 
+ibmcloud ce project get -n $PROJECT > /dev/null 2>&1 || NEW_PROJECT=true
+echo "NEW_PROJECT: $NEW_PROJECT"
+
 trap clean EXIT
 function clean {
   rc=$?
   set +e
-  ibmcloud ce project delete -n $PROJECT -f --hard --wait
+  [[ -v NEW_PROJECT ]] && \
+    echo ibmcloud ce project delete -n $PROJECT -f --hard --wait
   echo >> ../tester.out
   return $rc
 }
@@ -51,11 +55,13 @@ function clean {
 {
   date ; echo
   set +e
-  ibmcloud ce project delete -n $PROJECT -f --hard --wait > /dev/null 2>&1
+  # [[ -v NEW_PROJECT ]] && \
+    # ibmcloud ce project delete -n $PROJECT -f --hard --wait > /dev/null 2>&1
   echo fyi rc: $?
   set -e
   date ; echo
-  ibmcloud ce project create -n $PROJECT
+  [[ -v NEW_PROJECT ]] && \
+    ibmcloud ce project create -n $PROJECT
   date
 } 2>&1 | tee ../tester.out
 [[ ${PIPESTATUS[0]} != "0" ]] && exit 1
