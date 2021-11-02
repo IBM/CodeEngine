@@ -44,16 +44,19 @@ function clean {
   rc=$?
   set +e
   ibmcloud ce project delete -n $PROJECT -f --hard --wait
-  { date ; echo ; } | tee -a  ../tester.out
+  echo >> ../tester.out
   return $rc
 }
 
 {
   date ; echo
-  ibmcloud ce project delete -n $PROJECT -f --hard --wait || true
+  set +e
+  ibmcloud ce project delete -n $PROJECT -f --hard --wait > /dev/null 2>&1
+  echo fyi rc: $?
+  set -e
   date ; echo
   ibmcloud ce project create -n $PROJECT
-  echo
+  date
 } 2>&1 | tee ../tester.out
 [[ ${PIPESTATUS[0]} != "0" ]] && exit 1
 
