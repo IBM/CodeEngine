@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Envs that can be set in the batch job:
+# PROJECT      - CE project name to use (for new or existing project)
 # APIKEY       - used to log into IBM Cloud
 # COS_CRN      - CRN of COS instance to use when storing the output/log file
 # COS_URL      - External URL to COS bucket
@@ -17,7 +18,6 @@
 echo "====================================================================="
 
 PROJECT=${PROJECT:-testing}
-rm -f msg tests.out tester.out
 
 (
 set -ex
@@ -26,7 +26,7 @@ if [[ -v REGISTRY_APIKEY ]] ; then
   export REGISTRY=${REGISTRY:-ibmcomtest}
 fi
 
-env | sort | sed "s/APIKEY=.*/APIKEY=.../"
+env | sort | sed "s/APIKEY=.*/APIKEY=.../" | tee tester.out
 
 git clone https://github.com/IBM/CodeEngine.git
 cd CodeEngine
@@ -39,30 +39,39 @@ env | awk -F= '/^APIKEY=/{ print $2 }' > .key
 ibmcloud login -r us-south --apikey @.key -g $GROUP
 rm .key
 
-ibmcloud ce project get -n $PROJECT > /dev/null 2>&1 || NEW_PROJECT=true
+if ! ibmcloud ce project get -n $PROJECT > /dev/null 2>&1 ; then
+  export NEW_PROJECT=1
+fi
 echo "NEW_PROJECT: $NEW_PROJECT"
 
 trap clean EXIT
 function clean {
   rc=$?
   set +e
-  [[ -v NEW_PROJECT ]] && \
+  if [[ -n "$NEW_PROJECT" ]] ; then
     echo ibmcloud ce project delete -n $PROJECT -f --hard --wait
-  echo >> ../tester.out
+  else
+    echo "Skipping deletion of project"
+  fi
   return $rc
 }
 
 {
   date ; echo
   set +e
-  # [[ -v NEW_PROJECT ]] && \
-    # ibmcloud ce project delete -n $PROJECT -f --hard --wait > /dev/null 2>&1
-  echo fyi rc: $?
+  if [[ -n "$NEW_PROJECT" ]] ; then
+    ibmcloud ce project delete -n $PROJECT -f --hard --wait > /dev/null 2>&1
+    echo fyi rc: $?
+  fi
   set -e
-  date ; echo
-  [[ -v NEW_PROJECT ]] && \
+  if [[ -n "$NEW_PROJECT" ]] ; then
+    date ; echo
     ibmcloud ce project create -n $PROJECT
-  date
+    date
+  else
+    echo "Using existing project: $PROJECT"
+    ibmcloud ce project select -n $PROJECT
+  fi
 } 2>&1 | tee ../tester.out
 [[ ${PIPESTATUS[0]} != "0" ]] && exit 1
 
@@ -85,6 +94,7 @@ FAILS=$(grep FAIL: tests.out) || true
 
 # Save the output from all tests
 [[ -e CodeEngine/run-all.out ]] && cat CodeEngine/run-all.out >> tester.out
+(echo ; echo -e "###### tests.out #####\n" && cat tests.out) >> tester.out
 
 ibmcloud cos config crn --crn "$COS_CRN" --force
 ibmcloud cos config auth --method IAM
@@ -103,11 +113,11 @@ cat <<EOF >msg
   "text": "$TITLE",
   "blocks":[
     { "type": "section",
-	  "text": {
-	    "type": "mrkdwn",
-		"text": $SUMMARY
-	  }
-	}
+      "text": {
+        "type": "mrkdwn",
+        "text": $SUMMARY
+      }
+    }
   ]
 }
 EOF
@@ -117,8 +127,11 @@ EOF
   set +x
   env | grep SLACK_URL | while read URL ; do
     echo URL: $URL
-	[[ -n ${URL##*=} ]] && curl -w "%{http_code}\n" -fs ${URL##*=} --data @msg
+    [[ -n ${URL##*=} ]] && curl -w "%{http_code}\n" -fs ${URL##*=} --data @msg
   done
+  set -x
 )
+
+rm -f msg tests.out tester.out
 
 exit $rc
