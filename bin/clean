@@ -8,7 +8,7 @@ set -e
 
 rm -f run-all.out run-fail.out *.fail *.out
 
-for file in `find . -name run | sort` ; do
+for file in */run ; do
   dir=`dirname $file`
   dir=${dir:2}  # remove leading ./
 

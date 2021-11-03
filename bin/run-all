@@ -5,7 +5,7 @@
 cd $(dirname $0)/..
 
 set -e
-for file in `find . -name run | sort` ; do (
+for file in */run | sort` ; do (
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
 
