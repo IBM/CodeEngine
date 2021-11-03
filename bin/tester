@@ -24,7 +24,10 @@ PROJECT=${PROJECT:-testing}
 (
 set -ex
 
-env | sort | sed "s/APIKEY=.*/APIKEY=.../" | tee tester.out
+env | sort | \
+  sed "s/APIKEY=.*/APIKEY=.../" | \
+  sed "s/\(SLACK_URL.*\)=.*/\1=.../" | \
+  tee tester.out
 
 git clone https://github.com/IBM/CodeEngine.git
 cd CodeEngine

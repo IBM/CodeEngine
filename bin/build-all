@@ -10,7 +10,7 @@
 cd $(dirname $0)/..
 
 set -e
-for file in `find . -name build | sort` ; do (
+for file in */build ; do (
 
   echo -e "\n### `dirname $file`\n"
   cd `dirname $file`
