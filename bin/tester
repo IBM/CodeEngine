@@ -1,13 +1,15 @@
 #!/bin/bash
 
 # Envs that can be set in the batch job:
-# PROJECT      - CE project name to use (for new or existing project)
-# APIKEY       - used to log into IBM Cloud
-# COS_CRN      - CRN of COS instance to use when storing the output/log file
-# COS_URL      - External URL to COS bucket
-# GROUP        - IBM Cloud resource group, using during IBM Cloud login
-# SLACK_URL... - a Slack URL to post the results to (one env var per URL)
-# TEST_SKIP    - list of tests (dir) to skip (spaces between them) (optional)
+# PROJECT         - CE project name to use (for new or existing project)
+# APIKEY          - used to log into IBM Cloud
+# COS_CRN         - CRN of COS instance to use when storing the output/log file
+# COS_URL         - External URL to COS bucket
+# GROUP           - IBM Cloud resource group, using during IBM Cloud login
+# SLACK_URL...    - a Slack URL to post the results to (one env var per URL)
+# TEST_SKIP       - list of tests (dir) to skip (spaces between them) (optional)
+# REGISTRY_APIKEY - Set this if you want it to re-build the images
+# REGISTRY        - Image registry to use (defaults to "ibmcom")
 
 # Set up batch job:
 # ibmcloud ce secret create -n keys ...above keys...
@@ -21,10 +23,6 @@ PROJECT=${PROJECT:-testing}
 
 (
 set -ex
-
-if [[ -v REGISTRY_APIKEY ]] ; then
-  export REGISTRY=${REGISTRY:-ibmcomtest}
-fi
 
 env | sort | sed "s/APIKEY=.*/APIKEY=.../" | tee tester.out
 
@@ -72,10 +70,12 @@ function clean {
     echo "Using existing project: $PROJECT"
     ibmcloud ce project select -n $PROJECT
   fi
+  echo
 } 2>&1 | tee ../tester.out
 [[ ${PIPESTATUS[0]} != "0" ]] && exit 1
 
 if [[ -v REGISTRY_APIKEY ]]; then
+  export REGISTRY=${REGISTRY:-ibmcomtest}
   bin/build-all
 fi
 
