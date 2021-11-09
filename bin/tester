@@ -50,7 +50,7 @@ function clean {
   rc=$?
   set +e
   if [[ -n "$NEW_PROJECT" ]] ; then
-    echo ibmcloud ce project delete -n $PROJECT -f --hard --wait
+    ibmcloud ce project delete -n $PROJECT -f --hard --wait
   else
     echo "Skipping deletion of project"
   fi
