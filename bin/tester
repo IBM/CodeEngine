@@ -86,6 +86,12 @@ bin/run-all-parallel
 ) 2>&1 | tee tests.out
 rc=${PIPESTATUS[0]}
 
+# Delete all pending reclamations, just to clean-up
+ibmcloud resource reclamations | grep SCHEDULED | while read id rest
+do
+  ibmcloud resource reclamation-delete $id --force
+done
+
 set -ex
 
 name=$(TZ=America/New_York date "+%F-%T").txt
