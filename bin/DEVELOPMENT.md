@@ -12,9 +12,7 @@ General rules to follow:
   previous (successful or unsuccessful) execution, and then exit.
 - the `run` script needs to run it's "clean" logic before and after the
   normal activities.
-- all pre-built images should be stored in `ibmcom` on DockerHub. See
-  https://github.ibm.com/open-source/ibmcom/issues for adding new images.
-  Team: `coligo`.
+- all pre-built images should be stored in `icr.io/codeengine`.
 - all material must be listed on the top-level README.
 - preferred language is Go.
 - before submitting a PR make sure `bin/run-all-parallel` works every time.

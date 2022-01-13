@@ -9,7 +9,7 @@
 # SLACK_URL...    - a Slack URL to post the results to (one env var per URL)
 # TEST_SKIP       - list of tests (dir) to skip (spaces between them) (optional)
 # REGISTRY_APIKEY - Set this if you want it to re-build the images
-# REGISTRY        - Image registry to use (defaults to "ibmcom")
+# REGISTRY        - Image registry to use (defaults to "ibmcomtest")
 
 # Set up batch job:
 # ibmcloud ce secret create -n keys ...above keys...

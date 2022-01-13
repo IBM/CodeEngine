@@ -18,7 +18,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create a Job - just it's definition. The "running" instance of it
 # will be created when the event is sent to it.

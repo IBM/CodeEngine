@@ -21,7 +21,7 @@ function clean() {
 clean
 [[ "$1" == "clean" ]] && exit 0
 
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 set -ex
 

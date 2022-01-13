@@ -20,7 +20,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export NUM=${NUM:-10}
 
 # Create a Job definition that will run 10 instances

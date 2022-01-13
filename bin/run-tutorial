@@ -29,8 +29,8 @@ while read -u 3 line ; do
   # Skip all non-user-commands and comment-commands
   [[ "$line" != "\$"* && "$line" != "<!-- "* ]] && continue
 
-  # Override the "ibmcom" if a REGISTRY was specified
-  [[ -n $REGISTRY ]] && line=${line/ibmcom/$REGISTRY}
+  # Override the "icr.io/codeengine" if a REGISTRY was specified
+  [[ -n $REGISTRY ]] && line=${line/icr.io\/codeengine/$REGISTRY}
 
   if [[ "$line" == "<!-- "* ]]; then
     # Comment command
