@@ -163,7 +163,8 @@ To do this we only need to provide two pieces of information:
 - the name of our application - `thumbnail` in this case.
   You could name it anything you want, but below we'll use this name
 - the container image to use - `icr.io/codeengine/thumbnail`. This is a
-  pre-built container image in a public container register (DockerHub)
+  pre-built container image in a public container register (IBM Container
+  Registry)
 
 And then we'll use the Code Engine (ce) `app create` command:
 
