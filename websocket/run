@@ -18,7 +18,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create the websocket server app
 ibmcloud ce app create -n ws-server --image ${REGISTRY}/ws-server

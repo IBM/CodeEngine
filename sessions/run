@@ -18,7 +18,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Deploy redis as an app. Make sure we only ever have 1 instance running
 ibmcloud ce app create -n session-redis --image redis --user 999 --cl --min=1 --max=1 \

@@ -162,13 +162,13 @@ With that, let's now return to deploying our application.
 To do this we only need to provide two pieces of information:
 - the name of our application - `thumbnail` in this case.
   You could name it anything you want, but below we'll use this name
-- the container image to use - `ibmcom/thumbnail`. This is a pre-built
-  container image in a public container register (DockerHub)
+- the container image to use - `icr.io/codeengine/thumbnail`. This is a
+  pre-built container image in a public container register (DockerHub)
 
 And then we'll use the Code Engine (ce) `app create` command:
 
 ```
-$ ibmcloud ce app create --name thumbnail --image ibmcom/thumbnail
+$ ibmcloud ce app create --name thumbnail --image icr.io/codeengine/thumbnail
 
 Creating application 'thumbnail'...
 The Configuration is still working to reflect the latest desired specification.
@@ -447,8 +447,8 @@ now go ahead and upgrade to the latest ("v2") version of our code, and
 remember to pass in the bucket name as an environment variable:
 
 ```
-$ ibmcloud ce app update --name thumbnail --image ibmcom/thumbnail:v2 \
-    --env BUCKET=$BUCKET
+$ ibmcloud ce app update --name thumbnail \
+    --image icr.io/codeengine/thumbnail:v2 --env BUCKET=$BUCKET
 
 Updating application 'thumbnail' to latest revision.
 The Configuration is still working to reflect the latest desired specification.
@@ -494,14 +494,14 @@ pre-built for you so all we need to do is create our batch job.
 
 The arguments to the `job create` command are:
 - `thumbnail-job`: the name we're assigning to the job
-- `ibmcom/thumbnail-job`: the name of the pre-built container image
+- `icr.io/codeengine/thumbnail-job`: the name of the pre-built container image
 - `BUCKET`: the environment variable that the code will look for to get the
   name of the bucket in which the images are stored. Same as with the
   application.
 
 ```
-$ ibmcloud ce job create --name thumbnail-job --image ibmcom/thumbnail-job \
-    --env BUCKET=$BUCKET
+$ ibmcloud ce job create --name thumbnail-job \
+    --image icr.io/codeengine/thumbnail-job --env BUCKET=$BUCKET
 
 Creating job 'thumbnail-job'...
 OK

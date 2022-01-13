@@ -5,7 +5,7 @@
 # COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to
 # use
 
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')

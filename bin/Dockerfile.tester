@@ -1,4 +1,4 @@
-FROM ibmcom/ce-bash
+FROM icr.io/codeengine/ce-bash
 
 COPY tester /
 CMD /tester

@@ -15,7 +15,7 @@ clean
 
 set -ex
 
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create our business logic app - don't expose it on the internet
 ibmcloud ce app create -n auth-app --image $REGISTRY/auth-app --cluster-local

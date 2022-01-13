@@ -5,7 +5,7 @@
 # COS_ID: If set, specifies the full CRN of a Cloud Object Storage instance to
 # use
 
-REGISTRY=${REGISTRY:-ibmcom}
+REGISTRY=${REGISTRY:-icr.io/codeengine}
 PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 PROJECT_REGION=$(ibmcloud ce project current | \
   awk -F: '/^Region/{ print $2 }' | sed -e 's/^[[:space:]]*//' -e "s/[[:space:]]*$//")

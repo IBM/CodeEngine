@@ -197,8 +197,8 @@ and used by anyone. Unless otherwise noted the overall pattern that will be
 followed is:
 
 - a `build` script shows how each container image used in the sample is built.
-  By default, the script will push the image to the `ibmcom` namespace on
-  DockerHub, so to use this yourself you'll need to set the `REGISTRY`
+  By default, the script will push the image to the `icr.io/codeengine`
+  namespace, so to use this yourself you'll need to set the `REGISTRY`
   environment variable to your own registry and/or namespace. Also, you
   MUST use a registry that allows for anonymous/public downloads of your
   images, since as of now (to keep the scripts simple) they do not deal
@@ -209,10 +209,11 @@ followed is:
 	to your secret that includes the registry credentials.
 - a `run` script will execute the sample. Most will also include logic to
   verify the output to ensure everything is working as expected. As with
-  `build`, it will default to using the `ibmcom` container images, so to use
-  your own you'll need to set the `REGISTRY` environment variable.
+  `build`, it will default to using the `icr.io/codeengine` container images,
+  so to use your own you'll need to set the `REGISTRY` environment variable.
   This means that you should be able to just execute `run` without running
-  `build` first, and it'll just use the pre-built images from `ibmcom`.
+  `build` first, and it'll just use the pre-built images from
+  `icr.io/codeengine`.
   - invoking `run clean` should clean up from any previous execution without
     re-running the sample.
 

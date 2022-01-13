@@ -10,7 +10,7 @@
 # into that registry before you run it.
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
 docker build ${NOCACHE} -t ${REGISTRY}/cos-listen .

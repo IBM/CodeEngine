@@ -18,7 +18,7 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcom}
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create our frontend and backend apps.
 # Note that the "backend" app is "cluster local", meaning that it does
