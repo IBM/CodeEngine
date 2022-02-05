@@ -177,6 +177,12 @@ is demonstrating.
   new files in the bucket and then uploading a new object into a secondary
   bucket. It can also get Cron events to periodically check for missed
   files.
+- [github](github)<br>
+  This sample will show how to get events from Github (via its webhooks)
+  delivered to a Code Engine Application.
+- [kafka](kafka)<br>
+  This sample shows how to create a Kafka subscription to automatically have
+  messages in a Kafka instances delivered to an application.
 
 #### Misc
 - [configmaps-env](configmaps-env)<br>
