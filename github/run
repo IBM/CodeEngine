@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Env Vars:
+# REGISTRY: name of the image registry/namespace to get the images
+# GIT_REPO: org/repo to use  (can also put it in a file called .gitRepo)
+#
+# Also put the Github personal access token in a file called ".gitToken".
+# It needs to have the "admin:repo_hook" and "repo" permissions.
+# If the file is not found then you will be prompted to enter it.
+
+# Clean up previous run
+function clean() {
+  set +ex
+  echo Cleaning...
+  (
+  ibmcloud ce app delete -n github -f
+  rm -f out
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
+
+# Create our github webhook processor Application, use secret in a env vars
+ibmcloud ce app create -n github --image $REGISTRY/github
+
+# Save App's URL for later
+APP=$(ibmcloud ce app get -n github -o url)
+
+# Now send a pre-created github "push" event to the app to simulate
+# it coming from github
+curl $APP -XPOST -d @sample-commit -H "X-Github-Event: push"
+
+ibmcloud ce app logs -n github --raw | tee out
+
+if ! grep "ibmcloud ce buildrun submit" out > /dev/null 2>&1 ; then
+  echo "Missing expected output"
+  exit 1
+fi
+
+clean
