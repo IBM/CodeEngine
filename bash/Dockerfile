@@ -1,9 +1,9 @@
-FROM golang:alpine
+FROM icr.io/codeengine/golang:alpine
 
 COPY server.go /
 RUN GO111MODULE=off go build -o /server /server.go
 
-FROM alpine
+FROM icr.io/codeengine/alpine
 
 # Upgrade the OS, install some common tools
 # Install the IBM Cloud CLI and Code Engine plugin

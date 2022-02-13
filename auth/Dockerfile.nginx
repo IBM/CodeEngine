@@ -1,5 +1,4 @@
-# A special NGINX image due to current limitations, that should be removed soon
-FROM nginx
+FROM icr.io/codeengine/nginx
 
 # call-ngninx is just a script that'll replace "NS" in the config file with
 # the proper project ID

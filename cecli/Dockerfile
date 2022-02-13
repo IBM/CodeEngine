@@ -1,9 +1,9 @@
-FROM golang
+FROM icr.io/codeengine/golang
 COPY cecli.go /
 RUN go build -o /cecli /cecli.go
 
 # Copy the exe into a non-golang image
-FROM ubuntu
+FROM icr.io/codeengine/ubuntu
 RUN apt-get update -y && apt-get install -y curl
 WORKDIR /root
 # Install the IBM Cloud CLI and Code Engine plugin
