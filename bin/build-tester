@@ -1,6 +1,13 @@
 #!/bin/bash
 
 set -ex
-export REGISTRY=${REGISTRY:-ibmcomtest}
-docker build -f Dockerfile.tester -t ${REGISTRY}/ce-tester .
+export REGISTRY=${REGISTRY:-icr.io/codeengine}
+
+docker build -f - -t ${REGISTRY}/ce-tester . <<-EOF
+	FROM icr.io/codeengine/ce-bash
+	WORKDIR /root
+	COPY tester /
+	CMD /tester
+EOF
+
 docker push ${REGISTRY}/ce-tester

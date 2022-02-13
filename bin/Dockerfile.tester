@@ -1,4 +1,0 @@
-FROM icr.io/codeengine/ce-bash
-
-COPY tester /
-CMD /tester

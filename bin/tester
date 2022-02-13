@@ -1,25 +1,32 @@
 #!/bin/bash
 
 # Envs that can be set in the batch job:
-# PROJECT         - CE project name to use (for new or existing project)
+#
+# The following are required (set them in a secret for security)
 # APIKEY          - used to log into IBM Cloud
 # COS_CRN         - CRN of COS instance to use when storing the output/log file
 # COS_URL         - External URL to COS bucket
 # GROUP           - IBM Cloud resource group, using during IBM Cloud login
 # SLACK_URL...    - a Slack URL to post the results to (one env var per URL)
-# TEST_SKIP       - list of tests (dir) to skip (spaces between them) (optional)
+#
+# Optional:
+# PROJECT         - CE project name to use (for new or existing project)
+# TEST_SKIP       - spaced list of tests (dirs) to skip
 # REGISTRY_APIKEY - Set this if you want it to re-build the images
-# REGISTRY        - Image registry to use (defaults to "ibmcomtest")
+# REGISTRY        - Registry to use when building (default: icr.io/codeengine)
+# REPORT          - Send slack msg even if everything worked (any value)
 
 # Set up batch job:
 # ibmcloud ce secret create -n keys ...above keys...
 # ibmcloud ce job create -n github --image ibmcomtest/ce-tester \
-#   -e PROJECT=testing -e REPORT=true --env-from-secret=keys -r 0
+#   -e REPORT=true --env-from-secret=keys -r 0
 # ibmcloud ce sub cron create -n github -s "0 * * * *" -d github --dt=job
 
 echo "====================================================================="
 
 PROJECT=${PROJECT:-testing}
+
+rm -f out tester.out
 
 (
 set -ex
@@ -54,6 +61,9 @@ function clean {
   else
     echo "Skipping deletion of project"
   fi
+
+  { date ; echo ; }
+
   return $rc
 }
 
@@ -78,7 +88,7 @@ function clean {
 [[ ${PIPESTATUS[0]} != "0" ]] && exit 1
 
 if [[ -v REGISTRY_APIKEY ]]; then
-  export REGISTRY=${REGISTRY:-ibmcomtest}
+  export REGISTRY=${REGISTRY:-icr.io/codeengine}
   bin/build-all
 fi
 
@@ -131,7 +141,7 @@ cat <<EOF >msg
 }
 EOF
 
-# Report our status to all SLACK_URL env var we have
+# Report our status to all SLACK_URL env vars we have
 [[ -n $REPORT || $rc != "0" ]] && (
   set +x
   env | grep SLACK_URL | while read URL ; do
