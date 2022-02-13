@@ -1,4 +1,4 @@
-FROM python:latest
+FROM icr.io/codeengine/python:latest
 
 
 WORKDIR cos2cos

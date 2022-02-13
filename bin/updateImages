@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# This will find all Dockerhub images that we use and update them in ICR.
+# We use ICR to avoid Dockerhub's rate limiting issues.
+# NOTE: you need to be logged into an account with access to icr.io/codeengine
+
+set -e
+
+cd $(dirname $0)/..
+
+grep -r "^[[:space:]]*FROM.*icr.io/codeengine/" * | \
+  sed "s/.*FROM.*icr.io\/codeengine\///" | sort -u | while read image
+do
+  [[ "$image" == "ce-bash" ]] && continue
+  tgt=icr.io/codeengine/$image
+  echo "Updating image: $image"
+  set -x
+  docker pull $image
+  docker tag $image $tgt
+  docker push $tgt
+  set +x
+done
