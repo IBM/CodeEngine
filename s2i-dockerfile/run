@@ -45,7 +45,7 @@ ibmcloud ce build create -n s2i-dbuild -i "$ICR/${ICR_NS}/app" --rs s2i-dicr \
 
 # Now kick off the build itself
 ibmcloud ce buildrun submit -n s2i-drun --build s2i-dbuild --wait ||
-  { ibmcloud ce buildrun logs -n s2i-drun && exit ; }
+  { ibmcloud ce buildrun get -n s2i-drun && exit ; }
 
 # Test the image we just built - deploy an app and 'curl' it
 ibmcloud ce app create -n s2i-dockerfile --image "$ICR/${ICR_NS}/app" --rs s2i-dicr
