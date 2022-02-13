@@ -9,7 +9,7 @@ cd $(dirname $0)/..
 echo "Cleaning..."
 bin/clean > /dev/null 2>&1
 
-rm -f .dep-*
+rm -f .dep-* .cos-seen
 rm -f run-all.out run-fail.out *.fail *.out
 
 echo TEST_SKIP=$TEST_SKIP
@@ -39,6 +39,9 @@ set -e
 
         for check in $(cat $dir/.DEPS); do
           touch ".dep-$check"
+		  # Pause to let COS clean-up from previous usage
+		  [[ "$check" == "cos" ]] && [[ -f .cos-seen ]] && sleep 180
+		  [[ "$check" == "cos" ]] && touch .cos-seen
         done
       fi
 
@@ -57,9 +60,6 @@ set -e
 
 		if [[ -f .DEPS ]]; then
           for check in $(cat .DEPS); do
-			# Let COS clean-up the instance before we create a new one
-		    [[ "$check" == "cos" ]] && sleep 180
-
             rm -f "../.dep-$check"
           done
 		fi
@@ -72,6 +72,7 @@ set -e
     # fi
   done
   wait
+  rm .cos-seen
 )) 2>&1 | tee run-all.out
 
 pass="true"
