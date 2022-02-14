@@ -298,8 +298,8 @@ access to your COS buckets is restricted and can not be accessed by any other
 cloud components without your explicit permission. In this case, we need to
 authorize access to your COS bucket from your Code Engine project.
 
-To do this we'll first need the Service Instance ID of our Code Engine project.
-To get that we'll use the following command:
+Since Code Engine itself also behaves like an Service Offering and inherited projects like Service Instances of this, we can use the Service Instance ID of our Code Engine project to accomplish this.
+To get the ID we'll use the following command:
 
 ```
 $ ibmcloud ce project current
@@ -319,19 +319,19 @@ Environment Variable:  export KUBECONFIG="/root/.bluemix/plugins/code-engine/thu
 ```
 
 And we'll need to save the `ID` value corresponding to our project. Let's
-save that in an environment variable called `CE_ID`:
+save that in an environment variable called `CE_PROJ_ID`:
 ```
-> export CE_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
+> export CE_PROJ_ID=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 ```
-<!-- export CE_ID=$(sed -n 's/ID: *\\([^ ]*\\).*/\\1/p' < out) -->
-<!-- doit export CE_ID=$CE_ID -->
+<!-- export CE_PROJ_ID=$(sed -n 's/ID: *\\([^ ]*\\).*/\\1/p' < out) -->
+<!-- doit export CE_PROJ_ID=$CE_PROJ_ID -->
 
-We can now setup our authorization policy using both the `CE_ID` we just
+We can now setup our authorization policy using both the `CE_PROJ_ID` we just
 obtained, and the Cloud Object Storage ID (`COS_ID`) from a previous command:
 
 ```
 $ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
-    "Notifications Manager" --source-service-instance-id $CE_ID \
+    "Notifications Manager" --source-service-instance-id $CE_PROJ_ID \
     --target-service-instance-id $COS_ID
 
 Creating authorization policy under account 2f9dc434c476457f2c0f53244a246d34 as abc@ibm.com...
@@ -367,7 +367,7 @@ easy use:
 ```
 > export BUCKET=4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6-thumbnail
 ```
-<!-- export BUCKET=$CE_ID-$RANDOM-thumbnail -->
+<!-- export BUCKET=$CE_PROJ_ID-$RANDOM-thumbnail -->
 <!-- doit export BUCKET=$BUCKET -->
 <!-- echo $BUCKET > .bucket -->
 
@@ -570,13 +570,13 @@ create a "namespace", which is similar to a folder on your desktop, to
 place our image. Namespaces in ICR must be unique across all users in a region
 so we'll need to make sure we use a unique name. For our purposes we'll prefix
 a human readable name with the ID of our Code Engine project - to do that
-we can reuse the first 8 characters of our `CE_ID` environment variable we
+we can reuse the first 8 characters of our `CE_PROJ_ID` environment variable we
 already created and create a new environment variable called `ICR_NS`:
 
 ```
-> export ICR_NS=${CE_ID:0:8}-thumbnail-ns
+> export ICR_NS=${CE_PROJ_ID:0:8}-thumbnail-ns
 ```
-<!-- export ICR_NS=${CE_ID:0:8}-thumbnail-cs -->
+<!-- export ICR_NS=${CE_PROJ_ID:0:8}-thumbnail-cs -->
 <!-- doit export ICR_NS=$ICR_NS -->
 <!-- echo $ICR_NS > .icr_ns -->
 
