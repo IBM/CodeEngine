@@ -4,7 +4,7 @@ In this tutorial we'll be using Code Engine to walk through a common pattern
 of how an application will morph over time from just a prototype to one that
 will then be used in production.
 
-To keep the example simple, we'll be creating an  transformation service
+To keep the example simple, we'll be creating an thumbnail creation service
 that will "process" an picture by examining it and creating a "thumbnail"
 version of it. The code itself to do this transformation isn't really the
 point of this tutorial, rather it's the "growing up" of the infrastructure
@@ -472,7 +472,7 @@ webpage looks a little bit different. There are a few things to be aware of:
 - Once you're ok with the picture, you then can then press the "Upload Picture"
   button to upload it to the object storage
 - You should see the resulting picture in the "Pictures / Thumbnails" box on the
-  right. However, the corresponding thumbnail picture should show "N/A" until
+  right. However, the corresponding thumbnail should show "N/A" until
   you ask for the thumbnail to be generated
 - Note that you can upload as many pictures as you want before you generate
   the thumbnails for them
