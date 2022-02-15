@@ -605,7 +605,7 @@ the images you're going to build in the remainder of this tutorial:
 <!-- doit export ICR=$ICR -->
 
 Next we need to create a set of credentials that our build process will use
-to talk to the Registry. We'll give those credwntials a name of
+to talk to the Registry. We'll give those credentials a name of
 `thumbnail-icr-apikey` so we can delete it later when we're done:
 
 ```
