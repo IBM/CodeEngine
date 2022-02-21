@@ -4,8 +4,8 @@ In this tutorial we'll be using Code Engine to walk through a common pattern
 of how an application will morph over time from just a prototype to one that
 will then be used in production.
 
-To keep the example simple, we'll be creating an thumbnail creation service
-that will "process" an picture by examining it and creating a "thumbnail"
+To keep the example simple, we'll be creating a thumbnail creation service
+that will "process" a picture by examining it and creating a "thumbnail"
 version of it. The code itself to do this transformation isn't really the
 point of this tutorial, rather it's the "growing up" of the infrastructure
 around the application and how Code Engine can make that easier.
@@ -787,7 +787,7 @@ That's it. Go back to the web page, upload an picture and you should see the
 thumbnail automatically created without the need to press the Job Runner
 button. And with that you've now completed part 4 of the tutorial.
 
-<!-- comment "All done! Go to app and upload an picture" -->
+<!-- comment "All done! Go to app and upload a picture" -->
 <!-- if [[ -z "$skip" ]] ; then exit 0 ; fi -->
 
 ## Part 5 - Final steps
