@@ -298,7 +298,7 @@ access to your COS buckets is restricted and can not be accessed by any other
 cloud components without your explicit permission. In this case, we need to
 authorize access to your COS bucket from your Code Engine project.
 
-Since Code Engine itself also behaves like an Service Offering and inherited projects like Service Instances of this, we can use the Service Instance ID of our Code Engine project to accomplish this.
+To establish this authorization you'll need the ID of the Code Engine project that will receive the COS related events.
 To get the ID we'll use the following command:
 
 ```
