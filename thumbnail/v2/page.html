@@ -51,7 +51,7 @@
       font-weight: bold ;
       margin-left: 20px ;
     }
-    #imagePreview {
+    #picturePreview {
       border: 3px dashed #ccc ;
       border-radius: 20px ;
       min-width: 400px ;
@@ -81,7 +81,7 @@
       background-color: #ccc ;
       color: gray ;
     }
-    #imagePreview.highlight {
+    #picturePreview.highlight {
       border-color: purple ;
     }
     #action {
@@ -128,7 +128,7 @@
       font-weight: bold ;
       text-align: center ;
     }
-    #images {
+    #pictures {
       border: 3px solid #ccc ;
       border-radius: 20px ;
       min-width: 200px ;
@@ -176,48 +176,48 @@
     <center><h1>Thumbnail Generator<h1></center>
     <div id=container>
       <div id=samples>
-        <image class=pict width=50 src="./images/dog1.jpg">
-        <image class=pict width=50 src="./images/dog2.jpg">
-        <image class=pict width=50 src="./images/dog3.jpg">
-        <image class=pict width=50 src="./images/dog4.jpg">
-        <image class=pict width=50 src="./images/dog5.jpg">
-        <image class=pict width=50 src="./images/dog6.jpg">
-        <image class=pict width=50 src="./images/dog7.jpg">
-        <image class=pict width=50 src="./images/dog8.jpg">
+        <image class=pict width=50 src="./pictures/dog1.jpg">
+        <image class=pict width=50 src="./pictures/dog2.jpg">
+        <image class=pict width=50 src="./pictures/dog3.jpg">
+        <image class=pict width=50 src="./pictures/dog4.jpg">
+        <image class=pict width=50 src="./pictures/dog5.jpg">
+        <image class=pict width=50 src="./pictures/dog6.jpg">
+        <image class=pict width=50 src="./pictures/dog7.jpg">
+        <image class=pict width=50 src="./pictures/dog8.jpg">
       </div>
       <div id="drop">
         <form id="form">
-          Drag an image from the left to the box:<br>
-          <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this.files[0])">
-          <image id="imagePreview"><br>
+          Drag a picture from the left to the box:<br>
+          <input type="file" id="fileInput" accept="image/*" onchange="previewPicture(this.files[0])">
+          <image id="picturePreview"><br>
           or:
           <button type=button id=picker onclick="fileInput.click()">
-            Choose an image...
+            Choose a picture...
           </button>
 		  <font size=-1>(jpg, gif, png)</font>
         </form>
       </div>
       <div id="action">
-      <button id=upload onclick="uploadImage()">Upload Image</button>
+      <button id=upload onclick="uploadPicture()">Upload Picture</button>
       <button id=generate onclick="calcThumbnails()">Thumbnails Job Runner</button>
       <button id=empty onclick="emptyBucket()">Clear Bucket</button>
       <span id=progress></span>
       </div>
       <div id="output">
-	    Images / Thumbnails
-        <div id="images"></div>
+	    Pictures / Thumbnails
+        <div id="pictures"></div>
       </div>
     </div>
   </body>
   <script>
     upload.disabled = true ;
-    var drop = document.getElementById('imagePreview');
+    var drop = document.getElementById('picturePreview');
 
-    function uploadImage() {
+    function uploadPicture() {
       progress.innerText = "Uploading...";
       var canvas = document.createElement('canvas');
       var context = canvas.getContext('2d');
-      var img = document.getElementById("imagePreview");
+      var img = document.getElementById("picturePreview");
       canvas.height = img.naturalHeight;
       canvas.width = img.naturalWidth;
       context.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
@@ -263,20 +263,20 @@
       var url = e.dataTransfer.getData('URL');
       if (url == "") url = e.dataTransfer.getData('Text');
       if (url != "" ){
-        document.getElementById('imagePreview').src = url ;
+        document.getElementById('picturePreview').src = url ;
         upload.disabled = false ;
         progress.innerText = "" ;
       } else {
-        previewImage(e.dataTransfer.files[0]);
+        previewPicture(e.dataTransfer.files[0]);
       }
     }
 
-    function previewImage(file) {
+    function previewPicture(file) {
       if (file != null) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = function() {
-          document.getElementById('imagePreview').src = reader.result ;
+          document.getElementById('picturePreview').src = reader.result ;
         }
         upload.disabled = false ;
         progress.innerText = "" ;
@@ -300,7 +300,7 @@
       xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
           var result = JSON.parse(xmlHttp.response);
-          var current = images.childNodes.length-1 ;
+          var current = pictures.childNodes.length-1 ;
           for ( var i = 0 ; result[i] != null ; i++ ) {
             if ( current == -1 ) {
               var row = document.createElement("div");
@@ -308,7 +308,7 @@
 
               var img = document.createElement("img");
               img.className = "original" ;
-              img.src = result[i].Image ;
+              img.src = result[i].Picture ;
               row.appendChild(img);
 
               if ( result[i].Thumb == "" ) {
@@ -323,12 +323,12 @@
                 row.appendChild(tmb);
               }
 
-              images.insertBefore( row, images.firstChild );
+              pictures.insertBefore( row, pictures.firstChild );
             } else {
-              var row = images.childNodes[current];
+              var row = pictures.childNodes[current];
               var img = row.childNodes[0];
-              if (!img.src.endsWith(result[i].Image)) {
-                img.src = result[i].Image ;
+              if (!img.src.endsWith(result[i].Picture)) {
+                img.src = result[i].Picture ;
               }
 
               var tmb = row.childNodes[1];
@@ -355,7 +355,7 @@
             }
           }
           while (current != -1) {
-            images.removeChild(images.firstChild);
+            pictures.removeChild(pictures.firstChild);
             current-- ;
           }
         }
