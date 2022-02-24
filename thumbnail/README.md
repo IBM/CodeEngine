@@ -800,7 +800,7 @@ First, let's download an picture to our local system by using one of the
 pre-defined pictures from our webapp:
 
 ```
-$ curl -fs -o dog $URL/images/dog1.jpg
+$ curl -fs -o dog $URL/pictures/dog1.jpg
 ```
 
 Now, let's use the COS CLI to upload the picture into our bucket, you'll want to

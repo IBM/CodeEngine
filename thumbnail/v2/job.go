@@ -16,18 +16,18 @@ import (
 )
 
 func MakeThumbnail(inBuf []byte) ([]byte, error) {
-	inImage, _, err := image.Decode(bytes.NewReader(inBuf))
+	inPicture, _, err := image.Decode(bytes.NewReader(inBuf))
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding image: %s", err)
+		return nil, fmt.Errorf("Error decoding picture: %s", err)
 	}
 
 	buf := &bytes.Buffer{}
 	// resize to width using Lanczos resampling
 	// and preserve aspect ratio
-	thumb := resize.Resize(50, 50, inImage, resize.Lanczos3)
+	thumb := resize.Resize(50, 50, inPicture, resize.Lanczos3)
 	err = png.Encode(buf, thumb)
 	if err != nil {
-		return nil, fmt.Errorf("Error shrinking image: %s", err)
+		return nil, fmt.Errorf("Error shrinking picture: %s", err)
 	}
 
 	return buf.Bytes(), nil
@@ -61,12 +61,12 @@ func CalcThumbnails(bucketName string) error {
 	for _, name := range names {
 		if _, ok := thumbs[name+"-thumb"]; !ok {
 			log.Printf("Processing: %s", name)
-			image, err := COSClient.DownloadObject(bucketName, name)
+			picture, err := COSClient.DownloadObject(bucketName, name)
 			if err != nil {
 				return fmt.Errorf("Error downloading %q: %s", name, err)
 			}
 
-			thumb, err := MakeThumbnail(image)
+			thumb, err := MakeThumbnail(picture)
 			if err == nil {
 				err = COSClient.UploadObject(bucketName, name+"-thumb", thumb)
 				if err != nil {
@@ -87,7 +87,7 @@ func main() {
 
 	bucketName := os.Getenv("BUCKET")
 	if bucketName == "" {
-		bucketName = "ce-images"
+		bucketName = "ce-pictures"
 	}
 
 	if err := CalcThumbnails(bucketName); err != nil {
