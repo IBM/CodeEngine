@@ -9,5 +9,5 @@ RUN go build -o /app app.go
 FROM icr.io/codeengine/ubuntu
 COPY --from=0 /app /app
 COPY page.html /
-COPY images/* /images/
+COPY pictures/* /pictures/
 CMD /app
