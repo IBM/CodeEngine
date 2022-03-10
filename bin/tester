@@ -92,7 +92,7 @@ if [[ -v REGISTRY_APIKEY ]]; then
   bin/build-all
 fi
 
-bin/run-all-parallel
+bin/run-all
 ) 2>&1 | tee tests.out
 rc=${PIPESTATUS[0]}
 
