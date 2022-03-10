@@ -51,7 +51,7 @@
       font-weight: bold ;
       margin-left: 20px ;
     }
-    #imagePreview {
+    #picturePreview {
       border: 3px dashed #ccc ;
       border-radius: 20px ;
       min-width: 400px ;
@@ -81,7 +81,7 @@
       background-color: #ccc ;
       color: gray ;
     }
-    #imagePreview.highlight {
+    #picturePreview.highlight {
       border-color: purple ;
     }
     #action {
@@ -128,23 +128,23 @@
     <center><h1>Thumbnail Generator<h1></center>
     <div id=container>
       <div id=samples>
-        <image class=pict width=50 src="./images/dog1.jpg">
-        <image class=pict width=50 src="./images/dog2.jpg">
-        <image class=pict width=50 src="./images/dog3.jpg">
-        <image class=pict width=50 src="./images/dog4.jpg">
-        <image class=pict width=50 src="./images/dog5.jpg">
-        <image class=pict width=50 src="./images/dog6.jpg">
-        <image class=pict width=50 src="./images/dog7.jpg">
-        <image class=pict width=50 src="./images/dog8.jpg">
+        <image class=pict width=50 src="./pictures/dog1.jpg">
+        <image class=pict width=50 src="./pictures/dog2.jpg">
+        <image class=pict width=50 src="./pictures/dog3.jpg">
+        <image class=pict width=50 src="./pictures/dog4.jpg">
+        <image class=pict width=50 src="./pictures/dog5.jpg">
+        <image class=pict width=50 src="./pictures/dog6.jpg">
+        <image class=pict width=50 src="./pictures/dog7.jpg">
+        <image class=pict width=50 src="./pictures/dog8.jpg">
       </div>
       <div id="drop">
         <form id="form">
-          Drag an image from the left to the box:<br>
-          <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this.files[0])">
-          <image id="imagePreview"><br>
+          Drag an picture from the left to the box:<br>
+          <input type="file" id="fileInput" accept="image/*" onchange="previewPicture(this.files[0])">
+          <image id="picturePreview"><br>
           or:
           <button type=button id=picker onclick="fileInput.click()">
-            Choose an image...
+            Choose an picture...
           </button>
           <font size=-1>(jpg, gif, png)</font>
         </form>
@@ -166,7 +166,7 @@
       progress.innerText = "Processing...";
       var canvas = document.createElement('canvas');
       var context = canvas.getContext('2d');
-      var img = document.getElementById("imagePreview");
+      var img = document.getElementById("picturePreview");
       canvas.height = img.naturalHeight;
       canvas.width = img.naturalWidth;
       context.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
@@ -209,11 +209,11 @@
     }
 
     function highlight(e) {
-      imagePreview.classList.add('highlight');
+      picturePreview.classList.add('highlight');
     }
 
     function unhighlight(e) {
-      imagePreview.classList.remove('highlight');
+      picturePreview.classList.remove('highlight');
     }
 
     function doDrop(e) {
@@ -225,36 +225,36 @@
       var url = e.dataTransfer.getData('URL');
       if (url == "") url = e.dataTransfer.getData('Text');
       if (url != "" ){
-        document.getElementById('imagePreview').src = url ;
+        document.getElementById('picturePreview').src = url ;
         generate.disabled = false ;
         progress.innerText = "" ;
       } else {
-        previewImage(e.dataTransfer.files[0]);
+        previewPicture(e.dataTransfer.files[0]);
       }
     }
 
-    function previewImage(file) {
+    function previewPicture(file) {
       if (file != null) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = function() {
-          document.getElementById('imagePreview').src = reader.result ;
+          document.getElementById('picturePreview').src = reader.result ;
         }
         generate.disabled = false ;
         progress.innerText = "" ;
       }
     }
 
-    imagePreview.addEventListener('dragenter', preventDefaults, false);
-    imagePreview.addEventListener('dragover', preventDefaults, false);
-    imagePreview.addEventListener('dragleave', preventDefaults, false);
+    picturePreview.addEventListener('dragenter', preventDefaults, false);
+    picturePreview.addEventListener('dragover', preventDefaults, false);
+    picturePreview.addEventListener('dragleave', preventDefaults, false);
 
-    imagePreview.addEventListener('dragenter', highlight, false)
-    imagePreview.addEventListener('dragover', highlight, false)
+    picturePreview.addEventListener('dragenter', highlight, false)
+    picturePreview.addEventListener('dragover', highlight, false)
 
-    imagePreview.addEventListener('dragleave', unhighlight, false)
-    imagePreview.addEventListener('drop', unhighlight, false)
+    picturePreview.addEventListener('dragleave', unhighlight, false)
+    picturePreview.addEventListener('drop', unhighlight, false)
 
-    imagePreview.addEventListener('drop', doDrop, false)
+    picturePreview.addEventListener('drop', doDrop, false)
   </script>
 </html>

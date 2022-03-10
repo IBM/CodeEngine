@@ -10,5 +10,5 @@ RUN go build -o /thumbnail app.go
 FROM icr.io/codeengine/alpine
 COPY --from=0 /thumbnail /thumbnail
 COPY page.html /
-COPY images/* /images/
+COPY pictures/* /pictures/
 CMD /thumbnail

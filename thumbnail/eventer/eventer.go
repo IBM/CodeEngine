@@ -25,18 +25,18 @@ var svcID = ""
 var COSClient = (*cosclient.COSClient)(nil)
 
 func MakeThumbnail(inBuf []byte) ([]byte, error) {
-	inImage, _, err := image.Decode(bytes.NewReader(inBuf))
+	inPicture, _, err := image.Decode(bytes.NewReader(inBuf))
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding image: %s", err)
+		return nil, fmt.Errorf("Error decoding picture: %s", err)
 	}
 
 	buf := &bytes.Buffer{}
 	// resize to width using Lanczos resampling
 	// and preserve aspect ratio
-	thumb := resize.Resize(50, 50, inImage, resize.Lanczos3)
+	thumb := resize.Resize(50, 50, inPicture, resize.Lanczos3)
 	err = png.Encode(buf, thumb)
 	if err != nil {
-		return nil, fmt.Errorf("Error shrinking image: %s", err)
+		return nil, fmt.Errorf("Error shrinking picture: %s", err)
 	}
 
 	return buf.Bytes(), nil
@@ -44,12 +44,12 @@ func MakeThumbnail(inBuf []byte) ([]byte, error) {
 
 func CalcThumbnail(bucketName string, objectName string) error {
 	log.Printf("Processing: %s", objectName)
-	image, err := COSClient.DownloadObject(bucketName, objectName)
+	picture, err := COSClient.DownloadObject(bucketName, objectName)
 	if err != nil {
 		return fmt.Errorf("Error downloading %q: %s", objectName, err)
 	}
 
-	thumb, err := MakeThumbnail(image)
+	thumb, err := MakeThumbnail(picture)
 	if err == nil {
 		err = COSClient.UploadObject(bucketName, objectName+"-thumb", thumb)
 		if err != nil {

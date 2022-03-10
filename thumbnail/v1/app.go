@@ -7,6 +7,7 @@ import (
 	_ "image/jpeg"
 	"io"
 	"net/http"
+
 	// _ "image/png"
 	"fmt"
 	"image/png"
@@ -20,18 +21,18 @@ import (
 // https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/
 
 func MakeThumbnail(inBuf []byte) ([]byte, error) {
-	inImage, _, err := image.Decode(bytes.NewReader(inBuf))
+	inPicture, _, err := image.Decode(bytes.NewReader(inBuf))
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding image: %s", err)
+		return nil, fmt.Errorf("Error decoding picture: %s", err)
 	}
 
 	buf := &bytes.Buffer{}
 	// resize to width using Lanczos resampling
 	// and preserve aspect ratio
-	thumb := resize.Resize(50, 50, inImage, resize.Lanczos3)
+	thumb := resize.Resize(50, 50, inPicture, resize.Lanczos3)
 	err = png.Encode(buf, thumb)
 	if err != nil {
-		return nil, fmt.Errorf("Error shrinking image: %s", err)
+		return nil, fmt.Errorf("Error shrinking picture: %s", err)
 	}
 
 	return buf.Bytes(), nil

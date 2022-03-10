@@ -4,8 +4,8 @@ In this tutorial we'll be using Code Engine to walk through a common pattern
 of how an application will morph over time from just a prototype to one that
 will then be used in production.
 
-To keep the example simple, we'll be creating an image transformation service
-that will "process" an image by examining it and creating a "thumbnail"
+To keep the example simple, we'll be creating a thumbnail creation service
+that will "process" a picture by examining it and creating a "thumbnail"
 version of it. The code itself to do this transformation isn't really the
 point of this tutorial, rather it's the "growing up" of the infrastructure
 around the application and how Code Engine can make that easier.
@@ -13,14 +13,14 @@ around the application and how Code Engine can make that easier.
 The overall growth path that our application will take is:
 - deploy a simple webapp as a prototype to prove that our core "thumbnail"
   processing logic works. Everything is self-contained in this one webapp.
-- add some persistence so that as images are uploaded they are saved for
+- add some persistence so that as pictures are uploaded they are saved for
   safe keeping and so that we can off-load the processing to a background
   process since in many scenarios the "transformation" logic may take a while.
   This also allows for other mechanisms, aside from our webapp, to upload
-  the images - for cases where the data being processed could be coming from
+  the pictures - for cases where the data being processed could be coming from
   multiple sources.
 - finally, we'll convert this "off-line" processing into something more
-  event-driven so that we can process the images in real-time/immediately.
+  event-driven so that we can process the pictures in real-time/immediately.
 
 ## Initial Setup
 
@@ -89,8 +89,8 @@ Space:
 
 ## Part 1 - Deploying our first application
 
-Before we begin let's first discuss how the image transformation (i.e.
-thumbnail generator) works. It's rather simple, it takes an image (as an
+Before we begin let's first discuss how the picture transformation (i.e.
+thumbnail generator) works. It's rather simple, it takes an picture (as an
 array of bytes) and then returns the thumbnail, again as an array of bytes.
 As mentioned in the introduction, the code here isn't really that important,
 and can easily be replaced with other (more complex) logic, but if you're
@@ -98,7 +98,7 @@ interested you can see the logic in the [`MakeThumbnail`](v1/app.go) function.
 
 In this first step we'll be deploying a webapp that wrappers this
 `MakeThumbnail` function with some HTTP processing logic to allow users to
-upload an image via a browser. The webapp will then call `MakeThumbnail`
+upload an picture via a browser. The webapp will then call `MakeThumbnail`
 to generate the thumbnail and then return it back to the user. Of course,
 displaying the results in their browser.
 
@@ -195,10 +195,10 @@ Let's also save this URL as environment variable so we can use it later:
 <!-- export URL=$(tail -1 out) -->
 <!-- doit export URL=$URL -->
 
-It's a very basic application where you can drag-n-drop one of the images into
-the first box, or upload your own image if you wish. Once there is an image
+It's a very basic application where you can drag-n-drop one of the pictures into
+the first box, or upload your own picture if you wish. Once there is an picture
 in there, go ahead and hit the "Generate Thumbnail" button to process the
-image. The resulting thumbnail should appear in the right-hand box.
+picture. The resulting thumbnail should appear in the right-hand box.
 
 Let's pause here for a moment to understand what we just did. With just two
 pieces of information (application name and container image) we've now
@@ -211,12 +211,12 @@ tutorial.
 ## Part 2 - Setup our persistence
 
 Now that we've proven that the logic of our thumbnail processor works, we need
-to change things a bit so that instead of assuming the incoming images are
+to change things a bit so that instead of assuming the incoming pictures are
 coming from a web page, we're going to get them from a persistent store - or
 in this case IBM Cloud Object Storage. We're doing this because in our
 production environment the data we're going to process might be coming from
 many different sources and we need to keep both the original and processed
-data for our records - meaning we need to save both the image and its
+data for our records - meaning we need to save both the picture and its
 thumbnail.
 
 In the end, what this really means is that our web application might
@@ -226,7 +226,7 @@ web front-end application.
 
 The other change in processing logic we're going to make is to move the
 thumbnail processing out of the webapp, again since it might not be the only
-way images are put into our datastore, and into a separate workload that
+way pictures are put into our datastore, and into a separate workload that
 we'll invoke outside of the webapp. But more on that later, for now let's
 focus on setting up the datastore.
 
@@ -266,7 +266,7 @@ So to make life easier, let's save it as an environment variable:
 <!-- export COS_ID=$(sed -n 's/^ID:[ ^t]*//p' < out | sed "s/ *//g") -->
 <!-- doit export COS_ID=$COS_ID -->
 
-The images will be stored in "buckets" (similar to folders in your computer).
+The pictures will be stored in "buckets" (similar to folders in your computer).
 To manage these we'll be using the Cloud Object Storage (COS) CLI and we'll
 need to configure it to:
 - point to our COS instance that we just created
@@ -389,14 +389,14 @@ application's migration.
 
 With our datastore ready, we can now deploy the second version of our
 application. This version looks very similar to the first but instead of
-calling the `MakeThumbnail` function immediately, it'll put the uploaded image
+calling the `MakeThumbnail` function immediately, it'll put the uploaded picture
 into our bucket. We'll invoke the `MakeThumbnail` function at a later
 point in time.
 
 As with version 1 of our application, the container image is already built for
 us so we just need to tell Code Engine to use it. However, there is one other
 change we need to make at the same time. This version of the application will
-need to be told which bucket to use for the images. It will look for an
+need to be told which bucket to use for the pictures. It will look for an
 environment variable called `BUCKET` to get the bucket name. We could have
 just hard-coded the bucket name into the application, but being able to
 modify the name dynamically without changing the source code is better.
@@ -466,15 +466,15 @@ https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 
 Now that that application has been updated, you might have noticed that the
 webpage looks a little bit different. There are a few things to be aware of:
-- Dragging (or uploading) an image into the left-most box does not upload
+- Dragging (or uploading) an picture into the left-most box does not upload
   it automatically to the server (object storage). You are given an
   opportunity to view it first
-- Once you're ok with the image, you then can then press the "Upload Image"
+- Once you're ok with the picture, you then can then press the "Upload Picture"
   button to upload it to the object storage
-- You should see the resulting image in the "Images / Thumbnails" box on the
-  right. However, the corresponding thumbnail image should show "N/A" until
+- You should see the resulting picture in the "Pictures / Thumbnails" box on the
+  right. However, the corresponding thumbnail should show "N/A" until
   you ask for the thumbnail to be generated
-- Note that you can upload as many images as you want before you generate
+- Note that you can upload as many pictures as you want before you generate
   the thumbnails for them
 - You will generate the thumbnails via the "Thumbnails Job Runner" button,
   but that hasn't been enabled yet. We'll do that next
@@ -482,10 +482,10 @@ webpage looks a little bit different. There are a few things to be aware of:
   erase the contents of the object storage bucket if you want
 
 Technically you can use the application right now, but if you upload an
-image you won't see the thumbnail because that logic has been moved out
+picture you won't see the thumbnail because that logic has been moved out
 of the webapp, as was mentioned in the previous section.
 
-The processing of the images will now be done in a "Batch Job". Batch jobs
+The processing of the pictures will now be done in a "Batch Job". Batch jobs
 are pieces of code that will run once and then exit when done - unlike
 applications that wait for additional work to come in via HTTP requests.
 In this case we've moved the `MakeThumbnail` logic out of the webapp and
@@ -497,7 +497,7 @@ The arguments to the `job create` command are:
 - `thumbnail-job`: the name we're assigning to the job
 - `icr.io/codeengine/thumbnail-job`: the name of the pre-built container image
 - `BUCKET`: the environment variable that the code will look for to get the
-  name of the bucket in which the images are stored. Same as with the
+  name of the bucket in which the pictures are stored. Same as with the
   application.
 
 ```
@@ -530,7 +530,7 @@ OK
 ```
 
 Now if you go back to the webpage you'll be able to generate thumbnails
-for the images you upload by pressing the "Thumbnail Job Runner" button.
+for the pictures you upload by pressing the "Thumbnail Job Runner" button.
 It'll take a second or two for the job to be started and do its work but
 you should eventually see the thumbnails appear on the web page.
 
@@ -538,22 +538,22 @@ you should eventually see the thumbnails appear on the web page.
 
 You've now successfully completed part 3 of the tutorial.
 
-## Part 4 - Event-driven image processing
+## Part 4 - Event-driven picture processing
 
 In this last portion of the tutorial we'll be making the final migration
 to our application. As of now the application is more robust than it was
-when we first started. It can save the images and thumbnails, it can
-support processing images regardless of how they are put into our datastore,
+when we first started. It can save the pictures and thumbnails, it can
+support processing pictures regardless of how they are put into our datastore,
 and it can process the entire bucket of them at will via our batch job.
 However, the batch job process is a bit too manual for our needs. We could
 hook it up to a timer based invocation mechanism, and that's appropriate
 for some system, but for our needs we want it to be a bit more reactive, or
 "event driven".
 
-In other words, our requirements are that we'd like to have each image
+In other words, our requirements are that we'd like to have each picture
 processed immediately as it is uploaded into COS. To achieve this were going
-to have COS send us an event each time there is a new image uploaded into the
-bucket, and then we'll process the image right away.
+to have COS send us an event each time there is a new picture uploaded into the
+bucket, and then we'll process the picture right away.
 
 In order to make this happen we're going to deploy a second application to
 receive those events. We could have reused the webapp application for this but
@@ -783,27 +783,27 @@ last time to see it disappear:
 $ ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 ```
 
-That's it. Go back to the web page, upload an image and you should see the
+That's it. Go back to the web page, upload an picture and you should see the
 thumbnail automatically created without the need to press the Job Runner
 button. And with that you've now completed part 4 of the tutorial.
 
-<!-- comment "All done! Go to app and upload an image" -->
+<!-- comment "All done! Go to app and upload a picture" -->
 <!-- if [[ -z "$skip" ]] ; then exit 0 ; fi -->
 
 ## Part 5 - Final steps
 
 This last part of the tutorial doesn't involve learning anything new about
 Code Engine. Instead, we're going to demonstrate how the event-driven
-thumbnail processor works even without uploading images via the webapp.
+thumbnail processor works even without uploading pictures via the webapp.
 
-First, let's download an image to our local system by using one of the
-pre-defined images from our webapp:
+First, let's download an picture to our local system by using one of the
+pre-defined pictures from our webapp:
 
 ```
-$ curl -fs -o dog $URL/images/dog1.jpg
+$ curl -fs -o dog $URL/pictures/dog1.jpg
 ```
 
-Now, let's use the COS CLI to upload the image into our bucket, you'll want to
+Now, let's use the COS CLI to upload the picture into our bucket, you'll want to
 keep an eye on the webapp since it (along with the thumbnail) should
 automatically appear on there as the webapp refreshes (`key` is the name
 of the object in COS, and `$RANDOM` will ensure that each time the command
@@ -820,9 +820,9 @@ Successfully uploaded object 'dog' to bucket '4b9e6ea8-7d77-46a9-aa68-f65d9398a1
 ```
 <!-- curl -fs $URL/bucket | grep dog.*thumb > /dev/null -->
 
-Of course, you can still upload images from the webapp too if you'd like.
+Of course, you can still upload pictures from the webapp too if you'd like.
 Either way, the `eventer` application will receive the event from COS and
-process the image.
+process the picture.
 
 You can use the "Clear bucket" button on the webapp if you'd like to erase
 the contents of the bucket.
@@ -861,7 +861,7 @@ Remove the authorization we setup between COS and Code Engine:
 ```
 $ ibmcloud iam authorization-policy-delete $POLICY_ID --force
 ```
-Delete all of the images in your bucket by first listing all of them:
+Delete all of the pictures in your bucket by first listing all of them:
 ```
 $ ibmcloud cos objects --bucket $BUCKET
 ```
@@ -891,12 +891,12 @@ Let's refresh our memory on what happened in this tutorial, we:
   container image. While we didn't demonstrate it, if the load on the
   application increased, Code Engine would have scaled it up and down
   automatically, including down to zero if it was idle.
-- created an instance of COS and a bucket to store the images
+- created an instance of COS and a bucket to store the pictures
 - updated the application to a second version with no downtime, and made it
-  so the application stored the images, and thumbnails, in the bucket
-- created a batch job to process all of the images in the bucket on demand
+  so the application stored the pictures, and thumbnails, in the bucket
+- created a batch job to process all of the pictures in the bucket on demand
 - created a second application to react to events from COS so that we can
-  process the images immediately as they're uploaded to COS instead of waiting
+  process the pictures immediately as they're uploaded to COS instead of waiting
   for the batch job to run
 - created a "build" that built this second application from our git repo for
   us

@@ -104,18 +104,18 @@ func StartJob() error {
 }
 
 func MakeThumbnail(inBuf []byte) ([]byte, error) {
-	inImage, _, err := image.Decode(bytes.NewReader(inBuf))
+	inPicture, _, err := image.Decode(bytes.NewReader(inBuf))
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding image: %s", err)
+		return nil, fmt.Errorf("Error decoding picture: %s", err)
 	}
 
 	buf := &bytes.Buffer{}
 	// resize to width using Lanczos resampling
 	// and preserve aspect ratio
-	thumb := resize.Resize(50, 50, inImage, resize.Lanczos3)
+	thumb := resize.Resize(50, 50, inPicture, resize.Lanczos3)
 	err = png.Encode(buf, thumb)
 	if err != nil {
-		return nil, fmt.Errorf("Error shrinking image: %s", err)
+		return nil, fmt.Errorf("Error shrinking picture: %s", err)
 	}
 
 	return buf.Bytes(), nil
@@ -150,7 +150,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error reading body:"+err.Error(), 503)
 		} else if len(body) > 0 {
 			err := COSClient.UploadObject(BucketName,
-				fmt.Sprintf("image-%d", time.Now().UnixNano()),
+				fmt.Sprintf("picture-%d", time.Now().UnixNano()),
 				body)
 			if err != nil {
 				log.Printf("Error uploading: %s", err)
@@ -206,8 +206,8 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		type Item struct {
-			Image string
-			Thumb string
+			Picture string
+			Thumb   string
 		}
 		list := []Item{}
 
@@ -217,8 +217,8 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 				thumb = "bucket/" + name + "-thumb"
 			}
 			list = append(list, Item{
-				Image: "bucket/" + name,
-				Thumb: thumb,
+				Picture: "bucket/" + name,
+				Thumb:   thumb,
 			})
 		}
 		buf, _ := json.Marshal(list)
@@ -273,7 +273,7 @@ func main() {
 	}
 	BucketName = os.Getenv("BUCKET")
 	if BucketName == "" {
-		BucketName = "ce-images"
+		BucketName = "ce-pictures"
 	}
 
 	JobName = os.Getenv("JOB_NAME")
