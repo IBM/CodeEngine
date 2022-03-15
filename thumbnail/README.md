@@ -90,7 +90,7 @@ Space:
 ## Part 1 - Deploying our first application
 
 Before we begin let's first discuss how the picture transformation (i.e.
-thumbnail generator) works. It's rather simple, it takes an picture (as an
+thumbnail generator) works. It's rather simple, it takes a picture (as an
 array of bytes) and then returns the thumbnail, again as an array of bytes.
 As mentioned in the introduction, the code here isn't really that important,
 and can easily be replaced with other (more complex) logic, but if you're
@@ -98,7 +98,7 @@ interested you can see the logic in the [`MakeThumbnail`](v1/app.go) function.
 
 In this first step we'll be deploying a webapp that wrappers this
 `MakeThumbnail` function with some HTTP processing logic to allow users to
-upload an picture via a browser. The webapp will then call `MakeThumbnail`
+upload a picture via a browser. The webapp will then call `MakeThumbnail`
 to generate the thumbnail and then return it back to the user. Of course,
 displaying the results in their browser.
 
@@ -196,7 +196,7 @@ Let's also save this URL as environment variable so we can use it later:
 <!-- doit export URL=$URL -->
 
 It's a very basic application where you can drag-n-drop one of the pictures into
-the first box, or upload your own picture if you wish. Once there is an picture
+the first box, or upload your own picture if you wish. Once there is a picture
 in there, go ahead and hit the "Generate Thumbnail" button to process the
 picture. The resulting thumbnail should appear in the right-hand box.
 
@@ -466,7 +466,7 @@ https://thumbnail.79gf3v2htsc.eu-gb.codeengine.appdomain.cloud
 
 Now that that application has been updated, you might have noticed that the
 webpage looks a little bit different. There are a few things to be aware of:
-- Dragging (or uploading) an picture into the left-most box does not upload
+- Dragging (or uploading) a picture into the left-most box does not upload
   it automatically to the server (object storage). You are given an
   opportunity to view it first
 - Once you're ok with the picture, you then can then press the "Upload Picture"
@@ -481,7 +481,7 @@ webpage looks a little bit different. There are a few things to be aware of:
 - And finally, you'll notice a "Clear Bucket" button which can be used to
   erase the contents of the object storage bucket if you want
 
-Technically you can use the application right now, but if you upload an
+Technically you can use the application right now, but if you upload a
 picture you won't see the thumbnail because that logic has been moved out
 of the webapp, as was mentioned in the previous section.
 
@@ -783,7 +783,7 @@ last time to see it disappear:
 $ ibmcloud ce app update --name thumbnail --env HIDE_BUTTON=true
 ```
 
-That's it. Go back to the web page, upload an picture and you should see the
+That's it. Go back to the web page, upload a picture and you should see the
 thumbnail automatically created without the need to press the Job Runner
 button. And with that you've now completed part 4 of the tutorial.
 
@@ -796,7 +796,7 @@ This last part of the tutorial doesn't involve learning anything new about
 Code Engine. Instead, we're going to demonstrate how the event-driven
 thumbnail processor works even without uploading pictures via the webapp.
 
-First, let's download an picture to our local system by using one of the
+First, let's download a picture to our local system by using one of the
 pre-defined pictures from our webapp:
 
 ```
