@@ -30,13 +30,22 @@ func init() {
 		Password           string
 	}
 
+	user = "token"
+
 	if os.Getenv("PASSWORD") != "" {
-		user = "token"
 		password = os.Getenv("PASSWORD")
-		brokers = os.Getenv("BROKERS")
-		log.Printf("Brokers: %s", brokers)
+	} else if os.Getenv("password") != "" {
+		password = os.Getenv("password")
 	} else {
 		panic("Missing PASSWORD env var")
+	}
+
+	if os.Getenv("BROKERS") != "" {
+		brokers = os.Getenv("BROKERS")
+	} else if os.Getenv("brokers") != "" {
+		brokers = os.Getenv("brokers")
+	} else {
+		panic("Missing BROKERS env var")
 	}
 
 	kVersion, err := sarama.ParseKafkaVersion("2.1.1")
