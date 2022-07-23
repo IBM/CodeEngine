@@ -202,18 +202,33 @@ func main() {
 	// Otherwise we're an App and we need to start the HTTP server
 	// to processing incoming requests
 	if jobIndex := os.Getenv("JOB_INDEX"); jobIndex != "" {
-		sleep := os.Getenv("SLEEP")
-		if sleep != "" {
-			len, _ := strconv.Atoi(sleep)
-			if len > 0 {
-				Debug(false, "Sleeping %d", len)
-				time.Sleep(time.Duration(len) * time.Second)
-			}
-		}
 
-		fmt.Printf("Hello from helloworld! I'm a batch job! Index: %s\n\n",
-			jobIndex)
-		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
+		// Jobs can be either started in 'task' mode and run to completion or in 'daemon' mode which
+		jobMode := os.Getenv("JOB_MODE")
+
+		// Start a endless for loop
+		for {
+			sleep := os.Getenv("SLEEP")
+			if sleep != "" {
+				len, _ := strconv.Atoi(sleep)
+				if len > 0 {
+					Debug(false, "Sleeping %d", len)
+					time.Sleep(time.Duration(len) * time.Second)
+				}
+			}
+
+			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s\n\n",
+				jobMode, jobIndex)
+			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
+
+			if jobMode == "task" {
+				// If this job is of type task, let exit the loop
+				break
+			}
+
+			// Sleep for another 60 seconds and then re-do the execution
+			time.Sleep(time.Duration(60) * time.Second)
+		}
 
 	} else {
 		// Debug the http handler for all requests
