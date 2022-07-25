@@ -209,25 +209,27 @@ func main() {
 		// Start a endless for loop
 		for {
 			sleep := os.Getenv("SLEEP")
+			sleepDuration := 0
 			if sleep != "" {
-				len, _ := strconv.Atoi(sleep)
-				if len > 0 {
-					Debug(false, "Sleeping %d", len)
-					time.Sleep(time.Duration(len) * time.Second)
-				}
+				sleepDuration, _ = strconv.Atoi(sleep)
+			} else if jobMode == "daemon" {
+				// Sleep for 60 seconds and then re-do the execution
+				sleepDuration = 60
 			}
 
-			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s\n\n",
-				jobMode, jobIndex)
+			// Check whether the job should sleep a while before printing the helloworld statement
+			if sleepDuration > 0 {
+				Debug(false, "Sleeping %ds", sleepDuration)
+				time.Sleep(time.Duration(sleepDuration) * time.Second)
+			}
+
+			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s\n\n", jobMode, jobIndex)
 			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 			if jobMode == "task" {
-				// If this job is of type task, let exit the loop
+				// If this job is of type task (aka run-to-completion), let it exit the loop
 				break
 			}
-
-			// Sleep for another 60 seconds and then re-do the execution
-			time.Sleep(time.Duration(60) * time.Second)
 		}
 
 	} else {
