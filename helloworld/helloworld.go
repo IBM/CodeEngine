@@ -243,6 +243,16 @@ func main() {
 			}
 		}
 
+		Debug(true, `. ___  __  ____  ____`)
+		Debug(true, `./ __)/  \(    \(  __)`)
+		Debug(true, `( (__(  O )) D ( ) _)`)
+		Debug(true, `.\___)\__/(____/(____)`)
+		Debug(true, `.____  __ _   ___  __  __ _  ____`)
+		Debug(true, `(  __)(  ( \ / __)(  )(  ( \(  __)`)
+		Debug(true, `.) _) /    /( (_ \ )( /    / ) _)`)
+		Debug(true, `(____)\_)__) \___/(__)\_)__)(____)`)
+		Debug(true, "")
+		Debug(true, "An instance of application '"+os.Getenv("CE_APP")+"' has been started :)")
 		Debug(true, "Listening on port 8080")
 		http.ListenAndServe(":8080", nil)
 	}

@@ -21,22 +21,22 @@ func main() {
 			}
 			msg = "Hello " + target + "!"
 		}
+		fmt.Printf("%s\n", msg)
 
-		// Just for debugging... show the env vars if DEBUG is set
+		// Just for debugging...
 		envs := os.Environ()
 		sort.StringSlice(envs).Sort()
 		fmt.Printf("Envs:\n%s\n", strings.Join(envs, "\n"))
 
 		// If the 'SLEEP' env var is set then sleep for that many seconds
+		sleepDuration := 60
 		if t := os.Getenv("SLEEP"); t != "" {
-			len, _ := strconv.Atoi(t)
-			fmt.Printf("Sleeping %d", len)
-			time.Sleep(time.Duration(len) * time.Second)
+			sleepDuration, _ = strconv.Atoi(t)
 		}
 
-		fmt.Printf("%s\n", msg)
-
-		// Sleep for another 60 seconds and then re-do the execution
-		time.Sleep(time.Duration(60) * time.Second)
+		fmt.Printf("Sleeping for %d seconds ...\n", sleepDuration)
+		// Per default sleep for 60 seconds and then re-do the execution
+		time.Sleep(time.Duration(sleepDuration) * time.Second)
+		fmt.Printf("Sleeping [done]\n")
 	}
 }
