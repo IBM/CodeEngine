@@ -202,18 +202,35 @@ func main() {
 	// Otherwise we're an App and we need to start the HTTP server
 	// to processing incoming requests
 	if jobIndex := os.Getenv("JOB_INDEX"); jobIndex != "" {
-		sleep := os.Getenv("SLEEP")
-		if sleep != "" {
-			len, _ := strconv.Atoi(sleep)
-			if len > 0 {
-				Debug(false, "Sleeping %d", len)
-				time.Sleep(time.Duration(len) * time.Second)
+
+		// Jobs can be either started in 'task' mode and run to completion or in 'daemon' mode which
+		jobMode := os.Getenv("JOB_MODE")
+
+		// Start a endless for loop
+		for {
+			sleep := os.Getenv("SLEEP")
+			sleepDuration := 0
+			if sleep != "" {
+				sleepDuration, _ = strconv.Atoi(sleep)
+			} else if jobMode == "daemon" {
+				// Sleep for 60 seconds and then re-do the execution
+				sleepDuration = 60
+			}
+
+			// Check whether the job should sleep a while before printing the helloworld statement
+			if sleepDuration > 0 {
+				Debug(false, "Sleeping %ds", sleepDuration)
+				time.Sleep(time.Duration(sleepDuration) * time.Second)
+			}
+
+			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s\n\n", jobMode, jobIndex)
+			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
+
+			if jobMode == "task" {
+				// If this job is of type task (aka run-to-completion), let it exit the loop
+				break
 			}
 		}
-
-		fmt.Printf("Hello from helloworld! I'm a batch job! Index: %s\n\n",
-			jobIndex)
-		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 	} else {
 		// Debug the http handler for all requests
@@ -228,6 +245,16 @@ func main() {
 			}
 		}
 
+		Debug(true, `. ___  __  ____  ____`)
+		Debug(true, `./ __)/  \(    \(  __)`)
+		Debug(true, `( (__(  O )) D ( ) _)`)
+		Debug(true, `.\___)\__/(____/(____)`)
+		Debug(true, `.____  __ _   ___  __  __ _  ____`)
+		Debug(true, `(  __)(  ( \ / __)(  )(  ( \(  __)`)
+		Debug(true, `.) _) /    /( (_ \ )( /    / ) _)`)
+		Debug(true, `(____)\_)__) \___/(__)\_)__)(____)`)
+		Debug(true, "")
+		Debug(true, "An instance of application '"+os.Getenv("CE_APP")+"' has been started :)")
 		Debug(true, "Listening on port 8080")
 		http.ListenAndServe(":8080", nil)
 	}
