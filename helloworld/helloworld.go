@@ -14,14 +14,18 @@ package main
 // debug/configuration flags that can be tweaked.
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -145,6 +149,10 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	ctx := context.Background()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
 	// Just for fun
 	if os.Getenv("SHOW") == "" {
 		os.Setenv("z", "Set env var 'SHOW' to see all variables")
@@ -232,6 +240,8 @@ func main() {
 		}
 
 	} else {
+		srv := &http.Server{Addr: ":8080"}
+
 		// Debug the http handler for all requests
 		http.HandleFunc("/", HandleHTTP)
 
@@ -244,17 +254,29 @@ func main() {
 			}
 		}
 
-		Debug(true, `. ___  __  ____  ____`)
-		Debug(true, `./ __)/  \(    \(  __)`)
-		Debug(true, `( (__(  O )) D ( ) _)`)
-		Debug(true, `.\___)\__/(____/(____)`)
-		Debug(true, `.____  __ _   ___  __  __ _  ____`)
-		Debug(true, `(  __)(  ( \ / __)(  )(  ( \(  __)`)
-		Debug(true, `.) _) /    /( (_ \ )( /    / ) _)`)
-		Debug(true, `(____)\_)__) \___/(__)\_)__)(____)`)
-		Debug(true, "")
-		Debug(true, "An instance of application '"+os.Getenv("CE_APP")+"' has been started :)")
-		Debug(true, "Listening on port 8080")
-		http.ListenAndServe(":8080", nil)
+		go func() {
+			Debug(true, `. ___  __  ____  ____`)
+			Debug(true, `./ __)/  \(    \(  __)`)
+			Debug(true, `( (__(  O )) D ( ) _)`)
+			Debug(true, `.\___)\__/(____/(____)`)
+			Debug(true, `.____  __ _   ___  __  __ _  ____`)
+			Debug(true, `(  __)(  ( \ / __)(  )(  ( \(  __)`)
+			Debug(true, `.) _) /    /( (_ \ )( /    / ) _)`)
+			Debug(true, `(____)\_)__) \___/(__)\_)__)(____)`)
+			Debug(true, "")
+			Debug(true, "An instance of application '%s' has been started :)", os.Getenv("CE_APP"))
+			Debug(true, "Listening on port 8080")
+
+			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+				log.Fatalf("failed to start server: %v", err)
+			}
+		}()
+
+		<-signals
+		Debug(true, "shutting down server")
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatalf("failed to shutdown server: %v", err)
+		}
+		Debug(true, "shutdown done")
 	}
 }
