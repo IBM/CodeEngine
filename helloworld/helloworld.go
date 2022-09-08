@@ -16,7 +16,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -91,7 +90,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// If there's a body then read it in for later use
 	if r.Body != nil {
-		body, _ = ioutil.ReadAll(r.Body)
+		body, _ = io.ReadAll(r.Body)
 	}
 
 	// Turn on debugging if the 'debug' query param is there. Just for
