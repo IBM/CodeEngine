@@ -5,7 +5,7 @@ demonstrates a simple event-driven application pattern wherein the uploading of
 an object to a Cloud Object Storage (COS) bucket generates an event.  When the
 app receives the event, it parses out the bucket and object key from the event,
 downloads the object (file), "processes" it, and then uploads the resulting
-file to a separate (preconfigured) destination bucket.  The app then deletes
+file to a separate (pre-configured) destination bucket.  The app then deletes
 the file from the original source bucket.
 
 The app also includes a listener for cron events.  Upon receipt of a cron event,
