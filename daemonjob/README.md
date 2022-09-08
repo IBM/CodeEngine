@@ -13,7 +13,7 @@ The code will also print the list of environment variables to the log file
 for debugging purposes.
 
 The sample script will also submit the job twice. First by creating a
-job defintion, followed by submitting it, and then it will submit a new
+job definition, followed by submitting it, and then it will submit a new
 job directly without first creating a job definition. In the second case
 it will also change the message printed via the `MSG` environment variable.
 

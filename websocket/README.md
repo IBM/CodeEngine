@@ -3,7 +3,7 @@
 This sample will show how to use WebSockets to talk to a Code Engine
 Application.  The sample itself is fairly straight forward. It starts a server
 that will upgrade any incoming HTTP request into a WebSocket connection. The
-client initates a request (which, under the covers, converts the
+client initiates a request (which, under the covers, converts the
 HTTP request into a WebSocket). The client will then send a series of
 messages (strings) and in parallel reads messages from the server. The
 server will simply reverse the characters in the strings to generate the
