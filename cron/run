@@ -6,7 +6,7 @@
 # Clean up previous run
 function clean() {
   set +ex
-  echo Cleaning... 
+  echo Cleaning...
   (
   ibmcloud ce sub cron delete -n cron-sub -f --wait=true
   ibmcloud ce app delete -n cron-app -f

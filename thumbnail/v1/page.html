@@ -176,7 +176,7 @@
           var xhr = new XMLHttpRequest();
           xhr.responseType = "blob" ;
           xhr.open("POST", url, true);
-    
+
           xhr.addEventListener('readystatechange', function(e) {
             if (xhr.readyState == 4 && xhr.status == 200) {
               var reader = new FileReader();

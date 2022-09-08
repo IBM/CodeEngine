@@ -18,4 +18,4 @@ As noted in [the main README](../README.md), this sample has two pieces:
 - a `run` script which deploys resources that use those images
 
 The main purpose of this example is the `run` script, but the `build`
-script is included for complete educational (and reuse) purposes. 
+script is included for complete educational (and reuse) purposes.

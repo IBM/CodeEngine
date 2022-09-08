@@ -36,7 +36,7 @@ ibmcloud resource service-instance-create bj-es messagehub lite \
 set +x
 echo "Waiting for Event Streams to become available..."
 while ! ibmcloud resource service-instance bj-es | grep "State.*active" ; do
-  sleep 5 
+  sleep 5
 done > /dev/null
 echo
 set -x
