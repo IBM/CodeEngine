@@ -88,7 +88,7 @@ func ProcessEvent(eventType string, eventBody []byte) {
 		return
 	}
 
-	log.Printf("%s commited %q to %q branch",
+	log.Printf("%s committed %q to %q branch",
 		PushEvent.Pusher.Name, PushEvent.After, PushEvent.Ref)
 
 	// Now we'd normally do a build, but let's just fake it.

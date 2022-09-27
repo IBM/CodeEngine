@@ -2,7 +2,7 @@
 
 # Tutorials and Samples for IBM Cloud Code Engine
 
-This respository is split into two types of educational material: Tutorials
+This repository is split into two types of educational material: Tutorials
 and Samples.
 
 Tutorials are meant to be complete end-to-end scenarios designed

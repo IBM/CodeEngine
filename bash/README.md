@@ -3,12 +3,12 @@
 This sample will show how to create an application that is nothing more than
 a bash script. While there is still an HTTP server as part of the solution,
 you should be able to reuse the `bash` container image in other projects
-without neeeding to do more than just provide a custom bash script.
+without needing to do more than just provide a custom bash script.
 
 In this setup the follow will happen:
 - during the startup of each instance of your applciation, if present,
   a file named `/app/init` will be invoked. You can also set an environment
-  variabled called `INIT` to the path of an additional program that you
+  variable called `INIT` to the path of an additional program that you
   want executed. The environment variable program will be called after
   `/app/init`. This allows for you to execute code that you want only
   run once per instance - and not on each incoming HTTP request.
@@ -36,4 +36,4 @@ As noted in [the main README](../README.md), this sample has two pieces:
 - a `run` script which deploys resources that use those images
 
 The main purpose of this example is the `run` script, but the `build`
-script is included for complete educational (and reuse) purposes. 
+script is included for complete educational (and reuse) purposes.

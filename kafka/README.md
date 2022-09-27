@@ -10,7 +10,7 @@ that to setup our subscription and Kafka "sender" application that will
 add messages to our Kafka instance.
 
 The second part of the sample will create a Kafka subscription and send
-all incoming messags to a new application called "receiver". In order
+all incoming messages to a new application called "receiver". In order
 to setup the Kafka subscription we'll first need to store the credentials
 (`username` and `password`) in a secret, then pass in that secret name on
 the subscription "create" command. We'll also need to pass in the list of
@@ -32,4 +32,4 @@ As noted in [the main README](../README.md), this sample has two pieces:
 - a `run` script which deploys resources that use those images
 
 The main purpose of this example is the `run` script, but the `build`
-script is included for complete educational (and reuse) purposes. 
+script is included for complete educational (and reuse) purposes.

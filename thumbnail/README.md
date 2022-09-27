@@ -310,12 +310,12 @@ OK
 Name:       thumbnail
 ID:         4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6
 Subdomain:  79gf3v2htsc
-Domain:     eu-gb.codeengine.appdomain.cloud  
-Region:     eu-gb  
+Domain:     eu-gb.codeengine.appdomain.cloud
+Region:     eu-gb
 
-Kubernetes Config:    
+Kubernetes Config:
 Context:               79gf3v2htsc
-Environment Variable:  export KUBECONFIG="/root/.bluemix/plugins/code-engine/thumbnail-4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6.yaml"  
+Environment Variable:  export KUBECONFIG="/root/.bluemix/plugins/code-engine/thumbnail-4b9e6ea8-7d77-46a9-aa68-f65d9398a1c6.yaml"
 ```
 
 And we'll need to save the `ID` value corresponding to our project. Let's
