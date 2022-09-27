@@ -152,6 +152,10 @@ is demonstrating.
 - [job2app](job2app)<br>
   This will demostrate how to create a simple Batch Job and how to have it
   communicate with an Application running within the same project.
+- [job2vsi](job2vsi)<br>
+  The sample shows how a job can be used to spawn
+  [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
+  in your IBM Cloud account and run workload on them.
 
 #### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
