@@ -1,0 +1,72 @@
+# in order to run `ibmcloud is` commands, you need to install the vpc-infrastructure plugin
+# see the docs here: https://cloud.ibm.com/docs/vpc?topic=vpc-infrastructure-cli-plugin-vpc-reference
+# ibmcloud plugin install vpc-infrastructure
+
+# TODO: add the region where the VPC is located
+region: "ca-tor"
+
+# TODO: add the virtual service instance profile you want to use
+# list available profiles: `ibmcloud is instance-profiles`
+profile: "bx2-2x8"
+
+# prefix of the VSI name
+name_prefix: "job2vsi-demo-"
+
+# TODO: add the id of your VPC
+# list available vpcs: `ibmcloud is vpcs`
+# note: if the VPC list is empty, you need to create one via the cloud UI or
+# switch to another region which has VPCs in your account (`ibmcloud target -r <region-name>`)
+vpc_id: "r038-690ee3d2-23e2-4d5f-83b6-f7b13b3281ca" # Put your VPC id
+
+# TODO: add a zone name of the VPC
+# Use `ibmcloud is vpc <vpc_id>` to get the list of the zones for this VPC
+# use one of the zones of your VPC
+zone_name: "ca-tor-1"
+
+# TODO: add the image id you want to use (image ids are region specific)
+# list available images: `ibmcloud is images`
+# put the image id you want to use
+image: "r038-83d9d391-4449-4037-b64f-fdb642c2786c" #ubuntu 22.04
+
+# TODO: add one subnet available in your VPC
+# list available subnets: `ibmcloud is subnets`
+# note: subnets are zone and vpc specific, make sure you pick the one which matches
+subnet_id: "02q7-4e0173f7-8635-4158-954b-c4f86371b212"
+
+# workload you want to execute in the VSI
+customer_commands:
+  # minimal example
+  - echo "${CE_JOBRUN} ${JOB_INDEX}" >> /run/workload.log
+
+  # simple git example
+  # git could be used to host your workload, like scripts or go code executed with "go run"
+  # - apt install git
+  # - cd /root && git clone https://github.com/IBM/CodeEngine.git
+  # - cd CodeEngine && git log -n 1 >> /run/workload.log
+
+# timeout in minute. If the VSI is not started within this timeout, then the VSI will be considered as failed
+vsi_start_timeout: 5
+
+# if true, then the VSI will be shutdown after running the customer_commands
+shut_down_vsi: true
+
+# if this config is set true, then the VSI will be deleted for any of the following conditions:
+# - if the VSI has failed (i.e. VSI is hanging in the starting/pending state for more than the vsi_start_timeout)
+# - or, if the VSI is already in the shutdown state
+delete_vsi_after_execution: true
+
+# no floating ip will be added if the `floating_ip_name_prefix` is not provided
+# floating ips can be helpfull to debug issues on the VSI, pls note you need to delete them manually
+# floating_ip_name_prefix: "job2vsi-floating-ip-"
+
+# you can create a ssh key to access your VSI, essential for debugging
+# see " ibmcloud is keys" or https://cloud.ibm.com/vpc-ext/compute/sshKeys
+# ssh_key_id: "r038-bce71c2a-5a3d-4c05-a353-a36228bad8e4"
+
+# if the instance profile has storage(s), by default those will be mounted to /mnt/internal-storage-disk0, /mnt/internal-storage-disk1 etc.
+# use the following config to change the default location
+instance_storage_mount_path: "/mnt/"
+
+# to add tags to your VSI
+vsi_tags:
+  - "CUSTOM_TAG"
