@@ -26,7 +26,9 @@ export REGION=${REGION:-ca-tor}
 ibmcloud login --apikey ${IBMCLOUD_API_KEY} -g Default -r ${REGION}
 
 # select an existing project, or create if not exists
+set +e
 ibmcloud ce project select --name ${PROJECT}
+set -e
 if [ $? != "0" ]; then
   ibmcloud ce project create  --name ${PROJECT}
 fi
