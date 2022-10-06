@@ -61,6 +61,7 @@ delete_vsi_after_execution: true
 
 # you can create a ssh key to access your VSI, essential for debugging
 # see " ibmcloud is keys" or https://cloud.ibm.com/vpc-ext/compute/sshKeys
+# for more details, see the documentation: https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys
 # ssh_key_id: "r038-bce71c2a-5a3d-4c05-a353-a36228bad8e4"
 
 # if the instance profile has storage(s), by default those will be mounted to /mnt/internal-storage-disk0, /mnt/internal-storage-disk1 etc.
