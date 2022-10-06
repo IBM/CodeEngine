@@ -20,18 +20,19 @@ fi
 
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export PROJECT=${PROJECT:-demos}
+export RESOURCEGROUP=${RESOURCEGROUP:-default}
 export PREFIX=${PREFIX:-job2vsi}
 export REGION=${REGION:-ca-tor}
 
-ibmcloud login --apikey ${IBMCLOUD_API_KEY} -g Default -r ${REGION}
+ibmcloud login --apikey ${IBMCLOUD_API_KEY} -g ${RESOURCEGROUP} -r ${REGION}
 
 # select an existing project, or create if not exists
 set +e
 ibmcloud ce project select --name ${PROJECT}
-set -e
 if [ $? != "0" ]; then
   ibmcloud ce project create  --name ${PROJECT}
 fi
+set -e
 
 if [ "$1" == "clean" ]; then
   ibmcloud ce secret delete --name ${PREFIX}-api-key -f -inf

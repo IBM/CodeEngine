@@ -34,6 +34,7 @@ write_files:
       #!/usr/bin/env bash
       set -e
       set -o pipefail
+      source /etc/batch_env_variables
       {{range .CUSTOMER_COMMANDS}}{{.}}
       {{end}}
       touch /run/.success
