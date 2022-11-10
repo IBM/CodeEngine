@@ -105,6 +105,12 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		msg := &sarama.ProducerMessage{
 			Topic:     topic,
 			Partition: -1,
+			Headers: []sarama.RecordHeader{
+				{
+					Key:   []byte("Content-Type"),
+					Value: []byte("application/json"),
+				},
+			},
 			Value:     sarama.StringEncoder(fmt.Sprintf("test1: %d", i+1)),
 		}
 
