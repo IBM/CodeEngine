@@ -30,13 +30,15 @@ func VerifyEvent(req *http.Request, body []byte, secret string) bool {
 }
 
 // Do whatever logic we need for the incoming event
-func ProcessEvent(eventType string, eventBody []byte) {
+func ProcessEvent(eventType string, eventBody []byte) int {
 	log.Printf("Event Type: %s", eventType)
 
-	// Only care about "push" events
-	if eventType != "push" {
+	// Only care about "push" events and "ping" for webhook creation
+	if eventType == "ping" {
+		return http.StatusOK
+	} else if eventType != "push" {
 		log.Print("Not a 'push' event so exit")
-		return
+		return http.StatusBadRequest
 	}
 
 	pretty, _ := json.MarshalIndent(json.RawMessage(eventBody), "", "  ")
@@ -79,13 +81,7 @@ func ProcessEvent(eventType string, eventBody []byte) {
 	err := json.Unmarshal(eventBody, &PushEvent)
 	if err != nil {
 		log.Printf("Error parsing:\n%s\n%s", err, string(eventBody))
-		return
-	}
-
-	// Only care about pushes to the "main" branch
-	if PushEvent.Ref != "refs/heads/main" {
-		log.Printf("Skipping branch: %s", PushEvent.Ref)
-		return
+		return http.StatusBadRequest
 	}
 
 	log.Printf("%s committed %q to %q branch",
@@ -95,6 +91,7 @@ func ProcessEvent(eventType string, eventBody []byte) {
 	// To see how to kick off CodeEngine CLI commands from inside of an app
 	// see the "cecli" sample.
 	log.Print("ibmcloud ce buildrun submit ...")
+	return http.StatusOK
 }
 
 // Simple web server that waits for incoming events, verifies they're
@@ -110,7 +107,8 @@ func main() {
 			return
 		}
 
-		ProcessEvent(r.Header.Get("X-Github-Event"), body)
+		status := ProcessEvent(r.Header.Get("X-Github-Event"), body)
+		w.WriteHeader(status)
 	})
 
 	log.Printf("Listening on port 8080")
