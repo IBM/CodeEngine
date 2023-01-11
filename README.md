@@ -68,7 +68,7 @@ and then `cd` into the `CodeEngine` directory.
 If you have not already specified your IBM Cloud resource group, then
 see the:
 ```
-$ ibmcloud resource group
+$ ibmcloud resource groups
 $ ibmcloud target --help
 ```
 commands for more information. Often it is called `default` or `Default`.
