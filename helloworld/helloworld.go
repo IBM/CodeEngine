@@ -108,6 +108,10 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		showAll = true
 	}
 
+	// render a log statement on each HTTP call
+	fmt.Printf("Hello from helloworld! I'm a HTTP request that is served by revision '%s' of the Code Engine app '%s'\n\n", os.Getenv("K_REVISION"), os.Getenv("CE_APP"))
+	PrintMessage(os.Stdout, showAll)
+
 	Debug(debug, "%s:\n%s %s\nHeaders:\n%s\n\nBody:\n%s\n",
 		time.Now().String(), r.Method, r.URL, r.Header, string(body))
 
