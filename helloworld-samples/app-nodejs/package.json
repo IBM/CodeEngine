@@ -1,0 +1,15 @@
+{
+  "name": "code-engine-nodejs",
+  "version": "1.0.0",
+  "description": "Simple nodejs server hosted on IBM cloud engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
