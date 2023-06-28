@@ -52,8 +52,8 @@ ibmcloud resource service-key-create creds --instance-name mykafka \
 # Extract the username, password and brokers from the creds.
 # BROKERS is just a comma separated list of servers
 # BROKERS_OPTS is the same but with "--broker" before each one
-BROKERS=$(grep "broker-" creds | sed 's/[ ",]//g' | tr "\n" "," | sed "s/,$//")
-BROKERS_OPTS=$(grep "broker-" creds | sed 's/[ ",]//g' | sed "s/^/--broker /")
+BROKERS=$(jq .credentials.kafka_brokers_sasl creds | grep "broker-" | sed 's/[ ",]//g' | tr "\n" "," | sed "s/,$//")
+BROKERS_OPTS=$(jq .credentials.kafka_brokers_sasl creds | grep "broker-" | sed 's/[ ",]//g' | sed "s/^/--broker /")
 PASSWORD=$(grep password creds | sed 's/.*: "\(.*\)",.*/\1/g')
 rm -f creds
 
