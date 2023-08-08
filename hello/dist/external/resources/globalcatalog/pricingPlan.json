@@ -1,0 +1,32 @@
+[
+  {
+    "origin": "cx2-host-152x304",
+    "starting_price": {
+      "plan_id": "88026a3b-6fe5-4ef6-adaa-5f17c5c5f081"
+    }
+  },
+  {
+    "origin": "mx2-host-152x1216",
+    "starting_price": {
+      "plan_id": "b1a49c39-f48f-4877-ad74-49a96e847f13"
+    }
+  },
+  {
+    "origin": "mx2d-host-152x1216",
+    "starting_price": {
+      "plan_id": "b1a49c39-f48f-4877-ad74-49a96e847f13"
+    }
+  },
+  {
+    "origin": "bx2-host-152x608",
+    "starting_price": {
+      "plan_id": "a375d704-011b-4ed5-971e-b894f8a618cd"
+    }
+  },
+  {
+    "origin": "bx2d-host-152x608",
+    "starting_price": {
+      "plan_id": "a375d704-011b-4ed5-971e-b894f8a618cd"
+    }
+  }
+]

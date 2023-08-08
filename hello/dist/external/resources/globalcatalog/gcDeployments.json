@@ -1,0 +1,150 @@
+{
+  "enabled": true,
+  "deployments": [
+    {
+      "planName": "advanced-vsi",
+      "planId": "a736a57f-0584-474f-8411-55dc7d9dc811",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "bx2-metal-192x768",
+      "planId": "48550e3d-752b-4a9b-ae13-abe67194054a",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "bx2-host",
+      "planId": "a375d704-011b-4ed5-971e-b894f8a618cd",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "cx2-host",
+      "planId": "88026a3b-6fe5-4ef6-adaa-5f17c5c5f081",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-dedicated-host ",
+      "planId": "2cae7b66-5167-46b0-88b4-e7df954160b5",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "mx2-host",
+      "planId": "b1a49c39-f48f-4877-ad74-49a96e847f13",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "free-key-plan-nextgen",
+      "planId": "7578cc7e-37e2-4711-9cd6-046c0ce72998",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-instance-group",
+      "planId": "655038b8-b3cf-43bd-9470-b973f36b7e42",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-volume-10iops-tier",
+      "planId": "404d1a85-d8eb-45b6-a03c-3a6d247b340b",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-volume-5iops-tier",
+      "planId": "55aa43ae-4def-48dc-a413-f41f14f73f6b",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-volume-custom",
+      "planId": "5ed65b4c-9a72-440a-977c-596479aa1343",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-volume-general-purpose",
+      "planId": "4579dbd3-80bb-43dc-a645-ba3b03335cc9",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "snapshot-plan",
+      "planId": "f2362861-1c8b-4df3-8478-7b91330d2d25",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "is-backup-policy-beta",
+      "planId": "6e5040f0-61c9-4b04-bfa5-219e0be0eaa8",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "general-purpose-tier",
+      "planId": "cca9f923-b7e1-44d9-bad9-de0861b0c880",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-image",
+      "planId": "2a8d400a-4ea9-494a-aabc-2096e6477155",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-vpc",
+      "planId": "5c6f17b8-1be9-4ae8-a328-afbfe41b02f8",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "nextgen-subnet-free",
+      "planId": "83a76a9b-a1dc-4f85-aeb5-aa88730e3610",
+      "locations": ["us-south-1", "us-south-2", "us-south-3", "us-east-1", "us-east-2", "us-east-3", "eu-gb-1", "eu-gb-2", "eu-gb-3", "eu-gb"]
+    },
+    {
+      "planName": "default-nextgen",
+      "planId": "74a80442-144f-488f-85ee-f81150ff0169",
+      "locations": ["us-south-1", "us-south-2", "us-south-3", "us-east-1", "us-east-2", "us-east-3", "eu-gb-1", "eu-gb-2", "eu-gb-3", "eu-gb"]
+    },
+    {
+      "planName": "gen2-is-security-group-free",
+      "planId": "0abf9948-9bdb-41fd-ac96-d35eb17933cb",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-network-acl-free",
+      "planId": "5d6f1323-d9c1-4dac-bd5b-67c50cbe8653",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-virtual-private-endpoint",
+      "planId": "0dbb9b85-89fa-44f6-ae82-d6a01e3a5ac1",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "flow-log-standard-paid-plan",
+      "planId": "c33e0adf-b004-49d1-9cc2-9f9642ddd355",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "nextgen-public-gateway-free",
+      "planId": "9def10ca-2445-452a-9ff9-24bf9d7097c9",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-vpn",
+      "planId": "5d7ef689-7a6b-4a03-9282-5de2be997291",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-load-balancer",
+      "planId": "752f2ba0-1eda-4cbf-a5d3-8fc087ea30ab",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "network-load-balancer-gen2",
+      "planId": "c30746cc-852c-4577-bc76-b8f196ac86a9",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-vpn-server-beta",
+      "planId": "f9050828-5afc-48f2-81a9-7425e0d15e35",
+      "locations": ["us-south", "us-east"]
+    },
+    {
+      "planName": "gen2-placement-group-plan",
+      "planId": "d0f836e4-2bd6-4e42-b96c-7e2ffa3676c7",
+      "locations": ["us-south", "us-east"]
+    }
+  ]
+}

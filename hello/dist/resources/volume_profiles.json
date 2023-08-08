@@ -1,0 +1,60 @@
+{
+  "profiles": [
+    {
+      "id": "10iops-tier",
+      "name": "10iops-tier",
+      "crn": "crn:v1:staging:public:globalcatalog::::volume.profile:10iops-tier",
+      "family": "tiered",
+      "generation": 2,
+      "adjustable_iops_supported": {
+        "type": "fixed",
+        "value": false
+      }
+
+    },
+    {
+      "id": "5iops-tier",
+      "name": "5iops-tier",
+      "crn": "crn:v1:staging:public:globalcatalog::::volume.profile:5iops-tier",
+      "family": "tiered",
+      "generation": 2,
+      "adjustable_iops_supported": {
+        "type": "fixed",
+        "value": false
+      }
+    },
+    {
+      "id": "custom",
+      "name": "custom",
+      "crn": "crn:v1:staging:public:globalcatalog::::volume.profile:custom",
+      "family": "custom",
+      "generation": 2,
+      "adjustable_iops_supported": {
+        "type": "fixed",
+        "value": true
+      }
+    },
+    {
+      "id": "general-purpose",
+      "name": "general-purpose",
+      "crn": "crn:v1:staging:public:globalcatalog::::volume.profile:general-purpose",
+      "family": "tiered",
+      "generation": 2,
+      "adjustable_iops_supported": {
+        "type": "fixed",
+        "value": false
+      }
+    },
+    {
+      "id": "sdp",
+      "name": "sdp",
+      "crn": "crn:v1:staging:public:globalcatalog::::volume.profile:sdp",
+      "family": "defined-performance",
+      "generation": 2,
+      "adjustable_iops_supported": {
+        "type": "fixed",
+        "value": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+	"resources": [{
+			"account_id": "249d926cb9bb46119e3bda8ed7f7f618",
+			"created_at": "2017-10-11T13:54:28.339Z",
+			"crn": "crn:v1:staging:public:resource-controller::a/249d926cb9bb46119e3bda8ed7f7f618::resource-group:1d18e482b282409e80eff354c919c6a2",
+			"default": false,
+			"id": "1d18e482b282409e80eff354c919c6a2",
+			"name": "Finance",
+			"payment_methods_url": "/v1/resource_groups/1d18e482b282409e80eff354c919c6a2/payment_methods",
+			"quota_id": "a3d7b8d01e261c24677937c29ab33f3c",
+			"quota_url": "/v1/quota_definitions/a3d7b8d01e261c24677937c29ab33f3c",
+			"resource_linkages": [],
+			"state": "ACTIVE",
+			"teams_url": "/v1/resource_groups/1d18e482b282409e80eff354c919c6a2/teams",
+			"updated_at": "2017-10-11T13:54:28.339Z"
+		},
+		{
+			"account_id": "249d926cb9bb46119e3bda8ed7f7f618",
+			"created_at": "2017-06-14T16:36:54.919Z",
+			"crn": "crn:v1:staging:public:resource-controller::a/249d926cb9bb46119e3bda8ed7f7f618::resource-group:5018a8564e8120570150b0764d39ebcc",
+			"default": true,
+			"id": "5018a8564e8120570150b0764d39ebcc",
+			"name": "Default",
+			"payment_methods_url": "/v1/resource_groups/5018a8564e8120570150b0764d39ebcc/payment_methods",
+			"quota_id": "a3d7b8d01e261c24677937c29ab33f3c",
+			"quota_url": "/v1/quota_definitions/a3d7b8d01e261c24677937c29ab33f3c",
+			"resource_linkages": [],
+			"state": "ACTIVE",
+			"teams_url": "/v1/resource_groups/5018a8564e8120570150b0764d39ebcc/teams",
+			"updated_at": "2017-06-14T16:36:54.919Z"
+		},
+		{
+			"account_id": "249d926cb9bb46119e3bda8ed7f7f618",
+			"created_at": "2017-06-14T16:36:54.919Z",
+			"crn": "crn:v1:staging:public:resource-controller::a/249d926cb9bb46119e3bda8ed7f7f618::resource-group:720a9c5878c7403ba80573f717ecf9b0",
+			"default": false,
+			"id": "720a9c5878c7403ba80573f717ecf9b0",
+			"name": "SmokeTest",
+			"payment_methods_url": "/v1/resource_groups/720a9c5878c7403ba80573f717ecf9b0/payment_methods",
+			"quota_id": "a3d7b8d01e261c24677937c29ab33f3c",
+			"quota_url": "/v1/quota_definitions/a3d7b8d01e261c24677937c29ab33f3c",
+			"resource_linkages": [],
+			"state": "ACTIVE",
+			"teams_url": "/v1/resource_groups/720a9c5878c7403ba80573f717ecf9b0/teams",
+			"updated_at": "2017-06-14T16:36:54.919Z"
+		}
+	]
+}

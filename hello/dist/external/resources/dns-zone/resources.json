@@ -1,0 +1,24 @@
+{
+  "dnszones": [
+    {
+      "created_on": "2022-10-17T08:49:34Z",
+      "modified_on": "2022-10-17T08:49:34Z",
+      "instance_id": "dns-inst-001",
+      "name": "test.com",
+      "description": "",
+      "state": "PENDING_NETWORK_ADD",
+      "id": "4688f1c5-6c01-4340-857f-501a7aeb7001",
+      "label": ""
+    },
+    {
+      "created_on": "2022-10-17T08:49:34Z",
+      "modified_on": "2022-10-17T08:49:34Z",
+      "instance_id": "dns-inst-001",
+      "name": "test01.com",
+      "description": "",
+      "state": "PENDING_NETWORK_ADD",
+      "id": "4688f1c5-6c01-4340-857f-501a7aeb7002",
+      "label": ""
+    }
+  ]
+}

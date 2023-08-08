@@ -1,0 +1,14 @@
+{
+  "profiles": [
+    {
+      "name": "network-fixed",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:nlb-fixed",
+      "family": "Network"
+    },
+    {
+      "name": "network-scalable",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:nlb-scalable",
+      "family": "Network"
+    }
+  ]
+}

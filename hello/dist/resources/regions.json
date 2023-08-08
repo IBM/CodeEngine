@@ -1,0 +1,105 @@
+[
+  {
+    "name": "eu-de",
+    "status": "available",
+    "zones": [
+      {
+        "name": "eu-de-1",
+        "defaultPrefix": "10.243.0.0/18",
+        "status": "available"
+      },
+      {
+        "name": "eu-de-2",
+        "defaultPrefix": "10.243.64.0/18",
+        "status": "available"
+      },
+      {
+        "name": "eu-de-3",
+        "defaultPrefix": "10.243.128.0/18",
+        "status": "available"
+      }
+    ]
+  },
+  {
+    "name": "jp-tok",
+    "status": "available",
+    "zones": [
+      {
+        "name": "jp-tok-1",
+        "defaultPrefix": "10.244.0.0/18",
+        "status": "available"
+      },
+      {
+        "name": "jp-tok-2",
+        "defaultPrefix": "10.244.64.0/18",
+        "status": "available"
+      }
+    ]
+  },
+  {
+    "name": "us-east",
+    "status": "available",
+    "zones": [
+      {
+        "name": "us-east-1",
+        "defaultPrefix": "10.241.0.0/18",
+        "status": "available",
+        "has_subnets": false
+      },
+      {
+        "name": "us-east-2",
+        "defaultPrefix": "10.241.64.0/18",
+        "status": "available",
+        "has_subnets": true
+      },
+      {
+        "name": "us-east-3",
+        "defaultPrefix": "10.241.128.0/18",
+        "status": "available"
+      }
+    ]
+  },
+  {
+    "name": "us-south",
+    "status": "available",
+    "zones": [
+      {
+        "name": "us-south-1",
+        "defaultPrefix": "10.240.0.0/18",
+        "status": "available"
+      },
+      {
+        "name": "us-south-2",
+        "defaultPrefix": "10.240.64.0/18",
+        "status": "available"
+      },
+      {
+        "name": "us-south-3",
+        "defaultPrefix": "10.240.128.0/18",
+        "status": "available"
+      }
+    ]
+  },
+  {
+    "name": "eu-gb",
+    "status": "available",
+    "zones": [
+      {
+        "name": "eu-gb-1",
+        "defaultPrefix": "10.240.0.0/18",
+        "status": "available"
+      },
+      {
+        "name": "eu-gb-2",
+        "defaultPrefix": "10.240.64.0/18",
+        "status": "available"
+      },
+      {
+        "name": "eu-gb-3",
+        "defaultPrefix": "10.240.128.0/18",
+        "status": "available"
+      }
+    ]
+  }
+]
+

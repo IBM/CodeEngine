@@ -1,5 +1,7 @@
 FROM icr.io/codeengine/node:12-alpine
-RUN npm install
-COPY server.js .
+
+COPY dist /dist
+COPY node_modules /node_modules
+
 EXPOSE 8080
-CMD [ "node", "server.js" ]
+CMD [ "node", "dist/server.js" ]

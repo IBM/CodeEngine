@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "ui": {
+      "strings": {
+        "en": {
+          "bullets": [
+            {
+              "description": "Ut enim ad minim veniam",
+              "title": "Test feature"
+            }
+          ],
+          "media": []
+        }
+      },
+      "urls": {
+        "doc_url": "https://www.ibm.com",
+        "terms_url": "https://www.ibm.com"
+      }
+    }
+  },
+  "overview_ui": {
+    "en": {
+      "long_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+    }
+  }
+}

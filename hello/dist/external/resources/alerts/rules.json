@@ -1,0 +1,39 @@
+{
+    "rules": [
+        {
+            "expression": "expression",
+            "comparison": "above",
+            "name": "highNginxCPU",
+            "allow_no_data": true,
+            "description": "description",
+            "from": "from",
+            "until": "until",
+            "dashboard_url": "dashboard_url",
+            "enabled": true,
+            "notifications": [
+                "my-webhook",
+                "notifications",
+                "emailBob"
+            ],
+            "comparison_scope": "last",
+            "frequency": "frequency"
+        },
+        {
+            "expression": "expression",
+            "comparison": "above",
+            "name": "highMemory",
+            "allow_no_data": true,
+            "description": "description",
+            "from": "from",
+            "until": "until",
+            "dashboard_url": "dashboard_url",
+            "enabled": true,
+            "notifications": [
+                "emailBob",
+                "notifications"
+            ],
+            "comparison_scope": "last",
+            "frequency": "frequency"
+        }
+    ]
+}

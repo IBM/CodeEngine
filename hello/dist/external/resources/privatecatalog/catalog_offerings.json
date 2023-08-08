@@ -1,0 +1,781 @@
+[
+  {
+    "id": "362d6bf2-aefe-4eb7-adda-a6b74f39ed68",
+    "url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/2497ae83-40cb-46ba-ac7f-5303514a2669/offerings/362d6bf2-aefe-4eb7-adda-a6b74f39ed68",
+    "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:offering:362d6bf2-aefe-4eb7-adda-a6b74f39ed68",
+    "label": "centos-alex-img",
+    "name": "do-not-delete-centos-img-sharin",
+    "offering_icon_url": "https://globalcatalog.test.cloud.ibm.com/api/v1/1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc/artifacts/vsi-image.svg",
+    "offering_docs_url": "None",
+    "tags": [
+      "virtualservers",
+      "target_vpc-x86",
+      "vsi_image"
+    ],
+    "rating": {},
+    "created": "2022-05-12T09:18:15.482274993-04:00",
+    "updated": "2022-05-12T09:23:20.34202921-04:00",
+    "short_description": "None",
+    "kinds": [
+      {
+        "id": "85d1f9b9-1fc2-4ae6-b5b4-726ad3f61c47",
+        "format_kind": "vsi-image",
+        "install_kind": "instance",
+        "created": "2022-05-12T09:18:15.482274993-04:00",
+        "updated": "2022-05-12T09:23:20.34202921-04:00",
+        "target_kind": "vpc-x86",
+        "versions": [
+          {
+            "id": "ef64ae1c-9dda-41fe-8d6d-f2d6f1868f5b",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:version:362d6bf2-aefe-4eb7-adda-a6b74f39ed68/ef64ae1c-9dda-41fe-8d6d-f2d6f1868f5b",
+            "version": "1.0.0",
+            "sha": "69418f3a24cbf619a2549b34cf94570c20c84b71c3f3ae056e20dce226027224",
+            "created": "2022-05-12T09:18:15.482274993-04:00",
+            "updated": "2022-05-12T09:23:20.34202921-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:362d6bf2-aefe-4eb7-adda-a6b74f39ed68",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+            "kind_id": "85d1f9b9-1fc2-4ae6-b5b4-726ad3f61c47",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2669&kind=vsi-image&name=do-not-delete-centos-img-sharin&version=1.0.0",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448375",
+                    "name": "do-not-delete-centos-img-sharin",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "amd64",
+                  "dedicated_host_only": false,
+                  "display_name": "CentOS 7.x - Minimal Install (amd64)",
+                  "family": "CentOS",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/centos-7-amd64",
+                  "name": "centos-7-amd64",
+                  "vendor": "CentOS",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-05-12T13:22:15.598265643Z",
+              "requested": "2022-05-12T13:20:44.813730962Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-7651005143272181",
+                "release_name": "do-not-delete-centos-img-sharin-05-12-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.b2916dd1"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.0",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-05-12T13:23:20.342017733Z",
+              "previous": "validated"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2669.ef64ae1c-9dda-41fe-8d6d-f2d6f1868f5b"
+          }
+        ]
+      }
+    ],
+    "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+    "catalog_name": "test private catalog",
+    "metadata": {
+      "catalogs": [
+        {
+          "id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+          "name": "test private catalog",
+          "type": "offering"
+        }
+      ]
+    },
+    "hidden": false,
+    "provider": "",
+    "repo_info": {},
+    "support": {}
+  },
+  {
+    "id": "54372a73-7a0a-4799-ac9c-8736620c67f1",
+    "url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/2497ae83-40cb-46ba-ac7f-5303514a2669/offerings/54372a73-7a0a-4799-ac9c-8736620c67f1",
+    "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:offering:54372a73-7a0a-4799-ac9c-8736620c67f1",
+    "label": "do-not-delete-rhel-img-sharing2",
+    "name": "do-not-delete-rhel-img-sharing2",
+    "offering_icon_url": "https://globalcatalog.test.cloud.ibm.com/api/v1/1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc/artifacts/vsi-image.svg",
+    "tags": [
+      "virtualservers",
+      "vsi_image"
+    ],
+    "rating": {},
+    "created": "2022-04-14T10:01:55.57164565-04:00",
+    "updated": "2022-05-09T14:26:36.340881337-04:00",
+    "kinds": [
+      {
+        "id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+        "format_kind": "vsi-image",
+        "install_kind": "instance",
+        "target_kind": "vpc-x86",
+        "created": "2022-04-14T10:01:55.57164565-04:00",
+        "updated": "2022-05-09T14:26:36.340881337-04:00",
+        "versions": [
+          {
+            "id": "5088da61-5e1f-436f-80c2-2494a4595252",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:version:54372a73-7a0a-4799-ac9c-8736620c67f1/5088da61-5e1f-436f-80c2-2494a4595252",
+            "version": "1.0.0",
+            "sha": "69418f3a24cbf619a2549b34cf94570c20c84b71c3f3ae056e20dce226027224",
+            "created": "2022-04-15T10:09:56.434974348-04:00",
+            "updated": "2022-04-15T10:11:56.3309733-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67f1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2669&kind=vsi-image&name=do-not-delete-rhel-img-sharing2&version=1.0.0",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448371",
+                    "name": "do-not-delete-centos-img-sharing2",
+                    "region": "us-south"
+                  }, {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448377",
+                    "name": "do-not-delete-centos-img-sharing2",
+                    "region": "us-east"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "amd64",
+                  "dedicated_host_only": false,
+                  "display_name": "CentOS 7.x - Minimal Install (amd64)",
+                  "family": "CentOS",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/centos-7-amd64",
+                  "name": "centos-7-amd64",
+                  "vendor": "CentOS",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T14:11:47.784842364Z",
+              "requested": "2022-04-15T14:10:30.371579014Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-8761111438277523",
+                "release_name": "do-not-delete-rhel-img-sharing2-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.7e4d6fad"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.0",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T14:11:56.330947901Z",
+              "previous": "validated"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2669.5088da61-5e1f-436f-80c2-2494a4595252"
+          },
+          {
+            "id": "51f81cf3-448f-45b6-aba0-ef1c631cb648",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:version:54372a73-7a0a-4799-ac9c-8736620c67f1/51f81cf3-448f-45b6-aba0-ef1c631cb648",
+            "version": "1.0.2",
+            "sha": "bae0b8a94a571d4b9b4048e589a79c56b7d8ce354240b9d4b427c2eb072de4f9",
+            "created": "2022-04-14T10:40:46.49247217-04:00",
+            "updated": "2022-04-15T08:51:24.840345094-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67f1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2669&kind=vsi-image&name=do-not-delete-rhel-img-sharing2&version=1.0.2",
+              "vsi_vpc": {
+                "file": {
+                  "size": 3
+                },
+                "images": [
+                  {
+                    "id": "r134-1d558c37-cd16-44a0-bf38-941214c69af7",
+                    "name": "do-not-delete-rhel-img-sharing2",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "amd64",
+                  "dedicated_host_only": false,
+                  "display_name": "Red Hat Enterprise Linux 8.x - Minimal Install (amd64)",
+                  "family": "Red Hat Enterprise Linux",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/red-8-amd64",
+                  "name": "red-8-amd64",
+                  "vendor": "Red Hat",
+                  "version": "8.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T12:51:21.095494013Z",
+              "requested": "2022-04-15T12:49:04.903757272Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-6702097676575879",
+                "release_name": "do-not-delete-rhel-img-sharing2-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.97f72f60"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.2",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T12:51:24.840321226Z",
+              "previous": "validated"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2669.51f81cf3-448f-45b6-aba0-ef1c631cb648"
+          },
+          {
+            "id": "wc-5088da61-5e1f-436f-80c2-2494a4595252",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2669:version:54372a73-7a0a-4799-ac9c-8736620c67f1/wc-5088da61-5e1f-436f-80c2-2494a4595252",
+            "version": "1.0.0-draft",
+            "sha": "69418f3a24cbf619a2549b34cf94570c20c84b71c3f3ae056e20dce226027224",
+            "created": "2022-04-20T03:09:08.164690588-04:00",
+            "updated": "2022-04-20T03:09:08.164690588-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67f1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2669&kind=vsi-image&name=do-not-delete-rhel-img-sharing2&version=1.0.0-draft",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448372",
+                    "name": "do-not-delete-centos-img-sharing2",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "amd64",
+                  "dedicated_host_only": false,
+                  "display_name": "CentOS 7.x - Minimal Install (amd64)",
+                  "family": "CentOS",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/centos-7-amd64",
+                  "name": "centos-7-amd64",
+                  "vendor": "CentOS",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T14:11:47.784842364Z",
+              "requested": "2022-04-15T14:10:30.371579014Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-8761111438277523",
+                "release_name": "do-not-delete-rhel-img-sharing2-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.7e4d6fad"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.0",
+            "state": {
+              "current": "validated",
+              "current_entered": "2022-04-20T07:09:08.156803295Z",
+              "previous": "consumable"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2669.wc-5088da61-5e1f-436f-80c2-2494a4595252"
+          }
+        ]
+      }
+    ],
+    "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+    "catalog_name": "test private catalog",
+    "metadata": {
+      "catalogs": [
+        {
+          "id": "2497ae83-40cb-46ba-ac7f-5303514a2669",
+          "name": "test private catalog",
+          "type": "offering"
+        }
+      ]
+    },
+    "hidden": false,
+    "provider": "",
+    "repo_info": {},
+    "support": {}
+  },
+  {
+    "id": "a2eb8f09-ea8b-4b41-bdc6-3bdbee356bf4",
+    "url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/e008fa84-205d-4e7c-b21c-8211bed7e62c/offerings/a2eb8f09-ea8b-4b41-bdc6-3bdbee356bf4",
+    "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:e008fa84-205d-4e7c-b21c-8211bed7e62c:offering:a2eb8f09-ea8b-4b41-bdc6-3bdbee356bf4",
+    "label": "test-z-catalog-alex",
+    "name": "test-z-catalog-alex",
+    "offering_icon_url": "https://globalcatalog.test.cloud.ibm.com/api/v1/1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc/artifacts/vsi-image.svg",
+    "offering_docs_url": "None",
+    "tags": [
+      "virtualservers",
+      "vsi_image"
+    ],
+    "rating": {},
+    "created": "2022-04-15T13:59:08.662136657-04:00",
+    "updated": "2022-04-15T14:12:03.111861689-04:00",
+    "short_description": "None",
+    "kinds": [
+      {
+        "id": "95728efb-95d7-4d5b-b605-793440e75c1f",
+        "format_kind": "vsi-image",
+        "install_kind": "instance",
+        "target_kind": "vpc-x86",
+        "created": "2022-04-15T14:06:48.117440703-04:00",
+        "updated": "2022-04-15T14:11:50.098590974-04:00",
+        "versions": [
+          {
+            "id": "a717a09b-9622-40b0-9a44-6fa137317a8a",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:e008fa84-205d-4e7c-b21c-8211bed7e62c:version:a2eb8f09-ea8b-4b41-bdc6-3bdbee356bf4/a717a09b-9622-40b0-9a44-6fa137317a8a",
+            "version": "1.0.1",
+            "sha": "e6f8fdfdaa5dc89982042da96e4260c8145dec76ac0479f8e03046d6feb87863",
+            "created": "2022-04-15T14:06:48.117440703-04:00",
+            "updated": "2022-04-15T14:11:50.098590974-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:a2eb8f09-ea8b-4b41-bdc6-3bdbee356bf4",
+            "catalog_id": "e008fa84-205d-4e7c-b21c-8211bed7e62c",
+            "kind_id": "95728efb-95d7-4d5b-b605-793440e75c1f",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=e008fa84-205d-4e7c-b21c-8211bed7e62c&kind=vsi-image&name=test-z-catalog-alex&version=1.0.1",
+              "vsi_vpc": {
+                "file": {
+                  "size": 3
+                },
+                "images": [
+                  {
+                    "id": "r134-64782c34-ed1b-45fa-8cfd-9c9e942f0f87",
+                    "name": "dnd-test-z-catalog-alex",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "s390x",
+                  "dedicated_host_only": false,
+                  "display_name": "Red Hat Enterprise Linux 8.x - Minimal Install (s390x)",
+                  "family": "Red Hat Enterprise Linux",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/red-8-s390x",
+                  "name": "red-8-s390x",
+                  "vendor": "Red Hat",
+                  "version": "8.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T18:11:18.764048087Z",
+              "requested": "2022-04-15T18:08:59.661815839Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-6112802987523167",
+                "release_name": "dnd-test-z-catalog-alex-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.4a7ac9e2"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.1",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T18:11:50.098572563Z",
+              "previous": "validated"
+            },
+            "version_locator": "e008fa84-205d-4e7c-b21c-8211bed7e62c.a717a09b-9622-40b0-9a44-6fa137317a8a"
+          }
+        ]
+      }
+    ],
+    "catalog_id": "e008fa84-205d-4e7c-b21c-8211bed7e62c",
+    "catalog_name": "Alex-test-catalog",
+    "metadata": {
+      "catalogs": [
+        {
+          "id": "e008fa84-205d-4e7c-b21c-8211bed7e62d",
+          "name": "Alex-test-catalog",
+          "type": "offering"
+        }
+      ]
+    },
+    "hidden": false,
+    "provider": "",
+    "repo_info": {},
+    "support": {}
+  },
+  {
+    "id": "bfb38670-7ab0-40c7-aa55-f510446d6b5d",
+    "url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/e008fa84-205d-4e7c-b21c-8211bed7e62c/offerings/bfb38670-7ab0-40c7-aa55-f510446d6b5d",
+    "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:e008fa84-205d-4e7c-b21c-8211bed7e62c:offering:bfb38670-7ab0-40c7-aa55-f510446d6b5d",
+    "label": "test-z-catalog-se-alex",
+    "name": "test-z-catalog-se-alex",
+    "offering_icon_url": "https://globalcatalog.test.cloud.ibm.com/api/v1/1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc/artifacts/vsi-image.svg",
+    "offering_docs_url": "None",
+    "tags": [
+      "virtualservers",
+      "vsi_image"
+    ],
+    "rating": {},
+    "created": "2022-04-15T14:10:04.938141191-04:00",
+    "updated": "2022-04-15T14:12:49.747839643-04:00",
+    "short_description": "None",
+    "kinds": [
+      {
+        "id": "e64f1a59-699e-4117-a701-8a0ad466c266",
+        "format_kind": "vsi-image",
+        "install_kind": "instance",
+        "target_kind": "vpc-x86",
+        "created": "2022-04-15T14:10:04.938141191-04:00",
+        "updated": "2022-04-15T14:12:33.483809527-04:00",
+        "versions": [
+          {
+            "id": "2dd31d41-96b4-4e05-bbb4-b5ca3d5525e5",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:e008fa84-205d-4e7c-b21c-8211bed7e62c:version:bfb38670-7ab0-40c7-aa55-f510446d6b5d/2dd31d41-96b4-4e05-bbb4-b5ca3d5525e5",
+            "version": "1.0.1",
+            "sha": "1f3a2de5e4214c7d9f39fe4afc34e24f8c21cec3f079de698655985af85554ed",
+            "created": "2022-04-15T14:10:04.938141191-04:00",
+            "updated": "2022-04-15T14:12:33.483809527-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:bfb38670-7ab0-40c7-aa55-f510446d6b5d",
+            "catalog_id": "e008fa84-205d-4e7c-b21c-8211bed7e62c",
+            "kind_id": "e64f1a59-699e-4117-a701-8a0ad466c266",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=e008fa84-205d-4e7c-b21c-8211bed7e62c&kind=vsi-image&name=test-z-catalog-se-alex&version=1.0.1",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-9d67a614-13ce-4441-95b1-dddb012df5c9",
+                    "name": "dnd-test-z-catalog-se-alex",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "architecture": "s390x",
+                  "dedicated_host_only": false,
+                  "display_name": "SUSE Linux Enterprise Server 15 for Secure Execution (s390x)",
+                  "family": "SUSE Linux Enterprise Server",
+                  "href": "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/sles-15-s390x-enclaved",
+                  "name": "sles-15-s390x-enclaved",
+                  "vendor": "SUSE",
+                  "version": "15 for Secure Execution"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T18:12:30.778289231Z",
+              "requested": "2022-04-15T18:11:02.500086533Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-8585414230471845",
+                "release_name": "dnd-test-z-catalog-se-alex-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.c78554c3"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.1",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T18:12:33.483764257Z",
+              "previous": "validated"
+            },
+            "version_locator": "e008fa84-205d-4e7c-b21c-8211bed7e62c.2dd31d41-96b4-4e05-bbb4-b5ca3d5525e5"
+          }
+        ]
+      }
+    ],
+    "catalog_id": "e008fa84-205d-4e7c-b21c-8211bed7e62c",
+    "catalog_name": "Alex-test-catalog",
+    "metadata": {
+      "catalogs": [
+        {
+          "id": "e008fa84-205d-4e7c-b21c-8211bed7e62c",
+          "name": "Alex-test-catalog",
+          "type": "offering"
+        }
+      ]
+    },
+    "hidden": false,
+    "provider": "",
+    "repo_info": {},
+    "support": {}
+  },{
+    "id": "54372a73-7a0a-4799-ac9c-8736620c67s1",
+    "url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/2497ae83-40cb-46ba-ac7f-5303514a2770/offerings/54372a73-7a0a-4799-ac9c-8736620c67s1",
+    "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2770:offering:54372a73-7a0a-4799-ac9c-8736620c67s1",
+    "label": "do-not-delete-rhel-img-sharing3",
+    "name": "do-not-delete-rhel-img-sharing3",
+    "offering_icon_url": "https://globalcatalog.test.cloud.ibm.com/api/v1/1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc/artifacts/vsi-image.svg",
+    "tags": [
+      "virtualservers",
+      "vsi_image"
+    ],
+    "rating": {},
+    "created": "2022-04-14T10:01:55.57164565-04:00",
+    "updated": "2022-05-09T14:26:36.340881337-04:00",
+    "kinds": [
+      {
+        "id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff6rt",
+        "format_kind": "vsi-image",
+        "install_kind": "instance",
+        "target_kind": "vpc-x86",
+        "created": "2022-04-14T10:01:55.57164565-04:00",
+        "updated": "2022-05-09T14:26:36.340881337-04:00",
+        "versions": [
+          {
+            "id": "5088da61-5e1f-436f-80c2-2494a4595255",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2770:version:54372a73-7a0a-4799-ac9c-8736620c67s1/5088da61-5e1f-436f-80c2-2494a4595252",
+            "version": "1.0.0",
+            "sha": "69418f3a24cbf619a2549b34cf94570c20c84b71c3f3ae056e20dce226027224",
+            "created": "2022-04-15T10:09:56.434974348-04:00",
+            "updated": "2022-04-15T10:11:56.3309733-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67s1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2770",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2770&kind=vsi-image&name=do-not-delete-rhel-img-sharing3&version=1.0.0",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448499",
+                    "name": "do-not-delete-centos-img-sharing3",
+                    "region": "us-south"
+                  }, {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448498",
+                    "name": "do-not-delete-centos-img-sharing3",
+                    "region": "us-east"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "dedicated_host_only": false,
+                  "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2012-amd64",
+                  "name": "windows-2012-amd64",
+                  "architecture": "amd64",
+                  "display_name": "Windows Server 2012 Standard Edition (amd64)",
+                  "family": "Windows Server",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T14:11:47.784842364Z",
+              "requested": "2022-04-15T14:10:30.371579014Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-8761111438277523",
+                "release_name": "do-not-delete-rhel-img-sharing3-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.7e4d6fad"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.0",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T14:11:56.330947901Z",
+              "previous": "validated"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2770.5088da61-5e1f-436f-80c2-2494a4595252"
+          },
+          {
+            "id": "51f81cf3-448f-45b6-aba0-ef1c631cb648",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2770:version:54372a73-7a0a-4799-ac9c-8736620c67f1/51f81cf3-448f-45b6-aba0-ef1c631cb648",
+            "version": "1.0.2",
+            "sha": "bae0b8a94a571d4b9b4048e589a79c56b7d8ce354240b9d4b427c2eb072de4f9",
+            "created": "2022-04-14T10:40:46.49247217-04:00",
+            "updated": "2022-04-15T08:51:24.840345094-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67s1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2770",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2770&kind=vsi-image&name=do-not-delete-rhel-img-sharing3&version=1.0.2",
+              "vsi_vpc": {
+                "file": {
+                  "size": 3
+                },
+                "images": [
+                  {
+                    "id": "r134-1d558c37-cd16-44a0-bf38-941214c69af7",
+                    "name": "do-not-delete-rhel-img-sharing3",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "dedicated_host_only": false,
+                  "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2012-amd64",
+                  "name": "windows-2012-amd64",
+                  "architecture": "amd64",
+                  "display_name": "Windows Server 2012 Standard Edition (amd64)",
+                  "family": "Windows Server",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T12:51:21.095494013Z",
+              "requested": "2022-04-15T12:49:04.903757272Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-6702097676575879",
+                "release_name": "do-not-delete-rhel-img-sharing3-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.97f72f60"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.2",
+            "state": {
+              "current": "consumable",
+              "current_entered": "2022-04-15T12:51:24.840321226Z",
+              "previous": "validated"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2770.51f81cf3-448f-45b6-aba0-ef1c631cb648"
+          },
+          {
+            "id": "wc-5088da61-5e1f-436f-80c2-2494a4595252",
+            "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/efe5afc483594adaa8325e2b4d1290df:2497ae83-40cb-46ba-ac7f-5303514a2770:version:54372a73-7a0a-4799-ac9c-8736620c67s1/wc-5088da61-5e1f-436f-80c2-2494a4595252",
+            "version": "1.0.0-draft",
+            "sha": "69418f3a24cbf619a2549b34cf94570c20c84b71c3f3ae056e20dce226027224",
+            "created": "2022-04-20T03:09:08.164690588-04:00",
+            "updated": "2022-04-20T03:09:08.164690588-04:00",
+            "offering_id": "efe5afc483594adaa8325e2b4d1290df:o:54372a73-7a0a-4799-ac9c-8736620c67s1",
+            "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2770",
+            "kind_id": "2ad4e12c-3dd7-417c-a59d-f4dc8f0ff5d6",
+            "metadata": {
+              "source_url": "https://dev-cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/offering/source?catalogID=2497ae83-40cb-46ba-ac7f-5303514a2770&kind=vsi-image&name=do-not-delete-rhel-img-sharing3&version=1.0.0-draft",
+              "vsi_vpc": {
+                "file": {
+                  "size": 2
+                },
+                "images": [
+                  {
+                    "id": "r134-dadf3d75-53b7-4279-8fb0-716348448372",
+                    "name": "do-not-delete-centos-img-sharing2",
+                    "region": "us-south"
+                  }
+                ],
+                "minimum_provisioned_size": 100,
+                "operating_system": {
+                  "dedicated_host_only": false,
+                  "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2012-amd64",
+                  "name": "windows-2012-amd64",
+                  "architecture": "amd64",
+                  "display_name": "Windows Server 2012 Standard Edition (amd64)",
+                  "family": "Windows Server",
+                  "version": "7.x - Minimal Install"
+                }
+              }
+            },
+            "validation": {
+              "validated": "2022-04-15T14:11:47.784842364Z",
+              "requested": "2022-04-15T14:10:30.371579014Z",
+              "state": "valid",
+              "last_operation": "install_offering",
+              "target": {
+                "gid": "gend-8761111438277523",
+                "release_name": "do-not-delete-rhel-img-sharing3-04-15-2022",
+                "schematics": true,
+                "workspace_id": "us-south.workspace.globalcatalog-collection.7e4d6fad"
+              }
+            },
+            "install": {},
+            "entitlement": {
+              "provider_name": "free",
+              "provider_id": "free"
+            },
+            "deprecated": false,
+            "package_version": "1.0.0",
+            "state": {
+              "current": "validated",
+              "current_entered": "2022-04-20T07:09:08.156803295Z",
+              "previous": "consumable"
+            },
+            "version_locator": "2497ae83-40cb-46ba-ac7f-5303514a2770.wc-5088da61-5e1f-436f-80c2-2494a4595252"
+          }
+        ]
+      }
+    ],
+    "catalog_id": "2497ae83-40cb-46ba-ac7f-5303514a2770",
+    "catalog_name": "test private catalog",
+    "metadata": {
+      "catalogs": [
+        {
+          "id": "2497ae83-40cb-46ba-ac7f-5303514a2770",
+          "name": "test private catalog",
+          "type": "offering"
+        }
+      ]
+    },
+    "hidden": false,
+    "provider": "",
+    "repo_info": {},
+    "support": {}
+  }
+]

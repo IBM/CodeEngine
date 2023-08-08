@@ -1,0 +1,39 @@
+[
+  {
+    "code": "cannot_start",
+    "message": "Instance start failed: cannot start instance.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers"
+  },
+  {
+    "code": "cannot_start_capacity",
+    "message": "Instance start failed: cannot schedule due to lack of compute resources.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers"
+  },
+  {
+    "code": "cannot_start_placement_group",
+    "message": "Instance start failed: cannot schedule due to placement group restrictions.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers"
+  },
+  {
+    "code": "cannot_start_compute",
+    "message": "Instance start failed: cannot start instance.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers"
+  },
+  {
+    "code": "cannot_start_network",
+    "message": "Instance start failed: cannot provision networking resources."
+  },
+  {
+    "code": "cannot_start_ip_address",
+    "message": "instance start failed: network interface IP address not available."
+  },
+  {
+    "code": "cannot_start_storage",
+    "message": "instance start failed: cannot provision storage resources."
+  },
+  {
+    "code": "encryption_key_deleted",
+    "message": "The virtual server instance is unusable because the encryption key for the boot volume has been deleted",
+    "more_info": "https://cloud.ibm.com/docs/key-protect?topic=key-protect-restore-keys"
+  }
+]

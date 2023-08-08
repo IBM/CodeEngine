@@ -1,0 +1,15 @@
+{
+  "service_name": "kms",
+  "cname": "staging",
+  "creation_date": "2018-10-23T05:58:43Z",
+  "type": "resource-instance",
+  "account_id": "823bd195e9fd4f0db40ac2e1bffef3e0",
+  "ctype": "public",
+  "provider": "crn:v1:staging:public:resource_controller:::::",
+  "scope": "a/823bd195e9fd4f0db40ac2e1bffef3e0",
+  "modification_date": "2018-10-23T05:58:43Z",
+  "name": "ghost-mock-kp-001",
+  "region": "us-south",
+  "service_instance": "220b40b6-fd2e-4628-a919-4b272892f681",
+  "crn": "crn:v1:staging:public:kms:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0:220b40b6-fd2e-4628-a919-4b272892f681::"
+}

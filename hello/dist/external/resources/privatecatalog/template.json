@@ -1,0 +1,32 @@
+{
+  "id": "955844e1-3486-4e64-9613-b6ce70ce429d-kp_for_us_east",
+  "name": "kp_for_us_east",
+  "_id": "86e1130a970148348271c47ed80ac3f3:obj:955844e1-3486-4e64-9613-b6ce70ce429d-kp_for_us_east",
+  "_rev": "3-97daacf679c569198aac20f1e4803d18",
+  "crn": "crn:v1:staging:public:globalcatalog-collection:global:a/86e1130a970148348271c47ed80ac3f3:955844e1-3486-4e64-9613-b6ce70ce429d:vpe:955844e1-3486-4e64-9613-b6ce70ce429d-kp_for_us_east",
+  "url": "https://cm.globalcatalog.test.cloud.ibm.com/api/v1-beta/catalogs/955844e1-3486-4e64-9613-b6ce70ce429d/objects/955844e1-3486-4e64-9613-b6ce70ce429d-kp_for_us_east",
+  "parent_id": "us-south",
+  "label": "KP for us-east",
+  "tags": [
+      "vpe",
+      "us-south",
+      "svc: Key Management Service"
+  ],
+  "created": "2020-09-17T23:15:47.28839631-04:00",
+  "updated": "2020-09-17T23:18:51.707980941-04:00",
+  "short_description": "KP VPE for us-east",
+  "kind": "vpe",
+  "state": {
+      "current": "new",
+      "current_entered": "2020-09-18T03:15:47.288305947Z"
+  },
+  "catalog_id": "955844e1-3486-4e64-9613-b6ce70ce429d",
+  "catalog_name": "ui-test",
+  "data": {
+      "endpoint_type": " ",
+      "fully_qualified_domain_names": [
+          "private.us-east.kms.cloud.ibm.com"
+      ],
+      "service_crn": "crn:v1:bluemix:public:kms:us-east:::endpoint:private.us-east.kms.cloud.ibm.com"
+  }
+}

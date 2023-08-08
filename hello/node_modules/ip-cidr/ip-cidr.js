@@ -1,0 +1,1 @@
+window.IPCIDR = require('./index');

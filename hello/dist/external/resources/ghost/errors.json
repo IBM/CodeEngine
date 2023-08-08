@@ -1,0 +1,44 @@
+{
+  "NO_QUERY": {
+    "errors": [
+      {
+        "code": "GST003E",
+        "response": "VALIDATION_ERROR",
+        "message": "A document validation error occurred",
+        "level": "error",
+        "httpCode": 400,
+        "description": "Request validation failed: Parameter (body) failed schema validation",
+        "more_info": [
+          {
+            "code": "OBJECT_MISSING_REQUIRED_PROPERTY",
+            "message": "Missing required property: query",
+            "path": [],
+            "description": "search body"
+          }
+        ],
+        "subCode": "SCHEMA_VALIDATION_FAILED"
+      }
+    ]
+  },
+  "QUERY_PARSE_ERROR": {
+    "errors": [
+      {
+        "code": "GST003E",
+        "response": "VALIDATION_ERROR",
+        "message": "A document validation error occurred",
+        "level": "error",
+        "httpCode": 400,
+        "description": "Request validation failed: Parameter (body) failed schema validation",
+        "more_info": [
+          {
+            "code": "OBJECT_MISSING_REQUIRED_PROPERTY",
+            "message": "Missing required property: query",
+            "path": [],
+            "description": "search body"
+          }
+        ],
+        "subCode": "SCHEMA_VALIDATION_FAILED"
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+	"trace": "20418010850",
+	"errors": [
+		{
+			"code": "RETRIEVE_ACCOUNT_ERROR",
+			"message": "undefined",
+			"more_info": "n/a",
+			"dependency_code": "ACCOUNT_MANAGEMENT"
+		}
+	]
+}

@@ -1,0 +1,82 @@
+{
+  "plans": [
+    {
+      "id": "66380d42-d4a9-4627-88fa-7b6631e5bd63",
+      "name": "standard-vsi",
+      "active": true,
+      "parent_id": "is.instance"
+    },
+    {
+      "id": "aeb480c6-11ae-4abc-929a-eaaefcdc5615",
+      "name": "default",
+      "active": true,
+      "parent_id": "is.vpc"
+    },
+    {
+      "id": "bb6da743-39ba-4d64-a199-fa8e2bec0115",
+      "name": "vpc-data-transfer-between-regions",
+      "active": true,
+      "parent_id": "is.vpc"
+    },
+    {
+      "id": "62cd9fb8-8425-4ccb-a2a8-172729887a77",
+      "name": "vpc-data-transfer-between-zones",
+      "active": true,
+      "parent_id": "is.vpc"
+    },
+    {
+      "id": "36f1fe58-e741-411e-bf99-0804cacefaf7",
+      "name": "vpc-data-transfer-within-zone",
+      "active": true,
+      "parent_id": "is.vpc"
+    },
+    {
+      "id": "f6975b83-c82b-41b7-bc1d-753f9989f144",
+      "name": "lb-vpc-externalbeta",
+      "active": true,
+      "parent_id": "is.load-balancer"
+    },
+    {
+      "id": "6092eed9-b0a4-4933-86dd-5532b22274dc",
+      "name": "lb-vpc-ga",
+      "active": true,
+      "parent_id": "is.load-balancer"
+    },
+    {
+      "id": "64841f3b-3a6f-4893-831a-54a6abaf1dd7",
+      "name": "10iops-tier",
+      "active": true,
+      "parent_id": "is.volume"
+    },
+    {
+      "id": "d6a91ea7-c777-4819-bcf9-4336517d03d8",
+      "name": "5iops-tier",
+      "active": true,
+      "parent_id": "is.volume"
+    },
+    {
+      "id": "689497e9-a462-467b-b1f5-443b2db57885",
+      "name": "sdp",
+      "active": true,
+      "parent_id": "is.volume"
+    },
+    {
+      "id": "e2893d43-8cfb-482f-a6ec-990312fc95b8",
+      "name": "custom-",
+      "active": true,
+      "parent_id": "is.volume"
+    },
+    {
+      "id": "e65b2a9c-039c-4ed5-8c30-6fb7bb285b92",
+      "name": "general-purpose",
+      "active": true,
+      "parent_id": "is.volume"
+    },
+    {
+      "id": "07a7cd01-53f7-4165-a917-03deb0103695",
+      "name": "tier",
+      "active": true,
+      "parent_id": "is.image"
+    }
+  ]
+}

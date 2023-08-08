@@ -1,0 +1,18 @@
+{
+  "id": "8d16c91e-1fa7-4bdc-a9ba-3d81bf859d99",
+  "type": "application/vnd.ibm.kms.key+json",
+  "name": "kp-mock-key-001",
+  "state": 1,
+  "crn": "crn:v1:staging:public:kms:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0:3183d327-ca05-4a4f-afd5-730f611c5c34:key:8d16c91e-1fa7-4bdc-a9ba-3d81bf859d99",
+  "createdBy": "IBMid-310000WGJX",
+  "creationDate": "2018-10-18T15:45:23Z",
+  "lastUpdateDate": "2018-10-18T15:45:23Z",
+  "algorithmMetadata": {
+    "bitLength": "256",
+    "mode": "CBC_PAD"
+  },
+  "extractable": true,
+  "imported": false,
+  "algorithmMode": "CBC_PAD",
+  "algorithmBitSize": 256
+}

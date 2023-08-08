@@ -1,0 +1,97 @@
+{
+  "us-south": {
+    "description": "Dallas US South Region",
+    "display_name": "Dallas"
+  },
+  "us-east": {
+    "description": "Washington DC Region",
+    "display_name": "Washington DC"
+  },
+  "eu-de": {
+    "description": "Frankfurt Region",
+    "display_name": "Frankfurt"
+  },
+  "eu-gb": {
+    "description": "UK Region",
+    "display_name": "UK"
+  },
+  "jp-tok": {
+    "description": "Tokyo Region",
+    "display_name": "Tokyo"
+  },
+  "us-south-1": {
+    "parent_id": "us-south",
+    "description": "Dallas Availability Zone 1",
+    "display_name": "Dallas 1"
+  },
+  "us-south-2": {
+    "parent_id": "us-south",
+    "description": "Dallas Availability Zone 2",
+    "display_name": "Dallas 2"
+  },
+  "us-south-3": {
+    "parent_id": "us-south",
+    "description": "Dallas Availability Zone 3",
+    "display_name": "Dallas 3"
+  },
+  "us-east-1": {
+    "parent_id": "us-east",
+    "description": "Washington DC Availability Zone 1",
+    "display_name": "Washington DC 1"
+  },
+  "us-east-2": {
+    "parent_id": "us-east",
+    "description": "Washington DC Availability Zone 2",
+    "display_name": "Washington DC 2"
+  },
+  "us-east-3": {
+    "parent_id": "us-east",
+    "description": "Washington DC Availability Zone 3",
+    "display_name": "Washington DC 3"
+  },
+  "eu-de-1": {
+    "parent_id": "eu-de",
+    "description": "Frankfurt Availability Zone 1",
+    "display_name": "Frankfurt 1"
+  },
+  "eu-de-2": {
+    "parent_id": "eu-de",
+    "description": "Frankfurt Availability Zone 2",
+    "display_name": "Frankfurt 2"
+  },
+  "eu-de-3": {
+    "parent_id": "eu-de",
+    "description": "Frankfurt Availability Zone 3",
+    "display_name": "Frankfurt 3"
+  },
+  "eu-gb-1": {
+    "parent_id": "eu-gb",
+    "description": "UK Availability Zone 1",
+    "display_name": "UK 1"
+  },
+  "eu-gb-2": {
+    "parent_id": "eu-gb",
+    "description": "UK Availability Zone 2",
+    "display_name": "UK 2"
+  },
+  "eu-gb-3": {
+    "parent_id": "eu-gb",
+    "description": "UK Availability Zone 3",
+    "display_name": "UK 3"
+  },
+  "jp-tok-1": {
+    "parent_id": "jp-tok",
+    "description": "Tokyo Availability Zone 1",
+    "display_name": "Tokyo 1"
+  },
+  "jp-tok-2": {
+    "parent_id": "jp-tok",
+    "description": "Tokyo Availability Zone 2",
+    "display_name": "Tokyo 2"
+  },
+  "jp-tok-3": {
+    "parent_id": "jp-tok",
+    "description": "Tokyo Availability Zone 3",
+    "display_name": "Tokyo 3"
+  }
+}

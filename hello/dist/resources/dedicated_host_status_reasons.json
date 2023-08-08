@@ -1,0 +1,22 @@
+[
+  {
+    "code": "cannot_provision_capacity",
+    "message": "Dedicated host is in a failed state due to lack of hardware.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances#creating-dedicated-host"
+  },
+  {
+    "code": "cannot_provision",
+    "message": "Dedicated host start failed: cannot start dedicated host.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances#creating-dedicated-host"
+  },
+  {
+    "code": "disk_failure",
+    "message": "Dedicated host is in degraded state due to the failure of a local disk.",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances#creating-dedicated-host"
+  },
+  {
+    "code": "internal_error",
+    "message": "Internal error",
+    "more_info": "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances#creating-dedicated-host"
+  }
+]

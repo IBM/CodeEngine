@@ -1,0 +1,104 @@
+{
+  "pricingDefinitions": [
+    {
+      "service_id": "is.instance",
+      "measures": [
+        {
+          "name": "MEMORY",
+          "metrics_name": "MEMORY_HOURS",
+          "cost": 0.015124995798611108
+        },
+        {
+          "name": "VCPU",
+          "metrics_name": "VCPU_HOURS",
+          "cost": 0.029274185416666664
+        }
+      ]
+    },
+    {
+      "service_id": "is.volume",
+      "measures": [
+        {
+          "name": "VOLUME",
+          "metrics_name": "GIGABYTE_HOURS",
+          "cost": 0.00178
+        }
+      ]
+    },
+    {
+      "service_id": "is.share",
+      "measures": [
+        {
+          "name": "STORAGE",
+          "metrics_name": "GIGABYTE_HOURS",
+          "cost": 0.087
+        },
+        {
+          "name": "GIGABYTE-HOUR",
+          "metrics_name": "GIGABYTE_HOURS",
+          "cost": 0.15
+        },
+        {
+          "measure": "IOPS_HOUR",
+          "metric": "IOPS_HOURS",
+          "cost": 0.1
+        }
+      ]
+    },
+    {
+      "service_id": "is.image",
+      "measures": [
+        {
+          "name": "VOLUME",
+          "metrics_name": "GIGABYTE_HOURS",
+          "cost": 0.015
+        }
+      ]
+    },
+    {
+      "service_id": "is.load-balancer",
+      "measures": [
+        {
+          "name": "INSTANCE_HOUR",
+          "metrics_name": "INSTANCE_HOURS",
+          "cost": 0.028
+        },
+        {
+          "name": "GIGABYTE_MONTH",
+          "metrics_name": "GIGABYTE_MONTHS",
+          "cost": 0.009
+        }
+      ]
+    },
+    {
+      "service_id": "is.vpn",
+      "measures": [
+        {
+          "name": "INSTANCE_HOUR",
+          "metrics_name": "INSTANCE_HOURS",
+          "cost": 0.045
+        },
+        {
+          "name": "CONNECTION_HOUR",
+          "metrics_name": "CONNECTION_HOURS",
+          "cost": 0.04
+        }
+      ]
+    },
+    {
+      "service_id": "is.vpn-server",
+      "measures": [
+        {
+          "name": "INSTANCE_HOUR",
+          "metrics_name": "INSTANCE_HOURS",
+          "cost": 0.384
+        },
+        {
+          "name": "CONNECTION_HOUR",
+          "metrics_name": "CONNECTION_HOURS",
+          "cost": 0.01
+        }
+      ]
+    }
+  ]
+}

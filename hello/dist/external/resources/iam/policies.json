@@ -1,0 +1,359 @@
+{
+    "policies": [
+        {
+            "id": "1a15e311-7957-4c26-837d-fbfc2fb37a88",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "is"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "resourceType",
+                            "value": "load-balancer"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+                    "display_name": "Writer",
+                    "description": "As a Writer, one can create/modify/delete buckets. In addition, one can upload and download the objects in the bucket."
+                },
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a Reader, one can view bucket configuration and download the objects in the bucket."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "cloudcerts"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "serviceInstance",
+                            "value": "all"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/1a15e311-7957-4c26-837d-fbfc2fb37a88",
+            "created_at": "2019-06-10T19:31:36.188Z",
+            "created_by_id": "IBMid-310000HMFM",
+            "last_modified_at": "2019-06-10T19:31:36.188Z",
+            "last_modified_by_id": "IBMid-310000HMFM"
+        },
+        {
+            "id": "1a15e311-7957-4c26-837d-fbfc2fa47b69",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "is"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "resourceType",
+                            "value": "vpn-server"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+                    "display_name": "Writer",
+                    "description": "As a Writer, one can create/modify/delete buckets. In addition, one can upload and download the objects in the bucket."
+                },
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a Reader, one can view bucket configuration and download the objects in the bucket."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "cloudcerts"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "serviceInstance",
+                            "value": "all"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/1a15e311-7957-4c26-837d-fbfc2fa47b69",
+            "created_at": "2019-06-10T19:31:36.188Z",
+            "created_by_id": "IBMid-310000HMFM",
+            "last_modified_at": "2019-06-10T19:31:36.188Z",
+            "last_modified_by_id": "IBMid-310000HMFM"
+        },
+        {
+            "id": "2152b567-499d-430d-9ccc-c22f6215a470",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "server-protect"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a reader, you can perform read-only actions within a service such as viewing service-specific resources."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "hs-crypto"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "serviceInstance",
+                            "value": "b7326545-149a-42f2-ac4a-5996c4b157e6"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/2152b567-499d-430d-9ccc-c22f6215a470",
+            "created_at": "2019-06-27T15:21:34.713Z",
+            "created_by_id": "IBMid-5080NCJQ4Y",
+            "last_modified_at": "2019-06-27T15:21:34.713Z",
+            "last_modified_by_id": "IBMid-5080NCJQ4Y"
+        },
+        {
+            "id": "264a45a7-2846-45b0-9490-95ba6b339504",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "server-protect"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a reader, you can perform read-only actions within a service such as viewing service-specific resources."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "kms"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/264a45a7-2846-45b0-9490-95ba6b339504",
+            "created_at": "2019-02-27T00:13:45.064Z",
+            "created_by_id": "IBMid-5500025QWW",
+            "last_modified_at": "2019-02-27T00:13:45.064Z",
+            "last_modified_by_id": "IBMid-5500025QWW"
+        },
+        {
+            "id": "45c7256e-a898-4dd1-9d44-ef52ce5a329f",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "server-protect"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a reader, you can perform read-only actions within a service such as viewing service-specific resources."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "hs-crypto"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "serviceInstance",
+                            "value": "f161e55c-cc94-4e26-8713-81455a9a1c86"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/45c7256e-a898-4dd1-9d44-ef52ce5a329f",
+            "created_at": "2019-05-22T14:12:49.615Z",
+            "created_by_id": "IBMid-270002M4BX",
+            "last_modified_at": "2019-05-22T14:12:49.615Z",
+            "last_modified_by_id": "IBMid-270002M4BX"
+        },
+        {
+            "id": "70b52bc3-47fa-44e7-8c38-d1e6993cd078",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "is"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "resourceType",
+                            "value": "image"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+                    "display_name": "Writer",
+                    "description": "As a Writer, one can create/modify/delete buckets. In addition, one can upload and download the objects in the bucket."
+                },
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a Reader, one can view bucket configuration and download the objects in the bucket."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "cloud-object-storage"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/70b52bc3-47fa-44e7-8c38-d1e6993cd078",
+            "created_at": "2019-07-29T16:39:21.221Z",
+            "created_by_id": "IBMid-5080NCJQ4Y",
+            "last_modified_at": "2019-07-29T16:39:21.221Z",
+            "last_modified_by_id": "IBMid-5080NCJQ4Y"
+        },
+        {
+            "id": "74c572a9-5808-4c72-a7ea-70006d81c0f4",
+            "type": "authorization",
+            "subjects": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "server-protect"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        }
+                    ]
+                }
+            ],
+            "roles": [
+                {
+                    "role_id": "crn:v1:bluemix:public:iam::::serviceRole:Reader",
+                    "display_name": "Reader",
+                    "description": "As a reader, you can perform read-only actions within a service such as viewing service-specific resources."
+                }
+            ],
+            "resources": [
+                {
+                    "attributes": [
+                        {
+                            "name": "serviceName",
+                            "value": "hs-crypto"
+                        },
+                        {
+                            "name": "accountId",
+                            "value": "354b3524b6674784bc467a235fd757a0"
+                        },
+                        {
+                            "name": "serviceInstance",
+                            "value": "7a067547-81e4-4b12-aef3-0e8342500e11"
+                        }
+                    ]
+                }
+            ],
+            "href": "https://iam.test.cloud.ibm.com/v1/policies/74c572a9-5808-4c72-a7ea-70006d81c0f4",
+            "created_at": "2019-05-22T14:13:16.895Z",
+            "created_by_id": "IBMid-270002M4BX",
+            "last_modified_at": "2019-05-22T14:13:16.895Z",
+            "last_modified_by_id": "IBMid-270002M4BX"
+        }
+    ]
+}

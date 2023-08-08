@@ -1,0 +1,137 @@
+[
+  {
+    "region": "us-east",
+    "features": [
+      {
+        "enabled": true,
+        "name": "is-bare-metal-server-phase1"
+      },
+      {
+        "enabled": true,
+        "name": "is-share"
+      },
+      {
+        "enabled": true,
+        "name": "is-snapshot"
+      },
+      {
+        "enabled": true,
+        "name": "is-placement-group"
+      },
+      {
+        "enabled": true,
+        "name": "is-instance-groups-scheduled-actions"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup-policy-enterprise-baas"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-larger-boot-volumes"
+      },
+      {
+        "enabled": true,
+        "name": "is-image-from-volume"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-from-snapshots-hydrate-immediately"
+      }
+    ]
+  },
+  {
+    "region": "us-south",
+    "features": [
+      {
+        "enabled": true,
+        "name": "is-bare-metal-server-phase1"
+      },
+      {
+        "enabled": true,
+        "name": "is-share"
+      },
+      {
+        "enabled": true,
+        "name": "is-snapshot"
+      },
+      {
+        "enabled": true,
+        "name": "is-placement-group"
+      },
+      {
+        "enabled": true,
+        "name": "is-instance-groups-scheduled-actions"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup-policy-enterprise-baas"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-larger-boot-volumes"
+      },
+      {
+        "enabled": true,
+        "name": "is-image-from-volume"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-from-snapshots-hydrate-immediately"
+      }
+    ]
+  },
+  {
+    "region": "eu-de",
+    "features": [
+      {
+        "enabled": true,
+        "name": "is-bare-metal-server-phase1"
+      },
+      {
+        "enabled": true,
+        "name": "is-share"
+      },
+      {
+        "enabled": true,
+        "name": "is-snapshot"
+      },
+      {
+        "enabled": true,
+        "name": "is-placement-group"
+      },
+      {
+        "enabled": true,
+        "name": "is-instance-groups-scheduled-actions"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup"
+      },
+      {
+        "enabled": true,
+        "name": "is-backup-policy-enterprise-baas"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-larger-boot-volumes"
+      },
+      {
+        "enabled": true,
+        "name": "is-image-from-volume"
+      },
+      {
+        "enabled": true,
+        "name": "is-volume-from-snapshots-hydrate-immediately"
+      }
+    ]
+  }
+]

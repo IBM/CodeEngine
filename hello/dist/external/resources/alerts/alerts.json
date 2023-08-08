@@ -1,0 +1,37 @@
+{
+    "alerts": [
+        {
+            "rule": "highNginxCPU",
+            "notification_names": [
+                "my-webhook"
+            ],
+            "timestamp": "2017-04-17T22.23.21.000",
+            "metric_name": "containers.nginx.nginx-host-01.cpu.usage",
+            "value": 99.5,
+            "from_level": "OK",
+            "to_level": "ERROR"
+        },
+        {
+            "rule": "highNginxCPU",
+            "notification_names": [
+                "my-webhook"
+            ],
+            "timestamp": "2017-04-17T10.11.12.123",
+            "metric_name": "containers.nginx.nginx-host-01.cpu.usage",
+            "value": 98.5,
+            "from_level": "OK",
+            "to_level": "WARN"
+        },
+        {
+            "rule": "highMemory",
+            "notification_names": [
+                "emailSam"
+            ],
+            "timestamp": "2017-04-17T10.12.14.000",
+            "metric_name": "containers.nginx.nginx-host-01.cpu.usage",
+            "value": 97.0,
+            "from_level": "WARN",
+            "to_level": "OK"
+        }
+    ]
+}

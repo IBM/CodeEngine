@@ -1,0 +1,1039 @@
+{
+  "profiles": [
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bz2-2x8",
+      "family": "balanced",
+      "generation": "current",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "IBM",
+      "name": "bz2-2x8",
+      "displayName": "bz2-2x8",
+      "id": "bz2-2x8",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 2,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bz2e-1x4",
+      "family": "balanced",
+      "generation": "current",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "IBM",
+      "name": "bz2e-1x4",
+      "displayName": "bz2e-1x4",
+      "id": "bz2e-1x4",
+      "memorySize": 4,
+      "numberOfVirtualCPUs": 1,
+      "confidential_compute_modes": {
+        "default": "zse",
+        "values": ["zse"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ux2d-128x3584",
+      "family": "high-memory",
+      "name": "ux2d-128x3584",
+      "displayName": "ux2d-128x3584",
+      "id": "ux2d-128x3584",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 3584,
+      "numberOfVirtualCPUs": 128,
+      "network_interface_count": {
+        "min": 1,
+        "max": 15,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 80000,
+      "speed": 32000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 3584,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ux2d-104x2912",
+      "family": "high-memory",
+      "generation": "gc",
+      "name": "ux2d-104x2912",
+      "displayName": "ux2d-104x2912",
+      "id": "ux2d-104x2912",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 2912,
+      "numberOfVirtualCPUs": 104,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 15,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 208000,
+      "speed": 16000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 3120,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cz2e-4x8",
+      "family": "compute",
+      "generation": "current",
+      "name": "cz2e-4x8",
+      "displayName": "cz2e-4x8",
+      "id": "cz2e-4x8",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "IBM",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 4,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mz2-2x16",
+      "family": "memory",
+      "generation": "current",
+      "name": "mz2-2x16",
+      "displayName": "mz2-2x16",
+      "id": "mz2-2x16",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "IBM",
+      "memorySize": 16,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 4000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mz2-2x16",
+      "family": "memory",
+      "generation": "current",
+      "name": "mz2-4x32",
+      "displayName": "mz2-4x32",
+      "id": "mz2-4x32",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "IBM",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 4,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 4000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mz2e-8x64",
+      "family": "memory",
+      "generation": "current",
+      "name": "mz2e-8x64",
+      "displayName": "mz2e-8x64",
+      "id": "mz2e-8x64",
+      "vcpuArchitecture": "s390x",
+      "vcpuManufacturer": "ibm",
+      "memorySize": 64,
+      "numberOfVirtualCPUs": 8,
+      "confidential_compute_modes": {
+        "default": "zse",
+        "values": ["zse"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cx2d-48x96",
+      "family": "compute",
+      "generation": "previous",
+      "name": "cx2d-48x96",
+      "displayName": "cx2d-48x96",
+      "id": "cx2d-48x96",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 96,
+      "numberOfVirtualCPUs": 48,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "speed": 16000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 400,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ca2-16x32",
+      "family": "cpu",
+      "generation": "current",
+      "name": "ca2-16x32",
+      "displayName": "ca2-16x32",
+      "id": "ca2-16x32",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 16,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ba2-32x128",
+      "family": "balanced",
+      "generation": "current",
+      "name": "ba2-32x128",
+      "displayName": "ba2-32x128",
+      "id": "ba2-32x128",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 128,
+      "numberOfVirtualCPUs": 32,
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 12000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ma2-4x32",
+      "family": "memory",
+      "generation": "current",
+      "name": "ma2-4x32",
+      "displayName": "ma2-4x32",
+      "id": "ma2-4x32",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 4,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 2000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mx2-2x16",
+      "family": "memory",
+      "generation": "current",
+      "name": "mx2-2x16",
+      "displayName": "mx2-2x16",
+      "id": "mx2-2x16",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 16,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mx2d-2x32",
+      "family": "memory",
+      "generation": "previous",
+      "name": "mx2d-2x32",
+      "displayName": "mx2d-2x32",
+      "id": "mx2d-2x32",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 2,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 2000,
+      "speed": 16000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 75,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bx2-2x8",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx2-2x8",
+      "displayName": "bx2-2x8",
+      "id": "bx2-2x8",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 32000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bx2d-2x8",
+      "family": "balanced",
+      "generation": "previous",
+      "name": "bx2d-2x8",
+      "displayName": "bx2d-2x8",
+      "id": "bx2d-2x8",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 2,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 32000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 75,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ma2-16x128",
+      "family": "memory",
+      "generation": "current",
+      "name": "ma2-16x128",
+      "displayName": "ma2-16x128",
+      "id": "ma2-16x128",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 128,
+      "numberOfVirtualCPUs": 16,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ca2-4x8",
+      "family": "cpu",
+      "generation": "current",
+      "name": "ca2-4x8",
+      "displayName": "ca2-4x8",
+      "id": "ca2-4x8",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 4,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ma2-8x64",
+      "family": "memory",
+      "generation": "current",
+      "name": "ma2-8x64",
+      "displayName": "ma2-8x64",
+      "id": "ma2-8x64",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 64,
+      "numberOfVirtualCPUs": 8,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 2000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ba2-48x192",
+      "family": "balanced",
+      "generation": "current",
+      "name": "ba2-48x192",
+      "displayName": "ba2-48x192",
+      "id": "ba2-48x192",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 192,
+      "numberOfVirtualCPUs": 48,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 16000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ca2-32x64",
+      "family": "cpu",
+      "generation": "current",
+      "name": "ca2-32x64",
+      "displayName": "ca2-32x64",
+      "id": "ca2-32x64",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 64,
+      "numberOfVirtualCPUs": 32,
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "speed": 16000,
+      "bandwidth": 8000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ba2-8x32",
+      "family": "balanced",
+      "generation": "current",
+      "name": "ba2-8x32",
+      "displayName": "ba2-8x32",
+      "id": "ba2-8x32",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 8,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 12000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ba2-2x8",
+      "family": "balanced",
+      "generation": "current",
+      "name": "ba2-2x8",
+      "displayName": "ba2-2x8",
+      "id": "ba2-2x8",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 32000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ma2-2x16",
+      "family": "memory",
+      "generation": "current",
+      "name": "ma2-2x16",
+      "displayName": "ma2-2x16",
+      "id": "ma2-2x16",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 16,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ca2-2x4",
+      "family": "compute",
+      "generation": "current",
+      "name": "ca2-2x4",
+      "displayName": "ca2-2x4",
+      "id": "ca2-2x4",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "AMD",
+      "memorySize": 4,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cx2-2x4",
+      "family": "compute",
+      "generation": "current",
+      "name": "cx2-2x4",
+      "displayName": "cx2-2x4",
+      "id": "cx2-2x4",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 4,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bx2d-8x32",
+      "family": "balanced",
+      "generation": "previous",
+      "name": "bx2d-8x32",
+      "displayName": "bx2d-8x32",
+      "id": "bx2d-8x32",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 32,
+      "numberOfVirtualCPUs": 8,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 1000,
+      "speed": 16000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 300,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ma2-32x256",
+      "family": "memory",
+      "generation": "current",
+      "name": "ma2-32x256",
+      "displayName": "ma2-32x256",
+      "id": "ma2-32x256",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 256,
+      "numberOfVirtualCPUs": 32,
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 12000,
+      "speed": 16000
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:gp2-16x128x4",
+      "name": "gp2-16x128x4",
+      "id": "gp2-16x128x4",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "generation": "current",
+      "memorySize": 128,
+      "numberOfVirtualCPUs": 16,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 10000,
+      "family": "v100",
+      "numberOfVirtualGPUs": 4,
+      "memorySizeGPU": 32,
+      "gpuManufacturer": "NVIDIA",
+      "gpuModel": "Tesla V100"
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3ea::profile:bx3d-2x10",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3d-2x10",
+      "displayName": "bx3d-2x10",
+      "id": "bx3d-2x10",
+      "vcpuFamily":"sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 10,
+      "numberOfVirtualCPUs": 2,
+      "confidential_compute_modes": {
+        "default": "disabled",
+        "values": ["disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 4000,
+      "numa_count": 1,
+      "speed": 32000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 75,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3eb::profile:bx3d-32x160",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3d-32x160",
+      "displayName": "bx3d-32x160",
+      "id": "bx3d-32x160",
+      "vcpuFamily":"sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 160,
+      "numberOfVirtualCPUs": 32,
+      "confidential_compute_modes": {
+        "default": "sgx",
+          "values": ["sgx","disabled"]
+      },
+      "secure_boot_modes": {
+        "default": false,
+        "values": [true,false]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 12800,
+      "numa_count": 2,
+      "speed": 32000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 300,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3ec::profile:bx3d-64x320",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3d-64x320",
+      "displayName": "bx3d-64x320",
+      "id": "bx3d-64x320",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 320,
+      "numberOfVirtualCPUs": 64,
+      "network_interface_count": {
+        "min": 1,
+        "max": 15,
+        "step": 1,
+        "type": "range"
+      },
+      "numa_count": 2,
+      "bandwidth": 80000,
+      "speed": 40000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 2860,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3em::profile:mx3d-96x960",
+      "family": "memory",
+      "generation": "current",
+      "name": "mx3d-96x960",
+      "displayName": "mx3d-96x960",
+      "id": "mx3d-96x960",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 960,
+      "numberOfVirtualCPUs": 96,
+      "confidential_compute_modes": {
+        "default": "tdx",
+        "values": ["sgx", "tdx", "disabled"]
+      },
+      "secure_boot_modes": {
+        "default": true,
+        "values": [true]
+      },
+      "network_interface_count": {
+        "min": 1,
+        "max": 15,
+        "step": 1,
+        "type": "range"
+      },
+      "bandwidth": 8000,
+      "numa_count": 2,
+      "speed": 40000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size":1560,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3em::profile:bx3dc-2x10",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3dc-2x10",
+      "displayName": "bx3dc-2x10",
+      "id": "bx3dc-2x10",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 10,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "confidential_compute_modes": {
+      "default": "sgx",
+      "values": ["sgx", "tdx", "disabled"]
+     },
+      "secure_boot_modes": {
+        "default": true,
+        "values": [true, false]
+      },
+      "bandwidth": 1000,
+      "speed": 32000,
+      "numa_count": 2,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 75,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3em::profile:bx3dc-4x20",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3dc-4x20",
+      "displayName": "bx3dc-4x20",
+      "id": "bx3dc-4x20",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 20,
+      "numberOfVirtualCPUs": 4,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "confidential_compute_modes": {
+        "default": "sgx",
+        "values": ["sgx","disabled"]
+      },
+      "secure_boot_modes": {
+        "default": true,
+        "values": [true, false]
+      },
+      "bandwidth": 8000,
+      "speed": 32000,
+      "numa_count": 2,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 75,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3em::profile:bx3dc-32x128",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3dc-32x128",
+      "displayName": "bx3dc-32x128",
+      "id": "bx3dc-2x8",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 8,
+      "numberOfVirtualCPUs": 2,
+      "network_interface_count": {
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "type": "range"
+      },
+      "confidential_compute_modes": {
+        "default": "tdx",
+        "values": ["tdx", "disabled"]
+      },
+      "secure_boot_modes": {
+        "default": true,
+        "values": [true]
+      },
+      "bandwidth": 1000,
+      "speed": 32000,
+      "numa_count": 1,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 600,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3em::profile:bx3dc-48x192",
+      "family": "balanced",
+      "generation": "current",
+      "name": "bx3dc-48x192",
+      "displayName": "bx3dc-48x192",
+      "id": "bx3dc-48x192",
+      "vcpuFamily": "sapphire_rapids",
+      "vcpuArchitecture": "amd64",
+      "vcpuManufacturer": "Intel",
+      "memorySize": 192,
+      "numberOfVirtualCPUs": 48,
+      "network_interface_count": {
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "type": "range"
+      },
+      "confidential_compute_modes": {
+        "default": "sgx",
+        "values": ["sgx", "tdx", "disabled"]
+      },
+      "secure_boot_modes": {
+        "default": true,
+        "values": [true, false]
+      },
+      "bandwidth": 80000,
+      "numa_count": 2,
+      "speed": 250000,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "virtio_blk"
+          ],
+          "size": 900,
+          "quantity": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "resources": [
+    {
+      "id": "is.dedicated-host",
+      "kind": "service",
+      "name": "is.dedicated-host"
+    },
+    {
+      "id": "is.dynamic-route-server",
+      "kind": "service",
+      "name": "is.dynamic-route-server"
+    },
+    {
+      "id": "is.endpoint-gateway",
+      "kind": "service",
+      "name": "is.endpoint-gateway"
+    },
+    {
+      "id": "is.floating-ip",
+      "kind": "service",
+      "name": "is.floating-ip"
+    },
+    {
+      "id": "is.flow-log-collector",
+      "kind": "service",
+      "name": "is.flow-log-collector"
+    },
+    {
+      "id": "is.image",
+      "kind": "service",
+      "name": "is.image"
+    },
+    {
+      "id": "is.instance",
+      "kind": "service",
+      "name": "is.instance"
+    },
+    {
+      "id": "is.instance-group",
+      "kind": "service",
+      "name": "is.instance-group"
+    },
+    {
+      "id": "556153d0-5ad0-11e9-b7f9-41319ef22125",
+      "kind": "service",
+      "name": "is.key"
+    },
+    {
+      "id": "is.load-balancer",
+      "kind": "service",
+      "name": "is.load-balancer"
+    },
+    {
+      "id": "is.network-acl",
+      "kind": "service",
+      "name": "is.network-acl"
+    },
+    {
+      "id": "is.nfv",
+      "kind": "service",
+      "name": "is.nfv"
+    },
+    {
+      "id": "is.public-gateway",
+      "kind": "service",
+      "name": "is.public-gateway"
+    },
+    {
+      "id": "is.security-group",
+      "kind": "service",
+      "name": "is.security-group"
+    },
+    {
+      "id": "is.subnet",
+      "kind": "service",
+      "name": "is.subnet"
+    },
+    {
+      "id": "is.volume",
+      "kind": "service",
+      "name": "is.volume",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.share",
+      "kind": "service",
+      "name": "is.share",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.snapshot",
+      "kind": "service",
+      "name": "is.snapshot",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.snapshot-consistency-group",
+      "kind": "service",
+      "name": "is.snapshot-consistency-group",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.backup-policy",
+      "kind": "service",
+      "name": "is.backup-policy",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.bare-metal-server",
+      "kind": "service",
+      "name": "is.bare-metal-server",
+      "isPrivateCatalogVisible": true
+    },
+    {
+      "id": "is.vpc",
+      "kind": "service",
+      "name": "is.vpc"
+    },
+    {
+      "id": "is.vpn",
+      "kind": "service",
+      "name": "is.vpn"
+    },
+    {
+      "id": "is.vpn-server",
+      "kind": "service",
+      "name": "is.vpn-server"
+    },
+    {
+      "id": "is.virtual-network-interface",
+      "kind": "service",
+      "name": "is.virtual-network-interface"
+    },
+    {
+      "id": "is.placement-group",
+      "kind": "service",
+      "name": "is.placement-group"
+    }
+  ]
+}

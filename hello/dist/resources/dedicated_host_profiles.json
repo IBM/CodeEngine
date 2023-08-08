@@ -1,0 +1,451 @@
+{
+  "profiles": [
+    {
+      "name": "bx2d-host-152x608",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bx2d-host-152x608",
+      "socket_count": {
+        "type": "fixed",
+        "value": 2
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 608
+      },
+      "generation": {
+        "type": "fixed",
+        "value": "previous"
+      },
+      "family": "balanced-disk",
+      "class": "bx2d"
+    },
+    {
+      "name": "cx2-host-152x304",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cx2-host-152x304",
+      "socket_count": {
+        "type": "fixed",
+        "value": 2
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 304
+      },
+      "generation": {
+        "type": "fixed",
+        "value": "current"
+      },
+      "family": "compute",
+      "class": "cx2"
+    },
+    {
+      "name": "ba2-host-152x608",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:ba2-host-152x608",
+      "socket_count": {
+        "type": "fixed",
+        "value": 2
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "unspecified"
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "AMD"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 608
+      },
+      "family": "balanced",
+      "class": "ba2"
+    },
+    {
+      "name": "bx2-host-152x608",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bx2-host-152x608",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 608
+      },
+      "generation": {
+        "type": "fixed",
+        "value": "current"
+      },
+      "family": "balanced",
+      "class": "bx2"
+    },
+    {
+      "name": "cx2d-host-152x304",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cx2d-host-152x304",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "unspecified"
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 304
+      },
+      "disks": [
+        {
+          "interface_type": {
+            "type": "fixed",
+            "value": "nvme"
+          },
+          "supported_instance_interface_types": {
+            "default": "virtio_blk",
+            "type": "fixed",
+            "values": [
+              "virtio_blk"
+            ]
+          },
+          "size": {
+            "type": "fixed",
+            "value": 3200
+          },
+          "quantity": {
+            "type": "fixed",
+            "value": 2
+          }
+        }
+      ],
+      "family": "balanced-disk",
+      "class": "bx2d"
+    },
+    {
+      "name": "cx2-host-152x1216",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:cx2-host-152x1216",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "unspecified"
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 1216
+      },
+      "family": "compute",
+      "class": "cx2"
+    },
+    {
+      "name": "mx2d-host-152x1216",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mx2d-host-152x1216",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 1216
+      },
+      "disks": [
+        {
+          "interface_type": {
+            "type": "fixed",
+            "value": "nvme"
+          },
+          "supported_instance_interface_types": {
+            "default": "virtio_blk",
+            "type": "fixed",
+            "values": [
+              "virtio_blk"
+            ]
+          },
+          "size": {
+            "type": "fixed",
+            "value": 3200
+          },
+          "quantity": {
+            "type": "fixed",
+            "value": 2
+          }
+        }
+      ],
+      "generation": {
+        "type": "fixed",
+        "value": "previous"
+      },
+      "family": "memory-disk",
+      "class": "mx2d"
+    },
+    {
+      "name": "mx2-host-152x1216",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mx2-host-152x1216",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 152
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 1216
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "unspecified"
+      },
+      "generation": {
+        "type": "fixed",
+        "value": "current"
+      },
+      "family": "memory",
+      "class": "mx2"
+    },
+    {
+      "name": "bx3d-host-176x880",
+      "crn": "crn:v1:staging:public:globalcatalog::::dedicated-host.profile:bx3d-host-176x880",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 176
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 880
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "sapphire_rapids"
+      },
+      "disks": [
+        {
+          "interface_type": {
+            "type": "fixed",
+            "value": "nvme"
+          },
+          "supported_instance_interface_types": {
+            "default": "virtio_blk",
+            "type": "fixed",
+            "values": [
+              "virtio_blk"
+            ]
+          },
+          "size": {
+            "type": "fixed",
+            "value": 3200
+          },
+          "quantity": {
+            "type": "fixed",
+            "value": 2
+          }
+        }
+      ],
+      "generation": {
+        "type": "fixed",
+        "value": "current"
+      },
+      "family": "balanced",
+      "class": "bx3d"
+    },
+    {
+      "name": "mx3d-host-176x1760",
+      "crn": "crn:v1:staging:public:globalcatalog::::dedicated-host.profile:mx3d-host-176x1760",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "amd64"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "Intel"
+      },
+      "vcpu_microarchitecture": {
+        "type": "fixed",
+        "value": "sapphire_rapids"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 176
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 880
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "sapphire_rapids"
+      },
+      "disks": [
+        {
+          "interface_type": {
+            "type": "fixed",
+            "value": "nvme"
+          },
+          "supported_instance_interface_types": {
+            "default": "virtio_blk",
+            "type": "fixed",
+            "values": [
+              "virtio_blk"
+            ]
+          },
+          "size": {
+            "type": "fixed",
+            "value": 2860
+          },
+          "quantity": {
+            "type": "fixed",
+            "value": 2
+          }
+        }
+      ],
+      "generation": {
+        "type": "fixed",
+        "value": "current"
+      },
+      "family": "memory",
+      "class": "mx3d"
+    },
+    {
+      "name": "mz2-host-40x320",
+      "crn": "crn:v1:staging:public:globalcatalog::::dedicated-host.profile:mz2-host-40x320",
+      "socket_count": {
+        "type": "fixed",
+        "value": 4
+      },
+      "vcpu_architecture": {
+        "type": "fixed",
+        "value": "s390x"
+      },
+      "vcpu_manufacturer": {
+        "type": "fixed",
+        "value": "IBM"
+      },
+      "vcpu_microarchitecture": {
+        "type": "fixed",
+        "value": "LinuxONE"
+      },
+      "vcpu_count": {
+        "type": "fixed",
+        "value": 176
+      },
+      "memory": {
+        "type": "fixed",
+        "value": 880
+      },
+      "vcpu_family": {
+        "type": "fixed",
+        "value": "sapphire_rapids"
+      },
+      "generation": {
+        "type": "fixed",
+        "value": "gt"
+      },
+      "family": "memory",
+      "class": "mz2"
+    }
+
+  ]
+}

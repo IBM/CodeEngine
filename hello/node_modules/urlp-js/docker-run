@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+exec docker run -v $(pwd):/src --rm -it urlp-js-env "$@"
+
+# vim: filetype=sh

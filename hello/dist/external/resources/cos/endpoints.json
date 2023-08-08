@@ -1,0 +1,160 @@
+{
+  "identity-endpoints": {
+    "iam-token": "iam.stage1.bluemix.net",
+    "iam-policy": "iampap.stage1.bluemix.net"
+  },
+  "service-endpoints": {
+    "cross-region": {
+      "us": {
+        "public": {
+          "us-geo": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Dallas": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Washington": "s3.us-west.objectstorage.uat.softlayer.net",
+          "San Jose": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "us-geo": "s3-api.us-geo.objectstorage.uat.service.networklayer.com",
+          "Dallas": "s3-api.dal-us-geo.objectstorage.uat.service.networklayer.com",
+          "Washington": "s3-api.wdc-us-geo.objectstorage.uat.service.networklayer.com",
+          "San Jose": "s3-api.sjc-us-geo.objectstorage.uat.service.networklayer.com"
+        }
+      },
+      "eu": {
+        "public": {
+          "eu-geo": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Frankfurt": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Milan": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Amsterdam": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "eu-geo": "s3-api.us-geo.objectstorage.uat.service.networklayer.com",
+          "Frankfurt": "s3-api.dal-us-geo.objectstorage.uat.service.networklayer.com",
+          "Milan": "s3-api.wdc-us-geo.objectstorage.uat.service.networklayer.com",
+          "Amsterdam": "s3-api.sjc-us-geo.objectstorage.uat.service.networklayer.com"
+        }
+      },
+      "ap": {
+        "public": {
+          "ap-geo": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Tokyo": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Seoul": "s3.us-west.objectstorage.uat.softlayer.net",
+          "Hong Kong": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "ap-geo": "s3-api.us-geo.objectstorage.uat.service.networklayer.com",
+          "Tokyo": "s3-api.dal-us-geo.objectstorage.uat.service.networklayer.com",
+          "Seoul": "s3-api.wdc-us-geo.objectstorage.uat.service.networklayer.com",
+          "Hong Kong": "s3-api.sjc-us-geo.objectstorage.uat.service.networklayer.com"
+        }
+      }
+    },
+    "regional": {
+      "us-south": {
+        "public": {
+          "us-south": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "us-south": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "us-east": {
+        "public": {
+          "us-east": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "us-east": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "eu-gb": {
+        "public": {
+          "eu-gb": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "eu-gb": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "eu-de": {
+        "public": {
+          "eu-de": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "eu-de": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "jp-tok": {
+        "public": {
+          "jp-tok": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "jp-tok": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      }
+    },
+    "single-site": {
+      "ams03": {
+        "public": {
+          "ams03": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "ams03": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "che01": {
+        "public": {
+          "che01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "che01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "mel01": {
+        "public": {
+          "mel01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "mel01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "tor01": {
+        "public": {
+          "tor01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "tor01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "sao01": {
+        "public": {
+          "sao01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "sao01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "seo01": {
+        "public": {
+          "seo01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "seo01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "osl01": {
+        "public": {
+          "osl01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "osl01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      },
+      "mon01": {
+        "public": {
+          "mon01": "s3.us-west.objectstorage.uat.softlayer.net"
+        },
+        "private": {
+          "mon01": "s3.us-west.objectstorage.uat.softlayer.net"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "profiles": [
+    {
+      "id": "tier-3iops",
+      "name": "tier-3iops",
+      "crn": "crn:v1:staging:public:globalcatalog::::share.profile:tier-3iops",
+      "family": "tiered"
+    },
+    {
+      "id": "tier-5iops",
+      "name": "tier-5iops",
+      "crn": "crn:v1:staging:public:globalcatalog::::share.profile:tier-5iops",
+      "family": "tiered"
+    },
+    {
+      "id": "tier-10iops",
+      "name": "tier-10iops",
+      "crn": "crn:v1:staging:public:globalcatalog::::share.profile:tier-10iops",
+      "family": "tiered"
+    },
+    {
+      "id": "custom-iops",
+      "name": "custom-iops",
+      "crn": "crn:v1:staging:public:globalcatalog::::share.profile:custom",
+      "family": "custom"
+    },
+    {
+      "id": "dp2",
+      "name": "dp2",
+      "crn": "crn:v1:staging:public:globalcatalog::::share.profile:dp2",
+      "family": "custom"
+    }
+  ]
+}

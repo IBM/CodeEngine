@@ -1,0 +1,311 @@
+{
+  "profiles": [
+    {
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2-24x384",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2-24x384",
+      "displayName": "bmx2-24x384",
+      "id": "bmx2-24x384",
+      "cpu_architecture": "amd64",
+      "memorySize": 384,
+      "cpuCoreCount": 24,
+      "cpuSocketCount": 4,
+      "bandwidth": 25000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "network_interface_count": {
+        "max": 128
+      },
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "disks": [
+        {
+          "supported_interface_types": [
+            "sata"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ],
+      "speed": 0
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2d-24x384",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2d-24x384",
+      "displayName": "bmx2d-24x384",
+      "id": "bmx2d-24x384",
+      "memorySize": 384,
+      "cpu_architecture": "amd64",
+      "cpuCoreCount": 24,
+      "cpuSocketCount": 4,
+      "bandwidth": 25000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "speed": 0,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "sata"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ]
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmhbx2-24x384",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmhbx2-24x384",
+      "displayName": "bmhbx2-24x384",
+      "id": "bmhbx2-24x384",
+      "cpu_architecture": "amd64",
+      "memorySize": 384,
+      "cpuCoreCount": 24,
+      "cpuSocketCount": 4,
+      "bandwidth": 100000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "disks": [
+        {
+          "supported_interface_types": [
+            "nvme"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ],
+      "speed": 0
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmhbx2d-24x384",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmhbx2d-24x384",
+      "displayName": "bmhbx2d-24x384",
+      "id": "bmhbx2d-24x384",
+      "memorySize": 384,
+      "cpu_architecture": "amd64",
+      "cpuCoreCount": 24,
+      "cpuSocketCount": 4,
+      "bandwidth": 100000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "speed": 0,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "nvme"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ]
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2-48x768",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2-48x768",
+      "displayName": "bmx2-48x768",
+      "id": "bmx2-48x768",
+      "cpu_architecture": "amd64",
+      "memorySize": 768,
+      "cpuCoreCount": 48,
+      "cpuSocketCount": 4,
+      "bandwidth": 50000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "disks": [
+        {
+          "supported_interface_types": [
+            "nvme"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ],
+      "speed": 0
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2d-48x768",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2d-48x768",
+      "displayName": "bmx2d-48x768",
+      "id": "bmx2d-48x768",
+      "cpu_architecture": "amd64",
+      "memorySize": 768,
+      "cpuCoreCount": 48,
+      "cpuSocketCount": 4,
+      "bandwidth": 50000,
+      "speed": 0,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "disks": [
+        {
+          "supported_interface_types": [
+            "nvme"
+          ],
+          "size": 3200,
+          "quantity": 8
+        }
+      ]
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2-96x1536",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2-96x1536",
+      "displayName": "bmx2-96x1536",
+      "id": "bmx2-96x1536",
+      "cpu_architecture": "amd64",
+      "memorySize": 1536,
+      "cpuCoreCount": 96,
+      "cpuSocketCount": 4,
+      "bandwidth": 100000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "disks": [
+        {
+          "supported_interface_types": [
+            "sata"
+          ],
+          "size": 3200,
+          "quantity": 6
+        }
+      ],
+      "speed": 0
+    },{
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:bmx2d-96x1536",
+      "family": "balanced",
+      "generation": "gt",
+      "name": "bmx2d-96x1536",
+      "displayName": "bmx2d-96x1536",
+      "id": "bmx2d-96x1536",
+      "cpu_architecture": "amd64",
+      "memorySize": 1536,
+      "cpuCoreCount": 96,
+      "cpuSocketCount": 4,
+      "bandwidth": 100000,
+      "supported_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "tpm_supported_modes": [
+        "tpm_2",
+        "tpm_2_with_txt"
+      ],
+      "console_types": {
+        "values": ["serial", "vnc"]
+      },
+      "network_interface_count": {
+        "max": 128
+      },
+      "speed": 0,
+      "disks": [
+        {
+          "supported_interface_types": [
+            "nvme"
+          ],
+          "size": 3200,
+          "quantity": 16
+        }
+      ]
+    }
+  ],
+  "z_profiles": [{
+    "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::profile:mz2d-metal-2x32",
+    "family": "memory",
+    "generation": "gt",
+    "name": "mz2d-metal-2x32",
+    "displayName": "mz2d-metal-2x32",
+    "id": "mz2d-metal-2x32",
+    "cpu_architecture": "s390x",
+    "memorySize": 32,
+    "cpuCoreCount": 2,
+    "cpuSocketCount": 1,
+    "bandwidth": 10000,
+    "supported_image_flags": [
+      "bare_metal"
+    ],
+    "tpm_supported_modes": [],
+    "speed": 0,
+    "disks": [
+      {
+        "supported_interface_types": [
+          "fcp"
+        ],
+        "size": 300,
+        "quantity": 1
+      }
+    ]
+  }]
+}
+

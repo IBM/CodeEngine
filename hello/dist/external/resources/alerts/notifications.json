@@ -1,0 +1,25 @@
+{
+    "notifications": [
+        {
+            "name": "my-webhook",
+            "type": "Webhook",
+            "description": "Fire a webhook when this occurs",
+            "detail": "https://myendpoint.bluemix.net",
+            "verify_certificates": true
+        },
+        {
+            "name": "emailBob",
+            "type": "Email",
+            "description": "email Bob when there's an infrastructure problem",
+            "detail": "bob@ibm.com",
+            "verify_certificates": false
+        },
+        {
+            "name": "emailSam",
+            "type": "Email",
+            "description": "email Sam when there's an infrastructure problem",
+            "detail": "sam@ibm.com",
+            "verify_certificates": true
+        }
+    ]
+}

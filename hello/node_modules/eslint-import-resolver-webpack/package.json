@@ -1,0 +1,60 @@
+{
+  "name": "eslint-import-resolver-webpack",
+  "version": "0.13.2",
+  "description": "Resolve paths to dependencies, given a webpack.config.js. Plugin for eslint-plugin-import.",
+  "main": "index.js",
+  "scripts": {
+    "prepublishOnly": "cp ../../{LICENSE,.npmrc} ./",
+    "tests-only": "nyc mocha -t 5s",
+    "test": "npm run tests-only"
+  },
+  "files": [
+    "index.js",
+    "config.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/import-js/eslint-plugin-import.git"
+  },
+  "keywords": [
+    "eslint-plugin-import",
+    "eslint",
+    "jsnext",
+    "modules",
+    "webpack"
+  ],
+  "author": "Ben Mosher (me@benmosher.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/import-js/eslint-plugin-import/issues"
+  },
+  "homepage": "https://github.com/import-js/eslint-plugin-import/tree/HEAD/resolvers/webpack",
+  "dependencies": {
+    "array-find": "^1.0.0",
+    "debug": "^3.2.7",
+    "enhanced-resolve": "^0.9.1",
+    "find-root": "^1.1.0",
+    "has": "^1.0.3",
+    "interpret": "^1.4.0",
+    "is-core-module": "^2.7.0",
+    "is-regex": "^1.1.4",
+    "lodash": "^4.17.21",
+    "resolve": "^1.20.0",
+    "semver": "^5.7.1"
+  },
+  "peerDependencies": {
+    "eslint-plugin-import": ">=1.4.0",
+    "webpack": ">=1.11.0"
+  },
+  "devDependencies": {
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-register": "^6.26.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.9.0",
+    "webpack": "https://gist.github.com/ljharb/9cdb687f3806f8e6cb8a365d0b7840eb"
+  },
+  "engines": {
+    "node": ">= 6"
+  }
+}

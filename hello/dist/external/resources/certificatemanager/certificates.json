@@ -1,0 +1,68 @@
+{
+  "certificates": [
+    {
+      "_id": "crn:v1:staging:public:cloudcerts:jp-tok:a/823bd195e9fd4f0db40ac2e1bffef3e0:1ad643d6-2d9d-411b-afd7-b7b64e5baff5:certificate:427556ee336337ebe448cb2553fb3784",
+      "name": "Certificate001",
+      "domains": [
+        "*.ibm.com"
+      ],
+      "status": "active",
+      "issuer": "IB *.ibm.com",
+      "begins_on": 1546621706000,
+      "expires_on": 1578157706000,
+      "algorithm": "sha256WithRSAEncryption",
+      "key_algorithm": "rsaEncryption 2048 bit",
+      "imported": true,
+      "has_previous": false,
+      "resource_id": "crn:v1:staging:public:cloudcerts:jp-tok:a/823bd195e9fd4f0db40ac2e1bffef3e0:1ad643d6-2d9d-411b-afd7-b7b64e5baff5::"
+    },
+    {
+      "_id": "crn:v1:staging:public:cloudcerts:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6c:certificate:627556ee336337ebe448cb2553fb3784",
+      "name": "Certificate002",
+      "domains": [
+        "terryyao.com"
+      ],
+      "status": "active",
+      "issuer": "IBM terryyao.com",
+      "begins_on": 1541775668000,
+      "expires_on": 1573311668000,
+      "algorithm": "sha256WithRSAEncryption",
+      "key_algorithm": "rsaEncryption 4096 bit",
+      "imported": true,
+      "has_previous": false,
+      "resource_id": "crn:v1:staging:public:cloudcerts:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6c::"
+    },
+    {
+      "_id": "crn:v1:staging:public:cloudcerts:us-east:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6b:certificate:827556ee336337ebe448cb2553fb3784",
+      "name": "Certificate003",
+      "domains": [
+        "rohanshah.com"
+      ],
+      "status": "active",
+      "issuer": "IBM terryyao.com",
+      "begins_on": 1541775668000,
+      "expires_on": 1573311668000,
+      "algorithm": "sha256WithRSAEncryption",
+      "key_algorithm": "rsaEncryption 4096 bit",
+      "imported": true,
+      "has_previous": false,
+      "resource_id": "crn:v1:staging:public:cloudcerts:us-east:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6b::"
+    },
+    {
+      "_id": "crn:v1:staging:public:cloudcerts:us-east:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6b:certificate:927556ee336337ebe448cb2553fb3784",
+      "name": "Certificate004",
+      "domains": [
+        "rohanshah.com"
+      ],
+      "status": "active",
+      "issuer": "IBM.com",
+      "begins_on": 1541775668000,
+      "expires_on": 1573311668000,
+      "algorithm": "sha256WithRSAEncryption",
+      "key_algorithm": "rsaEncryption 4096 bit",
+      "imported": true,
+      "has_previous": false,
+      "resource_id": "crn:v1:staging:public:cloudcerts:us-east:a/823bd195e9fd4f0db40ac2e1bffef3e0:8867331f-922c-4d92-a801-41972bb9ee6b::"
+    }
+  ]
+}

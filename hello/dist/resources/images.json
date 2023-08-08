@@ -1,0 +1,746 @@
+{
+  "images": [
+    {
+      "created_at": "2018-09-17T06:28:12.935Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:cfdaf1a0-5350-4350-fcbc-97173b510843",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "cfdaf1a053504350fcbc97173b510843"
+        }
+      },
+      "id": "cfdaf1a0-5350-4350-fcbc-97173b510843",
+      "name": "ubuntu-18.04-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/ubuntu-18-04-amd64",
+        "name": "ubuntu-18-04-amd64",
+        "architecture": "amd64",
+        "display_name": "Ubuntu Linux 18.04 LTS Bionic Beaver Minimal Install (amd64)",
+        "family": "Ubuntu Linux",
+        "vendor": "Canonical",
+        "version": "18.04 LTS Bionic Beaver Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "deprecated",
+      "deprecated_at": "2020-09-17T06:28:12.935Z",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2020-09-17T06:28:12.935Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:cfdaf1a0-5350-4350-fcbc-97173b510844",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "cfdaf1a053504350fcbc97173b510842"
+        }
+      },
+      "id": "cfdaf1a0-5350-4350-fcbc-97173b510844",
+      "name": "esxi-7.0-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/esxi-7-amd64",
+        "name": "esxi-7-amd64",
+        "architecture": "amd64",
+        "display_name": "VMware ESXi 7.0",
+        "family": "VMWare ESXi",
+        "vendor": "VMWare",
+        "version": "ESXi 7.0 Update 1",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "required_image_flags": [
+        "bare_metal",
+        "esxi_certified_v1"
+      ],
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.947Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:81485856-df27-93b8-a838-fa28a29b3b04",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "81485856df2793b8a838fa28a29b3b04"
+        }
+      },
+      "id": "81485856-df27-93b8-a838-fa28a29b3b04",
+      "name": "windows-2012-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2012-amd64",
+        "name": "windows-2012-amd64",
+        "architecture": "amd64",
+        "display_name": "Windows Server 2012 Standard Edition (amd64)",
+        "family": "Windows Server",
+        "vendor": "Microsoft",
+        "version": "2012 Standard Edition",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "id": "r134-f5387730-7a4b-4f71-9a85-13b05b137953",
+      "crn": "crn:v1:staging:public:is:us-south:::image:r134-f5387730-7a4b-4f71-9a85-13b05b137953",
+      "href": "https://us-south-genesis-devtest01.iaasdev.cloud.ibm.com/v1/images/r134-f5387730-7a4b-4f71-9a85-13b05b137953",
+      "name": "ibm-redhat-7-6-amd64-sap-applications-1",
+      "minimum_provisioned_size": 100,
+      "created_at": "2020-02-06T06:00:01Z",
+      "file": {
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/red-7-amd64-sap-applications",
+        "name": "red-7-amd64-sap-applications",
+        "architecture": "amd64",
+        "display_name": "Red Hat Enterprise Linux 7.x for SAP Applications (amd64)",
+        "family": "Red Hat Enterprise Linux",
+        "vendor": "Red Hat",
+        "version": "7.x for Applications",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "id": "r134-60d279a0-b328-40eb-a379-595ca53bee18",
+      "crn": "crn:v1:staging:public:is:us-south:::image:r134-60d279a0-b328-40eb-a379-595ca53bee18",
+      "href": "https://us-south-genesis-devtest01.iaasdev.cloud.ibm.com/v1/images/r134-60d279a0-b328-40eb-a379-595ca53bee18",
+      "name": "ibm-redhat-7-6-amd64-sap-hana-1",
+      "minimum_provisioned_size": 100,
+      "created_at": "2020-02-06T06:00:01Z",
+      "file": {
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/red-7-amd64-sap-hana",
+        "name": "red-7-amd64-sap-hana",
+        "architecture": "amd64",
+        "display_name": "Red Hat Enterprise Linux 7.6 for SAP HANA (amd64)",
+        "family": "Red Hat Enterprise Linux",
+        "vendor": "Red Hat",
+        "version": "7.6 for SAP HANA",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.953Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:5ccbc579-dc22-0def-46a8-9c2e9b502d37",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "5ccbc579dc220def46a89c2e9b502d37"
+        }
+      },
+      "id": "5ccbc579-dc22-0def-46a8-9c2e9b502d37",
+      "name": "windows-2016-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2016-amd64",
+        "name": "windows-2016-amd64",
+        "architecture": "amd64",
+        "display_name": "Windows Server 2016 Standard Edition (amd64)",
+        "family": "Windows Server",
+        "vendor": "Microsoft",
+        "version": "2016 Standard Edition",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.965Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:cc8debe0-1b30-6e37-2e13-744bfb2a0c11",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "cc8debe01b306e372e13744bfb2a0c11"
+        }
+      },
+      "id": "cc8debe0-1b30-6e37-2e13-744bfb2a0c11",
+      "name": "centos-7.x-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/centos-7-amd64",
+        "name": "centos-7-amd64",
+        "architecture": "amd64",
+        "display_name": "CentOS 7.x - Minimal Install (amd64)",
+        "family": "CentOS",
+        "vendor": "CentOS",
+        "version": "7.x - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2021-07-15T20:02:22Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:r134-8070fddf-88bf-4c58-a0f4-05a8306af951",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "cc8debe01b306e372e13744bfb2a0c11"
+        }
+      },
+      "id": "r134-8070fddf-88bf-4c58-a0f4-05a8306af951",
+      "name": "ibm-centos-8-4-minimal-amd64-1-eol-2021-12-31",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/centos-8-amd64",
+        "name": "centos-8-amd64",
+        "architecture": "amd64",
+        "display_name": "CentOS 8.x - Minimal Install (amd64)",
+        "family": "CentOS",
+        "vendor": "CentOS",
+        "version": "8.x - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.959Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:660198a6-52c6-21cd-7b57-e37917cef586",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "660198a652c621cd7b57e37917cef586"
+        }
+      },
+      "id": "660198a6-52c6-21cd-7b57-e37917cef586",
+      "name": "debian-8.x-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/debian-8-amd64",
+        "name": "debian-8-amd64",
+        "architecture": "amd64",
+        "display_name": "Debian GNU/Linux 8.x jessie/Stable - Minimal Install (amd64)",
+        "family": "Debian GNU/Linux",
+        "vendor": "Debian",
+        "version": "8.x jessie/Stable - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "obsolete",
+      "deprecated_at": "2020-09-17T06:28:12.935Z",
+      "status_reasons": [],
+      "provisionable": false,
+      "visibility": "public"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.942Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:7eb4e35b-4257-56f8-d7da-326d85452591",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "7eb4e35b425756f8d7da326d85452591"
+        }
+      },
+      "id": "7eb4e35b-4257-56f8-d7da-326d85452591",
+      "name": "ubuntu-16.04-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/ubuntu-16-04-amd64",
+        "name": "ubuntu-16-04-amd64",
+        "architecture": "amd64",
+        "display_name": "Ubuntu Linux 16.04 LTS Xenial Xerus Minimal Install (amd64)",
+        "family": "Ubuntu Linux",
+        "vendor": "Canonical",
+        "version": "16.04 LTS Xenial Xerus Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "unusable",
+      "status_reasons": [{
+        "code": "encryption_key_deleted",
+        "message": "Encryption key has been deleted.",
+        "more_info": "https://cloud.ibm.com/docs/key-protect?topic=key-protect-restore-keys"
+      }],
+      "encryption": "user_managed",
+      "owner_type": "user",
+      "visibility": "private"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.971Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:b45450d3-1a17-2226-c518-a8ad0a75f5f8",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "b45450d31a172226c518a8ad0a75f5f8"
+        }
+      },
+      "id": "b45450d3-1a17-2226-c518-a8ad0a75f5f8",
+      "name": "windows-2012-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/windows-2012-amd64",
+        "name": "windows-2012-amd64",
+        "architecture": "amd64",
+        "display_name": "Windows Server 2012 Standard Edition (amd64)",
+        "family": "Windows Server",
+        "vendor": "Microsoft",
+        "version": "2012 Standard Edition",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "unusable",
+      "status_reasons": [{
+        "code": "encryption_key_deleted",
+        "message": "Encryption key has been deleted.",
+        "more_info": "https://cloud.ibm.com/docs/key-protect?topic=key-protect-restore-keys"
+      }],
+      "encryption": "user_managed",
+      "owner_type": "user",
+      "visibility": "private"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.971Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:87a42954-376e-4575-a65b-322fb1b45d78",
+      "file": {
+        "checksums": {
+          "sha256": "b45450d31a172226c518a8ad0a75f5f8"
+        }
+      },
+      "id": "87a42954-376e-4575-a65b-322fb1b45d78",
+      "name": "redhat-7.6-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/red-7-amd64",
+        "name": "red-7-amd64",
+        "architecture": "amd64",
+        "display_name": "Red Hat Enterprise Linux 7.x - Minimal Install (amd64)",
+        "family": "Red Hat Enterprise Linux",
+        "vendor": "Red Hat",
+        "version": "7.x - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "visibility": "public"
+    },
+    {
+      "id": "r134-057cdaae-9e97-4e7d-aebb-1c5efda4d165",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-057cdaae-9e97-4e7d-aebb-1c5efda4d165",
+      "href": "https://us-south-genesis-test02.iaasdev.cloud.ibm.com/v1/images/r134-057cdaae-9e97-4e7d-aebb-1c5efda4d165",
+      "name": "fedora-server-32-amd64-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "4cdcc7a8a0a148159685b9b0dc54ed18",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/4cdcc7a8a0a148159685b9b0dc54ed18"
+      },
+      "created_at": "2021-03-09T12:46:52Z",
+      "file": {
+        "checksums": {
+          "sha256": "d632aedc4dd76e1e24b09c57ec8feb5875c6a58b34a169d11c0d58eba5aadecf"
+        },
+        "size": 1
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-test02.iaasdev.cloud.ibm.com/v1/operating_systems/fedora-server-amd64",
+        "name": "fedora-server-amd64",
+        "architecture": "amd64",
+        "display_name": "Fedora Server - Minimal Install (amd64)",
+        "family": "Fedora Server",
+        "vendor": "Fedora",
+        "version": "Fedora Server Minimal Install",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": []
+    },
+    {
+      "id": "r134-22e321b6-31e6-4dbf-ba89-5a479a6bbafb",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-22e321b6-31e6-4dbf-ba89-5a479a6bbafb",
+      "href": "https://us-south-genesis-test02.iaasdev.cloud.ibm.com/v1/images/r134-22e321b6-31e6-4dbf-ba89-5a479a6bbafb",
+      "name": "ibm-fedora-server-33-amd64-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2021-03-09T12:45:59Z",
+      "file": {
+        "checksums": {
+          "sha256": "f653e894a3525b40e6cae54475549e0e9825e521431e018b3a167dc004896b12"
+        },
+        "size": 1
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-test02.iaasdev.cloud.ibm.com/v1/operating_systems/fedora-server-amd64",
+        "name": "fedora-server-amd64",
+        "architecture": "amd64",
+        "display_name": "Fedora Server - Minimal Install (amd64)",
+        "family": "Fedora Server",
+        "vendor": "Fedora",
+        "version": "Fedora Server Minimal Install",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": []
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.976Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:e15b69f1-c701-f621-e752-70eda3df5696",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "e992a84f113d3a35d2145ca3e7aca4fc95fe6daf470a08d8af3422ee59c92e15"
+        }
+      },
+      "id": "e15b69f1-c701-f621-e752-70eda3df5696",
+      "name": "debian-9.x-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/debian-9-amd64",
+        "name": "debian-9-amd64",
+        "architecture": "amd64",
+        "display_name": "Debian GNU/Linux 9.x Stretch/Stable - Minimal Install (amd64)",
+        "family": "Debian GNU/Linux",
+        "vendor": "Debian",
+        "version": "9.x Stretch/Stable - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "owner_type": "user",
+      "visibility": "private"
+    },
+    {
+      "created_at": "2018-09-17T06:28:12.976Z",
+      "crn": "crn:v1:staging:public:is:us-south:a/823bd195e9fd4f0db40ac2e1bffef3e0::image:e15b69f1-c701-f621-e752-70eda3df5695",
+      "description": "",
+      "file": {
+        "checksums": {
+          "sha256": "431a58c8c0351803a608ffa56948c5a7861876f78ccbe784724dd8c987ff7000"
+        }
+      },
+      "id": "e15b69f1-c701-f621-e752-70eda3df5695",
+      "name": "debian-9.x-amd64",
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/debian-9-amd64",
+        "name": "debian-9-amd64",
+        "architecture": "amd64",
+        "display_name": "Debian GNU/Linux 9.x Stretch/Stable - Minimal Install (amd64)",
+        "family": "Debian GNU/Linux",
+        "vendor": "Debian",
+        "version": "9.x Stretch/Stable - Minimal Install",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "encryption": "user_managed",
+      "owner_type": "user",
+      "visibility": "private"
+    },
+    {
+      "id": "r134-f5387730-7a4b-4f71-9a85-13b05bsapapp",
+      "crn": "crn:v1:staging:public:is:us-south:::image:r134-f5387730-7a4b-4f71-9a85-13b05bsapapp",
+      "href": "https://us-south-genesis-devtest01.iaasdev.cloud.ibm.com/v1/images/r134-f5387730-7a4b-4f71-9a85-13b05bsapapp",
+      "name": "ibm-sles-12-sp1-amd64-sap-applications-1",
+      "minimum_provisioned_size": 100,
+      "created_at": "2020-02-06T06:00:01Z",
+      "file": {
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/sles-12-amd64-sap-applications",
+        "name": "sles-12-amd64-sap-applications",
+        "architecture": "amd64",
+        "display_name": "SUSE Linux Enterprise Server 12 for SAP Applications (amd64)",
+        "family": "SUSE Linux Enterprise Server",
+        "vendor": "SUSE",
+        "version": "12 for Applications",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "status_reasons": [],
+      "encryption": "none",
+      "visibility": "public"
+    },
+    {
+      "id": "r134-87aca04b-fb37-4f8b-bf9d-17f19063ff15",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-87aca04b-fb37-4f8b-bf9d-17f19063ff15",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-87aca04b-fb37-4f8b-bf9d-17f19063ff15",
+      "name": "ibm-ubuntu-18-04-1-minimal-s390x-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2021-05-25T14:04:19Z",
+      "file": {
+        "checksums": {
+          "sha256": "1857fcd5e80f0b943e4034c0750c59c40769844b29914ce7d0c9d4f49063d196"
+        },
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/operating_systems/ubuntu-18-04-s390x",
+        "name": "ubuntu-18-04-s390x",
+        "architecture": "s390x",
+        "display_name": "Ubuntu Linux 18.04 LTS Bionic Beaver Minimal Install (s390x)",
+        "family": "Ubuntu Linux",
+        "vendor": "Canonical",
+        "version": "18.04 LTS Bionic Beaver Minimal Install",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "r134-87aca04b-fb37-4f8b-bf9d-17f19063f153",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-87aca04b-fb37-4f8b-bf9d-17f19063f153",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-87aca04b-fb37-4f8b-bf9d-17f19063f153",
+      "name": "ibm-ipxe-network-boot-amd64",
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2021-05-25T14:04:19Z",
+      "file": {},
+      "operating_system": {
+        "href": "https://us-south.iaas.cloud.ibm.com/v1/operating_systems/boot-loader-os",
+        "id": "us-south~boot-loader-os",
+        "name": "ipxe-uefi-amd64",
+        "architecture": "amd64",
+        "display_name": "iPXE Network Boot - UEFI (amd64)",
+        "family": "Network Boot",
+        "vendor": "IBM",
+        "version": "generic",
+        "allow_image_creation": false,
+        "boot_type": "network"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de7",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de7",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de7",
+      "name": "ibm-redhat-8-3-minimal-s390x-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2021-05-26T10:43:57Z",
+      "file": {
+        "checksums": {
+          "sha256": "04ffe287a4c934a11298479d7558b2ce2b9f38eeab1e6c50fcd193fb64cbe42e"
+        },
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/operating_systems/red-8-s390x-byol",
+        "name": "red-8-s390x-byol",
+        "architecture": "s390x",
+        "display_name": "Red Hat Enterprise Linux 8.x - BYOL (s390x)",
+        "family": "Red Hat Enterprise Linux",
+        "vendor": "Red Hat",
+        "version": "8.x - Minimal Install",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de8",
+      "crn": "crn:v1:staging:public:is:us-south:a/1431ea2a7958ad20f0fee592ff85f746::image:r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de8",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-5589abaf-e7f3-4e76-9d2f-2a75d54e8de78",
+      "name": "ibm-hyper-protect-container-runtime-1-0-s390x-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2022-05-26T10:43:57Z",
+      "file": {
+        "checksums": {
+          "sha256": "04ffe287a4c934a11298479d7558b2ce2b9f38eeab1e6c50fcd193fb64cbe42e"
+        },
+        "size": 2
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/operating_systems/hyper-protect-s390x",
+        "name": "hyper-protect-s390x",
+        "architecture": "s390x",
+        "display_name": "Hyper Protect Container Runtime (s390x)",
+        "family": "Hyper Protect",
+        "vendor": "IBM",
+        "version": "1.0",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "r134-07fe071a-59ba-42cf-8059-ed0c87cde072",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-07fe071a-59ba-42cf-8059-ed0c87cde072",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-07fe071a-59ba-42cf-8059-ed0c87cde072",
+      "name": "ibm-sles-15-2-s390x-1",
+      "minimum_provisioned_size": 100,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2021-06-18T15:10:39Z",
+      "file": {
+        "checksums": {
+          "sha256": "4739f1eaeeebc69ad5d48f9191fcc0d23960cb720bb16c67e915e5556c1da9b2"
+        },
+        "size": 1
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/operating_systems/sles-15-sp2-s390x-byol",
+        "name": "sles-15-sp2-s390x-byol",
+        "architecture": "s390x",
+        "display_name": "SUSE Linux Enterprise Server 15 SP2 - BYOL (s390x)",
+        "family": "SUSE Linux Enterprise Server",
+        "vendor": "SUSE",
+        "version": "15 SP2",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "r134-07fe071a-59ba-42cf-8059-ed0c87cde073",
+      "crn": "crn:v1:staging:public:is:us-south:a/c21088ea7a014ffb8f6a7bc4304699a0::image:r134-07fe071a-59ba-42cf-8059-ed0c87cde073",
+      "href": "https://us-south-genesis-dal-dev44-etcd.iaasdev.cloud.ibm.com/v1/images/r134-07fe071a-59ba-42cf-8059-ed0c87cde073",
+      "name": "ibm-windows-server-2019-full-standard-amd64-sqlsvr2019web",
+      "minimum_provisioned_size": 250,
+      "resource_group": {
+        "id": "",
+        "href": "https://resource-controller.test.cloud.ibm.com/v1/resource_groups/"
+      },
+      "created_at": "2022-05-18T15:10:39Z",
+      "file": {
+        "checksums": {
+          "sha256": "4739f1eaeeebc69ad5d48f9191fcc0d23960cb720bb16c67e915e5556c1da9b2"
+        },
+        "size": 1
+      },
+      "operating_system": {
+        "href": "https://us-south-genesis-dal-dev76-etcd.iaasdev.cloud.ibm.com/v1/operating_systems/windows-2019-amd64-sqlsvr2019web",
+        "name": "windows-2019-amd64-sqlsvr2019web",
+        "architecture": "amd64",
+        "display_name": "Windows Server 2019 Standard Edition with SQL Server 2019 Web Edition (amd64)",
+        "family": "Windows Server",
+        "vendor": "Microsoft",
+        "version": "2019 Standard Edition with SQL Server 2019 Web Edition",
+        "dedicated_host_only": false,
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "status": "available",
+      "visibility": "public",
+      "encryption": "none",
+      "status_reasons": [],
+      "owner_type": "provider"
+    },
+    {
+      "id": "618a5c7e-352b-431a-bdab-1e8b8c0da3f3",
+      "crn": "crn:v1:staging:public:is:us-east-1:a/823bd195e9fd4f0db40ac2e1bffef3e0:230dfd16-476f-4836-b3bb-f061d3540974::",
+      "created_at": "2022-11-02T21:55:15.686Z",
+      "format": "vhd",
+      "file": {
+        "checksums": {
+          "sha256": "28135a97-a34a-4061-9d9f-c5fc08596b6b"
+        },
+        "href": "ims://images/83581bb3-9cc3-4034-b873-f8e060992a37",
+        "size": 1
+      },
+      "operating_system": {
+        "name": "ec349aba-74b7-4cc4-b250-6b5d26849464",
+        "type": "CentOS",
+        "architecture": "amd64",
+        "description": "Fedora",
+        "display_name": "CentOS",
+        "vendor": "CentOS",
+        "family": "CentOS",
+        "version": "6x - CentOS",
+        "allow_image_creation": true,
+        "boot_type": "disk"
+      },
+      "minimum_provisioned_size": 100,
+      "status": "available",
+      "status_reasons": [],
+      "visibility": "private",
+      "owner_type": "user",
+      "resource_group": {
+        "id": "eb16c72630464b118ebd808ca7a7428a"
+      },
+      "name": "aaa-default-image-source-volume-deleted",
+      "zone": {
+        "name": "us-east-1",
+        "defaultPrefix": "10.241.0.0/18",
+        "status": "available",
+        "has_subnets": false,
+        "href": "http://localhost:4000/rias-mock/us-east/v1/regions/us-east/zones/us-east-1",
+        "region": {
+          "name": "us-east",
+          "href": "http://localhost:4000/rias-mock/v1/regions/us-east"
+        },
+        "region_name": "us-east"
+      },
+      "encryption": "none",
+      "source_volume": {
+        "id": "vol1001aaa",
+        "name": "-deleted-vol1001aaa",
+        "deleted": {
+          "more_info": "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+        }
+      },
+      "href": "http://localhost:4000/rias-mock/us-east/v1/images/618a5c7e-352b-431a-bdab-1e8b8c0da3f3"
+    }
+  ]
+}
