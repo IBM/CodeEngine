@@ -1,8 +1,8 @@
 const http = require('http');
 
 http.createServer(function (request, response) {
-   target = process.env.TARGET ? process.env.TARGET : 'World' ;
-   msg = process.env.MSG ? process.env.MSG : 'Hello ' + target + '\n';
+   target = process.env.TARGET ? process.env.TARGET : 'World 111' ;
+   msg = process.env.MSG ? process.env.MSG : 'Hello 111 ' + target + '\n';
    response.writeHead(200, {'Content-Type': 'text/plain'});
    response.end(msg);
 }).listen(8080);
