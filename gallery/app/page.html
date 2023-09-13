@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Code Engine Gallery Demo</title>
+    <link rel="stylesheet" href="page.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="column-100">
+          <h1 class="title">Code Engine Gallery Demo</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="column-2">
+          <div class="body-1">Sample images</div>
+          <div class="samples">
+            <image class="pict" src="pictures/pic1.jpg" />
+            <image class="pict" src="pictures/pic2.jpg" />
+            <image class="pict" src="pictures/pic3.jpg" />
+            <image class="pict" src="pictures/pic4.jpg" />
+            <image class="pict" src="pictures/pic5.jpg" />
+            <image class="pict" src="pictures/pic6.jpg" />
+            <image class="pict" src="pictures/pic7.jpg" />
+          </div>
+        </div>
+        <div class="column-4">
+          <div class="body-1">Drag a sample image into the preview</div>
+          <input
+            data-file-input
+            type="file"
+            class="fileInput"
+            accept="image/*"
+            onchange="previewPicture(this.files[0])"
+          />
+          <image data-picture-preview class="picture-preview" />
+          <div class="cta-buttons">
+            <button data-upload type="button">Upload</button>
+            <button data-add>Add</button>
+          </div>
+          <div data-progress class="progress"></div>
+        </div>
+        <div class="column-2"></div>
+        <div class="column-8">
+          <div id="gallery-title" class="body-1 ">
+            <span id="gallery-title-text">My Gallery</span>
+            <div id="gallery-cta-buttons"><button data-clear class="cta-clear">Clear</button></div>
+          </div>
+          <div id="gallery-subtitle" class="hidden"><span>Click on individual images to change their colors.</span></div>
+          <div id="gallery" class="row" ></div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="page.js"></script>
+</html>

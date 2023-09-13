@@ -1,0 +1,14 @@
+{
+  "name": "code-engine-gallery-job",
+  "version": "1.0.0",
+  "description": "Sample job to demonstrate power of Code Engine components",
+  "main": "job.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ibm-cos-sdk": "^1.13.1"
+  }
+}
