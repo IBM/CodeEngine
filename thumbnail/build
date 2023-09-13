@@ -14,14 +14,14 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # First build and push v1 of our app - notice no tag on the image name
 cd v1
-docker build ${NOCACHE} -t ${REGISTRY}/thumbnail .
+docker build ${NOCACHE} -t ${REGISTRY}/thumbnail . --platform linux/amd64
 docker push ${REGISTRY}/thumbnail:latest
 cd ..
 
 # Now build and push v2, but we have an app and a job this time
 cd v2
-docker build ${NOCACHE} -t ${REGISTRY}/thumbnail:v2 -f Dockerfile.app .
-docker build ${NOCACHE} -t ${REGISTRY}/thumbnail-job -f Dockerfile.job .
+docker build ${NOCACHE} -t ${REGISTRY}/thumbnail:v2 -f Dockerfile.app . --platform linux/amd64
+docker build ${NOCACHE} -t ${REGISTRY}/thumbnail-job -f Dockerfile.job . --platform linux/amd64
 docker push ${REGISTRY}/thumbnail:v2
 docker push ${REGISTRY}/thumbnail-job
 cd ..

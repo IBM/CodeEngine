@@ -13,5 +13,5 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the job image and push it
-docker build ${NOCACHE} -t ${REGISTRY}/testjob -f Dockerfile .
+docker build ${NOCACHE} -t ${REGISTRY}/testjob -f Dockerfile . --platform linux/amd64
 docker push ${REGISTRY}/testjob

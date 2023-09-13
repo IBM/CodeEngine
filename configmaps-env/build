@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/ce-config-env .
+docker build ${NOCACHE} -t ${REGISTRY}/ce-config-env . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/ce-config-env

@@ -13,8 +13,8 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the images
-docker build ${NOCACHE} -f Dockerfile.sender -t ${REGISTRY}/kafka-sender .
-docker build ${NOCACHE} -f Dockerfile.receiver -t ${REGISTRY}/kafka-receiver .
+docker build ${NOCACHE} -f Dockerfile.sender -t ${REGISTRY}/kafka-sender . --platform linux/amd64
+docker build ${NOCACHE} -f Dockerfile.receiver -t ${REGISTRY}/kafka-receiver . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/kafka-sender

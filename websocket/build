@@ -13,8 +13,8 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the images
-docker build -f Dockerfile.server ${NOCACHE} -t ${REGISTRY}/ws-server .
-docker build -f Dockerfile.client ${NOCACHE} -t ${REGISTRY}/ws-client .
+docker build -f Dockerfile.server ${NOCACHE} -t ${REGISTRY}/ws-server . --platform linux/amd64
+docker build -f Dockerfile.client ${NOCACHE} -t ${REGISTRY}/ws-client . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/ws-server

@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/cecli .
+docker build ${NOCACHE} -t ${REGISTRY}/cecli . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/cecli

@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/cos2cos .
+docker build ${NOCACHE} -t ${REGISTRY}/cos2cos . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/cos2cos
