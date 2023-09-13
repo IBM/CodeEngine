@@ -15,7 +15,7 @@ do
   tgt=icr.io/codeengine/$image
   echo "Updating image: $image"
   set -x
-  docker pull $image
+  docker pull $image --platform linux/amd64
   docker tag $image $tgt
   docker push $tgt
   set +x

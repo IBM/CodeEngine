@@ -1,0 +1,14 @@
+{
+  "name": "code-engine-gallery-function",
+  "version": "1.0.0",
+  "description": "Sample function to demonstrate power of Code Engine components",
+  "main": "function.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ibm-cos-sdk": "^1.13.1"
+  }
+}

@@ -12,8 +12,14 @@
 set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
-# Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/github . --platform linux/amd64
+# First build and push the app - notice no tag on the image name
+cd app
+podman build ${NOCACHE} -t ${REGISTRY}/gallery . --platform linux/amd64
+podman push ${REGISTRY}/gallery:latest
+cd ..
 
-# And push it
-docker push ${REGISTRY}/github
+# Second build and push the job - notice no tag on the image name
+cd job
+podman build ${NOCACHE} -t ${REGISTRY}/gallery-job . --platform linux/amd64
+podman push ${REGISTRY}/gallery-job:latest
+cd ..
