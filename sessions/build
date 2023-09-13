@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/sessions .
+docker build ${NOCACHE} -t ${REGISTRY}/sessions . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/sessions

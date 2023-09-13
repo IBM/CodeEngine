@@ -13,9 +13,9 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # First build the app's image and push it
-docker build ${NOCACHE} -t ${REGISTRY}/a2j-app -f Dockerfile.app .
+docker build ${NOCACHE} -t ${REGISTRY}/a2j-app -f Dockerfile.app . --platform linux/amd64
 docker push ${REGISTRY}/a2j-app
 
 # Now build the job's
-docker build ${NOCACHE} -t ${REGISTRY}/a2j-job -f Dockerfile.job .
+docker build ${NOCACHE} -t ${REGISTRY}/a2j-job -f Dockerfile.job . --platform linux/amd64
 docker push ${REGISTRY}/a2j-job

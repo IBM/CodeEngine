@@ -13,8 +13,8 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/priv-front -f Dockerfile.frontend .
-docker build ${NOCACHE} -t ${REGISTRY}/priv-back -f Dockerfile.backend .
+docker build ${NOCACHE} -t ${REGISTRY}/priv-front -f Dockerfile.frontend . --platform linux/amd64
+docker build ${NOCACHE} -t ${REGISTRY}/priv-back -f Dockerfile.backend . --platform linux/amd64
 
 # And push it
 docker push ${REGISTRY}/priv-front
