@@ -12,6 +12,15 @@ router.get("/", (req,res) => {
 	res.send("hello world!")
 })
 // start server
-app.listen(PORT, () => {
-	console.log("Server is up and running!!")
+const server = app.listen(PORT, () => {
+	console.log(`Server is up and running on port ${PORT}!!`)
 })
+
+
+process.on('SIGTERM', () => {
+	console.info('SIGTERM signal received.');
+	server.close(() => {
+	  console.log('Http server closed.');
+	});
+  });
+  
