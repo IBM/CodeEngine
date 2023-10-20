@@ -157,6 +157,11 @@ is demonstrating.
   [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
   in your IBM Cloud account and run workload on them.
 
+#### Function
+
+- [function](function)
+  This will show how to create Python and NodeJs functions with additional modules/packages
+
 #### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
   This will show how to use the source-to-image feature of Code Engine to
