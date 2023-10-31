@@ -159,8 +159,14 @@ is demonstrating.
 
 #### Function
 
-- [function](function)
-  This will show how to create Python and NodeJs functions with additional modules/packages
+- [function-inline-nodejs](helloworld-samples/function-inline-nodejs)
+  This example shows how to create simple inline NodeJS function
+- [function-inline-python](helloworld-samples/function-inline-python)
+  This example shows how to create simple inline Python function
+- [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)
+  This example shows how to create NodeJS functions with additional modules
+- [function-codebundle-python](helloworld-samples/function-codebundle-python)
+  This example shows how to create Python functions with additional modules
 
 #### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
