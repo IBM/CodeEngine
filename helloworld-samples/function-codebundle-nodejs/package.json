@@ -1,0 +1,8 @@
+{
+  "name": "function",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies" : {
+		"one-liner-joke" : "1.2.2"
+ 	}
+}
