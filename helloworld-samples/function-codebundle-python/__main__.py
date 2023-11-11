@@ -1,9 +1,12 @@
-import pyjokes
+from lorem_text import lorem
+
 
 def main(params):
+     words = 10
+
      return {
           "headers": {
               "Content-Type": "text/plain;charset=utf-8",
           },
-          "body": pyjokes.get_joke(),
+          "body": lorem.words(words),
       }

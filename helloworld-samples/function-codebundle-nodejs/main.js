@@ -1,12 +1,11 @@
 function main(args) {
-	const oneLinerJoke = require('one-liner-joke');
-	let getRandomJoke = oneLinerJoke.getRandomJoke();
+  const LoremIpsum = require("lorem-ipsum").LoremIpsum;
+  const lorem = new LoremIpsum();
 
-	return {
-        	headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        	body: getRandomJoke
-    	}
+  return {
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: lorem.generateWords(10),
+  };
 }
-
 
 module.exports.main = main;
