@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Clean up previous run
+function clean() {
+  echo Cleaning...
+  (
+  ibmcloud ce secret delete -n f2j-secret -f
+  ibmcloud ce job delete -n f2j-job -f
+  ibmcloud ce fn delete -n f2j-function -f
+  ) > /dev/null 2>&1
+}
+
+clean
+[[ "$1" == "clean" ]] && exit 0
+
+if [[ -z "$IBMCLOUD_API_KEY" ]]; then
+    echo "Environment variable 'IBMCLOUD_API_KEY' must be set properly"
+    exit 1
+fi
+
+echo "Obtain the current project"
+project=$(ibmcloud ce proj current --output json)
+
+echo "Create a secret that holds the API key"
+ibmcloud ce secret create --name f2j-secret --from-literal IBMCLOUD_API_KEY=${IBMCLOUD_API_KEY}
+
+# Create the function
+ibmcloud ce fn create \
+  --name f2j-function \
+  --runtime nodejs-18 \
+  --inline-code fn.js \
+  --env-from-secret f2j-secret \
+  --env CE_REGION=$(echo $project|jq -r '.region_id') \
+  --env CE_PROJECT_ID=$(echo $project|jq -r '.guid') \
+  --env CE_JOB_NAME=f2j-job
+
+echo "Wait for the function to get properly initialized"
+URL="null"
+while [ "$URL" == "null" ]
+do
+  # Get metadata about the function for later use
+  URL=$(ibmcloud ce fn get --name f2j-function -o json | jq -r '.endpoint')
+  sleep 2
+done
+echo "Function endpoint: '$URL'"
+
+# Create the job definition
+ibmcloud ce job create -n f2j-job --src . --dockerfile Dockerfile.job --env FOO=BAR --wait
+
+echo "Now, curl the function and see if it creates the job: 'curl -s ${URL}?greeting=hello'"
+job_run=$(curl -s ${URL}?greeting=hello|jq -r '.job_run')
+
+while ! ibmcloud ce jobrun get -n ${job_run} | grep "Succeeded.*" ; do
+  sleep 2
+done
+
+echo "Verify job ran ok by fetching it logs ..."
+ibmcloud ce jobrun logs -n ${job_run} | grep "greeting.*"
+
+# Clean up
+clean
