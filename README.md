@@ -86,6 +86,11 @@ to get started.
 
 ## Tutorials
 
+- [Gallery](gallery)<br>
+  Walks through the complete growth path of a solution from the prototype
+  stage through to production - showcasing how to the various components, 
+  like applications, functions and jobs can be work together to implement a solution.
+
 - [Thumbnail Generator](thumbnail)<br>
   Walks through the complete growth path of an application from the prototype
   stage through to production - demonstrating how to switch from an in-app
