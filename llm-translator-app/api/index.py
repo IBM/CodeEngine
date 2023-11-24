@@ -7,7 +7,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s.
     datefmt='%Y-%m-%d %H:%M:%S')
 log = logging.getLogger(__name__)
 
-# Init the model (https://huggingface.co/Helsinki-NLP/opus-mt-de-en)
+# Specify the model directory and task
 log.debug("pipeline de->en init ...")
 de_to_en_translator = pipeline("translation", model="Helsinki-NLP/opus-mt-de-en") 
 log.debug("pipeline de->en init [done]")
@@ -26,11 +26,11 @@ def translate_to_en():
     data = request.json
     # run the translation operation
     res = de_to_en_translator(data["text"])
-    # return text back to user
+    # return translated text back to user
     log.debug("< done")
     return jsonify({"translated":(res[0]["translation_text"])})
 
-# Start the Flask server
+# Start the Flask server on port 5328
 port = '5328'
 if __name__ == "__main__":
 	app.run(host='0.0.0.0',port=int(port))
