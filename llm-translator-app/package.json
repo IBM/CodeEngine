@@ -1,0 +1,25 @@
+{
+  "name": "llm-translator-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "flask-dev": "FLASK_DEBUG=1 pip3 install -r requirements.txt && python3 -m flask --app api/index run -p 5328",
+    "flask-start": "python3 -m flask --app api/index run -p 5328",
+    "next-dev": "next dev -p 8080",
+    "next-start": "next start -p 8080",
+    "dev": "concurrently \"npm run next-dev\" \"npm run flask-dev\"",
+    "build": "next build",
+    "start": "concurrently \"npm run next-start\" \"npm run flask-start\""
+  },
+  "dependencies": {
+    "@carbon/react": "^1.42.0",
+    "concurrently": "^8.2.2",
+    "next": "^14.0.2",
+    "react": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.10.0",
+    "@types/react": "18.2.38",
+    "typescript": "5.3.2"
+  }
+}

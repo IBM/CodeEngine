@@ -1,0 +1,11 @@
+# We do want to ignore the locally downloaded huggingface model folder
+opus-mt-de-en/
+
+# Do not add node_modules
+node_modules/
+
+# Do not add the Next.js cache directory
+.next/
+
+# Ignore the Python cache
+api/__pycache__
