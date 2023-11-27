@@ -40,7 +40,7 @@ export default function Home() {
 
   const updateSourceText = (evt: ChangeEvent<HTMLTextAreaElement>) => {
     setError(undefined);
-    if (evt?.target?.value) {
+    if (evt?.target?.value != null) {
       setSourceText(evt?.target?.value);
     }
   };
