@@ -145,6 +145,9 @@ is demonstrating.
 - [app2job](app2job)<br>
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
+- [function2job](function2job)<br>
+  This will show how to submit a Job from a Function based on an incoming
+  HTTP request to the Function.
 - [bind-job](bind-job)<br>
   This will create an instance of Event Streams in the IBM Cloud and then ask
   Code Engine to bind it to a Batch Job so we can access it from the Job. The
