@@ -1,0 +1,21 @@
+FROM golang:latest AS stage
+
+WORKDIR /app/src
+
+COPY server/ ./server/
+
+COPY ecommerce/ ./ecommerce/
+
+COPY go.mod .
+
+COPY go.sum .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o server ./server
+
+FROM golang:latest
+
+WORKDIR /app/src
+
+COPY --from=stage /app/src/server/server .
+
+CMD [ "./server" ]
