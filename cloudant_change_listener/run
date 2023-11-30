@@ -1,0 +1,271 @@
+#!/bin/bash
+
+# Ensure that latest versions of used IBM Cloud ClI is installed
+ibmcloud update --force
+
+# Ensure that latest versions of used IBM Cloud CLI plugins are installed 
+echo "Install necessary ibmcloud cli plugins ..."
+ibmcloud plugin install cloudant -f
+ibmcloud plugin install code-engine -f
+
+# Clean up previous run
+function clean() {
+  echo Cleaning...
+  (
+    ibmcloud ce jobrun delete --job cloudant-change-listener-job --force
+    ibmcloud ce job unbind --name cloudant-change-listener-job --all
+    ibmcloud ce job delete --name cloudant-change-listener-job --force
+
+    ibmcloud ce function unbind --name cloudant-change-listener-function --all
+    ibmcloud ce function delete --name cloudant-change-listener-function --force
+
+    ibmcloud ce configmap delete --name cloudant-change-listener-config --force
+    ibmcloud ce secret delete --name cloudant-change-listener-credentials --force
+    
+    ibmcloud ce project delete --name ce-sample-cloudant-change-listener-project --force --hard --no-wait
+    ibmcloud iam service-id-delete ce-sample-cloudant-change-listener-api-credentials --force
+    ibmcloud resource service-key-delete cloudant-creds-ce-project --force
+    ibmcloud resource service-instance-delete CE-Cloudant-SampleDB --force
+  ) > /dev/null 2>&1
+}
+
+clean
+
+# In case this script has been executed with `./run clean`, we stop right after the cleanup
+[[ "$1" == "clean" ]] && exit 0
+
+# Ensure that jq tool is installed 
+if ! command -v jq &> /dev/null ; then
+    echo "FAILED - 'jq' tool is not installed"
+    exit  1
+fi
+
+
+echo "Create a new Cloudant instance ..."
+ibmcloud resource service-instance-create CE-Cloudant-SampleDB cloudantnosqldb standard eu-de -p '{"legacyCredentials":"false"}'
+
+echo "Wait for the Cloudant instance to get properly initialized ..."
+COUNTER=0
+
+while ! ibmcloud resource service-instance CE-Cloudant-SampleDB | grep "active" ; do
+  sleep 5
+  # wait max 3 min to get a cloudant DB instance 
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 36 )); then
+    echo "FAILED - Cloudant DB instance cannot be created"
+    exit 1
+  fi
+done
+
+# Obtain the created Cloudant instance
+cloudant_instances=$(ibmcloud resource service-instance CE-Cloudant-SampleDB --output JSON)
+cloudant_instance_name=$(echo $cloudant_instances|jq -r '.[0]|.name')
+cloudant_instance_guid=$(echo $cloudant_instances|jq -r '.[0]|.guid')
+
+if [ -z "$cloudant_instances" ]; then 
+  echo "FAILED - Cloudant DB instances info cannot be retrieved"
+  exit 1
+fi
+
+echo "Obtain the service URL of the newly created Cloudant instance '$cloudant_instance_name' (id: $cloudant_instance_guid) ..."
+cloudant_url=$(ibmcloud cloudant url --resource-id $cloudant_instance_guid --output JSON)
+echo "$cloudant_url"
+if [ -z "$cloudant_url" ]; then 
+  echo "FAILED - Cloudant DB URL cannot be retrieved"
+  exit 1
+fi
+
+echo "Creating the database 'sample-db' within Cloudant instance '$cloudant_instance_name' ..."
+echo "using cloudant API  https://cloud.ibm.com/apidocs/cloudant#putdatabase"
+iam_access_token=$(ibmcloud iam oauth-tokens --output JSON|jq -r '.iam_token')
+if [ -z "$iam_access_token" ]; then 
+  echo "FAILED - The IAM access token of the current CLI session could not be obtained"
+  exit 1
+fi
+curl -H "Authorization: $iam_access_token" -X PUT "$cloudant_url/sample-db"
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the Cloudant database failed"
+    exit 1
+fi 
+
+echo "Creating Code Engine project 'ce-sample-cloudant-change-listener-project' ..."
+ibmcloud ce proj create --name ce-sample-cloudant-change-listener-project
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of a Code Engine project failed"
+    exit 1
+fi 
+
+ce_project_guid=$(ibmcloud ce proj current --output json|jq -r '.guid')
+if [ -z "$ce_project_guid" ]; then 
+  echo "FAILED - obtaining the project GUID failed"
+  exit 1
+fi
+ce_project_region=$(ibmcloud ce proj current --output json|jq -r '.region_id')
+if [ -z "$ce_project_region" ]; then 
+  echo "FAILED - Obtaining the project region failed"
+  exit 1
+fi
+
+echo "Creating the Code Engine function 'cloudant-change-listener-function' ..."
+ibmcloud ce fn create \
+  --name cloudant-change-listener-function \
+  --runtime nodejs-18 \
+  --inline-code ./ce_target_source/cloudant_change_listener_function.js
+
+echo "Waiting for the function to get properly initialized ..."
+ce_fn_endpoint="null"
+ce_fn_endpoint_internal="null"
+
+COUNTER=0
+while [ "$ce_fn_endpoint" == "null" ]
+do
+  ce_fn_endpoint=$(ibmcloud ce fn get --name cloudant-change-listener-function -o json | jq -r '.endpoint')
+  ce_fn_endpoint_internal=$(ibmcloud ce fn get --name cloudant-change-listener-function -o json | jq -r '.endpoint_internal')
+  sleep 2
+  # wait max 3 min to get a cloudant DB instance 
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 90 )); then
+    echo "FAILED - The creation of a Code Engine function failed"
+    exit 1
+  fi
+done
+echo "Function public endpoint: '$ce_fn_endpoint', internal endpoint: '$ce_fn_endpoint_internal'"
+
+echo "Creating a config map to store the event state"
+ibmcloud ce configmap create \
+  --name cloudant-change-listener-config \
+  --from-literal DB_LAST_SEQ=now
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the Code Engine configmap failed"
+    exit 1
+fi 
+
+# See Code Engine docs: Managing user access (https://cloud.ibm.com/docs/codeengine?topic=codeengine-iam#service)
+echo "Creating an IAM ServiceID that contains a policy to access the Code Engine project '${ce_project_guid}' ..."
+ibmcloud iam service-id-create ce-sample-cloudant-change-listener-api-credentials --description "Service ID to operate towards the Code Engine project ${ce_project_guid}"
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the IAM serviceID failed"
+    exit 1
+fi 
+ibmcloud iam service-policy-create ce-sample-cloudant-change-listener-api-credentials --roles Writer --service-name codeengine --service-instance ${ce_project_guid}
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the IAM serviceID policy failed"
+    exit 1
+fi 
+ce_api_key=$(ibmcloud iam service-api-key-create codeengine-api-key ce-sample-cloudant-change-listener-api-credentials --description "API key for serviceID ce-${ce_project_guid}-api-credentials for Code Engine project ${ce_project_guid}" --output JSON|jq -r '.apikey')
+if [ -z "$ce_api_key" ]; then 
+  echo "FAILED - The creation of the IAM serviceID APIKey failed"
+  exit 1
+fi
+
+echo "Creating a secret that stores a serviceID APIKey to enable the job storing state in a Configmap within the project '$ce_project_guid' ..."
+ibmcloud ce secret create \
+  --name cloudant-change-listener-credentials \
+  --from-literal CE_API_KEY=$ce_api_key
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the Code Engine secret failed"
+    exit 1
+fi 
+
+echo "Creating the Code Engine daemon job 'cloudant-change-listener-job' ..."
+ibmcloud ce job create \
+  --name cloudant-change-listener-job \
+  --src . \
+  --dockerfile Dockerfile \
+  --mode daemon \
+  --env DB_NAME=sample-db \
+  --env CE_TARGET=$ce_fn_endpoint \
+  --env CE_PROJECT_ID=$ce_project_guid \
+  --env CE_REGION=$ce_project_region \
+  --env-from-configmap cloudant-change-listener-config \
+  --env-from-secret cloudant-change-listener-credentials \
+  --wait
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of a Code Engine job failed"
+    exit 1
+fi 
+
+echo "Creating the service credential on the Cloudant database to be able to bind the job and the function ..."
+ibmcloud resource service-key-create cloudant-creds-ce-project Reader --instance-id $cloudant_instance_guid 
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the service credential on the Cloudant DB failed"
+    exit 1
+fi 
+
+echo "Binding the Cloudant credentials to the Code Engine function to enable that the function code can access the DB via Env vars ..."
+ibmcloud ce fn bind \
+  --name cloudant-change-listener-function \
+  --service-instance-id $cloudant_instance_guid \
+  --service-credential cloudant-creds-ce-project
+if [ $? != 0 ]; then 
+    echo "FAILED - The binding of a service binding of the Cloudant DB to the CE function failed"
+    exit 1
+fi 
+
+echo "Binding the Cloudant credentials to the Code Engine job ..."
+ibmcloud ce job bind \
+  --name cloudant-change-listener-job \
+  --service-instance-id $cloudant_instance_guid \
+  --service-credential cloudant-creds-ce-project
+if [ $? != 0 ]; then 
+    echo "FAILED - the binding of a service binding of the Cloudant DB to the CE job failed"
+    exit 1
+fi 
+
+echo "Starting the daemon job ..."
+job_run_name=$(ibmcloud ce jobrun submit --job cloudant-change-listener-job --output json|jq -r '.metadata|.name')
+if [ -z "$job_run_name" ]; then 
+  echo "FAILED - The submission of the Code Engine daemon job failed"
+  exit 1
+fi
+
+echo "Check whether the job started properly ..."
+COUNTER=0
+while ! ibmcloud ce jobrun get -n ${job_run_name} | grep "1/1" | grep "Running" ; do
+  sleep 2
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 90 )); then
+    echo $( ibmcloud ce jobrun get -n ${job_run_name} )
+    echo "FAILED - The job could not be started"
+    exit 1
+  fi
+
+done
+
+echo "Upload a file to the Cloudant database ..."
+curl -H "Authorization: $iam_access_token" -X POST "$cloudant_url/sample-db" -H "Content-Type: application/json" --data '{
+  "_id": "small-appliances:1000043",
+  "type": "product",
+  "productid": "1000043",
+  "brand": "Salter",
+  "name": "Digital Kitchen Scales"
+}'
+
+echo "Verify job receives the Cloudant event by fetching the job run logs ..."
+
+COUNTER=0
+while true; do 
+  sleep 3
+  foundDetectedChange=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Detected 1 change(s) in the DB")
+  foundCalledFunction=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Successfully called CE function")
+
+  if [[ foundDetectedChange  && foundCalledFunction ]]; then 
+    echo ""
+    echo "That was a success :)"
+    break; 
+  fi 
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 60 )); then
+    if [[ foundDetectedChange ]]; then 
+      echo "Testing of the sample failed because the change was not detected"
+    fi
+    if [[ foundCalledFunction ]]; then 
+      echo "Testing of the sample failed because the ce function was not called "
+    fi
+    exit 1;
+  fi
+done; 
+
+
+# Clean up
+clean
