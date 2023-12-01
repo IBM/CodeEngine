@@ -80,6 +80,17 @@ export default function Home() {
             invalidText={error}
           />
         </Column>
+        <Column sm={4} md={8} lg={12} id="license-attribution">
+          <p>
+            <a target="_blank" href="https://huggingface.co/Helsinki-NLP/opus-mt-de-en">
+              OPUS-MT-de-en
+            </a>{" "}
+            by the Language Technology Research Group at the University of Helsinki is{" "}
+            <a target="_blank" href="https://choosealicense.com/licenses/apache-2.0/">
+              licensed under Apache 2.0
+            </a>
+          </p>
+        </Column>
       </Grid>
     </main>
   );
