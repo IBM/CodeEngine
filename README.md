@@ -161,7 +161,7 @@ is demonstrating.
   in your IBM Cloud account and run workload on them.
 
 #### Daemon Jobs
-- [cloudant-change-listener](cloudant_change_listener)<br>
+- [cloudant-change-listener](cloudant-change-listener)<br>
 
 
 #### Function

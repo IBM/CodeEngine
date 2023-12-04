@@ -2,7 +2,7 @@
   "name": "cloudant-change-listener",
   "version": "1.0.0",
   "description": "Change event listener for cloudant DB",
-  "main": "cloudant_change_listener.mjs",
+  "main": "job.mjs",
   "engines": {
     "node": "^20",
     "npm": "^10"

@@ -74,7 +74,7 @@ import { CloudantV1 } from "@ibm-cloud/cloudant";
 import { BasicAuthenticator, IamAuthenticator } from "ibm-cloud-sdk-core";
 import log4js from "log4js";
 import { LRUCache } from "lru-cache";
-import { isJobAlreadyRunning, updateJobConfig, getJobConfig } from "./utils/ce-api.mjs";
+import { isJobAlreadyRunning, updateJobConfig, getJobConfig } from "../utils/ce-api.mjs";
 
 //
 // use a formatted logger to have timestamps in the log output 

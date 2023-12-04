@@ -110,7 +110,7 @@ echo "Creating the Code Engine function 'cloudant-change-listener-function' ..."
 ibmcloud ce fn create \
   --name cloudant-change-listener-function \
   --runtime nodejs-18 \
-  --inline-code ./ce_target_source/cloudant_change_listener_function.js
+  --inline-code ./function/function.js
 
 echo "Waiting for the function to get properly initialized ..."
 ce_fn_endpoint="null"
