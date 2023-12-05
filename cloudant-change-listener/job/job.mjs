@@ -64,8 +64,8 @@
  *   - DB_NAME                   The name of the DB to listen on.  e.g "MyTestDB"
  *   - DB_LAST_SEQ               (optional) last_seq value to use as start identifier for db changes feed.
  *   - CE_TARGET                 Full URL of the target Code Engine function or application that should receive events
- *   - POST_CHANGES_TIMEOUT      Max wait-time in milliseconds on each long-polling call to the DB (default: 8000)
- *                               The poll timeout can be used to adapt the listeninging timeout to the settings defined on the cloudant DB 
+ *   - DB_POST_CHANGES_TIMEOUT   Max wait-time in milliseconds on each long-polling call to the DB (default: 8000)
+ *                               The poll timeout can be used to adapt the listening timeout to the settings defined on the cloudant DB 
  *   - IAM_TOKEN_URL             Provide if not using the default IAM service , default("https://iam.cloud.ibm.com/identity/token")
  *
  *   - CLOUDANTNOSQLDB_USERNAME  (use only if you use a legacy or Non IBM cloud cloudant DB)
@@ -75,7 +75,7 @@ import { CloudantV1 } from "@ibm-cloud/cloudant";
 import { BasicAuthenticator, IamAuthenticator } from "ibm-cloud-sdk-core";
 import log4js from "log4js";
 import { LRUCache } from "lru-cache";
-import { isJobAlreadyRunning, updateJobConfig, getJobConfig } from "../utils/ce-api.mjs";
+import { isJobAlreadyRunning, updateJobConfig, getJobConfig } from "./ce-api-utils.mjs";
 
 //
 // use a formatted logger to have timestamps in the log output 
@@ -211,7 +211,7 @@ if ( ! process.env.DB_LAST_SEQ ) {
 //
 // use env var directly defined on Job   (optional)
 // Wait timeout for each polling action towards the Cloudant API ( must be > 1000)
-const postChangesTimeout = process.env.POST_CHANGES_TIMEOUT || 8_000;
+const postChangesTimeout = process.env.DB_POST_CHANGES_TIMEOUT || 8_000;
 
 
 /**
