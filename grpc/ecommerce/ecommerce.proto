@@ -6,7 +6,7 @@ option go_package="github.com/qu1queee/CodeEngine/grpc/ecommerce";
 service grocery {
     rpc GetGrocery(Category) returns (Item) {};
     rpc ListGrocery(Category) returns (ItemList) {};
-    rpc MakePayment(PaymentRequest) returns (PaymentResponse) {};
+    rpc BuyGrocery(PaymentRequest) returns (PaymentResponse) {};
 }
 
 message Category{

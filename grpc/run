@@ -37,18 +37,18 @@ echo "[INFO] Retrieving client/server public endpoint"
 URL=$(ibmcloud ce app get -n "${CLIENT_APP_NAME}" -o url)
 echo "[INFO] Endpoint is: ${URL}"
 
-# Query the list of groceries by electronics category
-echo "[INFO] Retrieving available electronic items"
-curl -q "${URL}"/listgroceries/electronics
+# Query the list of groceries by food category
+echo "[INFO] Retrieving available food items"
+curl -q "${URL}"/listgroceries/food
 
 # Buy an item from food and pay with 5.0 dollars
 echo "[INFO] Going to buy an apple, paying with 5.0 dollars"
-JSON_REPONSE=$(curl -s "${URL}"/buygrocery/vegetables/apple/5.0 | jq '.success')
-echo $JSON_REPONSE | jq .
+JSON_RESPONSE=$(curl -s "${URL}"/buygrocery/food/apple/5.0 | jq '.success')
+echo "${JSON_RESPONSE}" | jq .
 
 # Validate payment operation
 echo "[INFO] Validating payment operation state"
-OPERATION_SUCCEEDED=$(echo $JSON_REPONSE | jq '.success')
+OPERATION_SUCCEEDED=$(echo "${JSON_RESPONSE}" | jq '.success')
 if [ "${OPERATION_SUCCEEDED}" == "null" ]
 then
     echo "[ERROR] Payment failed, bailing out."

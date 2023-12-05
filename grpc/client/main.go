@@ -91,12 +91,7 @@ func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 		Item:   item,
 	}
 
-	paymentResponse, _ := groceryClient.MakePayment(context.Background(), &paymentRequest)
-
-	// if !paymentResponse.Success {
-	// 	Fail(w, "failed to buy grocery, not enough money", errors.New("not enough money"))
-	// 	return
-	// }
+	paymentResponse, _ := groceryClient.BuyGrocery(context.Background(), &paymentRequest)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(paymentResponse)

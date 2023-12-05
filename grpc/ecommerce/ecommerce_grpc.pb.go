@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type GroceryClient interface {
 	GetGrocery(ctx context.Context, in *Category, opts ...grpc.CallOption) (*Item, error)
 	ListGrocery(ctx context.Context, in *Category, opts ...grpc.CallOption) (*ItemList, error)
-	MakePayment(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error)
+	BuyGrocery(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error)
 }
 
 type groceryClient struct {
@@ -53,9 +53,9 @@ func (c *groceryClient) ListGrocery(ctx context.Context, in *Category, opts ...g
 	return out, nil
 }
 
-func (c *groceryClient) MakePayment(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error) {
+func (c *groceryClient) BuyGrocery(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error) {
 	out := new(PaymentResponse)
-	err := c.cc.Invoke(ctx, "/ecommerce.grocery/MakePayment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/ecommerce.grocery/BuyGrocery", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *groceryClient) MakePayment(ctx context.Context, in *PaymentRequest, opt
 type GroceryServer interface {
 	GetGrocery(context.Context, *Category) (*Item, error)
 	ListGrocery(context.Context, *Category) (*ItemList, error)
-	MakePayment(context.Context, *PaymentRequest) (*PaymentResponse, error)
+	BuyGrocery(context.Context, *PaymentRequest) (*PaymentResponse, error)
 	mustEmbedUnimplementedGroceryServer()
 }
 
@@ -82,8 +82,8 @@ func (UnimplementedGroceryServer) GetGrocery(context.Context, *Category) (*Item,
 func (UnimplementedGroceryServer) ListGrocery(context.Context, *Category) (*ItemList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGrocery not implemented")
 }
-func (UnimplementedGroceryServer) MakePayment(context.Context, *PaymentRequest) (*PaymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MakePayment not implemented")
+func (UnimplementedGroceryServer) BuyGrocery(context.Context, *PaymentRequest) (*PaymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BuyGrocery not implemented")
 }
 func (UnimplementedGroceryServer) mustEmbedUnimplementedGroceryServer() {}
 
@@ -134,20 +134,20 @@ func _Grocery_ListGrocery_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Grocery_MakePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Grocery_BuyGrocery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PaymentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GroceryServer).MakePayment(ctx, in)
+		return srv.(GroceryServer).BuyGrocery(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ecommerce.grocery/MakePayment",
+		FullMethod: "/ecommerce.grocery/BuyGrocery",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GroceryServer).MakePayment(ctx, req.(*PaymentRequest))
+		return srv.(GroceryServer).BuyGrocery(ctx, req.(*PaymentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -168,8 +168,8 @@ var Grocery_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Grocery_ListGrocery_Handler,
 		},
 		{
-			MethodName: "MakePayment",
-			Handler:    _Grocery_MakePayment_Handler,
+			MethodName: "BuyGrocery",
+			Handler:    _Grocery_BuyGrocery_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -124,7 +124,7 @@ func (gs *GroceryServer) ListGrocery(ctx context.Context, in *ec.Category) (*ec.
 	return &itemList, errors.New("category not found")
 }
 
-func (gs *GroceryServer) MakePayment(ctx context.Context, in *ec.PaymentRequest) (*ec.PaymentResponse, error) {
+func (gs *GroceryServer) BuyGrocery(ctx context.Context, in *ec.PaymentRequest) (*ec.PaymentResponse, error) {
 	amount := in.GetAmount()
 	purchasedItem := in.GetItem()
 

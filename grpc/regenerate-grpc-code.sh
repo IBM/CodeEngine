@@ -6,14 +6,14 @@ BASEDIR="$(dirname "$0")"
 
 if ! hash protoc >/dev/null 2>&1; then
   echo "[ERROR] protoc compiler plugin is not installed, bailing out."
-  echo "[INFO]  refer to https://grpc.io/docs/languages/go/quickstart/#prerequisites for instalation guidelines."
+  echo "[INFO]  refer to https://grpc.io/docs/languages/go/quickstart/#prerequisites for installation guidelines."
   echo
   exit 1
 fi
 
 if ! hash protoc-gen-go >/dev/null 2>&1; then
   echo "[ERROR] protoc-gen-go plugin is not installed, bailing out."
-  echo "[INFO]  refer to https://grpc.io/docs/languages/go/quickstart/#prerequisites for instalation guidelines."
+  echo "[INFO]  refer to https://grpc.io/docs/languages/go/quickstart/#prerequisites for installation guidelines."
   echo "[INFO]  ensure your GOPATH is in your PATH".
   exit 1
 fi
