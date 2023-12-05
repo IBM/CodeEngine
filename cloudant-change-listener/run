@@ -170,7 +170,7 @@ fi
 echo "Creating the Code Engine daemon job 'cloudant-change-listener-job' ..."
 ibmcloud ce job create \
   --name cloudant-change-listener-job \
-  --src . \
+  --src ./ \
   --dockerfile Dockerfile \
   --mode daemon \
   --env DB_NAME=sample-db \

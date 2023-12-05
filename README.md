@@ -160,9 +160,6 @@ is demonstrating.
   [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
   in your IBM Cloud account and run workload on them.
 
-#### Daemon Jobs
-- [cloudant-change-listener](cloudant-change-listener)<br>
-
 
 #### Function
 
