@@ -30,7 +30,7 @@ You can try to deploy this microservice architecture in your Code Engine project
 Once you have selected your Code Engine project, you only need to run:
 
 ```sh
-./run.sh
+./run
 ```
 
 ## Todo:

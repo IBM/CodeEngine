@@ -5,6 +5,21 @@ set -euo pipefail
 SERVER_APP_NAME="a-grpc-server"
 CLIENT_APP_NAME="a-grpc-client"
 
+# Clean up previous run
+function clean() {
+  echo "[INFO] Deleting CE client/server application ${CLIENT_APP_NAME}"
+  ibmcloud ce app delete --name $CLIENT_APP_NAME --force --ignore-not-found > /dev/null 2>&1
+  echo "[INFO] Deleting CE gRPC server application ${SERVER_APP_NAME}"
+  ibmcloud ce app delete --name $SERVER_APP_NAME --force --ignore-not-found > /dev/null 2>&1
+}
+
+if [ $# -ge 1 ] && [ -n "$1" ]
+then
+    echo "[INFO] going to clean existing project resources"
+    clean
+    exit 0
+fi
+
 # Create the gRPC server app
 echo "[INFO] Creating CE gRPC server application ${SERVER_APP_NAME}"
 ibmcloud ce app create --name "${SERVER_APP_NAME}" --port h2c:8080 --min-scale 1 --build-source . --build-dockerfile Dockerfile.server
@@ -26,6 +41,19 @@ echo "[INFO] Endpoint is: ${URL}"
 echo "[INFO] Retrieving available electronic items"
 curl -q "${URL}"/listgroceries/electronics
 
-# Buy an item from electronics and pay with 2000
-echo "[INFO] Going to buy an iphone"
-curl -q "${URL}"/buygrocery/electronics/iphone/2000.0
+# Buy an item from food and pay with 5.0 dollars
+echo "[INFO] Going to buy an apple, paying with 5.0 dollars"
+JSON_REPONSE=$(curl -s "${URL}"/buygrocery/vegetables/apple/5.0 | jq '.success')
+echo $JSON_REPONSE | jq .
+
+# Validate payment operation
+echo "[INFO] Validating payment operation state"
+OPERATION_SUCCEEDED=$(echo $JSON_REPONSE | jq '.success')
+if [ "${OPERATION_SUCCEEDED}" == "null" ]
+then
+    echo "[ERROR] Payment failed, bailing out."
+    exit  1
+else
+    echo "[INFO] Successful payment operation."
+    exit 0
+fi

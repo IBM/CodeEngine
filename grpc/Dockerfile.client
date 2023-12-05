@@ -1,4 +1,4 @@
-FROM golang:latest AS stage
+FROM icr.io/codeengine/golang:latest AS stage
 
 WORKDIR /app/src
 
@@ -12,7 +12,7 @@ COPY go.sum .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o client ./client
 
-FROM golang:latest
+FROM icr.io/codeengine/golang:latest
 
 WORKDIR /app/src
 

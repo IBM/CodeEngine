@@ -33,6 +33,12 @@ func BuyGroceryHandler(groceryClient ec.GroceryClient) func(w http.ResponseWrite
 	}
 }
 
+func Fail(w http.ResponseWriter, msg string, err error) {
+	fmt.Printf("%s: %v\n", msg, err)
+	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte(fmt.Sprintf("%s\n", msg)))
+}
+
 func GetHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.GroceryClient) {
 
 	// Contact the server and print out its response.
@@ -49,17 +55,12 @@ func GetHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 
 	itemList, err := groceryClient.ListGrocery(ctx, &category)
 	if err != nil {
-		fmt.Printf("failed to list grocery: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("failed to list grocery"))
+		Fail(w, "failed to list groceries", err)
 		return
 	}
 
-	for _, item := range itemList.Item {
-		json.NewEncoder(w).Encode(fmt.Sprintf("Item Name: %v\n", item.Name))
-	}
-
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(itemList.Item)
 }
 
 func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.GroceryClient) {
@@ -71,7 +72,7 @@ func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 
 	amount, err := strconv.ParseFloat(pAmount, 64)
 	if err != nil {
-		http.Error(w, "invalid amount parameter", http.StatusBadRequest)
+		Fail(w, "invalid amount parameter", err)
 	}
 
 	category := ec.Category{
@@ -81,10 +82,9 @@ func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 
 	item, err := groceryClient.GetGrocery(context.Background(), &category)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		Fail(w, fmt.Sprintf("failed to get grocery item by name: %v", category.Itemname), err)
+		return
 	}
-
-	json.NewEncoder(w).Encode(fmt.Sprintf("Grocery: \n Item: %v \n Quantity: %v\n", item.GetName(), item.GetQuantity()))
 
 	paymentRequest := ec.PaymentRequest{
 		Amount: amount,
@@ -92,15 +92,18 @@ func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 	}
 
 	paymentResponse, _ := groceryClient.MakePayment(context.Background(), &paymentRequest)
-	json.NewEncoder(w).Encode(fmt.Sprintf("Payment Response: \n Purchase: %v \n Details: %v \n State: %v \n Change: %v\n", paymentResponse.PurchasedItem, paymentResponse.Details, paymentResponse.Success, paymentResponse.Change))
-	w.WriteHeader(http.StatusOK)
+
+	// if !paymentResponse.Success {
+	// 	Fail(w, "failed to buy grocery, not enough money", errors.New("not enough money"))
+	// 	return
+	// }
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(paymentResponse)
 }
 
 func main() {
-
-	serverLocalEndpoint := "LOCAL_ENDPOINT_WITH_PORT"
-
-	localEndpoint := os.Getenv(serverLocalEndpoint)
+	localEndpoint := os.Getenv("LOCAL_ENDPOINT_WITH_PORT")
 
 	fmt.Printf("using local endpoint: %s\n", localEndpoint)
 	conn, err := grpc.Dial(localEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))

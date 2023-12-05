@@ -27,22 +27,58 @@ func initGroceryServer() *GroceryServer {
 	return &GroceryServer{
 		Products: []Product{
 			{
-				Category: "vegetables",
+				Category: "food",
 				Name:     "carrot",
-				Quantity: "4",
+				Quantity: "1",
 				Price:    0.5,
 			},
 			{
-				Category: "fruit",
+				Category: "food",
 				Name:     "apple",
-				Quantity: "3",
-				Price:    0.6,
+				Quantity: "1",
+				Price:    0.5,
+			},
+			{
+				Category: "food",
+				Name:     "banana",
+				Quantity: "1",
+				Price:    0.5,
+			},
+			{
+				Category: "food",
+				Name:     "lemon",
+				Quantity: "1",
+				Price:    0.5,
+			},
+			{
+				Category: "clothes",
+				Name:     "tshirt",
+				Quantity: "1",
+				Price:    25.0,
+			},
+			{
+				Category: "clothes",
+				Name:     "pants",
+				Quantity: "1",
+				Price:    65.0,
+			},
+			{
+				Category: "clothes",
+				Name:     "socks",
+				Quantity: "1",
+				Price:    5.0,
 			},
 			{
 				Category: "electronics",
 				Name:     "iphone",
 				Quantity: "1",
 				Price:    1200.99,
+			},
+			{
+				Category: "electronics",
+				Name:     "keyboard",
+				Quantity: "1",
+				Price:    100.99,
 			},
 			{
 				Category: "electronics",
@@ -68,7 +104,7 @@ func (gs *GroceryServer) GetGrocery(ctx context.Context, in *ec.Category) (*ec.I
 		}
 	}
 
-	return &ec.Item{}, nil
+	return &ec.Item{}, errors.New("category item not found")
 }
 
 func (gs *GroceryServer) ListGrocery(ctx context.Context, in *ec.Category) (*ec.ItemList, error) {
@@ -95,13 +131,17 @@ func (gs *GroceryServer) MakePayment(ctx context.Context, in *ec.PaymentRequest)
 	transactionSuccessfull := true
 	var transactionDetails string
 
+	change := amount - purchasedItem.Price
+
+	if change < 0 {
+		transactionSuccessfull = false
+	}
+
 	if transactionSuccessfull {
 		transactionDetails = fmt.Sprintf("Transaction of amount %v is successful", amount)
 	} else {
-		transactionDetails = fmt.Sprintf("Transaction of amount %v failed", amount)
+		transactionDetails = fmt.Sprintf("Transaction of amount %v failed, payment missmatch", amount)
 	}
-
-	change := amount - purchasedItem.Price
 
 	return &ec.PaymentResponse{
 		Success:       transactionSuccessfull,
