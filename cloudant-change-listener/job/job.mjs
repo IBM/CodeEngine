@@ -65,6 +65,7 @@
  *   - DB_LAST_SEQ               (optional) last_seq value to use as start identifier for db changes feed.
  *   - CE_TARGET                 Full URL of the target Code Engine function or application that should receive events
  *   - POST_CHANGES_TIMEOUT      Max wait-time in milliseconds on each long-polling call to the DB (default: 8000)
+ *                               The poll timeout can be used to adapt the listeninging timeout to the settings defined on the cloudant DB 
  *   - IAM_TOKEN_URL             Provide if not using the default IAM service , default("https://iam.cloud.ibm.com/identity/token")
  *
  *   - CLOUDANTNOSQLDB_USERNAME  (use only if you use a legacy or Non IBM cloud cloudant DB)
