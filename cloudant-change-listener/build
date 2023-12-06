@@ -12,5 +12,5 @@
 set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
-podman build ${NOCACHE} -t ${REGISTRY}/cloudant-change-listener . --platform linux/amd64
-podman push ${REGISTRY}/cloudant-change-listener
+docker build ${NOCACHE} -t ${REGISTRY}/cloudant-change-listener . --platform linux/amd64
+docker push ${REGISTRY}/cloudant-change-listener
