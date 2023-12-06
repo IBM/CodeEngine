@@ -2,86 +2,86 @@
 
 
 ## Intention
-This quick-start daemon job sample is a fully runable basic implementation of a cloudant database change listener long running process. The main feature of the job is to react on each db document change with an invocation of a Code Engine Function or Code Engine Application. 
+This quick start daemon job sample is a basic implementation of a Cloudant database change listener that runs indefinitely. The main purpose of the job is to react to each DB document change with an invocation of a Code Engine Function or Code Engine Application. 
 
 
 __HINT__: Customers used "Cloudant Trigger" capability in IBM Cloud Functions may use this daemon job as a cloudant trigger migration solution. 
 
-The instruction below describes how to create and run the Cloudant-Change-Listener daemon job using the IBM Cloud UI in an existing IBM Code Engine project. A full end-to-end example with a  Cloudant-Change-Listener connected to a cloudant sample database and invoking a sample Code Engine function is available as "run" script. The script includes the creation and execution of the daemon job as well as the setup of a sample cloudant db with document changes. 
+These instructions describe how to create and run the Cloudant-Change-Listener daemon job by using the IBM Cloud UI in an existing IBM Code Engine project. A full end-to-end example with a Cloudant-Change-Listener that is connected to a Cloudant sample database and invokes a sample Code Engine function is available as "run" script. The script includes creating and running of the daemon job as well as the setup of a sample Cloudant DB with document changes. 
 
 - - -
 ## Architecture: 
 
-The Cloudant-Change-Listener is implemented as a Code Engine daemon job because only daemon jobs runsforever and can hold endless database connections using the IBM cloudant SDK API. 
-Parallel running instances of the Cloudant-Change-Listener job is supresssed because IBM cloudant SDK would send change notification to each listener connection.
+The Cloudant-Change-Listener is implemented as a Code Engine daemon job because a daemon jobs runs indefinitely and can hold endless database connections by using the IBM Cloudant SDK API. 
+You cannot run the Cloudant-Change-Listener job in parallel running instances because IBM cloudant SDK would send change notification to each listener connection.
 
 ![Architecture Diagram](images/Architecture.png)
 
 
-## Let's Get Started
+## Getting started
  
-This sample job is a fully runable Cloudant-Change-Listener. It can be used "as-is" if the db listening solution requires:  
-   - continously listening on exact __ONE__ cloudant database for __EACH__ document create, change and delete  
-   - an invocation of a Code Engine Function or Code Engine Application as result of each detected db change 
-   - no suppression of duplicate change notifications across restarts of the job 
+This sample job is a Cloudant-Change-Listener. It can be used "as-is" if the DB listening solution requires:  
+   - Continously listening on exact __ONE__ cloudant database for __EACH__ document create, change, and delete. 
+   - An invocation of a Code Engine Function or Code Engine Application as result of each detected db change.
+   - No suppression of duplicate change notifications across restarts of the job.
 
-HINT: The sample code contains "Customer TODO" sections where the job can be improved to fulfill further sollution requirements. 
+HINT: The sample code contains "Customer TODO" sections where the job can be improved to fulfill further solution requirements. 
 
-It is recommended to clone the cloudant-change-lister sample from the GIT repository at first and work with the copy. 
+It is recommended that you clone the cloudant-change-lister sample from the GIT repository at first and work with the copy. 
 
 
-## Pre-conditions
+## Prerequisites
 
-This chapter describes the mandatory and optional tasks before the Cloudant-Change-Listener job can be created and started. The pre-condition tasks are used to collect and set all necessary startup parameters (as environment variables) for the  job.
+This section describes the mandatory and optional tasks before you create the Cloudant-Change-Listener job. The pre-condition tasks are used to collect and set all necessary startup parameters (as environment variables) for the  job.
 
-### Creation of config map 
+### Creating the configmap 
 
-The name of the config map must follow the rule :  "\<job_name\>-config" 
+The name of the configmap must follow the rule :  "\<job_name\>-config" 
 and has to contain the key/value pair: "DB_LAST_SEQ" : "now"
 
-Step by step see https://cloud.ibm.com/docs/codeengine?topic=codeengine-configmap#configmap-create
+For more information about creating a configmap, see https://cloud.ibm.com/docs/codeengine?topic=codeengine-configmap#configmap-create.
 
-Although the job is designed as long running job there is the need to consider the "stop and restart" scenario ( e.g in case of version upgrade or maintenance). That scenario results in a short outage where no database changes received. To ensure that no change get lost the job saves the "DB_LAST_SEQ" last change identifier while stopping to a config map assigned to the CE Project. On restart the DB_LAST_SEQ" will be read and used as start listening identifier while opening a new DB listening connection.
+Although the job is designed to run indefinitely, you must consider the "stop and restart" scenario (e.g in case of version upgrade or maintenance). That scenario can results in a short outage where no database changes are received. To ensure that changes do not get lost, the job saves the "DB_LAST_SEQ" last change identifier to a configmap assigned to the CE Project whenever it is stopped. On restart, the DB_LAST_SEQ" is read and used as a start listening identifier while opening a new DB listening connection.
 
-### Creation of ServiceID (apiKey) 
+### Creating the Service ID (apiKey) 
 
-The Cloudant-Change-Listener job needs access permission to the hosting Code Engine Project to control that job is running only once. Therefore a serviceID access with API_KEY must be created for the : 
+The Cloudant-Change-Listener job requires access permission to the hosting Code Engine Project to ensure that only a single instance of the job is running. Therefore, a service ID with an API_KEY must be created for the following : 
   - service  : "Code Engine" 
   - Resource : "\<CE-Project-name-where-Job-resides\>"
 
-Step by step see: https://cloud.ibm.com/docs/account?topic=account-serviceids&interface=ui#create_serviceid
+For more information about creating a service ID< see https://cloud.ibm.com/docs/account?topic=account-serviceids&interface=ui#create_serviceid.
 
 ==> Use the value of the generated API KEY for the Job's env var CE_API_KEY 
 
 
-### Get URL of a Code Engine Function or Code Engine Application 
+### Getting the URL of a Code Engine Function or Code Engine Application 
 
-The public endpoint URL of an existing or newly created Code Engine Function (or app) must be retrieved to provide as startup parameter for the Cloudant-Change-Listener app. The endpoint must accept the input parms containing the db change notification details to identify the db document. Additionally the cloudant database's service binding should be attached to the CE Function (or app), so that the db can be connected from the function, too. 
+The public endpoint URL of an existing or newly-created Code Engine Function (or app) must be retrieved to provide as startup parameter for the Cloudant-Change-Listener app. The endpoint must accept the input parameters that contain the DB change notification details to identify the DB document. Additionally, the Cloudant database's service binding must be attached to the CE Function (or app) so that the DB can be connected from the function, too. 
 
-Step by step:
-  - Retrieve the Code Engine Function's endpoint URL in UI by calling the "application-URL" in the "test function" dialog of the UI page  " => Code Engine => Projekte => "\<CE-Project-name-where-Function-resides\>" => "\<function-name\>".
+Follow these steps.
+1. Retrieve the Code Engine Function's public URL from the  "Details" page for the function in the UI. Go to " => Code Engine => Projects => "\<CE-Project-name-where-Function-resides\>" => "\<function-name\>". Then, select "Domain mappings".
 
-  - Retrieve the Code Engine Application's endpoint URL in UI by calling the "functions-URL" in the "test applicaiton" dialog of the UI page  " => Code Engine => Projekte => "\<CE-Project-name-where-Application-resides\>" => "\<application-name\>".
+2. Retrieve the Code Engine Application's public URL from the  "Details" page for the application in UI. Go to " => Code Engine => Projekte => "\<CE-Project-name-where-Application-resides\>" => "\<application-name\>". Then, select "Domain mappings".
 
 HINT: The source code for a sample function can be found in the folder "./function" of this sample package. 
 
 ==> Use the value of the generated API KEY for the Job's env var CE_TARGET 
 
-### Retrieve Project ID of hosting project
+### Retrieving the Project ID of project
 
-The daemon job has to know the hosting project ID to be able to ensure that only one Job Instance of it is running. 
+You must provide the project ID to the daemon job to ensure that only one instance of the job is running. 
 
-Step by step:
-  - Retrieve the project ID in UI by reading the GUID value of the project in the "Details" dialog of the " => Code Engine => Projekte => "\<CE-Project-name-where-Application-resides\>" page
+Follow these steps:
+  - Retrieve the project ID in UI by reading the GUID value of the project in the "Details" dialog. Go to " => Code Engine => Projecte => "\<CE-Project-name-where-Application-resides\>".
 
 ==> Use the retrieved project ID (GUID) for the Job's env var CE_PROJECT_ID
 
 
-### Get cloudant DB info
+### Retrieving the Cloudant DB information
 
-This sample requires that there is an IBM cloud cloudant DB instance with a service credential and IAM Authentication from which the neccessary values for the job startup can be retrieved. 
+This sample requires an IBM Cloud Cloudant DB instance with a service credential and IAM Authentication from which the neccessary values for the job startup can be retrieved. 
 
-The cloudant-change-listener job must establish a DB connection to the customer's DB. Therefore the following DB settings must be retrieved from the DB instance's service credential: 
+The cloudant-change-listener job must establish a DB connection to the customer's DB. Therefore, the following DB settings must be retrieved from the DB instance's service credential: 
 
 - DB Host URL  ( e.g 33286a6c-ad3e-4d11-909b-e67df631a310-bluemix.cloudantnosqldb.appdomain.cloud)
 - DB Host Port  ( default is : 443)
@@ -100,47 +100,42 @@ The cloudant-change-listener job must establish a DB connection to the customer'
 HINT: Instead of copying the DB settings from the service credential into the environment variable it is possible to use it by service binding. (see: https://cloud.ibm.com/docs/codeengine?topic=codeengine-bind-services). The Cloudant DB service binding to CE Job can only be done after the job creation. 
 ````
 
-## Creation of the Cloudant-Change-Listener job 
+## Creating the Cloudant-Change-Listener job 
 
 The job must be created as daemon job with job index = 0 (the default). 
 
-Create the daemon job following the steps : https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon
-by using the same project_name and job_name as above. 
- - As source code location select the ssh git URL of the cloned repository. ( Atttention: A valid ssh key pair must be registered on GIT repo and in the Job's source location definition )
- - Select the branch of the repository 
+Create the daemon job with the same project_name and job_name previously listed by following these steps: https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon.
+
+ - As source code location, select the SSH GIT URL of the cloned repository. (Atttention: A valid SSH key pair must be registered on GIT repo and in the job's source location definition )
+ - Select the branch of the repository.
  - Provide the foldername ( "cloudant-change-listener") as context if folder structur in own repository is not changed after cloning. 
- - Provide the environment variables with the key/value pairs from above. 
- - Add a environment variable as "full reference to the configmap" and select the configmap created above 
+ - Provide the environment variables with the key/value pairs that you created previously. 
+ - Add a environment variable as "full reference to the configmap" and select the configmap that you created previously.
 
 
 
 ## Running Cloudant-Change-Listener job instance 
 
-A job instance can be started on the "Job"s overview page" with the button "Submit job" dialog of the UI page  " => Code Engine => Projekte => "\<CE-Project-name-where-job-resides\>" => "\<job-name\>".
+Start a job instance from the job "Overview page" by clicking "Submit job" from the UI. Go to  " => Code Engine => Projecte => "\<CE-Project-name-where-job-resides\>" => "\<job-name\>".
 
-On the Job Instances page the job will appear as active. 
-By selecting the "logging" link the log service can be started for this job and the job's output can be observed on the logging page. 
+On the Job Instances page, the job appears as active. 
+By selecting the "logging" link, you can start the log service for this job and you can observe the job's output on the logging page. 
 
+### Stopping and restarting of the job  
 
+You can start and stop the job from the job "Overview page".
 
-### Stop and restart of the job  
+- To stop a running job, select the active job instance and click the "Delete job instance".
+- To start a new job instance, click "Submit" again. The new job instance starts only if the previously running job has completely finished.  (only 1 instance rule)
 
-Stopping and starting can be done on the "Job"s overview page",too. 
+For more information, seed: https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-plan.
 
-- To stop a running Job select the active job instance and use the "delete job instance" button.
-- To start a new job instance use the "submit button" again. The start of a new job instance will only be successful if the previous running job has completely finished.  ( only 1 instance rule )
+### Testing the job 
 
-see also : https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-plan
+The cloudant-change-listener job is immediately starts the listening DB connection. When it appears as active in the job instances list, then it is fully working. 
 
+You can test the job by adding, changing, or deleting any document in the target Cloudant database.
 
-### Testing the Job 
+To verify that the doc change was recorded successfully, check the activated logging page or the output of your Code Engine Function (or app). 
 
-The cloudant-change-listener job is immediately starting the listening DB connection on start. So when it appears as active in the job instances list, then it is fully working. 
-
-Customer can test the job by adding,changing or deleting any document in the cloudant database which is reference in the startup env vars of the job. 
-
-Verification of successful handling of a doc change can be done in the activated logging page or by the output of the customer's Code Engine Function ( or app ). 
-
-The quick-start sample is runnable but not fully production ready. The sample code includes "Customer TODO" sections where a customer may enhance the sample to get a version usable in production.
-
-
+While the quick start sample is runnable as-is, it is not fully production ready. The sample code includes "Customer TODO" sections, where you can enhance the sample to create a version that you can use in production.
