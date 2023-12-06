@@ -39,6 +39,7 @@ export async function getJobConfig(projectId, configMapName) {
   logger.trace(`${fn}> configMapName: '${configMapName}'`);
   const configMap = await getConfigMap(projectId, configMapName);
   logger.trace(`${fn}< configmap '${configMapName}' exists `);
+  return configMap;
 }
 
 export async function updateJobConfig(projectId, configMapName, configDataToUpdate) {

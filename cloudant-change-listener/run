@@ -19,7 +19,7 @@ function clean() {
     ibmcloud ce function unbind --name cloudant-change-listener-function --all
     ibmcloud ce function delete --name cloudant-change-listener-function --force
 
-    ibmcloud ce configmap delete --name cloudant-change-listener-config --force
+    ibmcloud ce configmap delete --name cloudant-change-listener-job-config --force
     ibmcloud ce secret delete --name cloudant-change-listener-credentials --force
     
     ibmcloud ce project delete --name ce-sample-cloudant-change-listener-project --force --hard --no-wait
@@ -133,7 +133,7 @@ echo "Function public endpoint: '$ce_fn_endpoint', internal endpoint: '$ce_fn_en
 
 echo "Creating a config map to store the event state"
 ibmcloud ce configmap create \
-  --name cloudant-change-listener-config \
+  --name cloudant-change-listener-job-config \
   --from-literal DB_LAST_SEQ=now
 if [ $? != 0 ]; then 
     echo "FAILED - The creation of the Code Engine configmap failed"
@@ -170,16 +170,14 @@ fi
 echo "Creating the Code Engine daemon job 'cloudant-change-listener-job' ..."
 ibmcloud ce job create \
   --name cloudant-change-listener-job \
-  --src ./ \
-  --dockerfile Dockerfile \
+  --image icr.io/codeengine/cloudant-change-listener \
   --mode daemon \
   --env DB_NAME=sample-db \
   --env CE_TARGET=$ce_fn_endpoint \
   --env CE_PROJECT_ID=$ce_project_guid \
   --env CE_REGION=$ce_project_region \
-  --env-from-configmap cloudant-change-listener-config \
-  --env-from-secret cloudant-change-listener-credentials \
-  --wait
+  --env-from-configmap cloudant-change-listener-job-config \
+  --env-from-secret cloudant-change-listener-credentials
 if [ $? != 0 ]; then 
     echo "FAILED - The creation of a Code Engine job failed"
     exit 1
