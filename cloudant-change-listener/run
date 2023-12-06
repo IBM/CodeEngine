@@ -243,27 +243,29 @@ echo "Verify job receives the Cloudant event by fetching the job run logs ..."
 
 COUNTER=0
 while true; do 
-  sleep 3
+  echo "Waiting on job to detect change"
+  sleep 5
   foundDetectedChange=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Detected 1 change(s) in the DB")
   foundCalledFunction=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Successfully called CE function")
 
-  if [[ foundDetectedChange  && foundCalledFunction ]]; then 
+  if [[ $foundDetectedChange  && $foundCalledFunction ]]; then 
     echo ""
     echo "That was a success :)"
     break; 
   fi 
   COUNTER=$((COUNTER+1))
-  if (( COUNTER > 60 )); then
-    if [[ foundDetectedChange ]]; then 
+  if (( COUNTER > 20 )); then
+    if [[ ! $foundDetectedChange ]]; then 
       echo "Testing of the sample failed because the change was not detected"
     fi
-    if [[ foundCalledFunction ]]; then 
+    if [[ ! $foundCalledFunction ]]; then 
       echo "Testing of the sample failed because the ce function was not called "
     fi
+    # Clean up
+    clean
     exit 1;
   fi
 done; 
-
 
 # Clean up
 clean
