@@ -160,6 +160,7 @@ is demonstrating.
   [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
   in your IBM Cloud account and run workload on them.
 
+
 #### Function
 
 - [function-inline-nodejs](helloworld-samples/function-inline-nodejs)
@@ -203,7 +204,11 @@ is demonstrating.
 - [kafka](kafka)<br>
   This sample shows how to create a Kafka subscription to automatically have
   messages in a Kafka instances delivered to an application.
-
+- [cloudant-change-listener](cloudant-change-listener)<br>
+  This is a sample of a Cloudant Databases changes listener that continously 
+  listen on all changes in a database. For each change a Code Engine function 
+  is invoked 
+  
 #### Misc
 - [configmaps-env](configmaps-env)<br>
   Shows how to define and inject a ConfigMap as environment variables

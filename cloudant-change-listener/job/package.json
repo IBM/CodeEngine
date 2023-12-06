@@ -1,0 +1,23 @@
+{
+  "name": "cloudant-change-listener",
+  "version": "1.0.0",
+  "description": "Change event listener for cloudant DB",
+  "main": "job.mjs",
+  "engines": {
+    "node": "^20",
+    "npm": "^10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ibm-cloud/cloudant": "^0.8.0",
+    "@ibm-cloud/ibm-code-engine-sdk": "^4.0.0",
+    "ibm-cloud-sdk-core": "^4.2.0",
+    "lru-cache": "^10.0.3",
+    "log4js": "^6.9.1"
+  }
+}
