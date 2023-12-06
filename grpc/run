@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eo pipefail
 
 SERVER_APP_NAME="a-grpc-server"
 CLIENT_APP_NAME="a-grpc-client"
@@ -13,16 +13,15 @@ function clean() {
   ibmcloud ce app delete --name $SERVER_APP_NAME --force --ignore-not-found > /dev/null 2>&1
 }
 
-if [ $# -ge 1 ] && [ -n "$1" ]
-then
-    echo "[INFO] going to clean existing project resources"
-    clean
-    exit 0
-fi
+echo "[INFO] going to clean existing project resources"
+clean
+
+# In case this script has been executed with `./run clean`, we stop right after the cleanup
+[[ "$1" == "clean" ]] && exit 0
 
 # Create the gRPC server app
 echo "[INFO] Creating CE gRPC server application ${SERVER_APP_NAME}"
-ibmcloud ce app create --name "${SERVER_APP_NAME}" --port h2c:8080 --min-scale 1 --build-source . --build-dockerfile Dockerfile.server
+ibmcloud ce app create --name "${SERVER_APP_NAME}" --port h2c:8080 --image icr.io/codeengine/grpc-server --min-scale 0
 
 echo "[INFO] Retrieving gRPC server local endpoint"
 SERVER_INTERNAL_ENDPOINT=$(ibmcloud ce app get -n "${SERVER_APP_NAME}" -o project-url | sed 's/http:\/\///')
@@ -30,7 +29,7 @@ echo "[INFO] Local endpoint is: ${SERVER_INTERNAL_ENDPOINT}"
 
 # Create the client server app
 echo "[INFO] Creating CE client/server application ${CLIENT_APP_NAME}"
-ibmcloud ce app create --name "${CLIENT_APP_NAME}" --min-scale 1 --build-source . --build-dockerfile Dockerfile.client --env LOCAL_ENDPOINT_WITH_PORT="${SERVER_INTERNAL_ENDPOINT}:80"
+ibmcloud ce app create --name "${CLIENT_APP_NAME}" --image icr.io/codeengine/grpc-client --min-scale 0 --env LOCAL_ENDPOINT_WITH_PORT="${SERVER_INTERNAL_ENDPOINT}:80"
 
 # Get the client server public endpoint
 echo "[INFO] Retrieving client/server public endpoint"
@@ -43,17 +42,20 @@ curl -q "${URL}"/listgroceries/food
 
 # Buy an item from food and pay with 5.0 dollars
 echo "[INFO] Going to buy an apple, paying with 5.0 dollars"
-JSON_RESPONSE=$(curl -s "${URL}"/buygrocery/food/apple/5.0 | jq '.success')
-echo "${JSON_RESPONSE}" | jq .
+JSON_RESPONSE=$(curl -s "${URL}"/buygrocery/food/apple/5.0)
+echo "${JSON_RESPONSE}"
 
 # Validate payment operation
 echo "[INFO] Validating payment operation state"
 OPERATION_SUCCEEDED=$(echo "${JSON_RESPONSE}" | jq '.success')
-if [ "${OPERATION_SUCCEEDED}" == "null" ]
+if [ "${OPERATION_SUCCEEDED}" != "true" ]
 then
     echo "[ERROR] Payment failed, bailing out."
+    clean
     exit  1
-else
-    echo "[INFO] Successful payment operation."
-    exit 0
 fi
+
+clean
+
+echo "[INFO] Successful payment operation."
+exit 0
