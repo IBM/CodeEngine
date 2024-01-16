@@ -41,8 +41,8 @@ if ! command -v jq &> /dev/null ; then
 fi
 
 
-echo "Create a new Cloudant instance ..."
-ibmcloud resource service-instance-create CE-Cloudant-SampleDB cloudantnosqldb standard eu-de -p '{"legacyCredentials":"false"}'
+# echo "Create a new Cloudant instance ..."
+# ibmcloud resource service-instance-create CE-Cloudant-SampleDB cloudantnosqldb standard eu-de -p '{"legacyCredentials":"false"}'
 
 echo "Wait for the Cloudant instance to get properly initialized ..."
 COUNTER=0
