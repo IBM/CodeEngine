@@ -150,6 +150,9 @@ is demonstrating.
 - [app2job](app2job)<br>
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
+- [function2job](function2job)<br>
+  This will show how to submit a Job from a Function based on an incoming
+  HTTP request to the Function.
 - [bind-job](bind-job)<br>
   This will create an instance of Event Streams in the IBM Cloud and then ask
   Code Engine to bind it to a Batch Job so we can access it from the Job. The
@@ -161,6 +164,7 @@ is demonstrating.
   The sample shows how a job can be used to spawn
   [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
   in your IBM Cloud account and run workload on them.
+
 
 #### Function
 
@@ -205,7 +209,11 @@ is demonstrating.
 - [kafka](kafka)<br>
   This sample shows how to create a Kafka subscription to automatically have
   messages in a Kafka instances delivered to an application.
-
+- [cloudant-change-listener](cloudant-change-listener)<br>
+  This is a sample of a Cloudant Databases changes listener that continously 
+  listen on all changes in a database. For each change a Code Engine function 
+  is invoked 
+  
 #### Misc
 - [configmaps-env](configmaps-env)<br>
   Shows how to define and inject a ConfigMap as environment variables

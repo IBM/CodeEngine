@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# Clean up previous run
+function clean() {
+  echo Cleaning...
+  (
+  ibmcloud ce secret delete --name f2j-secret --force
+  ibmcloud ce job delete --name f2j-job --force
+  ibmcloud ce fn delete --name f2j-function --force
+  ibmcloud iam service-id-delete ce-sample-function-to-job --force
+  ) > /dev/null 2>&1
+}
+
+clean
+
+# In case this script has been executed with `./run clean`, we stop right after the cleanup
+[[ "$1" == "clean" ]] && exit 0
+
+# Ensure that jq tool is installed 
+if ! command -v jq &> /dev/null ; then
+    echo "FAILED - 'jq' tool is not installed"
+    exit  1
+fi
+
+# Show the user account
+ibmcloud account show
+if [ $? != 0 ]; then 
+    echo "FAILED - User must be logged in into IBM Cloud CLI"
+    exit 1
+fi 
+
+echo "Obtain the current project ..."
+project=$(ibmcloud ce proj current --output json)
+if [ -z "$project" ]; then 
+  echo "FAILED - Selecting the current project failed"
+  exit 1
+fi
+ce_project_guid=$(echo $project|jq -r '.guid')
+
+# See Code Engine docs: Managing user access (https://cloud.ibm.com/docs/codeengine?topic=codeengine-iam#service)
+echo "Creating an IAM ServiceID that contains a policy to access the Code Engine project '${ce_project_guid}' ..."
+ibmcloud iam service-id-create ce-sample-function-to-job --description "Service ID to operate towards the Code Engine project ${ce_project_guid}"
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the IAM serviceID failed"
+    exit 1
+fi 
+ibmcloud iam service-policy-create ce-sample-function-to-job --roles Writer --service-name codeengine --service-instance ${ce_project_guid}
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the IAM serviceID policy failed"
+    exit 1
+fi 
+ce_api_key=$(ibmcloud iam service-api-key-create codeengine-api-key ce-sample-function-to-job --description "API key for serviceID ce-${ce_project_guid}-api-credentials for Code Engine project ${ce_project_guid}" --output JSON|jq -r '.apikey')
+if [ -z "$ce_api_key" ]; then 
+  echo "FAILED - The creation of the IAM serviceID APIKey failed"
+  exit 1
+fi
+
+echo "Create a secret that holds the API key"
+ibmcloud ce secret create --name f2j-secret --from-literal CE_API_KEY=${ce_api_key}
+
+# Create the function
+ibmcloud ce fn create \
+  --name f2j-function \
+  --runtime nodejs-18 \
+  --inline-code fn.js \
+  --env-from-secret f2j-secret \
+  --env CE_REGION=$(echo $project|jq -r '.region_id') \
+  --env CE_PROJECT_ID=$(echo $project|jq -r '.guid') \
+  --env CE_JOB_NAME=f2j-job
+if [ $? != 0 ]; then 
+    echo "FAILED - The creation of the Code Engine function failed"
+    exit 1
+fi 
+
+echo "Waiting for the function to get properly initialized ..."
+ce_fn_endpoint="null"
+ce_fn_endpoint_internal="null"
+
+COUNTER=0
+while [ "$ce_fn_endpoint" == "null" ]
+do
+  ce_fn_endpoint=$(ibmcloud ce fn get --name f2j-function -o json | jq -r '.endpoint')
+  ce_fn_endpoint_internal=$(ibmcloud ce fn get --name f2j-function -o json | jq -r '.endpoint_internal')
+  sleep 2
+  # wait max 3 min for the function to get initialized
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 90 )); then
+    echo "FAILED - The creation of a Code Engine function failed"
+    exit 1
+  fi
+done
+echo "Function public endpoint: '$ce_fn_endpoint'"
+
+echo "Creating the job ..."
+ibmcloud ce job create -n f2j-job --src . --dockerfile Dockerfile --env FOO=BAR --wait
+
+echo "Now, curl the function and see if it submits the job run: 'curl -s ${URL}?greeting=hello'"
+job_run=$(curl -s ${ce_fn_endpoint}?greeting=hello|jq -r '.job_run')
+if [ -z "$job_run" ]; then 
+  echo "FAILED - The submission of the Code Engine daemon job failed"
+  exit 1
+fi
+
+while ! ibmcloud ce jobrun get -n ${job_run} | grep "Succeeded.*" ; do
+  sleep 2
+done
+
+echo "Verify job ran ok by fetching it logs ..."
+COUNTER=0
+while true; do 
+  sleep 3
+  foundGreeting=$(ibmcloud ce jobrun logs -n ${job_run} | grep "greeting.*")
+
+  if [[ foundGreeting ]]; then 
+    echo ""
+    echo "logline: '${foundGreeting}'"
+    echo "That was a success :)"
+    break; 
+  fi 
+  COUNTER=$((COUNTER+1))
+  if (( COUNTER > 60 )); then
+    echo "Testing of the sample failed because the greeting has not been logged in the job log"
+    exit 1;
+  fi
+done; 
+
+# Clean up
+clean
