@@ -8,6 +8,11 @@ const nextConfig = {
       },
     ];
   },
+  experimental: {
+    // to avoid timeouts between the next.js and the flask api, 
+    // we increase the proxyTimeout to 2 minutes. 
+    proxyTimeout: 120_000,
+  },
 };
 
 module.exports = nextConfig;

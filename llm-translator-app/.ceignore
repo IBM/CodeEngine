@@ -9,3 +9,6 @@ node_modules/
 
 # Ignore the Python cache
 api/__pycache__
+
+# Ignore the git directory
+.git

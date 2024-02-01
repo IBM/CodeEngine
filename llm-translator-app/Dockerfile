@@ -19,11 +19,6 @@ ENV PATH      $NVM_DIR/versions/node/lts/bin:$PATH
 # Define the working dir
 WORKDIR /app
 
-# Download the model during the container build operation
-RUN git clone https://huggingface.co/Helsinki-NLP/opus-mt-de-en \
-    && (cd opus-mt-de-en && rm README.md rust_model.ot && rm -rf .git)
-
-
 # Copy your Code and the Dockerfile descriptor
 COPY . .
 
@@ -32,8 +27,16 @@ RUN npm install \
     && npm run build \
     && pip3 install -r requirements.txt
 
+
+# Download the model and use it once,
+# during the container build operation
+RUN git clone https://huggingface.co/Helsinki-NLP/opus-mt-de-en \
+    && (cd opus-mt-de-en && rm README.md rust_model.ot && rm -rf .git) \
+    && python3 init-nlp-model.py
+
+
 # Disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Command to starts
+# Command to start the app within the container
 CMD ["npm","run","start"]

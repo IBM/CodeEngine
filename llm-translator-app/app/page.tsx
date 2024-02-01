@@ -81,7 +81,7 @@ export default function Home() {
           />
         </Column>
         <Column sm={4} md={8} lg={12} id="license-attribution">
-          <p>
+          <div>
             <a target="_blank" href="https://huggingface.co/Helsinki-NLP/opus-mt-de-en">
               OPUS-MT-de-en
             </a>{" "}
@@ -89,7 +89,7 @@ export default function Home() {
             <a target="_blank" href="https://choosealicense.com/licenses/apache-2.0/">
               licensed under Apache 2.0
             </a>
-          </p>
+          </div>
         </Column>
       </Grid>
     </main>
