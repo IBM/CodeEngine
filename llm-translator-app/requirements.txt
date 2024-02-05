@@ -1,0 +1,4 @@
+Flask
+transformers
+sacremoses
+sentencepiece
