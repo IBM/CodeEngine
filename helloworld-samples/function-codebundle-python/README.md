@@ -1,6 +1,6 @@
 # Python Function with additional modules
 
-A sample Python function that uses a external pip module.
+A sample Python function that uses an external pip module referenced by the requirements.txt file 
 
 Deploy the function straight to Code Engine by running the following command from this directory
 
