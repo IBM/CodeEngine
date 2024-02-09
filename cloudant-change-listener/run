@@ -40,23 +40,7 @@ function clean() {
     ibmcloud iam service-id-delete ce-sample-cloudant-change-listener-api-credentials --force
     ibmcloud resource service-key-delete cloudant-creds-ce-project --force
 
-    # Iterate over all service instances that are called 'CE-Cloudant-SampleDB' and delete them
-#    cloudant_dbs=$(ibmcloud resource search 'name:CE-Cloudant-SampleDB' --output JSON | jq -r '.items')
-#    if [[ $cloudant_dbs == '[]' ]]; then
-#      echo "No Cloudant instances that needs to get cleaned up!"
-#    else
-      # Encoding each line as base64 helps to iterate over JSON objects within a bash script
-#      for cloudant_db in $(echo "${cloudant_dbs}" | jq -r '.[] | @base64'); do
-        # Use this inner function to decode the base64 encoded JSON object and extract property values
-        # from the Cloudant instance, such as name, or crn
-#        _jqCloudantDb() {
-#          echo ${cloudant_db} | base64 --decode | jq -r ${1}
-#        }
-#        ibmcloud resource service-instance-delete $(_jqCloudantDb '.crn') --force
-#      done
-#    fi
   )
-#   ) >/dev/null 2>&1
   echo Cleaning DONE ...
   echo "==================================================================================" 
 }
@@ -66,10 +50,8 @@ clean
 # In case this script has been executed with `./run clean`, we stop right after the cleanup
 [[ "$1" == "clean" ]] && exit 0
 
-# echo "Create a new Cloudant instance ..." ( Feb. 2024: Re-designed to use a pre-created DB with must be available in the account )
-##  ibmcloud resource service-instance-create CE-Cloudant-SampleDB cloudantnosqldb standard eu-de -p '{"legacyCredentials":"false"}'
 
-echo "Wait for the Cloudant instance to get properly initialized ..."
+echo "Check if a Cloudant instance 'CE-Cloudant-SampleDB' is properly initialized ..."
 COUNTER=0
 
 while !  ibmcloud resource service-instance CE-Cloudant-SampleDB| grep "active"; do
