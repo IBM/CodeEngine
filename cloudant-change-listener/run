@@ -16,39 +16,33 @@ ibmcloud plugin install code-engine -f
 
 # Clean up previous run
 function clean() {
-  echo Cleaning...
+  echo "=================================================================================="
+  echo "Cleaning... (FAILED results are expected for NON-existing elements while cleaning)"
   (
-    ibmcloud ce jobrun delete --job cloudant-change-listener-job --force
-    ibmcloud ce job unbind --name cloudant-change-listener-job --all
-    ibmcloud ce job delete --name cloudant-change-listener-job --force
+    ## first select the project with the name like is was created in last session
+    #  if project does not exist, then there is no need to delete the artifacts 
+    # within the project  
+    ibmcloud ce project select --name ce-sample-cloudant-change-listener-project
+    if [ $? == 0 ]; then
+      ibmcloud ce jobrun delete --job cloudant-change-listener-job --force
+      ibmcloud ce job unbind --name cloudant-change-listener-job --all
+      ibmcloud ce job delete --name cloudant-change-listener-job --force
 
-    ibmcloud ce function unbind --name cloudant-change-listener-function --all
-    ibmcloud ce function delete --name cloudant-change-listener-function --force
+      ibmcloud ce function unbind --name cloudant-change-listener-function --all
+      ibmcloud ce function delete --name cloudant-change-listener-function --force
 
-    ibmcloud ce configmap delete --name cloudant-change-listener-job-config --force
-    ibmcloud ce secret delete --name cloudant-change-listener-credentials --force
+      ibmcloud ce configmap delete --name cloudant-change-listener-job-config --force
+      ibmcloud ce secret delete --name cloudant-change-listener-credentials --force
 
-    ibmcloud ce project delete --name ce-sample-cloudant-change-listener-project --force --hard --no-wait
+      ibmcloud ce project delete --name ce-sample-cloudant-change-listener-project --force --hard --no-wait
+    fi
+    
     ibmcloud iam service-id-delete ce-sample-cloudant-change-listener-api-credentials --force
     ibmcloud resource service-key-delete cloudant-creds-ce-project --force
 
-    # Iterate over all service instances that are called 'CE-Cloudant-SampleDB' and delete them
-    cloudant_dbs=$(ibmcloud resource search 'name:CE-Cloudant-SampleDB' --output JSON | jq -r '.items')
-    if [[ $cloudant_dbs == '[]' ]]; then
-      echo "No Cloudant instances that needs to get cleaned up!"
-    else
-      # Encoding each line as base64 helps to iterate over JSON objects within a bash script
-      for cloudant_db in $(echo "${cloudant_dbs}" | jq -r '.[] | @base64'); do
-        # Use this inner function to decode the base64 encoded JSON object and extract property values
-        # from the Cloudant instance, such as name, or crn
-        _jqCloudantDb() {
-          echo ${cloudant_db} | base64 --decode | jq -r ${1}
-        }
-        ibmcloud resource service-instance-delete $(_jqCloudantDb '.crn') --force
-      done
-    fi
-
-  ) >/dev/null 2>&1
+  )
+  echo Cleaning DONE ...
+  echo "==================================================================================" 
 }
 
 clean
@@ -57,13 +51,10 @@ clean
 [[ "$1" == "clean" ]] && exit 0
 
 
-# echo "Create a new Cloudant instance ..."
-#ibmcloud resource service-instance-create CE-Cloudant-SampleDB cloudantnosqldb standard eu-de -p '{"legacyCredentials":"false"}'
-
-echo "Wait for the Cloudant instance to get properly initialized ..."
+echo "Check if a Cloudant instance 'CE-Cloudant-SampleDB' is properly initialized ..."
 COUNTER=0
 
-while ! ibmcloud resource service-instance CE-Cloudant-SampleDB | grep "active"; do
+while !  ibmcloud resource service-instance CE-Cloudant-SampleDB| grep "active"; do
   sleep 5
   # wait max 3 min to get a cloudant DB instance
   COUNTER=$((COUNTER + 1))
@@ -91,18 +82,27 @@ if [ -z "$cloudant_url" ]; then
   exit 1
 fi
 
-echo "Creating the database 'sample-db' within Cloudant instance '$cloudant_instance_name' ..."
-echo "using cloudant API  https://cloud.ibm.com/apidocs/cloudant#putdatabase"
+echo ""
+echo "Create an access token to work with the cloudant DB system "
 iam_access_token=$(ibmcloud iam oauth-tokens --output JSON | jq -r '.iam_token')
 if [ -z "$iam_access_token" ]; then
   echo "FAILED - The IAM access token of the current CLI session could not be obtained"
   exit 1
 fi
+
+echo ""
+echo "Try to delete the sample-db Cloudant database if exists from a previous run "
+curl -H "Authorization: $iam_access_token" -X DELETE "$cloudant_url/sample-db" 
+
+echo "Creating a new database 'sample-db' within Cloudant instance '$cloudant_instance_name' ..."
+echo "using cloudant API  https://cloud.ibm.com/apidocs/cloudant#putdatabase"
 curl -H "Authorization: $iam_access_token" -X PUT "$cloudant_url/sample-db"
 if [ $? != 0 ]; then
   echo "FAILED - The creation of the Cloudant database failed"
   exit 1
 fi
+
+
 
 echo "Creating Code Engine project 'ce-sample-cloudant-change-listener-project' ..."
 ibmcloud ce proj create --name ce-sample-cloudant-change-listener-project
@@ -227,6 +227,7 @@ fi
 
 echo "Starting the daemon job ..."
 job_run_name=$(ibmcloud ce jobrun submit --job cloudant-change-listener-job --output json | jq -r '.metadata|.name')
+echo "with job id = $job_run_name"
 if [ -z "$job_run_name" ]; then
   echo "FAILED - The submission of the Code Engine daemon job failed"
   exit 1
@@ -244,6 +245,9 @@ while ! ibmcloud ce jobrun get -n ${job_run_name} | grep "1/1" | grep "Running";
   fi
 
 done
+sleep 2
+
+
 
 echo "Upload a file to the Cloudant database ..."
 curl -H "Authorization: $iam_access_token" -X POST "$cloudant_url/sample-db" -H "Content-Type: application/json" --data '{
@@ -261,7 +265,7 @@ while true; do
   echo "Waiting on job to detect change"
   sleep 5
   foundDetectedChange=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Detected 1 change(s) in the DB")
-  foundCalledFunction=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Successfully called CE function")
+  foundCalledFunction=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Successfully called CE")
 
   if [[ $foundDetectedChange && $foundCalledFunction ]]; then
     echo ""
