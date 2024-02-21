@@ -1,0 +1,23 @@
+name: Deploy App to Code Engine
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Deploy Application to Code Engine
+      uses: ibm/code-engine-github-action@v1
+      with:
+        api-key: ${{ secrets.IBM_IAM_API_KEY }}
+        region: 'eu-de'
+        project: 'MY-PROJECT'
+        component: 'app'
+        name: 'my-ce-app'
+        build-source: './my-ce-app'
