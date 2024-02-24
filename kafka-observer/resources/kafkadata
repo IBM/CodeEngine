@@ -1,0 +1,8 @@
+payments:
+  partitions: 4
+  jobs:
+    - payments-consumer
+shipping:
+  partitions: 3
+  jobs:
+    - shipping-consumer
