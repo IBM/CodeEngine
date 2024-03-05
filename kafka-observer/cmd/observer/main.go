@@ -24,18 +24,31 @@ var (
 	projectID string
 )
 
+type KeyedMutex struct {
+	mutexes sync.Map // Zero value is empty and ready for use
+}
+
+func (m *KeyedMutex) Lock(key string) func() {
+	value, _ := m.mutexes.LoadOrStore(key, &sync.Mutex{})
+	mtx := value.(*sync.Mutex)
+	mtx.Lock()
+
+	return func() { mtx.Unlock() }
+}
+
 // Consumer implements the ConsumerGroupHandler
 // interface
 type Consumer struct {
-	ready     chan bool
-	ce        *codeenginev2.CodeEngineV2
-	topicToJD map[string]cmd.TopicsToJobs
-	sync.Mutex
+	ready      chan bool
+	ce         *codeenginev2.CodeEngineV2
+	topicToJD  map[string]cmd.TopicsToJobs
+	keyedMutex *KeyedMutex
 }
 
 func main() {
 
 	config := cmd.GetConfig()
+	km := &KeyedMutex{}
 
 	keepRunning := true
 	log.Println("Starting a new Kafka observer")
@@ -82,9 +95,10 @@ func main() {
 	saramaConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
 
 	consumer := Consumer{
-		ready:     make(chan bool),
-		ce:        ceService,
-		topicToJD: config.KafkaCE,
+		ready:      make(chan bool),
+		ce:         ceService,
+		topicToJD:  config.KafkaCE,
+		keyedMutex: km,
 	}
 
 	brokers := config.Kafka.Brokers
@@ -114,7 +128,7 @@ func main() {
 	}()
 
 	<-consumer.ready
-	log.Println("Sarama consumer up and running, listening to topics : ", config.Kafka.Topics)
+	log.Println("Observer up and running, listening to topics : ", config.Kafka.Topics)
 
 	sigusr1 := make(chan os.Signal, 1)
 	signal.Notify(sigusr1, syscall.SIGUSR1)
@@ -188,7 +202,8 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 						log.Panicf("No of partitions not defined for the topic %s", consumer.topicToJD[message.Topic])
 					}
 					// Adding lock to avoid creation of jobruns by multiple threads at the same time
-					consumer.Lock()
+					// consumer.Lock()
+					unlock := consumer.keyedMutex.Lock(name)
 					indices := getIndicesTobeCreated(consumer.ce, name, desiredPartitions)
 					if indices != "" {
 						err := CreateJobrun(consumer.ce, name, indices)
@@ -199,7 +214,8 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 							return
 						}
 					}
-					consumer.Unlock()
+					// consumer.Unlock()
+					unlock()
 				}(jd)
 			}
 			wg.Wait()
