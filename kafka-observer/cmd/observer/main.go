@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -50,6 +51,10 @@ func main() {
 	config := cmd.GetConfig()
 	km := &KeyedMutex{}
 
+	if err := validateConfigKafkaCE(config); err != nil {
+		log.Panicf("Error detected in the current observer configuration: %v", err)
+	}
+
 	keepRunning := true
 	log.Println("Starting a new Kafka observer")
 
@@ -59,12 +64,12 @@ func main() {
 
 	ceService, err := GetCodeengineService(config.CEClient)
 	if err != nil {
-		log.Panicf("could not get the codeengine service")
+		log.Panic("failed to construct a CodeEngine API client")
 	}
 
 	projectID = os.Getenv("CE_PROJECT_ID")
 	if projectID == "" {
-		log.Panicf("CE_PROJECT_ID is not set")
+		log.Panic("CE_PROJECT_ID is not set")
 	}
 
 	observerConsumerGroup := os.Getenv("OBSERVER_CONSUMER_GROUP")
@@ -106,7 +111,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(brokers, observerConsumerGroup, saramaConfig)
 	if err != nil {
-		log.Panicf("Error creating consumer group client: %v", err)
+		log.Panicf("Error creating %s consumer group client: %v", observerConsumerGroup, err)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -128,7 +133,7 @@ func main() {
 	}()
 
 	<-consumer.ready
-	log.Println("Observer up and running, listening to topics : ", config.Kafka.Topics)
+	log.Printf("Observer up and running, listening to topics: %v\n", config.Kafka.Topics)
 
 	sigusr1 := make(chan os.Signal, 1)
 	signal.Notify(sigusr1, syscall.SIGUSR1)
@@ -191,30 +196,26 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 			wg := &sync.WaitGroup{}
 
+			var indices string
+			var err error
 			// jobrun creation happens inside a goroutine with a wait group
 			for _, jd := range topicConfig.Jobs {
 				wg.Add(1)
 				go func(name string) {
 					defer wg.Done()
-					// check Jobrun if it is already running
-					desiredPartitions, err := strconv.ParseInt(consumer.topicToJD[message.Topic].Partitions, 10, 64)
-					if err != nil {
-						log.Panicf("No of partitions not defined for the topic %s", consumer.topicToJD[message.Topic])
-					}
 					// Adding lock to avoid creation of jobruns by multiple threads at the same time
-					// consumer.Lock()
 					unlock := consumer.keyedMutex.Lock(name)
-					indices := getIndicesTobeCreated(consumer.ce, name, desiredPartitions)
+					if indices, err = getArrayDesiredIndices(consumer.ce, name, consumer.topicToJD[message.Topic].Partitions); err != nil {
+						log.Panicf("Error calculating desired array indices: %v", err)
+					}
 					if indices != "" {
 						err := CreateJobrun(consumer.ce, name, indices)
 						if err != nil {
 							failuresCounter++
-							log.Printf("creating Jobrun %s failed", name)
-							log.Println(err.Error())
+							log.Printf("creating Jobrun %s failed: %v", name, err)
 							return
 						}
 					}
-					// consumer.Unlock()
 					unlock()
 				}(jd)
 			}
@@ -240,12 +241,12 @@ func GetCodeengineService(ceConfig cmd.CEClient) (*codeenginev2.CodeEngineV2, er
 		ApiKey:       ceConfig.IamApiKey,
 		ClientId:     "bx",
 		ClientSecret: "bx",
-		URL:          "https://iam.test.cloud.ibm.com",
+		URL:          "https://iam.test.cloud.ibm.com", //TODO: needs to be dynamic configurable
 	}
 
 	codeEngineService, err := codeenginev2.NewCodeEngineV2(&codeenginev2.CodeEngineV2Options{
 		Authenticator: authenticator,
-		URL:           "https://api." + "dev-serving.codeengine.dev.cloud.ibm.com/v2",
+		URL:           "https://api." + "dev-serving.codeengine.dev.cloud.ibm.com/v2", //TODO: needs to be dynamic configurable
 	})
 	if err != nil {
 		log.Printf("NewCodeEngineV2 error: %s\n", err.Error())
@@ -308,8 +309,8 @@ func CreateJobrun(codeEngineService *codeenginev2.CodeEngineV2, job string, arra
 	return nil
 }
 
-// getIndicesTobeCreated returns the arrayspec for a jobrun based on existing pods
-func getIndicesTobeCreated(codeEngineService *codeenginev2.CodeEngineV2, jobName string, partitions int64) string {
+// getArrayDesiredIndices returns the arrayspec for a jobrun based on JobRun array indices
+func getArrayDesiredIndices(codeEngineService *codeenginev2.CodeEngineV2, jobName string, partitions int64) (string, error) {
 	var alreadyCreated int64
 	listJobRunsOptions := &codeenginev2.ListJobRunsOptions{
 		ProjectID: core.StringPtr(projectID),
@@ -319,7 +320,7 @@ func getIndicesTobeCreated(codeEngineService *codeenginev2.CodeEngineV2, jobName
 
 	pager, err := codeEngineService.NewJobRunsPager(listJobRunsOptions)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	var allResults []codeenginev2.JobRun
@@ -332,7 +333,8 @@ func getIndicesTobeCreated(codeEngineService *codeenginev2.CodeEngineV2, jobName
 	}
 
 	if len(allResults) == 0 {
-		return "0-" + strconv.FormatInt((partitions-1), 10)
+		log.Printf("new desired array indices value: %v", strconv.Itoa(int(partitions)))
+		return fmt.Sprintf("0-%v", partitions-1), nil
 	}
 
 	for _, jr := range allResults {
@@ -350,8 +352,19 @@ func getIndicesTobeCreated(codeEngineService *codeenginev2.CodeEngineV2, jobName
 	}
 	newpods := partitions - alreadyCreated
 	if newpods <= 0 {
-		return ""
+		log.Printf("already created JobRuns instances are sufficient, nothing to do.")
+		return "", nil
 	}
-	reqArraySpec := "0-" + strconv.FormatInt(newpods-1, 10)
-	return reqArraySpec
+	reqArraySpec := fmt.Sprintf("0-%v", newpods-1)
+	log.Printf("new desired array indices value: %v", reqArraySpec)
+	return reqArraySpec, nil
+}
+
+func validateConfigKafkaCE(c cmd.Config) error {
+	for topic, topicsToJobs := range c.KafkaCE {
+		if len(topicsToJobs.Jobs) == 0 || topicsToJobs.Partitions == 0 {
+			return fmt.Errorf("topic %s, is missing jobs or partitions definition, please verify your configmap values", topic)
+		}
+	}
+	return nil
 }

@@ -37,7 +37,7 @@ type Kafka struct {
 }
 
 type TopicsToJobs struct {
-	Partitions string   `json:"partitions"`
+	Partitions int64    `json:"partitions"`
 	Jobs       []string `json:"jobs"`
 }
 
