@@ -2,58 +2,93 @@
 
 ## Introduction
 
-This sample demonstrates how you can use IBM Cloud Code Engine and IBM Cloud Event Streams to efficiently consume events. This sample has two components, an observer and a consumer.
+This sample demonstrates how you can use IBM Cloud Code Engine to consume streams of messages from an Apache Kafka Service, such as IBM Cloud Event Streams.
 
-Here is the architecture diagram for this sample.
+The architecture of this sample consists of an **observer** and a **consumer**, implementing a _wake-up_ mechanism, that provides an efficient and serverless way for your consumers to run.
+
+See the following diagram:
 
 ![Architecture Diagram](images/kafkapoc.jpg)
 
-Here the observer is a code engine job which will run all the time, and it will look for events from multiple topics from the IBM Cloud Event streams instance. Once it gets a message/event from it, the observer triggers the consumer jobruns which will consume the events.
+### Observer
 
-So here the observer works as a wake up mechanism for triggering the consumer jobruns, eliminating the need for your consumers to constantly check for the events.
+The **observer** is a Code Engine Job operating in Daemonset mode. At runtime, it dynamically creates a new consumer group based on provided Kafka Broker addresses and configurations (_including Kafka Topics_), persistently waiting for incoming messages to be claimed from a Kafka Broker.
 
-The number of consumer jobruns triggered by the observer can be configured in this [config file](resources/kafkadata)
-
-Here in this sample, the consumer is configured in such a way that once it begins consuming the events, it will automatically be terminated if it doesn't get any messages within one-minute timeframe.
-
-// TODO: we need to decide where we configure the consumer groups for the consumers, it would be better, if can configure it in the kafkadata file.
-
-Also, you can configure multiple consumers with different consumer groups for a topic.
+When a new message is claimed from a specific Kafka Topic, the **observer** wakes-up the corresponding **consumer** Job, by submitting a JobRun. The decision on which **consumer** Job to wake-up depends on the Topic the **consumer** Job is using. This wake-up mechanism allows **consumer** Jobs to only run when needed, optimizing resource consumption in a serverless fashion.
 
 
-## Prerequisites to run this sample :
+### Consumer
 
-- You should have your [IBM Cloud Events streams](https://cloud.ibm.com/eventstreams-provisioning/6a7f4e38-f218-48ef-9dd2-df408747568e/create) instance ready. Also, you have to create the topics from which the messages will be consumed.
+The **consumer** is a Code Engine Job operating in Daemonset mode. Unlike the observer, the **consumer** runs only in response to incoming messages within the desired Kafka Topics. Once running, it will gracefully shutdown within one minute, if none further messages are claimed.
 
-- Create a [IBM Cloud Codeengine project](https://cloud.ibm.com/docs/codeengine?topic=codeengine-manage-project#create-a-project).
+In this sample, we provided a native Kafka client implementation written in Go. Code Engine users can opt-in for other native clients using different runtimes, such as Java, when implementing their **consumer** logic.
 
-- Add the topics and jobDefinitions in the [kafkadata](resources/kafkadata) file. Template for Kafkadata file is:
 
-```
-<topic-name-1>
-  partitions: <number-of-desired-pods>
+## Requirements
+
+To successfully run this sample, some resources are required in advance and some mandatory input data.
+
+### IBM Cloud Resources:
+
+We require a Kafka Service for producing and consuming events, and a Code Engine Project, to deploy our observer pattern:
+
+- An [IBM Cloud Events streams](https://cloud.ibm.com/eventstreams-provisioning/6a7f4e38-f218-48ef-9dd2-df408747568e/create) instance. The ES instance should have the following topics:
+  - `payments` Topic with `4` partitions.
+  - `shipping` Topic with `3` partitions.
+
+- An [IBM Cloud Codeengine project](https://cloud.ibm.com/docs/codeengine?topic=codeengine-manage-project#create-a-project).
+
+- An application producing Kafka messages is required. You can easily create one within your Code Engine Project. See our [tutorial](https://cloud.ibm.com/docs/codeengine?topic=codeengine-subscribe-kafka-tutorial).
+
+### Input Data
+
+Before running the sample `run.sh` script, a user must define a set of environment variables locally, for proper authentication and creation of additional resources:
+
+- `IAM_API_KEY`: Required for the **observer** to authenticate to the CE Project. See the [docs](https://cloud.ibm.com/docs/account?topic=account-manapikey)
+- `BROKERS`: Defined in your Event Streams Service Credentials under `.kafka_brokers_sasl`. A comma separated list of broker endpoints.
+- `KAFKA_USER`: Defined in your Event Streams Service Credentials under `.user`.  
+- `KAFKA_TOKEN`: Defined in your Event Streams Service Credentials under `.password`.
+
+## Observer to Consumer Mapping
+
+Prior to running our Code Engine sample, we must establish the relationship between the **observer**, **consumers** and Kafka. For the sample, this is already done for you, but here we explain the rational.
+
+The mapping is defined via the following [kafkadata](resources/kafkadata) file, which is embedded into a configmap later and mounted into our **observer** Pod as an environment variable:
+
+```yaml
+payments:
+  partitions: 4
   jobs:
-  - <consumer-job-name-1>
-  - <consumer-job-name-2>
-<topic-name-2>
-  partitions: <number-of-desired-pods>
+    - payments-consumer
+shipping:
+  partitions: 3
   jobs:
-  - <consumer-job-name>
+    - shipping-consumer
 ```
 
-- Set the required fields in the [run.sh](run.sh) file
+The above is explained as follows:
+- `.payments` and `.shipping` correspond to the existing Topics of interest within the same Kafka instance.
+- `.payments.partitions` and `.shipping.partitions` correspond to the partition size of the Kafka Topics.
+- `.payments.jobs` and `.shipping.jobs` correspond to the CodeEngine **consumer** Jobs that want to consume messages from the related Kafka Topic.
 
-- To test this sample, you need a producer which can send messages to the kafka topics, if you don't have you can create it in your code engine project by following the steps in this [doc](https://cloud.ibm.com/docs/codeengine?topic=codeengine-subscribe-kafka-tutorial).
+As an example, if you have one single Topic `foobar` with `2` partitions and you want CE Job `foobar-consumer` to consume from it, this is how the `kafkadata` file will look:
 
-## Running this sample
+```yaml
+foobar:
+  partitions: 2
+  jobs:
+    - foobar-consumer
+```
 
-1. Login to ibm cloud
+## Running the Sample
+
+1. Login to IBM Cloud
 
 ```
 ibmcloud login --apikey <IBMCLOUD_API_KEY> -r <REGION_OF_CE_PROJECT> -g <RESOURCE_GROUP>
 ```
 
-2. Select the code engine project.
+2. Select the Code Engine Project.
 ```
 ibmcloud ce project select --name <CE_PROJECT_NAME>
 ```
@@ -63,16 +98,12 @@ ibmcloud ce project select --name <CE_PROJECT_NAME>
 ./run.sh
 ```
 
-Once you execute `run.sh`, it will create the necessary resources in your code engine project like secrets, configmaps, jobs etc and will start the observer in your codeengine project. Now you can send messages using your producer to the kafka topics, then the observer will watch for messages and runs the corresponding consumer jobruns based on the configuration in the [kafkadata](resources/kafkadata) file. 
+Once you execute `run.sh`, the script will create the necessary resources in your Code Engine Project. For this sample, you will see three different Jobs, one for the **observer** and two for the **consumers**. In addition, the **observer** Jobrun will be up and running.
 
-**_NOTE:_**
-If you created the producer app using the steps mentioned in the prerequisites, then you can run this command to send the events:
+Now you can send messages using your producer to the Kafka Topics. The **observer** will watch for messages and will submit the corresponding **consumer** JobRuns based on the configuration in the [kafkadata](resources/kafkadata) file.
 
-```
-curl "<public_URL_of_Kafka_sender_app>?topic=<your_topic_name>&num=<number_of_messages_to_produce>"
-```
+4. You can clean the resources in the Code Engine Project as part of this sample, as follows:
 
-You can clean the resources in the codeengine project by running this command
 ```
 ./run.sh clean
 ```
