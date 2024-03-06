@@ -4,7 +4,7 @@
 
 This sample demonstrates how you can use IBM Cloud Code Engine to consume streams of messages from an Apache Kafka Service, such as IBM Cloud Event Streams.
 
-The architecture of this sample consists of an **observer** and a **consumer**, implementing a _wake-up_ mechanism, that provides an efficient and serverless way for your consumers to run.
+The architecture of this sample consists of an **observer** and a **consumer**, implementing a _wake-up_ mechanism, that provides an efficient and serverless way for your Kafka consumers to run.
 
 See the following diagram:
 
@@ -45,9 +45,7 @@ We require a Kafka Service for producing and consuming events, and a Code Engine
 Before running the sample `run.sh` script, a user must define a set of environment variables locally, for proper authentication and creation of additional resources:
 
 - `IAM_API_KEY`: Required for the **observer** to authenticate to the CE Project. See the [docs](https://cloud.ibm.com/docs/account?topic=account-manapikey)
-- `BROKERS`: Defined in your Event Streams Service Credentials under `.kafka_brokers_sasl`. A comma separated list of broker endpoints.
-- `KAFKA_USER`: Defined in your Event Streams Service Credentials under `.user`.  
-- `KAFKA_TOKEN`: Defined in your Event Streams Service Credentials under `.password`.
+- `ES_SERVICE_INSTANCE`: Required for the run.sh script, to identify the Event Streams instance name to use, in order to bind it to the Code Engine **observer** and **consumer** Jobs. This allow the JobRuns to automatically get all authentication data of the Event Streams instance at runtime.
 
 ## Observer to Consumer Mapping
 

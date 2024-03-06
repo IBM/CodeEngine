@@ -16,32 +16,25 @@ CONSUMER_JOB_NAME_2="shipping-consumer"
 OBSERVER_JOB_NAME="ce-kafka-observer"
 OBSERVER_JR_NAME="kafka-observer"
 
-# Mandatory data Vars provided by user
+# Mandatory variables provided by user
 IAM_API_KEY=${IAM_API_KEY:-foobar}
-BROKERS=${BROKERS:-foobar}
-KAFKA_USER=${KAFKA_USER:-foobar}
-KAFKA_TOKEN=${KAFKA_TOKEN:-foobar}
+ES_SERVICE_INSTANCE=${ES_SERVICE_INSTANCE:-foobar}
 
 if [ "$IAM_API_KEY" == "foobar" ]; then
     echo "[ERROR] IAM_API_KEY mandatory env var is not defined."
     exit 1
 fi
 
-if [ "$BROKERS" == "foobar" ]; then
-    echo "[ERROR] BROKERS mandatory env var is not defined."
+if [ "$ES_SERVICE_INSTANCE" == "foobar" ]; then
+    echo "[ERROR] ES_SERVICE_INSTANCE mandatory env var is not defined."
     exit 1
 fi
 
-if [ "$KAFKA_USER" == "foobar" ]; then
-    echo "[ERROR] KAFKA_USER mandatory env var is not defined."
+# Verify that the ES service instance exists under the same account
+if ! ibmcloud resource service-instance $ES_SERVICE_INSTANCE -q > /dev/null 2>&1; then
+    echo "[ERROR] $ES_SERVICE_INSTANCE service instance does not exists, please ensure the ES instance is created"
     exit 1
 fi
-
-if [ "$KAFKA_TOKEN" == "foobar" ]; then
-    echo "[ERROR] KAFKA_TOKEN mandatory env var is not defined."
-    exit 1
-fi
-
 
 # clean removes created CE resources
 function clean() {
@@ -60,29 +53,27 @@ then
     exit 0
 fi
 
-# trim all quotes
-BROKERS=$(echo $BROKERS | tr -d '"')
-
 # Create CE Resources
 echo "[INFO] Going to create secret ${AUTH_SECRETS_NAME}"
 
-ibmcloud ce secret create --name $AUTH_SECRETS_NAME \
-    --from-literal KAFKA_TOKEN=$KAFKA_TOKEN \
-    --from-literal KAFKA_USER=$KAFKA_USER \
-    --from-literal IAM_API_KEY=$IAM_API_KEY
+ibmcloud ce secret create --name $AUTH_SECRETS_NAME --from-literal IAM_API_KEY=$IAM_API_KEY
 
 echo "[INFO] Going to create configmap ${CM_TOPICJOBS_NAME}"
-# kubectl apply -f ${BASEDIR}/resources/configmap.yaml # TODO: Use ibmcloud ce
 ibmcloud ce configmap create --name $CM_TOPICJOBS_NAME --from-file ${BASEDIR}/resources/kafkadata
 
 echo "[INFO] Going to create JobDefinition ${CONSUMER_JOB_NAME_1}"
-ibmcloud ce job create --name $CONSUMER_JOB_NAME_1 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env BROKERS="${BROKERS}" --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=payment-consumer-group --wait
+ibmcloud ce job create --name $CONSUMER_JOB_NAME_1 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=payment-consumer-group --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
 
 echo "[INFO] Going to create JobDefinition ${CONSUMER_JOB_NAME_2}"
-ibmcloud ce job create --name $CONSUMER_JOB_NAME_2 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env BROKERS="${BROKERS}" --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=shipping-consumer-group --wait
+ibmcloud ce job create --name $CONSUMER_JOB_NAME_2 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=shipping-consumer-group --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
 
 echo "[INFO] Going to create JobDefinition ${OBSERVER_JOB_NAME}"
-ibmcloud ce job create --name $OBSERVER_JOB_NAME --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.observer --env BROKERS="${BROKERS}" --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --wait
+ibmcloud ce job create --name $OBSERVER_JOB_NAME --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.observer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --wait
+
+echo "[INFO] Going to bind all JobDefinitions to the provided Event Streams service instance"
+ibmcloud ce job bind --name $CONSUMER_JOB_NAME_1 --service-instance $ES_SERVICE_INSTANCE
+ibmcloud ce job bind --name $CONSUMER_JOB_NAME_2 --service-instance $ES_SERVICE_INSTANCE
+ibmcloud ce job bind --name $OBSERVER_JOB_NAME --service-instance $ES_SERVICE_INSTANCE
 
 echo "[INFO] Submitting Job ${OBSERVER_JOB_NAME}"
 ibmcloud ce jobrun submit --job $OBSERVER_JOB_NAME --name $OBSERVER_JR_NAME

@@ -14,10 +14,10 @@ func getEnvVarsByName() [5]string {
 	// Add any mandatory env variable
 	// in here
 	return [5]string{
-		"BROKERS",
+		"MESSAGEHUB_KAFKA_BROKERS_SASL",
 		"IAM_API_KEY",
-		"KAFKA_USER",
-		"KAFKA_TOKEN",
+		"MESSAGEHUB_USER",
+		"MESSAGEHUB_PASSWORD",
 		"kafkadata",
 	}
 }
@@ -65,8 +65,13 @@ func GetConfig() Config {
 
 	envVarsNames := getEnvVarsByName()
 
-	// handle special cases for lists
-	brokers := strings.Split(os.Getenv(envVarsNames[0]), ",")
+	// handle special cases for brokers list
+	kafkaBrokers := os.Getenv(envVarsNames[0])
+	kafkaBrokers = strings.TrimPrefix(kafkaBrokers, "[")
+	kafkaBrokers = strings.TrimSuffix(kafkaBrokers, "]")
+	kafkaBrokers = strings.ReplaceAll(kafkaBrokers, "\"", "")
+
+	brokers := strings.Split(kafkaBrokers, ",")
 
 	kafkaData := os.Getenv(envVarsNames[4])
 

@@ -241,12 +241,12 @@ func GetCodeengineService(ceConfig cmd.CEClient) (*codeenginev2.CodeEngineV2, er
 		ApiKey:       ceConfig.IamApiKey,
 		ClientId:     "bx",
 		ClientSecret: "bx",
-		URL:          "https://iam.test.cloud.ibm.com", //TODO: needs to be dynamic configurable
+		URL:          "https://iam.cloud.ibm.com",
 	}
 
 	codeEngineService, err := codeenginev2.NewCodeEngineV2(&codeenginev2.CodeEngineV2Options{
 		Authenticator: authenticator,
-		URL:           "https://api." + "dev-serving.codeengine.dev.cloud.ibm.com/v2", //TODO: needs to be dynamic configurable
+		URL:           "https://api.au-syd.codeengine.cloud.ibm.com/v2", //TODO: needs to be dynamic configurable
 	})
 	if err != nil {
 		log.Printf("NewCodeEngineV2 error: %s\n", err.Error())
