@@ -4,17 +4,45 @@ set -euo pipefail
 
 BASEDIR="$(dirname "$0")"
 
-# Required variables
+# Resources vars
 CM_TOPICJOBS_NAME="topic-to-jobs"
 AUTH_SECRETS_NAME="authentication-secrets"
+
+# Consumers vars
 CONSUMER_JOB_NAME_1="payments-consumer"
-CONSUMER_JOB_NAME_2="shipping-consumer" #TODO: this cannot be static, optimize it
+CONSUMER_JOB_NAME_2="shipping-consumer"
+
+# Observer vars
 OBSERVER_JOB_NAME="ce-kafka-observer"
 OBSERVER_JR_NAME="kafka-observer"
-IAM_API_KEY=foobar
-BROKERS=foobar
-KAFKA_USER=foobar
-KAFKA_TOKEN=foobar
+
+# Mandatory data Vars provided by user
+IAM_API_KEY=${IAM_API_KEY:-foobar}
+BROKERS=${BROKERS:-foobar}
+KAFKA_USER=${KAFKA_USER:-foobar}
+KAFKA_TOKEN=${KAFKA_TOKEN:-foobar}
+
+if [ "$IAM_API_KEY" == "foobar" ]; then
+    echo "[ERROR] IAM_API_KEY mandatory env var is not defined."
+    exit 1
+fi
+
+if [ "$BROKERS" == "foobar" ]; then
+    echo "[ERROR] BROKERS mandatory env var is not defined."
+    exit 1
+fi
+
+if [ "$KAFKA_USER" == "foobar" ]; then
+    echo "[ERROR] KAFKA_USER mandatory env var is not defined."
+    exit 1
+fi
+
+if [ "$KAFKA_TOKEN" == "foobar" ]; then
+    echo "[ERROR] KAFKA_TOKEN mandatory env var is not defined."
+    exit 1
+fi
+
+
 # clean removes created CE resources
 function clean() {
   ibmcloud ce configmap delete --name $CM_TOPICJOBS_NAME -f --ignore-not-found
