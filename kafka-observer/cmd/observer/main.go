@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -244,9 +245,16 @@ func GetCodeengineService(ceConfig cmd.CEClient) (*codeenginev2.CodeEngineV2, er
 		URL:          "https://iam.cloud.ibm.com",
 	}
 
+	baseUrl := strings.ReplaceAll(os.Getenv("CE_API_BASE_URL"), "private.", "")
+	if baseUrl == "" {
+		baseUrl = codeenginev2.DefaultServiceURL
+	} else {
+		baseUrl = baseUrl + "/v2"
+	}
+
 	codeEngineService, err := codeenginev2.NewCodeEngineV2(&codeenginev2.CodeEngineV2Options{
 		Authenticator: authenticator,
-		URL:           "https://api.au-syd.codeengine.cloud.ibm.com/v2", //TODO: needs to be dynamic configurable
+		URL:           baseUrl,
 	})
 	if err != nil {
 		log.Printf("NewCodeEngineV2 error: %s\n", err.Error())
