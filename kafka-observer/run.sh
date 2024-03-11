@@ -62,10 +62,10 @@ echo "[INFO] Going to create configmap ${CM_TOPICJOBS_NAME}"
 ibmcloud ce configmap create --name $CM_TOPICJOBS_NAME --from-file ${BASEDIR}/resources/kafkadata
 
 echo "[INFO] Going to create JobDefinition ${CONSUMER_JOB_NAME_1}"
-ibmcloud ce job create --name $CONSUMER_JOB_NAME_1 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=payment-consumer-group --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
+ibmcloud ce job create --name $CONSUMER_JOB_NAME_1 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=payment-consumer-group --env KAFKA_TOPIC=payments --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
 
 echo "[INFO] Going to create JobDefinition ${CONSUMER_JOB_NAME_2}"
-ibmcloud ce job create --name $CONSUMER_JOB_NAME_2 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=shipping-consumer-group --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
+ibmcloud ce job create --name $CONSUMER_JOB_NAME_2 --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.consumer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --env CONSUMER_GROUP=shipping-consumer-group --env KAFKA_TOPIC=shipping --env CE_REMOVE_COMPLETED_JOBS=IMMEDIATELY --wait
 
 echo "[INFO] Going to create JobDefinition ${OBSERVER_JOB_NAME}"
 ibmcloud ce job create --name $OBSERVER_JOB_NAME --mode daemon --build-source ${BASEDIR} --build-dockerfile ${BASEDIR}/Dockerfile.observer --env-from-secret $AUTH_SECRETS_NAME --env-from-configmap $CM_TOPICJOBS_NAME --wait
