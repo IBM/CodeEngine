@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -27,8 +28,6 @@ var idleTimer *time.Timer
 // interface
 type Consumer struct {
 	ready chan bool
-	// ce        *codeenginev2.CodeEngineV2
-	topicToJD map[string]cmd.TopicsToJobs
 }
 
 func main() {
@@ -66,11 +65,10 @@ func main() {
 
 	consumer := Consumer{
 		ready: make(chan bool),
-		// ce:        ceService,
-		topicToJD: config.KafkaCE,
 	}
 
 	brokers := config.Kafka.Brokers
+	topics := strings.Split(os.Getenv("KAFKA_TOPIC"), ",")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(brokers, "consuming-group", saramaConfig)
@@ -84,7 +82,7 @@ func main() {
 		defer wg.Done()
 		for {
 			// TODO: fix topics, cannot use all
-			if err := client.Consume(ctx, config.Kafka.Topics, &consumer); err != nil {
+			if err := client.Consume(ctx, topics, &consumer); err != nil {
 				if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 					return
 				}
