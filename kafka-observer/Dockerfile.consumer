@@ -1,0 +1,21 @@
+FROM icr.io/codeengine/golang:latest AS stage
+
+WORKDIR /app/src
+
+COPY cmd/consumer/ ./consumer/
+
+COPY internal/ ./internal/
+
+COPY go.mod .
+
+COPY go.sum .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o consumer ./consumer
+
+FROM icr.io/codeengine/golang:latest
+
+WORKDIR /app/src
+
+COPY --from=stage /app/src/consumer/consumer .
+
+CMD [ "./consumer" ]
