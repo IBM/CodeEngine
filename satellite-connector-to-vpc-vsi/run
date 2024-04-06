@@ -1,0 +1,599 @@
+#!/bin/bash
+
+# Env vars
+CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
+CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
+REGION="${REGION:=us-east}"
+NAME_PREFIX="${NAME_PREFIX:=ce-to-private-vsi}"
+VPC_SSH_KEY="${VPC_SSH_KEY:=}"
+DEBUG_MODE="${DEBUG_MODE:=false}"
+
+# Dependent variables
+resource_group_name="${NAME_PREFIX}--rg"
+ce_project_name="${NAME_PREFIX}--ce-project"
+ce_function_name="http-proxy-function"
+ce_job_name="friendship-book-writer"
+ce_app_name="friendship-book-api"
+ce_db_credentials="db-credentials"
+sat_connector_serviceid_name="${NAME_PREFIX}--iam-serviceid"
+sat_connector_name="${NAME_PREFIX}--sat-connector"
+vpc_name="${NAME_PREFIX}--is-vpc"
+vsi_originserver_name="${NAME_PREFIX}--is-vsi-originserver"
+vsi_agent_name="${NAME_PREFIX}--is-vsi-agent"
+
+# ==============================
+# COMMON FUNCTIONS
+# ==============================
+RED="\033[31m"
+BLUE="\033[94m"
+GREEN="\033[32m"
+ENDCOLOR="\033[0m"
+
+function print_error {
+    echo -e "${RED}\n==========================================${ENDCOLOR}"
+    echo -e "${RED} FAILED${ENDCOLOR}"
+    echo -e "${RED}==========================================\n${ENDCOLOR}"
+    echo -e "${RED}$1${ENDCOLOR}"
+    echo ""
+}
+function print_msg {
+    echo -e "${BLUE}$1${ENDCOLOR}"
+}
+function print_success {
+    echo -e "${GREEN}$1${ENDCOLOR}"
+}
+
+# Helper function to work around the fact that the sat experimental CLI is quite limited in its current version
+function getSatConnectorId() {
+    connector_details=$(ibmcloud sat experimental connector ls | grep -m 1 $1)
+    if [ -z "$connector_details" ]; then
+        echo "not_found"
+        return 1
+    fi
+    echo "$connector_details" | cut -d ' ' -f1
+    return
+}
+
+# Helper function to check whether prerequisites are installed
+function check_prerequisites {
+    # Ensure that jq tool is installed
+    if ! command -v jq &>/dev/null; then
+        print_error "'jq' tool is not installed"
+        exit 1
+    fi
+}
+
+# Clean up previous run
+function clean() {
+    (
+        rm -f userdata-vsi-agent.sh
+
+        connector_id=$(getSatConnectorId $sat_connector_name)
+        if [[ $connector_id != 'not_found' ]]; then
+            ibmcloud sat experimental connector rm --connector-id $connector_id -f -q
+        fi
+
+        ibmcloud is instance-delete $vsi_agent_name --force 2>/dev/null
+        while [ $? == 0 ]; do
+            sleep 2
+            ibmcloud is instance $vsi_agent_name >/dev/null 2>&1
+        done
+        ibmcloud is floating-ip-release $vsi_originserver_name-ip --force 2>/dev/null
+        ibmcloud is instance-delete $vsi_originserver_name --force 2>/dev/null
+        while [ $? == 0 ]; do
+            sleep 2
+            ibmcloud is instance $vsi_originserver_name >/dev/null 2>&1
+        done
+        ibmcloud is subnet-delete $vpc_name-subnet --force 2>/dev/null
+        ibmcloud is network-acl-delete $vpc_name-acl --force 2>/dev/null
+        ibmcloud is public-gateway-delete $vpc_name-gateway --force 2>/dev/null
+        ibmcloud is security-group-delete $vpc_name-group --force 2>/dev/null
+        ibmcloud is vpc-delete $vpc_name --force 2>/dev/null
+        while [ $? == 0 ]; do
+            sleep 2
+            ibmcloud is vpc $vpc_name >/dev/null 2>&1
+        done
+
+        ibmcloud ce project select --name $ce_project_name --quiet 2>/dev/null
+        if [ $? == 0 ]; then
+            ibmcloud ce project delete --name $ce_project_name --force --hard --no-wait
+        fi
+
+        ibmcloud iam service-id-delete $sat_connector_serviceid_name --force 2>/dev/null
+
+        ibmcloud resource group $resource_group_name --quiet 2>/dev/null
+        if [[ $? == 0 ]]; then
+            COUNTER=0
+            # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
+            while [[ "$(ibmcloud resource service-instances --type all -g $resource_group_name --output json | jq -r '. | length')" != "0" ]]; do
+                sleep 5
+                COUNTER=$((COUNTER + 1))
+                if ((COUNTER > 30)); then
+                    print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
+                    ibmcloud resource service-instances --type all -g $resource_group_name
+                    exit 1
+                fi
+            done
+        fi
+
+        ibmcloud resource group-delete $resource_group_name --force 2>/dev/null
+    )
+}
+
+function abortScript() {
+    if [[ "${CLEANUP_ON_ERROR}" == true ]]; then
+        clean
+    else
+        print_msg "\nSkipping deletion of the created IBM Cloud resources. Please be aware that the created resources will occur costs in your account."
+        echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
+        ibmcloud resource service-instances --type all -g $resource_group_name
+    fi
+    exit 1
+}
+
+# ==============================
+# MAIN SCRIPT FLOW
+# ==============================
+
+print_msg "\n======================================================"
+print_msg " Setting up \"Code Engine -> private backend\" sample"
+print_msg "======================================================\n"
+
+echo ""
+echo "Please note: This script will install various IBM Cloud resources within the resource group '$resource_group_name'."
+
+print_msg "\nChecking prerequisites ..."
+check_prerequisites
+
+# Ensure that latest versions of used IBM Cloud ClI is installed
+print_msg "\nPulling latest IBM Cloud CLI release ..."
+ibmcloud update --force
+
+# Ensure that latest versions of used IBM Cloud CLI plugins are installed
+print_msg "\nInstalling required IBM Cloud CLI plugins ..."
+ibmcloud plugin install code-engine -f --quiet
+ibmcloud plugin install vpc-infrastructure -f --quiet
+ibmcloud plugin install container-service -f --quiet
+
+print_msg "\nCleaning up the remains of previous executions ..."
+clean
+[[ "$1" == "clean" ]] && print_success "\n==========================================\n DONE\n==========================================\n"
+
+print_msg "\nTargetting IBM Cloud region '$REGION' ..."
+ibmcloud target -r $REGION
+
+#
+# Create the resource group, if it does not exist
+ibmcloud resource group $resource_group_name --quiet
+if [ $? != 0 ]; then
+    print_msg "\nCreating resource group '$resource_group_name' ..."
+    ibmcloud resource group-create $resource_group_name
+fi
+print_msg "\nTargetting resource group '$resource_group_name' ..."
+ibmcloud target -g $resource_group_name
+
+#
+# Create the connector and obtain its identifier
+print_msg "\nCreating the Satellite Connector '$sat_connector_name' ..."
+ibmcloud sat experimental connector create --name $sat_connector_name --region $REGION
+if [ $? -ne 0 ]; then
+    print_error "Failed to create the Satellite Connector"
+    abortScript
+fi
+connector_id=$(getSatConnectorId $sat_connector_name)
+
+#
+# Create the IAM service id
+print_msg "\nCreating an IAM ServiceID that contains a policy to grant read-only access for the Satellite service ..."
+ibmcloud iam service-id-create $sat_connector_serviceid_name --description "Service ID to operate towards the Satellite connector ${sat_connector_name}"
+if [ $? -ne 0 ]; then
+    print_error "IAM ServiceID creation failed! Please contact your account administrator and check your account permissions."
+    abortScript
+fi
+ibmcloud iam service-policy-create $sat_connector_serviceid_name --roles Reader,Viewer --service-name satellite
+if [ $? -ne 0 ]; then
+    print_error "IAM ServiceID policy creation failed! Please contact your account administrator and check your account permissions."
+    abortScript
+fi
+connector_api_key=$(ibmcloud iam service-api-key-create ${sat_connector_serviceid_name}-api-key $sat_connector_serviceid_name --description "API key for serviceID ${sat_connector_serviceid_name} for Satellite connector ${sat_connector_name}" --output JSON | jq -r '.apikey')
+if [[ $connector_api_key == "" ]]; then
+    print_error "IAM ServiceID apikey creation failed! Please contact your account administrator and check your account permissions."
+    abortScript
+fi
+
+#
+# Create the VPC
+print_msg "Creating the VPC '$vpc_name' ..."
+ibmcloud is vpc-create $vpc_name --resource-group-name $resource_group_name
+if [ $? -ne 0 ]; then
+    print_error "VPC creation failed!"
+    abortScript
+fi
+
+#
+# Wait for the VPC to become available
+print_msg "\nWaiting for the VPC $vpc_name to become available ..."
+COUNTER=0
+while ! [[ $(ibmcloud is vpc $vpc_name --output json | jq -r '.status') == "available" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        echo $(ibmcloud is vpc $vpc_name)
+        print_error "The VPC does not became ready as expected.\nRun 'ibmcloud is vpc $vpc_name' for further insights"
+        abortScript
+    fi
+done
+echo "VPC '$vpc_name' is now available, now!"
+
+#
+# Create the Public gateway
+print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway' ..."
+ibmcloud is public-gateway-create $vpc_name-gateway $vpc_name $REGION-1 --resource-group-name $resource_group_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Public gateway creation failed!"
+    abortScript
+fi
+
+#
+# Create the Network ACL
+print_msg "\nCreating the VPC Network ACL '$vpc_name-acl' ..."
+ibmcloud is network-acl-create $vpc_name-acl $vpc_name --rules '[{ "name": "egress", "action": "allow", "destination": "0.0.0.0/0", "direction": "outbound", "source": "0.0.0.0/0", "protocol": "all" }, { "name": "ingress", "action": "allow", "destination": "0.0.0.0/0", "direction": "inbound", "source": "0.0.0.0/0", "protocol": "all" }]'
+if [ $? -ne 0 ]; then
+    print_error "VPC Network ACL creation failed!"
+    abortScript
+fi
+
+#
+# Create the VPC subnet
+print_msg "\nCreating the VPC Subnet '$vpc_name-subnet' ..."
+ibmcloud is subnet-create $vpc_name-subnet $vpc_name --zone $REGION-1 --resource-group-name $resource_group_name --ipv4-address-count 8 --pgw $vpc_name-gateway --acl $vpc_name-acl
+if [ $? -ne 0 ]; then
+    print_error "VPC Subnet creation failed!"
+    abortScript
+fi
+
+# Create the security group and its rules
+print_msg "\nCreating the VPC Security group '$vpc_name-group' ..."
+ibmcloud is security-group-create $vpc_name-group $vpc_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Security group creation failed!"
+    abortScript
+fi
+
+print_msg "\nCreating required VPC Security group rules ..."
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 80 --port-max 80 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 5432 --port-max 5432 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 443 --port-max 443 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound udp --port-min 53 --port-max 53 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound icmp --icmp-type 8 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 166.9.0.0/16 --vpc $vpc_name >/dev/null
+# from https://cloud.ibm.com/docs/vpc?topic=vpc-service-endpoints-for-vpc
+ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 161.26.0.0/16 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --port-min 80 --port-max 80 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --port-min 5432 --port-max 5432 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound icmp --icmp-type 8 --vpc $vpc_name >/dev/null
+echo "Done"
+
+print_msg "\nPrinting the VPC Security group '$vpc_name-group' ..."
+ibmcloud is security-group $vpc_name-group
+
+#
+# Create the origin server VSI
+print_msg "\nCreating the VPC VSI '$vsi_originserver_name', which acts as the origin server ..."
+ibmcloud is instance-create $vsi_originserver_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
+    --image ibm-centos-stream-9-amd64-6 \
+    --boot-volume '{"name": "boot-vol-attachment-name", "volume": {"name": "my-agent-boot-vol", "capacity": 100, "profile": {"name": "general-purpose"}}, "delete_volume_on_instance_delete": true}' \
+    --resource-group-name $resource_group_name \
+    --host-failure-policy restart \
+    --primary-network-interface "{\"name\": \"eth0\", \"allow_ip_spoofing\": false, \"auto_delete\": true, \"subnet\": {\"name\":\"${vpc_name}-subnet\"}, \"primary_ip\": {\"auto_delete\": true}, \"security_groups\": [{\"name\": \"${vpc_name}-group\"}]}" \
+    --user-data @userdata-vsi-originserver.sh \
+    --keys "$VPC_SSH_KEY"
+if [ $? -ne 0 ]; then
+    print_error "VPC VSI creation failed!"
+    abortScript
+fi
+
+print_msg "\nWaiting for the VSI '$vsi_originserver_name' to start ..."
+COUNTER=0
+while ! [[ $(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.status') == "running" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        print_error "The VSI does not became ready as expected. Perform 'ibmcloud is instance $vsi_originserver_name' for further details."
+        abortScript
+    fi
+done
+echo "VSI '$vsi_originserver_name' is running, now!"
+
+#
+# Assign the floating IP
+print_msg "\nAssigning a VPC Floating IP to the primary network interface of VSI '$vsi_originserver_name' ..."
+ibmcloud is floating-ip-reserve $vsi_originserver_name-ip --nic eth0 --in $vsi_originserver_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Floating IP assignment failed!"
+    abortScript
+fi
+public_ip_address=$(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
+private_ip_address=$(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.primary_network_interface|.primary_ip|.address')
+
+#
+# Create the userdata file for the connector VSI
+print_msg "\nCreating the userdata file that is used to setup the VSI that runs the Satellite Connector agent ..."
+cat <<EOF >userdata-vsi-agent.sh
+#!/bin/bash
+mkdir ~/agent
+mkdir ~/agent/env-files
+echo "$connector_api_key" > ~/agent/env-files/apikey
+echo "SATELLITE_CONNECTOR_ID=$connector_id" > ~/agent/env-files/env.txt
+echo "SATELLITE_CONNECTOR_IAM_APIKEY=/agent-env-files/apikey" >> ~/agent/env-files/env.txt
+echo "SATELLITE_CONNECTOR_TAGS=$NAME_PREFIX-agent" >> ~/agent/env-files/env.txt
+curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+ibmcloud login --apikey @~/agent/env-files/apikey -r eu-de
+ibmcloud plugin install cr
+sudo yum -y install podman
+ibmcloud cr region-set global
+ibmcloud cr login --client podman
+podman pull icr.io/ibm/satellite-connector/satellite-connector-agent:latest
+podman run -d --env-file ~/agent/env-files/env.txt -v ~/agent/env-files:/agent-env-files icr.io/ibm/satellite-connector/satellite-connector-agent:latest
+EOF
+echo "Done"
+
+#
+# Create the connector VSI
+print_msg "\nCreating the VPC VSI '$vsi_agent_name', which runs the Satellite Connector agent ..."
+ibmcloud is instance-create $vsi_agent_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
+    --image ibm-centos-stream-9-amd64-6 \
+    --boot-volume '{"name": "boot-vol-attachment-name", "volume": {"name": "my-boot-vol", "capacity": 100, "profile": {"name": "general-purpose"}}, "delete_volume_on_instance_delete": true}' \
+    --resource-group-name $resource_group_name \
+    --host-failure-policy restart \
+    --primary-network-interface "{\"name\": \"eth0\", \"allow_ip_spoofing\": false, \"auto_delete\": true, \"subnet\": {\"name\":\"${vpc_name}-subnet\"}, \"primary_ip\": {\"auto_delete\": true}, \"security_groups\": [{\"name\": \"${vpc_name}-group\"}]}" \
+    --user-data @userdata-vsi-agent.sh
+if [ $? -ne 0 ]; then
+    print_error "VPC VSI creation failed!"
+    abortScript
+fi
+
+print_msg "\nRemoving the temporary userdata file from the disk ..."
+rm -f userdata-vsi-agent.sh
+echo "Done!"
+
+print_msg "\nWaiting for the VSI '$vsi_agent_name' to start ..."
+COUNTER=0
+while ! [[ $(ibmcloud is instance $vsi_agent_name --output json | jq -r '.status') == "running" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        print_error "The VSI does not became ready as expected. Perform 'ibmcloud is instance $vsi_agent_name' for further details."
+        abortScript
+    fi
+done
+echo "VSI '$vsi_agent_name' is running, now!"
+
+#
+# Verify that the originserver VSI exposes a HTTP server
+print_msg "\nWaiting for the VSI '$vsi_originserver_name' to be fully initialized (This can take several minutes) ..."
+COUNTER=0
+while ! [[ $(curl -s -o /dev/null -w "%{http_code}" http://$public_ip_address) == "200" ]]; do
+    sleep 10
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 50)); then
+        print_error "The VSI does not serve any HTTP traffic on port 80"
+        abortScript
+    fi
+    echo "Checking curl http://$public_ip_address ..."
+done
+echo "VSI $vsi_originserver_name is fully initialized, now!"
+
+print_msg "\nVSI serves following payload on endpoint 'http://$public_ip_address':"
+curl http://$public_ip_address
+
+if [[ "${DEBUG_MODE}" != true ]]; then
+    #
+    # Detaching floating ip address
+    print_msg "\nDetaching VPC Floating IP '$vsi_originserver_name-ip' from the VSI '$vsi_originserver_name' ..."
+    ibmcloud is floating-ip-release $vsi_originserver_name-ip --force
+fi
+
+#
+# Check whether the agent appears
+iam_access_token=$(ibmcloud iam oauth-tokens --output json | jq -r '.iam_token')
+print_msg "\nWaiting for the VSI '$vsi_agent_name' to be fully initialized ..."
+COUNTER=0
+connector_details=$(curl --silent -H "Authorization: $iam_access_token" https://api.link.satellite.cloud.ibm.com/v1/connectors/$connector_id)
+while ! [[ "$(echo "$connector_details" | jq -r '.agents | length')" == "1" ]]; do
+    sleep 10
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 50)); then
+        print_error "The Satellite Connector agent did not registered properly."
+        abortScript
+    fi
+    connector_details=$(curl -H "Authorization: $iam_access_token" https://api.link.satellite.cloud.ibm.com/v1/connectors/$connector_id)
+    print_msg "  Checking whether agent has been registered at Satellite Connector '$sat_connector_name' ..."
+done
+echo "VSI '$vsi_agent_name' is fully initialized, now!"
+
+#
+# Create a Satellite Connector endpoint for the NGINX server running on the VSI
+print_msg "\nCreating the Satellite Connector endpoint 'origin-http-server' ..."
+echo "  To complete this part of the setup manually, following steps must be performed:"
+echo "  1. Open the following URL in your web browser https://cloud.ibm.com/satellite/connectors/$connector_id/endpoints/create"
+echo "  2. Fill following values into the form:"
+echo "     - Endpoint name: origin-http-server"
+echo "     - Destination FQDN or IP: $private_ip_address"
+echo "     - Destination port: 80"
+echo "  3. Click 'Next'"
+echo "  4. Select 'TCP' as source protocol"
+echo "  5. Click 'Next'"
+echo "  6. At this point it is not necessary to add any Access control rules"
+echo "  7. Click 'Next'"
+echo "  8. Click 'Create endpoint'"
+echo ""
+
+nginx_endpoint_details=$(curl -s -X POST -H "Authorization: $iam_access_token" -H "Accept: application/json" -H "Content-Type: application/json" --data "{\"display_name\":\"origin-http-server\",\"server_host\":\"$private_ip_address\",\"server_port\":\"80\",\"client_protocol\":\"tcp\",\"timeout\":60,\"reject_unauth\":false,\"conn_type\":\"location\"}" https://api.link.satellite.cloud.ibm.com/v1/connectors/${connector_id}/endpoints)
+if [[ $(echo $nginx_endpoint_details | jq -r '.incidentID') != null ]]; then
+    print_error "Failed to create the Connector endpoint. Error: '$nginx_endpoint_details'"
+    abortScript
+fi
+nginx_endpoint_host=$(echo $nginx_endpoint_details | jq -r '.client_host')
+nginx_endpoint_port=$(echo $nginx_endpoint_details | jq -r '.client_port')
+
+#
+# Create a Satellite Connector endpoint for the PostgreSQL running on the VSI
+print_msg "\nCreating the Satellite Connector endpoint 'origin-database' ..."
+echo "  To complete this part of the setup manually, following steps must be performed:"
+echo "  1. Open the following URL in your web browser https://cloud.ibm.com/satellite/connectors/$connector_id/endpoints/create"
+echo "  2. Fill following values into the form:"
+echo "     - Endpoint name: origin-database"
+echo "     - Destination FQDN or IP: $private_ip_address"
+echo "     - Destination port: 5432"
+echo "  3. Click 'Next'"
+echo "  4. Select 'TCP' as source protocol"
+echo "  5. Click 'Next'"
+echo "  6. At this point it is not necessary to add any Access control rules"
+echo "  7. Click 'Next'"
+echo "  8. Click 'Create endpoint'"
+echo ""
+db_endpoint_details=$(curl -s -X POST -H "Authorization: $iam_access_token" -H "Accept: application/json" -H "Content-Type: application/json" --data "{\"display_name\":\"origin-database\",\"server_host\":\"$private_ip_address\",\"server_port\":\"5432\",\"client_protocol\":\"tcp\",\"timeout\":60,\"reject_unauth\":false,\"conn_type\":\"location\"}" https://api.link.satellite.cloud.ibm.com/v1/connectors/${connector_id}/endpoints)
+if [[ $(echo $db_endpoint_details | jq -r '.incidentID') != null ]]; then
+    print_error "Failed to create the Connector endpoint. Error: '$db_endpoint_details'"
+    abortScript
+fi
+db_endpoint_host=$(echo $db_endpoint_details | jq -r '.client_host')
+db_endpoint_port=$(echo $db_endpoint_details | jq -r '.client_port')
+
+#
+# Create the Code Engine project
+print_msg "\nCreating the Code Engine project '$ce_project_name' ..."
+ibmcloud ce project create --name $ce_project_name
+if [ $? -ne 0 ]; then
+    print_error "Code Engine project creation failed!"
+    abortScript
+fi
+project_guid=$(ibmcloud ce project current --output json|jq -r '.guid')
+
+#
+# Create the Code Engine function
+print_msg "\nCreating the Code Engine function '$ce_function_name' (see 'ce-function.js' for details) ..."
+ibmcloud ce function create --name $ce_function_name --inline-code ce-function/index.js --runtime nodejs-18 --env "SAT_LINK_ENDPOINT=http://$nginx_endpoint_host:$nginx_endpoint_port"
+if [ $? -ne 0 ]; then
+    print_error "Code Engine function creation failed!"
+    abortScript
+fi
+
+print_msg "\nPrinting source code of the deployed function:"
+cat ce-function/index.js
+echo ""
+
+print_msg "\nWaiting for the function '$ce_function_name' to get properly initialized ..."
+ce_fn_endpoint="null"
+
+COUNTER=0
+while [ "$ce_fn_endpoint" == "null" ]; do
+    ce_fn_endpoint=$(ibmcloud ce function get --name $ce_function_name -o json | jq -r '.endpoint')
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 90)); then
+        print_error "The initialization of the Code Engine function failed!"
+        abortScript
+    fi
+done
+sleep 20 # temporary workaround to fix a timing issue
+echo "Function '$ce_function_name' is ready, now!"
+
+#
+# Verifying the end-to-end flow
+print_msg "\nInvoking the Code Engine function by using 'curl $ce_fn_endpoint'."
+print_msg "The function will perform a HTTP outbound call to the origin server and passthrough the HTTP response of this outbound call ..."
+curl --silent $ce_fn_endpoint | jq
+
+if [[ $(curl -s -o /dev/null -w "%{http_code}" $ce_fn_endpoint) != "200" ]]; then
+    print_error "Code Engine function could not get invoked properly!"
+    abortScript
+fi
+echo "Verified that HTTP requests are reaching the origin server through the Satellite Connector endpoint :)"
+
+#
+# Creating a secret that contains the PostgreSQL credentials
+print_msg "\nCreating a Code Engine secret '$ce_db_credentials' to store the database credentials ..."
+ibmcloud ce secret create --name $ce_db_credentials --format generic \
+    --from-literal PGHOST=$db_endpoint_host \
+    --from-literal PGPORT=$db_endpoint_port \
+    --from-literal PGUSER=dbuser \
+    --from-literal PGPASSWORD=myPassw0rd! \
+    --from-literal PGDATABASE=friendshipdb
+if [ $? -ne 0 ]; then
+    print_error "Code Engine secret creation failed!"
+    abortScript
+fi
+
+print_msg "\nCreating a Code Engine job '$ce_job_name' that will connect to the database ..."
+ibmcloud ce job create --name $ce_job_name  \
+    --build-source ./ce-job \
+    --env-from-secret $ce_db_credentials \
+    --memory 0.5G \
+    --cpu 0.25 \
+    --wait
+if [ $? -ne 0 ]; then
+    print_error "Code Engine job creation failed!"
+    abortScript
+fi
+
+print_msg "\nPrinting source code of the deployed job:"
+cat ce-job/job.mjs
+echo ""
+
+print_msg "\nSubmitting a single job run that starts 10 instances, to store some records in the database ..."
+ibmcloud ce jobrun submit --job $ce_job_name --array-size 10 --wait
+
+print_msg "\nListing submitted job runs..."
+ibmcloud ce jobrun list
+
+print_msg "\nCreating a Code Engine app '$ce_app_name' that retrieve records from the database ..."
+ibmcloud ce app create --name $ce_app_name  \
+    --build-source ce-app \
+    --env-from-secret $ce_db_credentials \
+    --memory 0.5G \
+    --cpu 0.25
+if [ $? -ne 0 ]; then
+    print_error "Code Engine app creation failed!"
+    abortScript
+fi
+
+ce_app_endpoint=$(ibmcloud ce app get --name $ce_app_name -o url)
+
+#
+# Verifying the end-to-end flow
+print_msg "\nInvoking the Code Engine app by using 'curl $ce_app_endpoint'."
+print_msg "The app will perform a SQL query towards the database hosted on the origin server and passthrough the result as JSON response payload ..."
+curl --silent $ce_app_endpoint | jq
+
+if [[ $(curl -s -o /dev/null -w "%{http_code}" $ce_app_endpoint) != "200" ]]; then
+    print_error "Code Engine app could not get invoked properly!"
+    abortScript
+fi
+
+print_msg "\nBefore cleaning up, this end-to-end sample created the following set of IBM Cloud resources:"
+ibmcloud resource service-instances --type all -g $resource_group_name
+
+if [[ "${CLEANUP_ON_SUCCESS}" == true ]]; then
+    print_msg "\nCleaning up the created IBM Cloud resources ..."
+    clean
+else
+    print_msg "\nSkipping deletion of the created IBM Cloud resources. Please be aware that the created resources will occur costs in your account."
+    echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
+    ibmcloud resource service-instances --type all -g $resource_group_name
+
+    print_msg "\nFollowing commands can be used to further play around with the sample setup:"
+    echo "1. Submit another job run: 'ibmcloud ce jobrun submit --job $ce_job_name --array-size 10'"
+    echo "2. Invoke the function: 'curl $ce_fn_endpoint'"
+    echo "3. Invoke the app: 'curl $ce_app_endpoint'"
+    echo "4. Inspect the Satellite Connector configuration https://cloud.ibm.com/satellite/connectors/$connector_id"
+    echo "5. Inspect the Code Engine project setup https://cloud.ibm.com/codeengine/project/$REGION/$project_guid"
+    echo "6. Tear down the sample setup: './run clean'"
+fi
+
+print_success "\n=========================================="
+print_success " SUCCESS"
+print_success "==========================================\n"
