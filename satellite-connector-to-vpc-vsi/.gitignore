@@ -1,0 +1,19 @@
+# temporary userdata file
+userdata-vsi-agent.sh
+
+# Node.js dependencies
+node_modules
+# compiled go artifact
+ce-app/app
+
+# draw.io backup files
+*.bkp
+*.dtmp
+
+# backup terraform artifacts
+modules
+originserver
+.terraform
+.terraform.lock.hcl
+
+.DS_Store
