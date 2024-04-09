@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -27,13 +28,18 @@ var idleTimer *time.Timer
 // Consumer implements the ConsumerGroupHandler
 // interface
 type Consumer struct {
-	ready chan bool
+	ready   chan bool
+	timeout int
 }
 
 func main() {
 	fmt.Println("retrieving config")
 
-	config := cmd.GetConfig()
+	config := cmd.GetConfigConsumer([]string{
+		cmd.ENV_MESSAGEHUB_BROKERS,
+		cmd.ENV_MESSAGEHUB_USER,
+		cmd.ENV_MESSAGEHUB_PWD,
+	})
 
 	keepRunning := true
 	log.Println("Starting a new Sarama consumer")
@@ -64,16 +70,31 @@ func main() {
 	saramaConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
 
 	consumer := Consumer{
-		ready: make(chan bool),
+		ready:   make(chan bool),
+		timeout: cmd.DEFAULT_IDLE_TIMEOUT,
 	}
 
+	// Handle idle timeout init
+	if idleTimeOut, exists := os.LookupEnv(cmd.IDLE_TIMEOUT); exists {
+		timeOut, err := strconv.Atoi(idleTimeOut)
+		if err != nil {
+			log.Panicf("error parsing %s duration: %v", cmd.IDLE_TIMEOUT, err)
+		}
+		consumer.timeout = timeOut
+	}
+
+	log.Printf("idle timeout of consumer set to %v seconds", consumer.timeout)
+
 	brokers := config.Kafka.Brokers
-	topics := strings.Split(os.Getenv("KAFKA_TOPIC"), ",")
+	topics := strings.Split(os.Getenv(cmd.KAFKA_TOPIC), ",")
 
 	ctx, cancel := context.WithCancel(context.Background())
-	client, err := sarama.NewConsumerGroup(brokers, "consuming-group", saramaConfig)
+
+	consumerGroup := os.Getenv(cmd.CONSUMER_GROUP)
+
+	client, err := sarama.NewConsumerGroup(brokers, consumerGroup, saramaConfig)
 	if err != nil {
-		log.Panicf("Error creating consumer group client: %v", err)
+		log.Panicf("error creating consumer group client: %v", err)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -81,12 +102,11 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			// TODO: fix topics, cannot use all
 			if err := client.Consume(ctx, topics, &consumer); err != nil {
 				if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 					return
 				}
-				log.Panicf("Error from consumer: %v", err)
+				log.Panicf("error from consumer: %v", err)
 			}
 			if ctx.Err() != nil {
 				return
@@ -96,7 +116,7 @@ func main() {
 	}()
 
 	<-consumer.ready
-	log.Println("Sarama consumer up and running!...")
+	log.Println("sarama consumer up and running!...")
 
 	sigusr1 := make(chan os.Signal, 1)
 	signal.Notify(sigusr1, syscall.SIGUSR1)
@@ -123,7 +143,7 @@ func main() {
 	cancel()
 	wg.Wait()
 	if err = client.Close(); err != nil {
-		log.Panicf("Error closing client: %v", err)
+		log.Panicf("error closing client: %v", err)
 	}
 }
 
@@ -138,14 +158,14 @@ func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
 
 func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for {
-		idleTimer.Reset(time.Second * 60)
+		idleTimer.Reset(time.Second * time.Duration(consumer.timeout))
 		select {
 		case message, ok := <-claim.Messages():
 			if !ok {
 				log.Printf("message channel was closed")
 				return nil
 			}
-			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s, partition = %v, offset = %v", string(message.Value), message.Timestamp, message.Topic, message.Partition, message.Offset)
+			log.Printf("message claimed: key= %s, value = %s, timestamp = %v, latency = %s, topic = %s, partition = %v, offset = %v", string(message.Key), string(message.Value), message.Timestamp, time.Since(message.Timestamp), message.Topic, message.Partition, message.Offset)
 			session.MarkMessage(message, "")
 		case <-session.Context().Done():
 			log.Printf("completed")

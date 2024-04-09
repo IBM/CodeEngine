@@ -1,8 +1,12 @@
 payments:
   partitions: 4
   jobs:
-    - payments-consumer
+    - name: payments-consumer
+      consumer_group: payments-consumer-group
+    - name: foobar-consumer
+      consumer_group: foobar-consumer-group
 shipping:
   partitions: 3
   jobs:
-    - shipping-consumer
+    - name: shipping-consumer
+      consumer_group: shipping-consumer-group
