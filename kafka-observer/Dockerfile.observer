@@ -12,7 +12,7 @@ COPY go.sum .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o observer ./observer
 
-FROM icr.io/codeengine/golang:latest
+FROM icr.io/codeengine/alpine
 
 WORKDIR /app/src
 

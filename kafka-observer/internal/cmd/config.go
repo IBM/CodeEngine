@@ -10,17 +10,20 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func getEnvVarsByName() [5]string {
-	// Add any mandatory env variable
-	// in here
-	return [5]string{
-		"MESSAGEHUB_KAFKA_BROKERS_SASL",
-		"IAM_API_KEY",
-		"MESSAGEHUB_USER",
-		"MESSAGEHUB_PASSWORD",
-		"kafkadata",
-	}
-}
+const (
+	ENV_MESSAGEHUB_BROKERS = "MESSAGEHUB_KAFKA_BROKERS_SASL"
+	ENV_IAM_API_KEY        = "IAM_API_KEY"
+	ENV_MESSAGEHUB_USER    = "MESSAGEHUB_USER"
+	ENV_MESSAGEHUB_PWD     = "MESSAGEHUB_PASSWORD"
+	ENV_KAFKA_DATA         = "kafkadata"
+
+	KAFKA_TOPIC    = "KAFKA_TOPIC"
+	CONSUMER_GROUP = "CONSUMER_GROUP"
+	CE_PROJECT_ID  = "CE_PROJECT_ID"
+
+	IDLE_TIMEOUT         = "IDLE_TIMEOUT"
+	DEFAULT_IDLE_TIMEOUT = 60
+)
 
 // KafkaAuth holds required data
 // to auth to Kafka Cluster. We load
@@ -36,9 +39,14 @@ type Kafka struct {
 	Brokers []string `json:"brokers"`
 }
 
+type Job struct {
+	Name          string `yaml:"name"`
+	ConsumerGroup string `yaml:"consumer_group"`
+}
+
 type TopicsToJobs struct {
-	Partitions int64    `json:"partitions"`
-	Jobs       []string `json:"jobs"`
+	Partitions int64 `json:"partitions"`
+	Jobs       []Job `json:"jobs"`
 }
 
 // CEClient holds the data to authenticate
@@ -56,55 +64,82 @@ type Config struct {
 	KafkaAuth KafkaAuth
 }
 
-func GetConfig() Config {
+func GetConfigConsumer(vars []string) Config {
 
 	// bail out if any env variable is missing
-	if err := validateEnvVars(); err != nil {
+	if err := validateEnvVars(vars); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	envVarsNames := getEnvVarsByName()
-
-	// handle special cases for brokers list
-	kafkaBrokers := os.Getenv(envVarsNames[0])
-	kafkaBrokers = strings.TrimPrefix(kafkaBrokers, "[")
-	kafkaBrokers = strings.TrimSuffix(kafkaBrokers, "]")
-	kafkaBrokers = strings.ReplaceAll(kafkaBrokers, "\"", "")
-
-	brokers := strings.Split(kafkaBrokers, ",")
-
-	kafkaData := os.Getenv(envVarsNames[4])
-
-	var kafkace map[string]TopicsToJobs
-
-	err := yaml.Unmarshal([]byte(kafkaData), &kafkace)
-	if err != nil {
-		panic(err)
-	}
-	var topics []string
-	for topic := range kafkace {
-		topics = append(topics, topic)
-	}
+	brokers := retrieveMessageHubBrokers()
 
 	return Config{
 		Kafka: Kafka{
-			Topics:  topics,
+			Brokers: brokers,
+		},
+		KafkaAuth: KafkaAuth{
+			User:  os.Getenv(ENV_MESSAGEHUB_USER),
+			Token: os.Getenv(ENV_MESSAGEHUB_PWD),
+		},
+	}
+}
+
+func GetConfigObserver(vars []string) Config {
+
+	// bail out if any env variable is missing
+	if err := validateEnvVars(vars); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	brokers := retrieveMessageHubBrokers()
+	kafkace := getTopicsToJobs()
+
+	return Config{
+		Kafka: Kafka{
+			Topics:  getKafkaTopics(kafkace),
 			Brokers: brokers,
 		},
 		CEClient: CEClient{
-			IamApiKey: os.Getenv(envVarsNames[1]),
+			IamApiKey: os.Getenv(ENV_IAM_API_KEY),
 		},
 		KafkaAuth: KafkaAuth{
-			User:  os.Getenv(envVarsNames[2]),
-			Token: os.Getenv(envVarsNames[3]),
+			User:  os.Getenv(ENV_MESSAGEHUB_USER),
+			Token: os.Getenv(ENV_MESSAGEHUB_PWD),
 		},
 		KafkaCE: kafkace,
 	}
 }
 
-func validateEnvVars() error {
+func retrieveMessageHubBrokers() []string {
+	// handle special cases for brokers list
+	kafkaBrokers := os.Getenv(ENV_MESSAGEHUB_BROKERS)
+	kafkaBrokers = strings.TrimPrefix(kafkaBrokers, "[")
+	kafkaBrokers = strings.TrimSuffix(kafkaBrokers, "]")
+	kafkaBrokers = strings.ReplaceAll(kafkaBrokers, "\"", "")
+
+	return strings.Split(kafkaBrokers, ",")
+}
+
+func getTopicsToJobs() map[string]TopicsToJobs {
+	kafkaData := os.Getenv(ENV_KAFKA_DATA)
+	var kafkace map[string]TopicsToJobs
+	err := yaml.Unmarshal([]byte(kafkaData), &kafkace)
+	if err != nil {
+		log.Fatalf("error unmarshalling kafka data: %v", err)
+	}
+	return kafkace
+}
+
+func getKafkaTopics(kafkace map[string]TopicsToJobs) []string {
+	var topics []string
+	for topic := range kafkace {
+		topics = append(topics, topic)
+	}
+	return topics
+}
+
+func validateEnvVars(vars []string) error {
 	errorList := []error{}
-	for _, name := range getEnvVarsByName() {
+	for _, name := range vars {
 		if _, exists := os.LookupEnv(name); !exists {
 			errorList = append(errorList, fmt.Errorf("env var %v is not defined, missing", name))
 		}
