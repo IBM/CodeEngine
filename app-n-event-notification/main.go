@@ -99,10 +99,9 @@ func CreateService() *Service {
 }
 
 func NewCodeEngineService(authenticator *core.IamAuthenticator) *ce.CodeEngineV2 {
-	region := os.Getenv("CE_REGION")
 	codeEngineService, err := ce.NewCodeEngineV2(&ce.CodeEngineV2Options{
 		Authenticator: authenticator,
-		URL:           "https://api." + region + ".codeengine.cloud.ibm.com/v2",
+		URL:           os.Getenv("CE_API_BASE_URL") + "/v2",
 	})
 	if err != nil {
 		log.Printf("NewCodeEngineV2 error: %v\n", err.Error())
@@ -161,11 +160,12 @@ func (svc *Service) GetSecretFromSM(id string) (*sm.ImportedCertificate, *core.D
 }
 
 func (svc *Service) UpdateSecretInCluster(secret *sm.ImportedCertificate) (*core.DetailedResponse, error) {
+	ce_secret := os.Getenv("CE_SECRET")
 	log.Println("Updating secret", *secret.Name)
 	projectID := os.Getenv("CE_PROJECT_ID")
 	replaceSecretOptions := &ce.ReplaceSecretOptions{
 		ProjectID: core.StringPtr(projectID),
-		Name:      core.StringPtr(*secret.Name),
+		Name:      &ce_secret,
 		IfMatch:   core.StringPtr("*"),
 		Format:    core.StringPtr("tls"),
 		Data: &ce.SecretDataTLSSecretData{
