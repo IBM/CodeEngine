@@ -8,18 +8,22 @@ The architecture of this sample consists of an **observer** and a **consumer**, 
 
 See the following diagram:
 
-![Architecture Diagram](images/kafkapoc.jpg)
+![Architecture Diagram](images/Kafka-Observer-Consumer-Acrchitecture.jpg)
 
 ### Observer
 
-The **observer** is a Code Engine Job operating in [daemon mode](https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon). At runtime, it dynamically creates a new consumer group based on provided Kafka Broker addresses and configurations (_including Kafka Topics_), persistently waiting for incoming messages to be claimed from a Kafka Broker.
+The **observer** is a Code Engine Job operating in [daemon mode](https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon). At runtime, based on provided Kafka Broker addresses and configurations (_including Kafka Topics_), it will constantly check for any messages in topic offsets and compare with the consumer group offsets of that topic.
 
-When a new message is claimed from a specific Kafka Topic, the **observer** wakes-up the corresponding **consumer** Job, by submitting a JobRun. The decision on which **consumer** Job to wake-up depends on the Topic the **consumer** Job is using. This wake-up mechanism allows **consumer** Jobs to only run when needed, optimizing resource consumption in a serverless fashion.
+The way it works is, the observer monitors every partition of a topic, and if any new message arrives in a particular partition, it triggers corresponding job runs with the number equal to the number of partitions the new messages have arrived in.
+
+For example, consider I have 4 partitions in a topic called Topic X. When new events arrive in partition 0 and partition 1 of the topic, then the observer will know and it will trigger only 2 pods of the Consumer JobRun. The pods will then be able to consume the messages.
+
+The decision on which **consumer** Job to wake-up depends on the Topic the **consumer** Job is using. This wake-up mechanism allows **consumer** Jobs to only run when needed, optimizing resource consumption in a serverless fashion.
 
 
 ### Consumer
 
-The **consumer** is a Code Engine Job operating in [daemon mode](https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon). Unlike the observer, the **consumer** runs only in response to incoming messages within the desired Kafka Topics. Once running, it will gracefully shutdown within one minute, if none further messages are claimed.
+The **consumer** is a Code Engine Job operating in [daemon mode](https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon). Unlike the observer, the **consumer** runs only in response to incoming messages within the desired Kafka Topics. Once running, it will gracefully shutdown within configuarable idle timeout, if none further messages are claimed.
 
 In this sample, we provided a native Kafka client implementation written in Go. Code Engine users can opt-in for other native clients using different runtimes, such as Java, when implementing their **consumer** logic.
 
@@ -57,17 +61,22 @@ The mapping is defined via the following [kafkadata](resources/kafkadata) file, 
 payments:
   partitions: 4
   jobs:
-    - payments-consumer
+    - name: payments-consumer
+      consumer_group: payments-consumer-group
+    - name: foobar-consumer
+      consumer_group: foobar-consumer-group
 shipping:
   partitions: 3
   jobs:
-    - shipping-consumer
+    - name: shipping-consumer
+      consumer_group: shipping-consumer-group
 ```
 
 The above is explained as follows:
 - `.payments` and `.shipping` correspond to the existing Topics of interest within the same Kafka instance.
 - `.payments.partitions` and `.shipping.partitions` correspond to the partition size of the Kafka Topics.
 - `.payments.jobs` and `.shipping.jobs` correspond to the CodeEngine **consumer** Jobs that want to consume messages from the related Kafka Topic.
+- `.jobs` will be a list. Each value will have the name of the job and the consumer group it belongs to.
 
 As an example, if you have one single Topic `foobar` with `2` partitions and you want CE Job `foobar-consumer` to consume from it, this is how the `kafkadata` file will look:
 
@@ -75,8 +84,25 @@ As an example, if you have one single Topic `foobar` with `2` partitions and you
 foobar:
   partitions: 2
   jobs:
-    - foobar-consumer
+    - name: foobar-consumer
+      consumer_group: foobar-consumer-group
 ```
+
+You can also set the same consumer group for multiple topics like this:
+
+```yaml
+payments:
+  partitions: 2
+  jobs:
+    - name: foobar-consumer
+      consumer_group: foobar-consumer-group
+shipping:
+  partitions: 3
+  jobs:
+    - name: foobar-consumer
+      consumer_group: foobar-consumer-group
+```
+
 
 ## Running the Sample
 
