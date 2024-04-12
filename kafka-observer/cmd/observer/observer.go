@@ -128,13 +128,12 @@ func (o *Observer) IsAnyConsumerGroupOffsetModified(topic string) JobRunInfo {
 	for _, c := range topicObject.ConsumerGroups {
 		count := 0
 		for partition, offset := range c.PartitionsOffset {
-			if topicObject.PartitionsOffset[partition] > offset {
+			if topicObject.PartitionsOffset[partition] > offset && topicObject.PartitionsOffset[partition]!=0 {
 				log.Printf("topicOffset: %v/%v, consumerGroupOffset(%v): %v/%v", partition, topicObject.PartitionsOffset[partition], c.Name, partition, offset)
 				count++
 			}
 			jobRunInfo.JobRunToCreate[c.JobName] = count
 		}
-
 	}
 
 	return jobRunInfo
