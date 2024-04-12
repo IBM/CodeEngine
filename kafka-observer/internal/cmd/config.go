@@ -23,6 +23,9 @@ const (
 
 	IDLE_TIMEOUT         = "IDLE_TIMEOUT"
 	DEFAULT_IDLE_TIMEOUT = 60
+
+	OBSERVER_TICKER         = "OBSERVER_TICKER" // in milliseconds
+	DEFAULT_OBSERVER_TICKER = 500
 )
 
 // KafkaAuth holds required data

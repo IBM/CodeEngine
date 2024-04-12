@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -44,6 +45,17 @@ func main() {
 	projectID = os.Getenv(cmd.CE_PROJECT_ID)
 	if projectID == "" {
 		log.Panicf("%s is not set", cmd.CE_PROJECT_ID)
+	}
+
+	tickerTime := cmd.DEFAULT_OBSERVER_TICKER
+
+	// Handle idle timeout init
+	if observerTicker, exists := os.LookupEnv(cmd.OBSERVER_TICKER); exists {
+		tickerValue, err := strconv.Atoi(observerTicker)
+		if err != nil {
+			log.Panicf("error parsing %s duration: %v", cmd.OBSERVER_TICKER, err)
+		}
+		tickerTime = tickerValue
 	}
 
 	observer, err := NewObserver(config)
@@ -87,7 +99,7 @@ func main() {
 
 	for topicName, topic := range observer.Topics {
 		go func(topic string) {
-			ticker := time.Tick(500 * time.Millisecond) // should be configurable
+			ticker := time.Tick(time.Duration(tickerTime) * time.Millisecond) // should be configurable
 			for range ticker {
 				offset, err := observer.GetTopicPartitionsOffset(topic)
 				if err != nil {
@@ -118,12 +130,12 @@ func main() {
 		go func(name string, consumerGroups []ConsumerGroup) {
 			for i, consumerGroup := range consumerGroups {
 				go func(topicName string, cg ConsumerGroup, index int) {
-					ticker := time.Tick(500 * time.Millisecond) // should be configurable
+					ticker := time.Tick(time.Duration(tickerTime) * time.Millisecond) // should be configurable
 					for range ticker {
 						cgOffset, err := observer.GetConsumerGroupTopicPartitionsOffset(topicName, cg.Name)
 						if err != nil {
 							errCh <- err
-							break
+							continue
 						}
 
 						if observer.IsConsumerGroupTopicOffsetModified(topicName, cg.Name, cgOffset) || len(observer.Topics[topicName].ConsumerGroups[index].PartitionsOffset) == 0 {
@@ -151,7 +163,7 @@ func main() {
 					go func(t string, jobName string, podsCount int) {
 						// Lock is required, as there well be cases where
 						// multiple goroutines attempt to create jobruns for
-						// the same job. This avoids creating unneeded pods.
+						// the same job. This prevents the creation of unnecessary pods.
 						unlock := jobInvoker.JobMutexes.Lock(jobName)
 						defer unlock()
 						if err := jobInvoker.InvokeJobs(int64(podsCount), jobName); err != nil {
