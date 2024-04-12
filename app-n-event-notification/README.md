@@ -30,7 +30,7 @@ These are the steps which we will follow:
 ## Instructions to use:
 - Install Code Engine cli \
   Command: `ibmcloud plugin install code-engine`
-- Install Event Notifications cli \
+- Install Event Notifications cli, version 1.0.1 or later\
   Command: `ibmcloud plugin install event-notifications`
 - Install the Secrets Manager CLI \
   Command: `ibmcloud plugin install secrets-manager`
