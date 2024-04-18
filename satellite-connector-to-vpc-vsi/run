@@ -63,6 +63,16 @@ function check_prerequisites {
     fi
 }
 
+function delete_serviceids() {
+  service_ids=$(ibmcloud resource search "type:serviceid AND $1" --output JSON | jq -r '.items')
+  for service_id in $(echo "${service_ids}" | jq -r '.[] | @base64'); do
+      _jqServiceID() {
+        echo ${service_id} | base64 --decode | jq -r ${1}
+      }
+      ibmcloud iam service-id-delete "$(_jqServiceID '.resource_id')" --force
+    done
+}
+
 # Clean up previous run
 function clean() {
     (
@@ -99,8 +109,8 @@ function clean() {
             ibmcloud ce project delete --name $ce_project_name --force --hard --no-wait
         fi
 
-        ibmcloud iam service-id-delete $sat_connector_serviceid_name --force 2>/dev/null
-
+        delete_serviceids $sat_connector_serviceid_name
+        
         ibmcloud resource group $resource_group_name --quiet 2>/dev/null
         if [[ $? == 0 ]]; then
             COUNTER=0
@@ -471,7 +481,7 @@ if [ $? -ne 0 ]; then
     print_error "Code Engine project creation failed!"
     abortScript
 fi
-project_guid=$(ibmcloud ce project current --output json|jq -r '.guid')
+project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
 
 #
 # Create the Code Engine function
@@ -529,7 +539,7 @@ if [ $? -ne 0 ]; then
 fi
 
 print_msg "\nCreating a Code Engine job '$ce_job_name' that will connect to the database ..."
-ibmcloud ce job create --name $ce_job_name  \
+ibmcloud ce job create --name $ce_job_name \
     --build-source ./ce-job \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
@@ -551,7 +561,7 @@ print_msg "\nListing submitted job runs..."
 ibmcloud ce jobrun list
 
 print_msg "\nCreating a Code Engine app '$ce_app_name' that retrieve records from the database ..."
-ibmcloud ce app create --name $ce_app_name  \
+ibmcloud ce app create --name $ce_app_name \
     --build-source ce-app \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
