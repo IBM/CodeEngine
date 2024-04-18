@@ -157,7 +157,7 @@ ibmcloud plugin install container-service -f --quiet
 
 print_msg "\nCleaning up the remains of previous executions ..."
 clean
-[[ "$1" == "clean" ]] && print_success "\n==========================================\n DONE\n==========================================\n"
+[[ "$1" == "clean" ]] && print_success "\n==========================================\n DONE\n==========================================\n" && exit 0
 
 print_msg "\nTargetting IBM Cloud region '$REGION' ..."
 ibmcloud target -r $REGION
