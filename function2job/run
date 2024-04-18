@@ -1,5 +1,16 @@
 #!/bin/bash
 
+
+function delete_serviceids() {
+  service_ids=$(ibmcloud resource search "type:serviceid AND $1" --output JSON | jq -r '.items')
+  for service_id in $(echo "${service_ids}" | jq -r '.[] | @base64'); do
+      _jqServiceID() {
+        echo ${service_id} | base64 --decode | jq -r ${1}
+      }
+      ibmcloud iam service-id-delete "$(_jqServiceID '.resource_id')" --force
+    done
+}
+
 # Clean up previous run
 function clean() {
   echo Cleaning...
@@ -7,7 +18,7 @@ function clean() {
   ibmcloud ce secret delete --name f2j-secret --force
   ibmcloud ce job delete --name f2j-job --force
   ibmcloud ce fn delete --name f2j-function --force
-  ibmcloud iam service-id-delete ce-sample-function-to-job --force
+  delete_serviceids ce-sample-function-to-job
   ) > /dev/null 2>&1
 }
 
