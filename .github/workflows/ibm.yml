@@ -18,7 +18,7 @@ env:
   IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
   IBM_CLOUD_REGION: us-south
   ICR_NAMESPACE: ${{ secrets.ICR_NAMESPACE }}
-  RESOURCE_GROUP: Default
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }} 
   REGISTRY_HOSTNAME: us.icr.io
   IMAGE_NAME: iks-test-flask-5
   IKS_CLUSTER: cof3r9fd0jahh90k9ghg
