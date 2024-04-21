@@ -1,20 +1,95 @@
-# Dependency Review Action
+# This workflow will build a docker container, publish it to IBM Container Registry, and deploy it to IKS when there is a push to the "main" branch.
 #
-# This Action will scan dependency manifest files that change as part of a Pull Request, surfacing known-vulnerable versions of the packages declared or updated in the PR. Once installed, if the workflow run is marked as required, PRs introducing known-vulnerable packages will be blocked from merging.
+# To configure this workflow:
 #
-# Source repository: https://github.com/actions/dependency-review-action
-# Public documentation: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review#dependency-review-enforcement
-name: 'Dependency Review'
-on: [pull_request]
+# 1. Ensure that your repository contains a Dockerfile
+# 2. Setup secrets in your repository by going to settings: Create ICR_NAMESPACE and IBM_CLOUD_API_KEY
+# 3. Change the values for the IBM_CLOUD_REGION, REGISTRY_HOSTNAME, IMAGE_NAME, IKS_CLUSTER, DEPLOYMENT_NAME, and PORT
+# Assuming you added RESOURCE_GROUP_NAME as a GitHub secret or directly in the env section
+ 
 
-permissions:
-  contents: read
+name: Build and Deploy to IKS
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  GITHUB_SHA: ${{ github.sha }}
+  IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+  IBM_CLOUD_REGION: us-south
+  ICR_NAMESPACE: ${{ secrets.ICR_NAMESPACE }}
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }} 
+  REGISTRY_HOSTNAME: us.icr.io
+  IMAGE_NAME: iks-test
+  IKS_CLUSTER: cof3r9fd0jahh90k9ghg
+  DEPLOYMENT_NAME: iks-test
+  PORT: 5001
+
 
 jobs:
-  dependency-review:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
+    environment: production
     steps:
-      - name: 'Checkout Repository'
-        uses: actions/checkout@v3
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v2
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Download and Install IBM Cloud CLI
+    - name: Install IBM Cloud CLI
+      run: |
+        curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+        ibmcloud --version
+        ibmcloud config --check-version=false
+        ibmcloud plugin install -f kubernetes-service
+        ibmcloud plugin install -f container-registry
+
+    # Authenticate with IBM Cloud CLI
+    - name: Authenticate with IBM Cloud CLI
+      run: |
+        #ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" -r "${IBM_CLOUD_REGION}" -g Default
+        ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" -r "${IBM_CLOUD_REGION}" -g "${RESOURCE_GROUP}"
+        ibmcloud cr region-set "${IBM_CLOUD_REGION}"
+        ibmcloud cr login
+    
+ 
+
+    # Build the Docker image
+    - name: Build with Docker
+      run: |
+        cat requirements.txt  # Print requirements to verify correct versions
+        docker build --no-cache -t "$REGISTRY_HOSTNAME"/"$ICR_NAMESPACE"/"$IMAGE_NAME":"$GITHUB_SHA" .
+        
+
+    # Push the image to IBM Container Registry
+    - name: Push the image to ICR
+      run: |
+        docker push $REGISTRY_HOSTNAME/$ICR_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA
+
+    - name: Deploy to IKS
+      
+      run: |
+        ibmcloud ks cluster config --cluster $IKS_CLUSTER
+        kubectl config current-context
+        kubectl set image deployment/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=$REGISTRY_HOSTNAME/$ICR_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA --record
+        kubectl rollout restart deployment/$DEPLOYMENT_NAME
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
+        kubectl get pods
+
+
+    # Deploy the Docker image to the IKS cluster
+    #- name: Deploy to IKS
+     # run: |
+     #   ibmcloud ks cluster config --cluster $IKS_CLUSTER
+      #  kubectl config current-context
+       # kubectl create deployment $DEPLOYMENT_NAME --image=$REGISTRY_HOSTNAME/$ICR_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA --dry-run -o yaml > deployment.yaml
+       # kubectl apply -f deployment.yaml
+       # kubectl rollout status deployment/$DEPLOYMENT_NAME
+      #  kubectl create service loadbalancer $DEPLOYMENT_NAME --tcp=80:$PORT --dry-run -o yaml > service.yaml
+      #  kubectl apply -f service.yaml
+       # kubectl get services -o wide
+    
+    
