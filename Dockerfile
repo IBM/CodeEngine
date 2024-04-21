@@ -1,9 +1,29 @@
-FROM icr.io/codeengine/golang:alpine
-COPY ./helloworld /helloworld
-COPY codeengine.go /
-RUN go build -o /codeengine /codeengine.go
 
-# Copy the exe into a smaller base image
-FROM icr.io/codeengine/alpine
-COPY --from=0 /codeengine /codeengine
-CMD /codeengine
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy only the requirements.txt initially to leverage Docker cache
+COPY requirements.txt /app/
+
+# Install any needed packages specified in requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt 
+
+
+# Copy the rest of the application
+COPY . /app
+
+# Make port 8080 available to the world outside this container
+EXPOSE 8080
+
+# Define environment variable
+ENV NAME World
+
+# Ensure Python output is sent straight to terminal (container log)
+ENV PYTHONUNBUFFERED 1
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
