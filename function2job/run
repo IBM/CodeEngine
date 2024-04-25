@@ -5,7 +5,7 @@ function delete_serviceids() {
   service_ids=$(ibmcloud resource search "type:serviceid AND $1" --output JSON | jq -r '.items')
   for service_id in $(echo "${service_ids}" | jq -r '.[] | @base64'); do
       _jqServiceID() {
-        echo ${service_id} | base64 --decode | jq -r ${1}
+        echo "${service_id}" | base64 --decode | jq -r "${1}"
       }
       ibmcloud iam service-id-delete "$(_jqServiceID '.resource_id')" --force
     done
