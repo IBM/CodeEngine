@@ -14,14 +14,24 @@ echo "Install necessary ibmcloud cli plugins ..."
 ibmcloud plugin install cloudant -f
 ibmcloud plugin install code-engine -f
 
+function delete_serviceids() {
+  service_ids=$(ibmcloud resource search "type:serviceid AND $1" --output JSON | jq -r '.items')
+  for service_id in $(echo "${service_ids}" | jq -r '.[] | @base64'); do
+      _jqServiceID() {
+        echo "${service_id}" | base64 --decode | jq -r "${1}"
+      }
+      ibmcloud iam service-id-delete "$(_jqServiceID '.resource_id')" --force
+    done
+}
+
 # Clean up previous run
 function clean() {
   echo "=================================================================================="
   echo "Cleaning... (FAILED results are expected for NON-existing elements while cleaning)"
   (
     ## first select the project with the name like is was created in last session
-    #  if project does not exist, then there is no need to delete the artifacts 
-    # within the project  
+    #  if project does not exist, then there is no need to delete the artifacts
+    # within the project
     ibmcloud ce project select --name ce-sample-cloudant-change-listener-project
     if [ $? == 0 ]; then
       ibmcloud ce jobrun delete --job cloudant-change-listener-job --force
@@ -36,13 +46,15 @@ function clean() {
 
       ibmcloud ce project delete --name ce-sample-cloudant-change-listener-project --force --hard --no-wait
     fi
+
+    delete_serviceids ce-sample-cloudant-change-listener-project-ce-binding*
+    delete_serviceids ce-sample-cloudant-change-listener-api-credentials
     
-    ibmcloud iam service-id-delete ce-sample-cloudant-change-listener-api-credentials --force
     ibmcloud resource service-key-delete cloudant-creds-ce-project --force
 
   )
   echo Cleaning DONE ...
-  echo "==================================================================================" 
+  echo "=================================================================================="
 }
 
 clean
@@ -50,11 +62,10 @@ clean
 # In case this script has been executed with `./run clean`, we stop right after the cleanup
 [[ "$1" == "clean" ]] && exit 0
 
-
 echo "Check if a Cloudant instance 'CE-Cloudant-SampleDB' is properly initialized ..."
 COUNTER=0
 
-while !  ibmcloud resource service-instance CE-Cloudant-SampleDB| grep "active"; do
+while ! ibmcloud resource service-instance CE-Cloudant-SampleDB | grep "active"; do
   sleep 5
   # wait max 3 min to get a cloudant DB instance
   COUNTER=$((COUNTER + 1))
@@ -92,7 +103,7 @@ fi
 
 echo ""
 echo "Try to delete the sample-db Cloudant database if exists from a previous run "
-curl -H "Authorization: $iam_access_token" -X DELETE "$cloudant_url/sample-db" 
+curl -H "Authorization: $iam_access_token" -X DELETE "$cloudant_url/sample-db"
 
 echo "Creating a new database 'sample-db' within Cloudant instance '$cloudant_instance_name' ..."
 echo "using cloudant API  https://cloud.ibm.com/apidocs/cloudant#putdatabase"
@@ -101,8 +112,6 @@ if [ $? != 0 ]; then
   echo "FAILED - The creation of the Cloudant database failed"
   exit 1
 fi
-
-
 
 echo "Creating Code Engine project 'ce-sample-cloudant-change-listener-project' ..."
 ibmcloud ce proj create --name ce-sample-cloudant-change-listener-project
@@ -246,8 +255,6 @@ while ! ibmcloud ce jobrun get -n ${job_run_name} | grep "1/1" | grep "Running";
 
 done
 sleep 2
-
-
 
 echo "Upload a file to the Cloudant database ..."
 curl -H "Authorization: $iam_access_token" -X POST "$cloudant_url/sample-db" -H "Content-Type: application/json" --data '{

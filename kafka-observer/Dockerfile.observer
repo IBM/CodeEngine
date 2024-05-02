@@ -1,0 +1,21 @@
+FROM icr.io/codeengine/golang:latest AS stage
+
+WORKDIR /app/src
+
+COPY cmd/observer/ ./observer/
+
+COPY internal/ ./internal/
+
+COPY go.mod .
+
+COPY go.sum .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o observer ./observer
+
+FROM icr.io/codeengine/alpine
+
+WORKDIR /app/src
+
+COPY --from=stage /app/src/observer/observer .
+
+CMD [ "./observer" ]

@@ -5,22 +5,17 @@ set -euo pipefail
 BASEDIR="$(dirname "$0")"
 
 CE_APP="ce-app"
-CE_SECRET="cert"
+CE_SECRET="ce-cert"
 CE_EN_SECRET="ce-en-secret"
 EN_INSTANCE="en-instance"
-EN_SOURCE_1="en-rotate-cert-source"
-EN_SOURCE_2="en-ce-source"
-EN_TOPIC_1="en-rotate-cert-topic"
-EN_TOPIC_2="en-ce-topic"
-EN_DEST_1="en-rotate-cert-destination"
-EN_DEST_2="en-ce-destination"
-EN_SUB_1="en-rotate-cert-sub"
-EN_SUB_2="en-ce-sub"
+EN_SOURCE="en-rotate-cert-source"
+EN_TOPIC="en-rotate-cert-topic"
+EN_DEST="en-rotate-cert-destination"
+EN_SUB="en-rotate-cert-sub"
 SM_INSTANCE="sm-instance"
-SM_SECRET="cert"
+SM_SECRET="sm-cert"
 API_KEY="<>"
 
-CE_REGION="${CE_REGION:=au-syd}"
 SM_REGION="${SM_REGION:=au-syd}"
 EN_REGION="${EN_REGION:=au-syd}"
 
@@ -98,7 +93,6 @@ validateInstanceState $EN_INSTANCE
 validateInstanceState $SM_INSTANCE
 
 # Retrieve respective ID's, GUID's
-CE_PROJECT_ID=$(ibmcloud ce project current --output json | jq -r '.guid')
 EN_INSTANCE_ID=$(ibmcloud resource service-instance $EN_INSTANCE --location $EN_REGION -q --output json | jq -r '.[].guid')
 EN_CRN_ID=$(ibmcloud resource service-instance $EN_INSTANCE --location $EN_REGION -q --output json | jq -r '.[].id')
 SM_INSTANCE_ID=$(ibmcloud resource service-instance $SM_INSTANCE --location $SM_REGION -q --output json | jq -r '.[].guid')
@@ -141,7 +135,7 @@ if [[ "${EN_CRN_ID_CHECK}" != "${EN_CRN_ID}" ]]; then
  echo "[INFO] Creating notifications-registration-create in the secrets manager"
  ibmcloud secrets-manager notifications-registration-create \
     --event-notifications-instance-crn ${EN_CRN_ID} \
-    --event-notifications-source-name $EN_SOURCE_1 \
+    --event-notifications-source-name $EN_SOURCE \
     --region $SM_REGION \
     --instance-id $SM_INSTANCE_ID \
     -q
@@ -152,15 +146,15 @@ fi
 echo "[INFO] Initializing Event Notifications instance ID ${EN_INSTANCE_ID}"
 ibmcloud en init --instance-id=$EN_INSTANCE_ID
 
-EN_TOPIC_ID_1=$(ibmcloud en topic list --instance-id $EN_INSTANCE_ID  | grep "${EN_TOPIC_1}" | awk '{print $8}' || echo "false")
-if [[ $EN_TOPIC_ID_1 == "false"  ]]; then
-  echo "[INFO] Creating ${EN_TOPIC_1} topic for EN instance-id ${EN_INSTANCE_ID}"
-  EN_TOPIC_ID_1=$(ibmcloud en topic create --instance-id=$EN_INSTANCE_ID \
-      --name=$EN_TOPIC_1 \
+EN_TOPIC_ID=$(ibmcloud en topics --instance-id $EN_INSTANCE_ID  | grep "${EN_TOPIC}" | awk '{print $8}' || echo "false")
+if [[ $EN_TOPIC_ID == "false"  ]]; then
+  echo "[INFO] Creating ${EN_TOPIC} topic for EN instance-id ${EN_INSTANCE_ID}"
+  EN_TOPIC_ID=$(ibmcloud en topic-create --instance-id=$EN_INSTANCE_ID \
+      --name=$EN_TOPIC \
       --description="This is a topic" \
       --sources="[{\"id\" : \"$SM_CRN_ID\", \"rules\" : [{\"enabled\" : true, \"event_type_filter\" : \"$.type == 'com.ibm.cloud.secrets-manager.secret_rotated'\", \"notification_filter\": \"$.data.secrets[0].secret_name == '$SM_SECRET'\"}]}]" | awk '/id/{ print $2 }')
 else
-  echo "[INFO] Found existing topic ${EN_TOPIC_ID_1}"
+  echo "[INFO] Found existing topic ${EN_TOPIC_ID}"
 fi
 
 echo "[INFO] Creating ${CE_EN_SECRET} in CE project with iam api-key"
@@ -175,7 +169,7 @@ ibmcloud ce secret create --name $CE_SECRET --quiet --format tls \
 echo "[INFO] Creating CE application ${CE_APP}"
 ibmcloud ce application create --name $CE_APP \
     --build-strategy=buildpacks --build-source . \
-    -e CE_PROJECT_ID=$CE_PROJECT_ID -e CE_REGION=$CE_REGION \
+    -e CE_SECRET=$CE_SECRET \
     -e EN_REGION=$EN_REGION -e SM_ENDPOINT=$SECRETS_MANAGER_URL \
     --env-from-secret $CE_EN_SECRET
 
@@ -185,28 +179,28 @@ CE_APP_URL=$(ibmcloud ce app get -n $CE_APP -o url)
 echo "[INFO] ${CE_APP_URL}"
 
 # Create destination for secrets manager topic and ce-app
-EN_DESTINATION_ID_1=$(ibmcloud en destination list | grep en-rotate-cert-destination | awk '{print $4}' || echo "false")
-if [[ $EN_DESTINATION_ID_1 == "false"  ]]; then
+EN_DESTINATION_ID=$(ibmcloud en destinations --instance-id $EN_INSTANCE_ID | grep en-rotate-cert-destination | awk '{print $5}' || echo "false")
+if [[ $EN_DESTINATION_ID == "false"  ]]; then
   echo "[INFO] Creating destination for secrets manager topic and CE Application"
-  EN_DESTINATION_ID_1=$(ibmcloud en destination create \
+  EN_DESTINATION_ID=$(ibmcloud en destination-create \
       --instance-id=$EN_INSTANCE_ID \
-      --name=$EN_DEST_1 \
+      --name=$EN_DEST \
       --type="ibmce" \
-      --config='{"params": {"url":"'$CE_APP_URL'", "verb": "post", "custom_headers": {}, "sensitive_headers": ["exampleString"]}}' | awk '/id/{ print $2 }')
+      --config='{"params": {"type":"application","url":"'$CE_APP_URL'", "verb": "post", "custom_headers": {}, "sensitive_headers": []}}' | awk '/id/{ print $2 }')
 else
-  echo "[INFO] Found existing EN destination ${EN_DEST_1}"
+  echo "[INFO] Found existing EN destination ${EN_DEST}"
 fi
 
-SUBSCRIPTIONOUTPUT=$(ibmcloud en subscription list | grep "${EN_SUB_1}" || echo "false")
+SUBSCRIPTIONOUTPUT=$(ibmcloud en subscriptions --instance-id $EN_INSTANCE_ID | grep "${EN_SUB}" || echo "false")
 if [[ $SUBSCRIPTIONOUTPUT == "false"  ]]; then
-  echo "[INFO] Creating subscription ${EN_SUB_1}"
-  ibmcloud en subscription create \
-      --name=$EN_SUB_1 \
-      --destination-id=$EN_DESTINATION_ID_1 \
-      --topic-id=$EN_TOPIC_ID_1 \
+  echo "[INFO] Creating subscription ${EN_SUB}"
+  ibmcloud en subscription-create \
+      --name=$EN_SUB \
+      --destination-id=$EN_DESTINATION_ID \
+      --topic-id=$EN_TOPIC_ID \
       --instance-id=$EN_INSTANCE_ID
 else
-  echo "[INFO] Found existing subscription ${EN_SUB_1}"
+  echo "[INFO] Found existing subscription ${EN_SUB}"
 fi
 
 echo "[INFO] Rotating the Secret $SM_SECRET in Secrets Manager"
