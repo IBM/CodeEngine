@@ -76,7 +76,6 @@ Best is to create IBM Cloud Logs Board, in order to visualize the CPU and Memory
 1. Below the graph Add a new plot`cpu.usage` as field and choose `ANY` as field values
 ![Configure Graph plots](./images/configure-plots.png)
 1. Add another plot for the field `memory.usage` and values `ANY`
-1. Add another plot for the field `ephemeral_storage.usage` and values `ANY`
 1. Finally delete the plot `metrics:instance-resources` and adjust the plot colors to your likings
 ![Resource Usage graph](./images/resource-usage-graph.png)
 1. The usage graph above renders the utilization in % of the CPU and Memory
@@ -94,8 +93,8 @@ Best is to create IBM Cloud Logs Board, in order to visualize the CPU and Memory
 
 
 
-#### Add ephemaral storage utilization
-1. Duplicate the graph, change its name to Memory and replace its plots with `ephemeral_storage.configured` and `ephemeral_storage.current`.
-1. The resulting graph will render the actual ephemeral storage usage compared to the configured limit. The the unit is MB (1000 -> 1 GB).
-![](./images/memory-utilization.png)
+#### Add disk utilization
+1. Duplicate the graph or create a new one, change its name to "Disk usage" and replace its plots with `disk_usage.current`.
+1. The resulting graph will render the actual disk usage. While this does not allow to identify the usage of disk space compared with the configured ephemeral storage limit, this graph gives an impression on whether the disk usage is growing over time. The the unit is MB (1000 -> 1 GB).
+![](./images/disk-utilization.png)
 
