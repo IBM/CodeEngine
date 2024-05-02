@@ -69,20 +69,20 @@ func (s ComponentType) String() string {
 
 type ResourceStats struct {
 	Current    int64 `json:"current"`
-	Configured int64 `json:"configured"`
-	Usage      int64 `json:"usage"`
+	Configured int64 `json:"configured,omitempty"`
+	Usage      int64 `json:"usage,omitempty"`
 }
 
 type InstanceResourceStats struct {
-	Metric           string        `json:"metric"`
-	Name             string        `json:"name"`
-	Parent           string        `json:"parent"`
-	ComponentType    string        `json:"component_type"`
-	ComponentName    string        `json:"component_name"`
-	Cpu              ResourceStats `json:"cpu"`
-	Memory           ResourceStats `json:"memory"`
-	EphemeralStorage ResourceStats `json:"ephemeral_storage"`
-	Message          string        `json:"message"`
+	Metric        string        `json:"metric"`
+	Name          string        `json:"name"`
+	Parent        string        `json:"parent"`
+	ComponentType string        `json:"component_type"`
+	ComponentName string        `json:"component_name"`
+	Cpu           ResourceStats `json:"cpu"`
+	Memory        ResourceStats `json:"memory"`
+	DiskUsage     ResourceStats `json:"disk_usage"`
+	Message       string        `json:"message"`
 }
 
 // Helper function that retrieves all pods and all pod metrics
@@ -176,12 +176,12 @@ func collectInstanceMetrics() {
 
 				userContainerName := getUserContainerName(componentType, *pod)
 
-				// determine the actual ephemeral storage usage
+				// determine the actual disk usage
 				storageCurrent := obtainDiskUsage(coreClientset, namespace, podMetric.Name, userContainerName, config)
-				stats.EphemeralStorage.Current = int64(storageCurrent)
+				stats.DiskUsage.Current = int64(storageCurrent)
 
-				// extract memory, cpu and ephemeral storage limits
-				cpu, memory, storage := getCpuMemoryAndStorageLimits(userContainerName, *pod)
+				// extract memory and cpu limits
+				cpu, memory := getCpuAndMemoryLimits(userContainerName, *pod)
 
 				cpuLimit := cpu.ToDec().AsApproximateFloat64() * 1000
 				stats.Cpu.Configured = int64(cpuLimit)
@@ -190,15 +190,10 @@ func collectInstanceMetrics() {
 				memoryLimit := memory.ToDec().AsApproximateFloat64() / 1000 / 1000
 				stats.Memory.Configured = int64(memoryLimit)
 				stats.Memory.Usage = int64(memoryCurrent / memoryLimit * 100)
-
-				storageLimit := storage.ToDec().AsApproximateFloat64() / 1000 / 1000
-				stats.EphemeralStorage.Configured = int64(storageLimit)
-				stats.EphemeralStorage.Usage = int64(storageCurrent / storageLimit * 100)
-
 			}
 
 			// Compose the log line message
-			stats.Message = "Captured metrics of " + stats.ComponentType + " instance '" + stats.Name + "': " + fmt.Sprintf("%d", stats.Cpu.Current) + "m vCPU, " + fmt.Sprintf("%d", stats.Memory.Current) + " MB memory, " + fmt.Sprintf("%d", stats.EphemeralStorage.Current) + " MB ephemeral storage"
+			stats.Message = "Captured metrics of " + stats.ComponentType + " instance '" + stats.Name + "': " + fmt.Sprintf("%d", stats.Cpu.Current) + "m vCPU, " + fmt.Sprintf("%d", stats.Memory.Current) + " MB memory, " + fmt.Sprintf("%d", stats.DiskUsage.Current) + " MB disk usage"
 
 			// Write the stringified JSON struct and make use of IBM Cloud Logs built-in parsing mechanism,
 			// which allows to annotate log lines by providing a JSON object instead of a simple string
@@ -380,22 +375,21 @@ func getUserContainerName(componentType ComponentType, pod v1.Pod) string {
 }
 
 // Helper function to extract CPU and Memory limits from the pod spec
-func getCpuMemoryAndStorageLimits(containerName string, pod v1.Pod) (*resource.Quantity, *resource.Quantity, *resource.Quantity) {
+func getCpuAndMemoryLimits(containerName string, pod v1.Pod) (*resource.Quantity, *resource.Quantity) {
 
 	if len(containerName) == 0 {
-		return nil, nil, nil
+		return nil, nil
 	}
 
 	for _, container := range pod.Spec.Containers {
 		if container.Name == containerName {
 			cpuLimit := container.Resources.Limits.Cpu()
 			memoryLimit := container.Resources.Limits.Memory()
-			storageLimit := container.Resources.Limits.StorageEphemeral()
-			return cpuLimit, memoryLimit, storageLimit
+			return cpuLimit, memoryLimit
 		}
 	}
 
-	return nil, nil, nil
+	return nil, nil
 }
 
 // Helper function that converts any object into a JSON string representation
