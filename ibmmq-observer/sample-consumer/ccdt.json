@@ -1,0 +1,20 @@
+{
+    "channel": [
+     {
+      "name": "CLOUD.APP.SVRCONN",
+      "clientConnection": {
+       "connection": [
+        {
+         "host": "<your ibm mq server>",
+         "port": 0
+        }
+       ],
+       "queueManager": "<your qm>"
+      },
+      "transmissionSecurity": {
+       "cipherSpecification": "ANY_TLS12_OR_HIGHER"
+      },
+      "type": "clientConnection"
+     }
+    ]
+   }
