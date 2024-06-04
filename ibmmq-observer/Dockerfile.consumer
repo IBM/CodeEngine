@@ -1,0 +1,85 @@
+#  Copyright 2022, 2024 IBM Corp.
+#  Licensed under the Apache License, Version 2.0 (the 'License');
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+ 
+#  http://www.apache.org/licenses/LICENSE-2.0
+ 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+###########################################################
+# This starts the BUILD phase
+###########################################################
+FROM golang:1.22 as builder
+
+RUN apt-get update \
+    && apt-get upgrade \
+    && apt-get install -y --no-install-recommends curl bash 
+
+RUN mkdir -p /opt/mqm && chmod a+rx /opt/mqm
+
+# Location of the downloadable MQ client package \
+ENV MQARCH=X64
+ENV RDURL="https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist" \
+    RDTAR="IBM-MQC-Redist-Linux${MQARCH}.tar.gz" \
+    VRMF=9.3.5.0
+
+# Install the MQ client from the Redistributable package. This also contains the
+# header files we need to compile against. Setup the subset of the package
+# we are going to keep - the genmqpkg.sh script removes unneeded parts
+ENV genmqpkg_incnls=1 \
+    genmqpkg_incsdk=1 \
+    genmqpkg_inctls=1
+
+RUN cd /opt/mqm \
+ && curl -LO "$RDURL/$VRMF-$RDTAR" \
+ && tar -zxf ./*.tar.gz \
+ && rm -f ./*.tar.gz \
+ && bin/genmqpkg.sh -b /opt/mqm
+
+
+# Build the consumer app
+
+ENV APP_DIR /usr/src
+WORKDIR ${APP_DIR}
+
+COPY ./sample-consumer ./consumer
+WORKDIR ${APP_DIR}/consumer
+
+ENV CGO_CFLAGS "-I/opt/mqm/inc/"
+ENV CGO_LDFLAGS_ALLOW "-Wl,-rpath.*"
+
+RUN rm consumer || true 
+RUN go build
+
+
+# ###########################################################
+# # This starts the RUNTIME phase
+# ########################################################### 
+FROM golang:1.22 
+
+ENV MQ_ROOT /opt/mqm
+
+COPY --from=builder ${MQ_ROOT} ${MQ_ROOT}
+
+ENV APP_DIR /usr/src/consumer
+WORKDIR ${APP_DIR}
+
+# Copy over just the application and the environment files 
+COPY --from=builder ${APP_DIR}/consumer ${APP_DIR}/consumer
+COPY --from=builder ${APP_DIR}/ccdt.json ${APP_DIR}/ccdt.json
+COPY --from=builder ${APP_DIR}/env.json ${APP_DIR}/env.json
+COPY --from=builder ${APP_DIR}/keys/* ${APP_DIR}/keys/
+
+ENV KeyStore ./keys/clientkey
+
+# CE_QMGR=QM1 CE_QUEUE=DEV.QUEUE.2 ./consumer
+
+CMD ["./consumer"]
+# CMD ["sleep", "infinity"]
+
+
