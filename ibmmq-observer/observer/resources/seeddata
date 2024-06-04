@@ -1,0 +1,16 @@
+{
+  "mq_requests": [
+    {
+      "id": "5c41bc76-a193-41af-90ea-cd4f031ce9ca",
+      "qmgr": "QM1",
+      "queue": "DEV.QUEUE.2",
+      "notify": "ce-mq-consumer"
+    },
+    {
+      "id": "4373ce20-9764-4559-8cc1-e9c7ee1f86ee",
+      "qmgr": "QM1",
+      "queue": "DEV.QUEUE.1",
+      "notify": "ce-mq-consumer"
+    }
+  ]
+}
