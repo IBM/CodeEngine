@@ -14,80 +14,79 @@
  * limitations under the License.
  **/
 
- package mqservers
+package mqservers
 
- import (
-	 "fmt"
-	 "log/slog"
-	 "os"
-	 "strings"
- 
-	 "consumer/configuration"
-	 "consumer/constant"
- )
- 
- type QueueManagers struct {
-	 config configuration.Config
-	 mqreq  *configuration.MqRequest
-	 mqconn connection
- }
- 
- func (qms *QueueManagers) Load() error {
-	 slog.Info("QueueManagers: Loading list of MQ queue managers and associated app credentials")
-	 qms.config.LoadMQEndpoints()
- 
-	 if 0 == qms.config.NumMQPoints() {
-		 return fmt.Errorf("QueueManagers: No queue managers found")
-	 }
- 
-	 return nil
- }
- 
- func (qms QueueManagers) CheckCCDT() error {
-	 if fPath, err := qms.config.CCDTPath(); nil != err {
-		 return err
-	 } else {
-		 ccdtFile, err := os.Open(strings.TrimPrefix(fPath, constant.FILEPREFIX))
-		 defer ccdtFile.Close()
- 
-		 if err != nil {
-			 slog.Warn("QueueManagers: CCDT File not found")
-			 return err
-		 }
-	 }
-	 return nil
- }
- 
- func (qms *QueueManagers) CheckIncomingRequest() error {
-	 if req, err := qms.config.CheckRequest(); nil != err {
-		 return err
-	 } else {
-		 qms.mqreq = req
-	 }
-	 return nil
- }
- 
- func (qms QueueManagers) ProcessQueue() error {
-	 slog.Info("QueueManagers: Processing queue")
- 
-	 if nil == qms.mqreq {
-		 return fmt.Errorf("QueueManagers: Incoming request not yet resolved")
-	 }
- 
-	 if err := qms.mqconn.createConnection(qms.config, *qms.mqreq); nil != err {
-		 return err
-	 }
-	 defer qms.mqconn.disconnect()
- 
-	 if err := qms.mqconn.openQueue(*qms.mqreq); nil != err {
-		 return err
-	 }
-	 defer qms.mqconn.close()
- 
-	 if err := qms.mqconn.processMessages(); nil != err {
-		 return err
-	 }
- 
-	 return nil
- }
- 
+import (
+	"fmt"
+	"log/slog"
+	"os"
+	"strings"
+
+	"consumer/configuration"
+	"consumer/constant"
+)
+
+type QueueManagers struct {
+	config configuration.Config
+	mqreq  *configuration.MqRequest
+	mqconn connection
+}
+
+func (qms *QueueManagers) Load() error {
+	slog.Info("QueueManagers: Loading list of MQ queue managers and associated app credentials")
+	qms.config.LoadMQEndpoints()
+
+	if 0 == qms.config.NumMQPoints() {
+		return fmt.Errorf("QueueManagers: No queue managers found")
+	}
+
+	return nil
+}
+
+func (qms QueueManagers) CheckCCDT() error {
+	if fPath, err := qms.config.CCDTPath(); nil != err {
+		return err
+	} else {
+		ccdtFile, err := os.Open(strings.TrimPrefix(fPath, constant.FILEPREFIX))
+		defer ccdtFile.Close()
+
+		if err != nil {
+			slog.Warn("QueueManagers: CCDT File not found")
+			return err
+		}
+	}
+	return nil
+}
+
+func (qms *QueueManagers) CheckIncomingRequest() error {
+	if req, err := qms.config.CheckRequest(); nil != err {
+		return err
+	} else {
+		qms.mqreq = req
+	}
+	return nil
+}
+
+func (qms QueueManagers) ProcessQueue() error {
+	slog.Info("QueueManagers: Processing queue")
+
+	if nil == qms.mqreq {
+		return fmt.Errorf("QueueManagers: Incoming request not yet resolved")
+	}
+
+	if err := qms.mqconn.createConnection(qms.config, *qms.mqreq); nil != err {
+		return err
+	}
+	defer qms.mqconn.disconnect()
+
+	if err := qms.mqconn.openQueue(*qms.mqreq); nil != err {
+		return err
+	}
+	defer qms.mqconn.close()
+
+	if err := qms.mqconn.processMessages(); nil != err {
+		return err
+	}
+
+	return nil
+}
