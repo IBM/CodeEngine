@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# © Copyright IBM Corporation 2020
+# © Copyright IBM Corporation 2024
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ CONSUMER_SECRETS_NAME="consumer-secrets"
 COS_KEY_SETTING=""
 RESOURCES_DIR="observer/resources"
 SEED_REGISTRATION_DATA=seeddata
+
+NOTIFY_INTERVAL_SETTING=""
 
 function check() { 
     echo "Checking envrionment variables"
@@ -64,6 +66,12 @@ function check() {
     fi
 
     echo "COS Setting is ${COS_KEY_SETTING}"
+
+    if [ ! -z "${NOTIFY_INTERVAL}" ]; then
+        NOTIFY_INTERVAL_SETTING="--from-literal NOTIFY_INTERVAL=${NOTIFY_INTERVAL}"
+    fi
+
+    echo "Notification interval setting is ${NOTIFY_INTERVAL_SETTING}"
 }      
 
 function clean() {
@@ -87,7 +95,9 @@ function createconfig() {
         ${COS_KEY_SETTING}
 
     echo "Creating configmap ${OBSERVER_CONFIG_NAME}"
-    ibmcloud ce configmap create --name "${OBSERVER_CONFIG_NAME}" --from-file "${BASEDIR}/${RESOURCES_DIR}/${SEED_REGISTRATION_DATA}"
+    ibmcloud ce configmap create --name "${OBSERVER_CONFIG_NAME}" \
+        --from-file "${BASEDIR}/${RESOURCES_DIR}/${SEED_REGISTRATION_DATA}" \
+        ${NOTIFY_INTERVAL_SETTING}
 
     echo "Creating secret ${CONSUMER_SECRETS_NAME}"
     ibmcloud ce secret create --name "${CONSUMER_SECRETS_NAME}" \
