@@ -1,5 +1,7 @@
 FROM icr.io/codeengine/golang:alpine
 
+ENV GOTOOLCHAIN auto
+
 COPY . /
 RUN  go build -o /main /main.go
 
