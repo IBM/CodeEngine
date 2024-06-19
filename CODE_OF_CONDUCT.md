@@ -61,7 +61,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-encalada@de.ibm.com or reggeenr@de.ibm.com. All complaints will be reviewed and
+encalada@de.ibm.com, reggeenr@de.ibm.com or smoser@de.ibm.com. All complaints will be reviewed and
 investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
