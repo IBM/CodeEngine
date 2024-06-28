@@ -140,7 +140,7 @@ func main() {
 		l.Info("non knative services found, that match the image output", "namespace", ns, "image", imageOutput)
 	} else {
 		l.Info("A matching knative service was found", "namespace", ns, "image", imageOutput)
-		deleteService(ctx, servingClient, svc)
+		updateService(ctx, servingClient, svc)
 	}
 }
 
@@ -229,12 +229,11 @@ func findService(ctx context.Context, servingClient *serving.ServingV1Client, na
 		return nil, err
 	}
 
-	for i := range services.Items {
-		var service = services.Items[i]
-
-		if userImage, ok := service.Annotations[userImageAnnotation]; ok {
-			if userImage == image {
-				return &service, nil
+	for _, ksvc := range services.Items {
+		if len(ksvc.Spec.Template.Spec.Containers) > 0 {
+			userContainer := ksvc.Spec.Template.Spec.Containers[0]
+			if userContainer.Image == image {
+				return &ksvc, nil
 			}
 		}
 	}
@@ -242,9 +241,9 @@ func findService(ctx context.Context, servingClient *serving.ServingV1Client, na
 	return nil, nil
 }
 
-func deleteService(ctx context.Context, servingClient *serving.ServingV1Client, service *servingv1.Service) {
+func updateService(ctx context.Context, servingClient *serving.ServingV1Client, service *servingv1.Service) {
 	l := *logger
-	l.Info("deleting Knative servive to force a new revision", "namespace", service.Namespace, "name", service.Name)
+	l.Info("updating Knative servive to force a new revision", "namespace", service.Namespace, "name", service.Name)
 
 	annotations := service.Spec.Template.GetAnnotations()
 	if annotations == nil {
