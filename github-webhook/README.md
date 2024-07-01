@@ -8,11 +8,11 @@ By integrating, Git, Code Engine and IBM Cloud [Event Notifications](https://clo
 
 ## Architecture
 
-Our starting point is Git. Cloud Native Applications code is commonly hosted in these version control systems. Through Github [webhooks](https://docs.github.com/en/webhooks), changes such as `push` events(_e.g. commiting to your main branch_) can trigger integrations to take responsive actions.
+Our starting point is Git. Cloud Native Applications code is commonly hosted in these version control systems. Through Github [webhooks](https://docs.github.com/en/webhooks), changes such as `push` events(e.g. committing to your main branch) can trigger integrations to take responsive actions.
 
 Knowing when these events occur leads us to the questions; what actions can we take? and who can take an action?
 
-In this architecture, IBM Cloud Event Notifications is our integration of choice, taking a responsive action upong Git Events.
+In this architecture, IBM Cloud Event Notifications is our integration of choice, taking a responsive action upon Git Events.
 
 
 ![architecture_diagram](./images/entocejobs.jpg)
@@ -33,7 +33,7 @@ If you paid attention to the first diagram, you will have noticed the need for a
 
 This adapter is essential for translating the Github Webhook payload into a format that an Event Notification Source can understand, enabling the complete end-to-end flow.
 
-However, there's no need to worry - this application adapter runs as a Code Engine application, scaling to zero when no events are ocurring.
+However, there's no need to worry - this application adapter runs as a Code Engine application, scaling to zero when no events are occurring.
 
 ## Pre-requisites
 
