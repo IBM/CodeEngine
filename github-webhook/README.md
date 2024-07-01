@@ -27,7 +27,7 @@ By leveraging Code Engine with Event Notifications, we can take continuous deplo
 
 ## A Clever Workaround
 
-![application_adapter](./images/workaround.jpg)
+![application_adapter](./images/architecture-en-git-ce.jpg)
 
 If you paid attention to the first diagram, you will have noticed the need for an Application Adapter.
 
@@ -37,7 +37,7 @@ However, there's no need to worry - this application adapter runs as a Code Engi
 
 ## Pre-requisites
 
-If you reach this point, it's clear you have an interest in this architecture. Before diving in, there are three key prerequisites we need to have in place for deploying the architecture:
+If you reach this point, it's clear you have an interest in this architecture. Before diving in, there are some key prerequisites we need to have in place for deploying the architecture:
 
 1. An Event Notifications Instance. See [docs](https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-create-en-instance)
 2. A valid IBM Cloud IAM API Key. See [docs](https://cloud.ibm.com/docs/account?topic=account-ibmcloud_commands_iam#ibmcloud_iam_api_key_create)
