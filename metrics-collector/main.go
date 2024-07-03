@@ -260,6 +260,10 @@ func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *r
 func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod string, container string, config *rest.Config) float64 {
 	// fmt.Println("obtainDiskUsage > pod: '" + pod + "', container: '" + container + "'")
 
+	if os.Getenv("SKIP_DISKUSAGE") == "true" {
+		return 0
+	}
+
 	// Utilize `du -sm /` to calculate the disk usage
 	cmd := []string{
 		"du",
