@@ -13,7 +13,8 @@ $ ibmcloud ce job create \
     --src . \
     --mode daemon \
     --cpu 0.25 \
-    --memory 0.5G
+    --memory 0.5G \
+    --wait
 ```
 
 * Submit a daemon job that collects metrics in an endless loop. The daemon job queries the Metrics API every 10 seconds
@@ -33,7 +34,8 @@ $ ibmcloud ce job create \
     --src . \
     --mode task \
     --cpu 0.25 \
-    --memory 0.5G
+    --memory 0.5G \
+    --wait
 ```
 
 * Submit a Code Engine cron subscription that triggers the metrics collector every minute to query the Metrics API
