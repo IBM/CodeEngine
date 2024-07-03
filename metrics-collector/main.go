@@ -371,7 +371,8 @@ func getUserContainerName(componentType ComponentType, pod v1.Pod) string {
 		return pod.Spec.Containers[0].Name
 	}
 
-	return ""
+	// for kube-native deployments, we pick the first container
+	return pod.Spec.Containers[0].Name
 }
 
 // Helper function to extract CPU and Memory limits from the pod spec
@@ -384,7 +385,13 @@ func getCpuAndMemoryLimits(containerName string, pod v1.Pod) (*resource.Quantity
 	for _, container := range pod.Spec.Containers {
 		if container.Name == containerName {
 			cpuLimit := container.Resources.Limits.Cpu()
+			if cpuLimit == nil {
+				cpuLimit = container.Resources.Requests.Cpu()
+			}
 			memoryLimit := container.Resources.Limits.Memory()
+			if memoryLimit == nil {
+				memoryLimit = container.Resources.Requests.Memory()
+			}
 			return cpuLimit, memoryLimit
 		}
 	}
