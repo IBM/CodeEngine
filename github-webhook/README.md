@@ -15,7 +15,7 @@ Knowing when these events occur leads us to the questions; what actions can we t
 In this architecture, IBM Cloud Event Notifications is our integration of choice, taking a responsive action upon Git Events.
 
 
-![architecture_diagram](./images/entocejobs.jpg)
+![architecture_diagram](./images/architecture-en-git-ce.jpg)
 
 In the image above, we use Event Notifications as an intermediary, leveraging their source and destination concepts to facilitate the transportation of our Github event payloads to multiple destinations.
 
@@ -27,7 +27,7 @@ By leveraging Code Engine with Event Notifications, we can take continuous deplo
 
 ## A Clever Workaround
 
-![application_adapter](./images/architecture-en-git-ce.jpg)
+![application_adapter](./images/workaround.jpg)
 
 If you paid attention to the first diagram, you will have noticed the need for an Application Adapter.
 
