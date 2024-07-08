@@ -42,7 +42,7 @@ If you reach this point, it's clear you have an interest in this architecture. B
 1. An Event Notifications Instance. See [docs](https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-create-en-instance)
 2. A valid IBM Cloud IAM API Key. See [docs](https://cloud.ibm.com/docs/account?topic=account-ibmcloud_commands_iam#ibmcloud_iam_api_key_create)
 3. A Code Engine Project. See [docs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-manage-project).
-4. A Code Engine Build. This needs no be defined in advance, so that the architecture knows how to rebuild your container image. See [docs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-plan-build).
+4. A Code Engine Build. This needs to be defined in advance, so that the architecture knows how to rebuild your container image. See [docs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-plan-build).
 
 ## Try It!
 
