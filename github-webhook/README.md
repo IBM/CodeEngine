@@ -1,6 +1,6 @@
-# Integrating IBM Cloud Code Engine with Github and Event Notifications
+# Integrating IBM Cloud Code Engine with GitHub and Event Notifications
 
-Automating software deployment upon changes in your Git repository isn't  a novel idea. In IBM Cloud Code Engine, we provide samples like [Github](https://github.com/IBM/CodeEngine/tree/main/github) or [Github Action Workflows](https://github.com/IBM/CodeEngine/tree/main/github-action-workflows), enabling users to respond to changes in their repositories through Code Engine workloads.
+Automating software deployment upon changes in your Git repository isn't a novel idea. In IBM Cloud Code Engine, we provide samples like [GitHub](https://github.com/IBM/CodeEngine/tree/main/github) or [GitHub Action Workflows](https://github.com/IBM/CodeEngine/tree/main/github-action-workflows), enabling users to respond to changes in their repositories through Code Engine workloads.
 
 Given the importance of automated continuous deployments for cloud-native applications, this blog post delves deeper into the topic and proposes a new architecture for IBM Cloud users.
 
@@ -8,16 +8,15 @@ By integrating, Git, Code Engine and IBM Cloud [Event Notifications](https://clo
 
 ## Architecture
 
-Our starting point is Git. Cloud Native Applications code is commonly hosted in these version control systems. Through Github [webhooks](https://docs.github.com/en/webhooks), changes such as `push` events(e.g. committing to your main branch) can trigger integrations to take responsive actions.
+Our starting point is Git. Cloud Native Applications code is commonly hosted in these version control systems. Through GitHub [webhooks](https://docs.github.com/en/webhooks), changes such as `push` events(e.g. committing to your main branch) can trigger integrations to take responsive actions.
 
 Knowing when these events occur leads us to the questions; what actions can we take? and who can take an action?
 
 In this architecture, IBM Cloud Event Notifications is our integration of choice, taking a responsive action upon Git Events.
 
+![architecture_diagram](./images/architecture-en-git-ce.png)
 
-![architecture_diagram](./images/architecture-en-git-ce.jpg)
-
-In the image above, we use Event Notifications as an intermediary, leveraging their source and destination concepts to facilitate the transportation of our Github event payloads to multiple destinations.
+In the image above, we use Event Notifications as an intermediary, leveraging their source and destination concepts to facilitate the transportation of our GitHub event payloads to multiple destinations.
 
 Our final destination is a Code Engine Job, which, upon receiving the event, will trigger the creation of a Code Engine Build (rebuilds a container image from the Git code where the event originated) and will redeploy any Code Engine Application referencing that container image.
 
@@ -27,11 +26,11 @@ By leveraging Code Engine with Event Notifications, we can take continuous deplo
 
 ## A Clever Workaround
 
-![application_adapter](./images/workaround.jpg)
+![application_adapter](./images/workaround.png)
 
 If you paid attention to the first diagram, you will have noticed the need for an Application Adapter.
 
-This adapter is essential for translating the Github Webhook payload into a format that an Event Notification Source can understand, enabling the complete end-to-end flow.
+This adapter is essential for translating the GitHub Webhook payload into a format that an Event Notification Source can understand, enabling the complete end-to-end flow.
 
 However, there's no need to worry - this application adapter runs as a Code Engine application, scaling to zero when no events are occurring.
 
