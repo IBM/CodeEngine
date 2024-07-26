@@ -111,17 +111,21 @@ func collectInstanceMetrics() {
 
 	// fetches all pods
 	pods := getAllPods(coreClientset, namespace, config)
+	// fmt.Println("Captured pods after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms")
 
 	// fetch all pod metrics
 	podMetrics := getAllPodMetrics(namespace, config)
+	// fmt.Println("Captured pod metrics after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms")
 
 	var wg sync.WaitGroup
 
-	for _, metric := range podMetrics {
+	for _, metric := range *podMetrics {
 		wg.Add(1)
 
-		go func(podMetric v1beta1.PodMetrics) {
+		go func(podMetric *v1beta1.PodMetrics) {
 			defer wg.Done()
+
+			// fmt.Println("Starting with pod of '" + podMetric.Name + "' ...")
 
 			// Determine the component type (either app, job, build or unknown)
 			componentType := determineComponentType(podMetric)
@@ -174,14 +178,15 @@ func collectInstanceMetrics() {
 			pod := getPod(podMetric.Name, pods)
 			if pod != nil {
 
-				userContainerName := getUserContainerName(componentType, *pod)
+				userContainerName := getUserContainerName(componentType, pod)
 
 				// determine the actual disk usage
 				storageCurrent := obtainDiskUsage(coreClientset, namespace, podMetric.Name, userContainerName, config)
+				// fmt.Println("Obtained disk usage of '" + podMetric.Name + "' after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + " ms")
 				stats.DiskUsage.Current = int64(storageCurrent)
 
 				// extract memory and cpu limits
-				cpu, memory := getCpuAndMemoryLimits(userContainerName, *pod)
+				cpu, memory := getCpuAndMemoryLimits(userContainerName, pod)
 
 				cpuLimit := cpu.ToDec().AsApproximateFloat64() * 1000
 				stats.Cpu.Configured = int64(cpuLimit)
@@ -197,18 +202,18 @@ func collectInstanceMetrics() {
 
 			// Write the stringified JSON struct and make use of IBM Cloud Logs built-in parsing mechanism,
 			// which allows to annotate log lines by providing a JSON object instead of a simple string
-			fmt.Println(ToJSONString(stats))
+			fmt.Println(ToJSONString(&stats))
 
-		}(metric)
+		}(&metric)
 	}
 
 	wg.Wait()
 
-	fmt.Println("Captured pod metrics in " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms")
+	fmt.Println("Captured pod metrics in " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + " ms")
 }
 
 // Helper function to determine the component type
-func determineComponentType(podMetric v1beta1.PodMetrics) ComponentType {
+func determineComponentType(podMetric *v1beta1.PodMetrics) ComponentType {
 	if _, ok := podMetric.ObjectMeta.Labels["buildrun.shipwright.io/name"]; ok {
 		return Build
 	}
@@ -222,8 +227,8 @@ func determineComponentType(podMetric v1beta1.PodMetrics) ComponentType {
 }
 
 // Helper function to obtain a pod by its name from a slice of pods
-func getPod(name string, pods []v1.Pod) *v1.Pod {
-	for _, pod := range pods {
+func getPod(name string, pods *[]v1.Pod) *v1.Pod {
+	for _, pod := range *pods {
 		if pod.Name == name {
 			return &pod
 		}
@@ -232,7 +237,7 @@ func getPod(name string, pods []v1.Pod) *v1.Pod {
 }
 
 // Helper function to retrieve all pods from the Kube API
-func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *rest.Config) []v1.Pod {
+func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *rest.Config) *[]v1.Pod {
 
 	// fetches all pods
 	pods := []v1.Pod{}
@@ -253,7 +258,7 @@ func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *r
 		}
 	}
 
-	return pods
+	return &pods
 }
 
 // Helper function to retrieve all pods from the Kube API
@@ -332,7 +337,7 @@ func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod 
 }
 
 // Helper function to retrieve all pod metrics from the Kube API
-func getAllPodMetrics(namespace string, config *rest.Config) []v1beta1.PodMetrics {
+func getAllPodMetrics(namespace string, config *rest.Config) *[]v1beta1.PodMetrics {
 	// obtain the metrics clientset
 	metricsclientset, err := metricsv.NewForConfig(config)
 	if err != nil {
@@ -358,11 +363,11 @@ func getAllPodMetrics(namespace string, config *rest.Config) []v1beta1.PodMetric
 		}
 	}
 
-	return podMetrics
+	return &podMetrics
 }
 
 // Helper function to obtain the name of the user container (that should be observed)
-func getUserContainerName(componentType ComponentType, pod v1.Pod) string {
+func getUserContainerName(componentType ComponentType, pod *v1.Pod) string {
 	if len(pod.Spec.Containers) == 0 {
 		return ""
 	}
@@ -380,7 +385,7 @@ func getUserContainerName(componentType ComponentType, pod v1.Pod) string {
 }
 
 // Helper function to extract CPU and Memory limits from the pod spec
-func getCpuAndMemoryLimits(containerName string, pod v1.Pod) (*resource.Quantity, *resource.Quantity) {
+func getCpuAndMemoryLimits(containerName string, pod *v1.Pod) (*resource.Quantity, *resource.Quantity) {
 
 	if len(containerName) == 0 {
 		return nil, nil
@@ -409,7 +414,7 @@ func ToJSONString(obj interface{}) string {
 		return ""
 	}
 
-	bytes, err := json.Marshal(&obj)
+	bytes, err := json.Marshal(obj)
 	if err != nil {
 		return "marshal error"
 	}
