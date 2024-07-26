@@ -1,4 +1,5 @@
-FROM icr.io/codeengine/node:18-alpine
+FROM icr.io/codeengine/node:22-alpine
+RUN apk -U upgrade
 
 # Define which files should be copied into the container image
 COPY *.js .
