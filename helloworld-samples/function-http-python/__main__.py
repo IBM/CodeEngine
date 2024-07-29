@@ -18,6 +18,6 @@ def main(params):
             "headers": {
                 "Content-Type": "application/json",
             },
-            "statusCode": 200,
+            "statusCode": response.status,
             "body": dictData
     }
