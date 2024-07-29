@@ -176,6 +176,10 @@ is demonstrating.
   This example shows how to create NodeJS functions with additional modules
 - [function-codebundle-python](helloworld-samples/function-codebundle-python)
   This example shows how to create Python functions with additional modules
+- [function-http-nodejs](helloworld-samples/function-http-nodejs)
+  This example shows how to create NodeJS functions with can perfome a http request without additional modules
+- [function-http-python](helloworld-samples/function-http-python)
+  This example shows how to create Python functions which can perfome a http request without additional modules
 
 #### Source-to-Image
 - [s2i-buildpacks](s2i-buildpacks)<br>
