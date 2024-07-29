@@ -1,13 +1,20 @@
-import http.client
+import http.client, urllib.parse
 import json
 
 
 def main(params):
 
     url = "httpbin.org"
-    endpoint = "/get"
     connection = http.client.HTTPSConnection(url)
-    connection.request("GET", endpoint)
+
+    if params["__ce_method"] == "POST":
+        endpoint = "/post"
+        connection.request("POST", endpoint, json.dumps(params), {"Content-Type": "application/json"})
+    else:
+        endpoint = "/get"
+        connection.request("GET", endpoint)
+    
+    
     response = connection.getresponse()
     data = response.read()
     connection.close()
