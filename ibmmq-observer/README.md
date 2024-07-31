@@ -23,5 +23,4 @@ This sample demonstrates how IBM Cloud Code Engine serverless jobs and applicati
 You can find the IBM MQ Observer for Code Engine at in the [IBM Messaging Code Engine Observer repository](https://github.com/ibm-messaging/mq-code-engine-observer)
 
 ## IBM MQ Observer tutorial
-A step by step guide is available as the tutorial [Write and trigger serverless MQ applications in IBM Cloud](https://developer.ibm.com/tutorials/mq-write-and-run-serverless-mq-applications/)
-On IBM Developer.
+This [IBM Developer tutorial](https://developer.ibm.com/tutorials/mq-write-and-run-serverless-mq-applications/) provides a step-by-step guide on how to use the observer sample
