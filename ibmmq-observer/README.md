@@ -20,7 +20,7 @@ This sample demonstrates how IBM Cloud Code Engine serverless jobs and applicati
 - A ‘deploy script’ is provided to simplify the creation of secrets, configmaps and deployment of  the observer and sample consumer as a Code Engine job definition.
 
 ## IBM MQ Observer repository
-You can find the IBM MQ Observer for Code Engine at in the [IBM Messaging Code Engine Observer repository](https://github.com/ibm-messaging/mq-code-engine-observer)
+You can find the IBM MQ Observer for Code Engine in the [IBM Messaging Code Engine Observer repository](https://github.com/ibm-messaging/mq-code-engine-observer)
 
 ## IBM MQ Observer tutorial
 This [IBM Developer tutorial](https://developer.ibm.com/tutorials/mq-write-and-run-serverless-mq-applications/) provides a step-by-step guide on how to use the observer sample
