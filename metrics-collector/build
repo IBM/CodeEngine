@@ -12,14 +12,12 @@
 set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
-# First build and push the app - notice no tag on the image name
-cd app
-docker build ${NOCACHE} -t ${REGISTRY}/gallery . --platform linux/amd64
-docker push ${REGISTRY}/gallery:latest
-cd ..
+# Build the image
+docker build ${NOCACHE} -t ${REGISTRY}/metrics-collector . --platform linux/amd64
 
-# Second build and push the job - notice no tag on the image name
-cd job
-docker build ${NOCACHE} -t ${REGISTRY}/gallery-job . --platform linux/amd64
-docker push ${REGISTRY}/gallery-job:latest
-cd ..
+# And push it
+docker push ${REGISTRY}/metrics-collector
+
+# Copy the image so it's also called ${REGISTRY}/codeengine, and push it
+docker tag ${REGISTRY}/metrics-collector ${REGISTRY}/codeengine
+docker push ${REGISTRY}/codeengine

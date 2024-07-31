@@ -4,19 +4,19 @@
 # We use ICR to avoid Dockerhub's rate limiting issues.
 # NOTE: you need to be logged into an account with access to icr.io/codeengine
 
-set -e
+set -euo pipefail
 
-cd $(dirname $0)/..
+cd "$(dirname "$0")/.."
 
-grep -r "^[[:space:]]*FROM.*icr.io/codeengine/" * | \
-  sed "s/.*FROM.*icr.io\/codeengine\///" | sort -u | while read image
-do
-  [[ "$image" == "ce-bash" ]] && continue
-  tgt=icr.io/codeengine/$image
-  echo "Updating image: $image"
-  set -x
-  docker pull $image --platform linux/amd64
-  docker tag $image $tgt
-  docker push $tgt
-  set +x
-done
+find . -type f -name "Dockerfile*" -print0 |
+  xargs -0 grep -hEo "FROM.*icr.io/codeengine/[a-zA-Z0-9:-]+" |
+  sort -u |
+  sed -e 's:FROM icr.io/codeengine/::' |
+  while read -r image; do
+    echo
+    echo "Updating image: $image"
+    target="icr.io/codeengine/$image"
+    docker pull "$image" --platform linux/amd64
+    docker tag "$image" "$target"
+    docker push "$target"
+  done
