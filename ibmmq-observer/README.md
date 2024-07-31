@@ -3,7 +3,7 @@
 ## Introduction
 This sample demonstrates how IBM Cloud Code Engine serverless jobs and applications can be scaled in relation to the depth of IBM MQ queues. The sample is based on an observer pattern that periodically inspects the depth of queue manager hosted queues that Code Engine applications have registered an interest for.
 
-## Overview of features
+## Key features
 - The observer sample uses the IBM MQ REST admin API to monitor queue depths.
 - The observer sample can be configured to monitor multiple queues across multiple queue managers.
 - The observer sample may be hosted on Code Engine or within an external runtime environment.
@@ -19,9 +19,9 @@ This sample demonstrates how IBM Cloud Code Engine serverless jobs and applicati
 - The observer and message consumer samples are implemented in Go.
 - A ‘deploy script’ is provided to simplify the creation of secrets, configmaps and deployment of  the observer and sample consumer as a Code Engine job definition.
 
-## IBMMQ Observer repository
+## IBM MQ Observer repository
 You can find the IBM MQ Observer for Code Engine at in the [IBM Messaging Code Engine Observer repository](https://github.com/ibm-messaging/mq-code-engine-observer)
 
-## IBMMQ Observer tutorial
+## IBM MQ Observer tutorial
 A step by step guide is available as the tutorial [Write and trigger serverless MQ applications in IBM Cloud](https://developer.ibm.com/tutorials/mq-write-and-run-serverless-mq-applications/)
 On IBM Developer.
