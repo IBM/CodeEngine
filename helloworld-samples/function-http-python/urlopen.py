@@ -1,5 +1,4 @@
 from urllib.request import urlopen, Request
-from urllib import parse
 import json
 
 
