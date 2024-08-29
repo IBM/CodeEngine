@@ -1,13 +1,11 @@
-FROM icr.io/codeengine/golang
-COPY app.go /go/src/
+FROM icr.io/codeengine/golang AS bootstrap
 WORKDIR /go/src/
-ENV GO111MODULE=off
-RUN go get -d .
+COPY . .
 RUN go build -o /app app.go
 
 # Copy the exe into a smaller base image
 FROM icr.io/codeengine/ubuntu
-COPY --from=0 /app /app
+COPY --from=bootstrap /app /app
 COPY page.html /
 COPY pictures/* /pictures/
-CMD /app
+CMD ["/app"]
