@@ -1,17 +1,8 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as build
-
-RUN /bin/true \
-  && echo $'[appstream]\n\
-name=CentOS Stream $releasever - AppStream\n\
-mirrorlist=http://mirrorlist.centos.org/?repo=AppStream&arch=$basearch&release=8-stream\n\
-gpgcheck=0\n\
-enabled=1\n\
-  ' >/etc/yum.repos.d/upstream.repo \
-  && microdnf --nodocs update \
-  && microdnf --nodocs install go-toolset openssh-clients git \
-  && microdnf clean all \
-  && rm -rf /var/cache/yum \
-  && /bin/true
+FROM quay.io/centos/centos:stream9 AS build
+RUN \
+  yum --assumeyes --nodocs install go-toolset openssh-clients git && \
+  yum clean all && \
+  rm -rf /var/cache/yum
 
 ARG GO111MODULE="on"
 ENV GO111MODULE $GO111MODULE
@@ -30,7 +21,6 @@ COPY . .
 
 ENV GOOS=linux
 ENV GOARCH=amd64
-ENV GOPRIVATE=github.ibm.com
 ARG PROGRAM="vsi-proxy"
 
 ENV CGO_ENABLED=0
