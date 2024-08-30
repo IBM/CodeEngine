@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 )
 
 var producer sarama.SyncProducer
@@ -111,7 +111,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 					Value: []byte("application/json"),
 				},
 			},
-			Value:     sarama.StringEncoder(fmt.Sprintf("test1: %d", i+1)),
+			Value: sarama.StringEncoder(fmt.Sprintf("test1: %d", i+1)),
 		}
 
 		partition, offset, err := producer.SendMessage(msg)

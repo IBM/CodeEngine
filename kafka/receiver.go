@@ -3,7 +3,7 @@ package main
 // Just a simple app to receive events and print them to it's logs
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -25,7 +25,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// And now show the event data itself (in the HTTP body)
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	log.Printf("Event data: %s", string(body))
 }
 
