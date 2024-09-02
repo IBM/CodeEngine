@@ -265,7 +265,8 @@ func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *r
 func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod string, container string, config *rest.Config) float64 {
 	// fmt.Println("obtainDiskUsage > pod: '" + pod + "', container: '" + container + "'")
 
-	if os.Getenv("SKIP_DISKUSAGE") == "true" {
+	// per default, we do not collect disk space statistics
+	if os.Getenv("COLLECT_DISKUSAGE") != "true" {
 		return 0
 	}
 
