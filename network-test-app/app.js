@@ -48,9 +48,16 @@ app.get("/", async (request, response) => {
     
 })
     
-app.listen(port, async () => {
+const server = app.listen(port, async () => {
     console.log('listening on localhost', port)
 })
+
+process.on('SIGTERM', () => {
+    console.info('SIGTERM signal received.');
+    server.close(() => {
+        console.log('Http server closed.');
+    });
+});
 
 
 
