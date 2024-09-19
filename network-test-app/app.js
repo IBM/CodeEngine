@@ -6,7 +6,7 @@ const port = process.env.PORT;
 
 app.get("/", async (request, response) => {
     pgServiceCredentials = process.env.DATABASES_FOR_POSTGRESQL_CONNECTION
-    if(pgServiceCredentials != "" && pgServiceCredentials != undefined){
+    if(!!pgServiceCredentials){
         /* 
             Postgres service credentials have been configured properly, 
             continue with attempting to connect to service
@@ -41,8 +41,9 @@ app.get("/", async (request, response) => {
             response.send("Successfully connected to postgres instance")
         } catch (err) {
             console.error("Failed to connect to PostgreSQL instance", err);
-            response.send("Could not connect to postgres instance")
           }
+    } else {
+        response.send("Could not connect to postgres instance; no postgres instance configured")
     }
     
     

@@ -1,0 +1,20 @@
+# Network Connectivity Support App
+
+This sample is intended for the purpose of allowing support engineers to create an app that attempts to connect to Code Engine services. In the case of a customer raising a support ticket regarding issues connecting their Code Engine apps/jobs to CE services, a support engineer can then suggest to a customer to deploy an image of this app and examine the output.
+
+- - -
+
+This sample includes a `build` script which will build the container image and push the image to `icr.io/codeengine/network-test-app`. The customer should:
+- Pull the image `icr.io/codeengine/network-test-app`
+- Deploy the image as a job definition
+- Run the job and send the output to the support engineer via the support ticket.
+
+## Configuring the Service Credentials for the App
+
+This app works by attempting to connect to a CE service; in order to do this properly, it must consume service credentials that should be configured by creating a `service binding` between the customer's project and the service they wish to connect to.
+
+For more information about how to create a service binding, see [Adding services by using IBM Cloud service binding](https://cloud.ibm.com/docs/containers?topic=containers-service-binding).
+
+### Example: Databases for PostgreSQL
+If the app is attempting to connect to a postgres instance, then after creating a service binding for the instance the app will contain the credentials for the  postgres instance in the form of an environment variable `DATABASES_FOR_POSTGRESQL_CONNECTION`. 
+- **Without this environment variable properly configured, the app will NOT be able to connect to postgres**
