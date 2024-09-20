@@ -43,16 +43,13 @@ app.get("/", async (request, response) => {
             result = await client.query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';");
             console.log(result)
             await client.end()
-            response.statusCode = 200;
-            response.send("Successfully connected to postgres instance");
+            response.status(200).send("Successfully connected to postgres instance");
         } catch (err) {
             console.error("Failed to connect to PostgreSQL instance", err);
-            response.statusCode = 500;
-            response.send("Could not connect to postgres instance:", err);
+            response.status(500).send("Could not connect to postgres instance:", err);
           }
     } else {
-        response.statusCode = 500;
-        response.send("Could not connect to postgres instance: no postgres instance configured");
+        response.status(500).send("Could not connect to postgres instance: no postgres instance configured");
     }
     
     
