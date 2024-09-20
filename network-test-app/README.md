@@ -6,8 +6,8 @@ This sample is intended to help users debug connectivity issues for IBM Cloud Se
 
 This sample includes a `build` script which will build the container image and push the image to `icr.io/codeengine/network-test-app`. The customer should:
 - Pull the image `icr.io/codeengine/network-test-app`
-- Deploy the image as a job definition
-- Run the job and send the output to the support engineer via the support ticket.
+- Deploy the image as an application
+- Make an HTTP request to your application, and observe the response
 
 ## Configuring the Service Credentials for the App
 
