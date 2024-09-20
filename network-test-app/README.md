@@ -1,6 +1,6 @@
-# Network Connectivity Support App
+# Network Connectivity Test App
 
-This sample is intended for the purpose of allowing support engineers to create an app that attempts to connect to Code Engine services. In the case of a customer raising a support ticket regarding issues connecting their Code Engine apps/jobs to CE services, a support engineer can then suggest to a customer to deploy an image of this app and examine the output.
+This sample is intended to help users debug connectivity issues for IBM Cloud Services. You can use this app to help isolate network connection issues between your own code and a working app.
 
 - - -
 
