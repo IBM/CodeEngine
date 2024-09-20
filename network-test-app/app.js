@@ -26,8 +26,13 @@ app.get("/", async (request, response) => {
                 host: postgres.hosts[0].hostname,
                 database: postgres.database,
                 port: postgres.hosts[0].port,
+                statement_timeout: timeoutMs,
+                query_timeout: timeoutMs,
+                lock_timeout: timeoutMs,
+                application_name: "network-test-app",
+                connectionTimeoutMillis: timeoutMs,
                 ssl: {
-                    cert: cert,
+                    ca: cert,
                     rejectUnauthorized: true,
                 },
             });
