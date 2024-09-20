@@ -1,7 +1,7 @@
 const { Client } = require("pg");
 const express = require("express");
 const app = express()
-
+const timeoutMs = 15000 // timeout in 15 seconds
 const port = process.env.PORT;
 
 app.get("/", async (request, response) => {
