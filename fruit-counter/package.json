@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@ibm-cloud/cloudant": "^0.10.1",
-    "body-parser": "^1.20.0",
-    "express": "^4.19.2"
+    "body-parser": "^1.20.3",
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "standard": "^17.0.0"
