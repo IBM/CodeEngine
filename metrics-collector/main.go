@@ -111,12 +111,10 @@ func collectInstanceMetrics() {
 
 	// fetches all pods
 	pods := getAllPods(coreClientset, namespace, config)
-	// fmt.Println("Captured pods after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms")
-
+	
 	// fetch all pod metrics
 	podMetrics := getAllPodMetrics(namespace, config)
-	// fmt.Println("Captured pod metrics after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms")
-
+	
 	var wg sync.WaitGroup
 
 	for _, metric := range *podMetrics {
@@ -124,8 +122,6 @@ func collectInstanceMetrics() {
 
 		go func(podMetric *v1beta1.PodMetrics) {
 			defer wg.Done()
-
-			// fmt.Println("Starting with pod of '" + podMetric.Name + "' ...")
 
 			// Determine the component type (either app, job, build or unknown)
 			componentType := determineComponentType(podMetric)
@@ -182,7 +178,6 @@ func collectInstanceMetrics() {
 
 				// determine the actual disk usage
 				storageCurrent := obtainDiskUsage(coreClientset, namespace, podMetric.Name, userContainerName, config)
-				// fmt.Println("Obtained disk usage of '" + podMetric.Name + "' after " + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + " ms")
 				stats.DiskUsage.Current = int64(storageCurrent)
 
 				// extract memory and cpu limits
@@ -263,8 +258,7 @@ func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *r
 
 // Helper function to retrieve all pods from the Kube API
 func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod string, container string, config *rest.Config) float64 {
-	// fmt.Println("obtainDiskUsage > pod: '" + pod + "', container: '" + container + "'")
-
+	
 	// per default, we do not collect disk space statistics
 	if os.Getenv("COLLECT_DISKUSAGE") != "true" {
 		return 0
@@ -290,7 +284,6 @@ func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod 
 		option,
 		scheme.ParameterCodec,
 	)
-	// fmt.Println("obtainDiskUsage - URL: '" + req.URL().String() + "'")
 	exec, reqErr := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if reqErr != nil {
 		fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + " failed POST err - " + reqErr.Error())
@@ -316,16 +309,13 @@ func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod 
 
 		return float64(0)
 	}
-	// fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + ": '" + diskUsageOutputStr + "'")
-
+	
 	// Parse the output "4000   /" by splitting the words
 	diskUsageOutput := strings.Fields(strings.TrimSuffix(diskUsageOutputStr, "\n"))
 	if len(diskUsageOutput) > 2 {
 		fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + " - len(diskUsageOutput): '" + strconv.Itoa(len(diskUsageOutput)) + "'")
 		return float64(0)
 	}
-
-	// fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + " - diskUsageOutput[0]: '" + diskUsageOutput[0] + "', len(diskUsageOutput): " + strconv.Itoa(len(diskUsageOutput)))
 
 	// Parse the integer string to a float64
 	ephemeralStorage, parseErr := strconv.ParseFloat(diskUsageOutput[0], 64)
