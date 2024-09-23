@@ -51,7 +51,7 @@ $ ibmcloud ce subscription cron create \
 
 Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`. 
 
-One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect the amount of disk space that is used. Please note, the metrics collector can only calculate the overall file size stored in the pods filesystem which includes files that are part of the container image, the ephermal storage as well as mounted COS buckets. Hence, this metric cannot be used to calculate the ephemeral storage usage. 
+One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect the amount of disk space that is used. Please note, the metrics collector can only calculate the overall file size stored in the pods filesystem which includes files that are part of the container image, the epheremal storage as well as mounted COS buckets. Hence, this metric cannot be used to calculate the ephemeral storage usage. 
 
 ## IBM Cloud Logs setup
 
