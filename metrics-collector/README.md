@@ -47,6 +47,12 @@ $ ibmcloud ce subscription cron create \
     --schedule '*/1 * * * *'
 ```
 
+## Configuration
+
+Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`. 
+
+One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect the amount of disk space that is used. Please note, the metrics collector can only calculate the overall file size stored in the pods filesystem which includes files that are part of the container image, the epheremal storage as well as mounted COS buckets. Hence, this metric cannot be used to calculate the ephemeral storage usage. 
+
 ## IBM Cloud Logs setup
 
 Once your IBM Cloud Code Engine project has detected a corresponding IBM Cloud Logs instance, which is configured to receive platform logs, you can consume the resource metrics in IBM Cloud Logs. Use the filter `metric:instance-resources` to filter for log lines that print resource metrics for each detected IBM Cloud Code Engine instance that is running in a project.
@@ -57,7 +63,7 @@ Along with a human readable message, like `Captured metrics of app instance 'loa
 
 E.g.
 - `cpu.usage:>80`: Filter for all log lines that noticed a CPU utilization of 80% or higher
-- `memory-current:>1000`: Filter for all log lines that noticed an instance that used 1GB or higher of memory
+- `memory.current:>1000`: Filter for all log lines that noticed an instance that used 1GB or higher of memory
 - `component_type:app`: Filter only for app instances. Possible values are `app`, `job`, and `build`
 - `component_name:<app-name>`: Filter for all instances of a specific app, job, or build
 - `name:<instance-name>`: Filter for a specific instance

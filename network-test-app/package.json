@@ -1,0 +1,24 @@
+{
+  "name": "network-test-app",
+  "version": "1.0.0",
+  "description": "App to test connectivity to IBM Cloud Services",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/IBM/CodeEngine"
+  },
+  "keywords": [
+    "network",
+    "test",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0"
+  }
+}
