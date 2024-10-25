@@ -24,7 +24,7 @@ clean
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create our github webhook processor Application, use secret in a env vars
-ibmcloud ce app create -n github --image $REGISTRY/github
+ibmcloud ce app create -n github --cpu 0.125 --memory 0.25G --image $REGISTRY/github
 
 # Save App's URL for later
 APP=$(ibmcloud ce app get -n github -o url)

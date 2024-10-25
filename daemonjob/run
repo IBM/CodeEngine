@@ -24,29 +24,35 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export NUM=${NUM:-10}
 
 # Create a Job definition that will run 10 instances
-ibmcloud ce job create --name tester-daemonjob --array-indices=1-${NUM} \
+ibmcloud ce job create --name tester-daemonjob --cpu 0.125 --memory 0.25G --array-indices=1-${NUM} \
   --image ${REGISTRY}/daemonjob --mode daemon
 
 # Now submit the job using that definition - and wait for it to finish
-ibmcloud ce jobrun submit --name tester-daemonjob-doit --job tester-daemonjob --wait
+ibmcloud ce jobrun submit --name tester-daemonjob-doit --job tester-daemonjob
+
+# Wait for 30 seconds
+sleep 30 
 
 # Now look at a view of the logs to make sure it worked
 ibmcloud ce jobrun logs --instance tester-daemonjob-doit-1-0 | tee out
 
-# Verify it ran ok
+# Verify it runs ok
 if ! grep "Hello World"  out > /dev/null ; then
   echo "Missing expected outout"
   exit 1
 fi
 
 # Now submit a job w/o creating a job definition first - and wait to finish
-ibmcloud ce jobrun submit --name tester-daemonjob-doit2 --array-indices=1-${NUM} \
-  --image ${REGISTRY}/daemonjob --mode daemon --env MSG="Hi there" --wait
+ibmcloud ce jobrun submit --name tester-daemonjob-doit2 --cpu 0.125 --memory 0.25G --array-indices=1-${NUM} \
+  --image ${REGISTRY}/daemonjob --mode daemon --env MSG="Hi there"
+
+# Wait for 30 seconds
+sleep 30 
 
 # Show the stats about the job
 ibmcloud ce jobrun get --name tester-daemonjob-doit2
 
-# Now look at a view of the logs to make sure it worked
+# Now look at a view of the logs to make sure it works
 ibmcloud ce jobrun logs --instance tester-daemonjob-doit2-1-0 | tee out
 
 if ! grep "Hi there"  out > /dev/null ; then

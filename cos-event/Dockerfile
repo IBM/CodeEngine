@@ -1,8 +1,10 @@
-FROM icr.io/codeengine/golang:alpine
-COPY cos-listen.go /
-RUN go build -o /cos-listen /cos-listen.go
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
+COPY cos-listen.go .
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app cos-listen.go
 
 # Copy the exe into a smaller base image
-FROM icr.io/codeengine/alpine
-COPY --from=0 /cos-listen /cos-listen
-CMD /cos-listen
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
+CMD ["/app"]

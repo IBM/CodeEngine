@@ -72,7 +72,7 @@ ibmcloud ce secret create --name f2j-secret --from-literal CE_API_KEY=${ce_api_k
 # Create the function
 ibmcloud ce fn create \
   --name f2j-function \
-  --runtime nodejs-18 \
+  --runtime nodejs-20 \
   --inline-code fn.js \
   --env-from-secret f2j-secret \
   --env CE_REGION=$(echo $project|jq -r '.region_id') \

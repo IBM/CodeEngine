@@ -9,8 +9,9 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')
+export REGION=$(ibmcloud ce project current --output json|jq -r '.region_id')
 export POLICY_ID=""
-export BUCKET=${PROJECT_NAME}-${PROJECT_ID}
+export BUCKET="${PROJECT_ID}-ce-samples-test"
 
 # Clean up previous run
 function clean() {
@@ -50,6 +51,7 @@ fi
 # Set the COS config to use this instance
 ibmcloud cos config crn --crn $CID --force
 ibmcloud cos config auth --method IAM
+ibmcloud cos config region --region $REGION
 
 # Create IAM authorization policy so we can receive notifications from COS
 POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
@@ -62,7 +64,10 @@ ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 
 # Create the app && save its URL for later
 ibmcloud ce app create -n cos-app --image ${REGISTRY}/cos-listen \
-  --min-scale=1 --max-scale=1
+  --cpu 0.125 \
+  --memory 0.25G \
+  --min-scale=1 \
+  --max-scale=1
 URL=$(ibmcloud ce app get --output url --name cos-app)
 
 # Setup the COS Event Source

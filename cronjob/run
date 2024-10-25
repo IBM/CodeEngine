@@ -22,7 +22,7 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create a Job - just it's definition. The "running" instance of it
 # will be created when the event is sent to it.
-ibmcloud ce job create -n cron-job --image ${REGISTRY}/cronjob
+ibmcloud ce job create --name cron-job --cpu 0.125 --memory 0.25G --image ${REGISTRY}/cronjob
 
 # Setup the cron Event Source, send event every minute
 ibmcloud ce sub cron create -n cron-job-sub -d cron-job \

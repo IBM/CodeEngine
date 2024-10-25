@@ -1,8 +1,10 @@
-FROM quay.io/app-sre/ubi8-go-toolset AS build-env
-COPY helloworld.go .
-RUN CGO_ENABLED=0 go build -o /opt/app-root/src/app helloworld.go
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
+COPY . .
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app helloworld.go
 
 # Copy the exe into a smaller base image
-FROM registry.access.redhat.com/ubi9-minimal:latest
-COPY --from=build-env /opt/app-root/src/app /
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
 CMD ["/app"]

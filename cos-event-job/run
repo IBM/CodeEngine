@@ -7,8 +7,9 @@
 export PROJECT_NAME=$(ibmcloud ce project current | awk '/^Name/{ print $2 }')
 export PROJECT_ID=$(ibmcloud ce project get --name ${PROJECT_NAME} | \
   awk '/^ID/{ print $2 }')
+export REGION=$(ibmcloud ce project current --output json|jq -r '.region_id')
 export POLICY_ID=""
-export BUCKET=${PROJECT_NAME}-${PROJECT_ID}
+export BUCKET="${PROJECT_ID}-ce-samples-test"
 
 # Clean up previous run
 function clean() {
@@ -46,8 +47,9 @@ if [[ $CID == "" ]]; then
 fi
 
 # Set the COS config to use this instance
-ibmcloud cos config crn --crn $CID --force
 ibmcloud cos config auth --method IAM
+ibmcloud cos config crn --crn $CID --force
+ibmcloud cos config region --region $REGION
 
 # Create IAM authorization policy so we can receive notifications from COS
 POLICY_ID=$(ibmcloud iam authorization-policy-create codeengine \
@@ -60,6 +62,8 @@ ibmcloud cos bucket-create --bucket ${BUCKET} --ibm-service-instance-id $CID
 
 # Create a simple job which prints the CE_DATA
 ibmcloud ce job create -n cos-job \
+    --cpu 0.125 \
+    --memory 0.25G \
     --image registry.access.redhat.com/ubi8/ubi-minimal:latest \
     --arg "/bin/sh" \
     --arg "-c" \

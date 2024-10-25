@@ -1,8 +1,9 @@
-FROM icr.io/codeengine/golang:alpine
-COPY daemonjob.go /
-RUN  go build -o /daemonjob /daemonjob.go
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
+COPY daemonjob.go .
+RUN CGO_ENABLED=0 go build -o /go/bin/daemonjob daemonjob.go
 
-# Copy exe into a smaller image
-FROM icr.io/codeengine/alpine
-COPY --from=0 /daemonjob /daemonjob
-CMD  /daemonjob
+# Copy the exe into a smaller base image
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/daemonjob /
+CMD ["/daemonjob"]

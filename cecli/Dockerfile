@@ -1,13 +1,16 @@
-FROM icr.io/codeengine/golang
-COPY cecli.go /
-RUN go build -o /cecli /cecli.go
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
+COPY . .
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app cecli.go
 
 # Copy the exe into a non-golang image
-FROM icr.io/codeengine/ubuntu
-RUN apt-get update -y && apt-get install -y curl
-WORKDIR /root
+FROM quay.io/centos/centos:stream9
+
 # Install the IBM Cloud CLI and Code Engine plugin
-RUN curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
+RUN dnf install yum && yum update -y && yum install which -y
+RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
 RUN ibmcloud plugin install code-engine
-COPY --from=0 /cecli /cecli
-CMD /cecli
+
+COPY --from=0 /go/bin/app /
+CMD ["/app"]

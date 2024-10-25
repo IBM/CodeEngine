@@ -33,6 +33,8 @@ ibmcloud ce configmap create --name cm-config-vol \
 
 # Create the app
 ibmcloud ce app create -n cm-app-vol --image ${REGISTRY}/ce-config-vol \
+  --cpu 0.125 \
+  --memory 0.25G \
   --mount-configmap /myconfig=cm-config-vol
 
 # Get the URL of the app for later use
@@ -45,13 +47,13 @@ curl -fs $URL
 ibmcloud ce app logs -n cm-app-vol | tee out
 [[ "${PIPESTATUS[0]}" == "0" ]]
 grep MY_ out
-if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
+if (( $(grep MY_ out | wc -l) != 4 )); then 
   echo "Unexpected output"
   exit 1
 fi
 
 # Check to see if the context of "file" are assign to the "file" env var.
-if ! [[ $(grep '^file: In Congress' out | wc -l) == "1" ]]; then
+if (( $(grep '^file: In Congress' out | wc -l) != 1 )); then
   echo "Unexpected output"
   exit 1
 fi

@@ -234,8 +234,14 @@ func main() {
 				time.Sleep(time.Duration(sleepDuration) * time.Second)
 			}
 
-			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s\n\n", jobMode, jobIndex)
+			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s of %s\n\n", jobMode, jobIndex, os.Getenv("JOB_ARRAY_SIZE"))
 			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
+
+			// If the 'CRASH' or 'FAIL' env vars are set then crash!
+			if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
+				fmt.Printf("Crashing...")
+				os.Exit(1)
+			}
 
 			if jobMode == "task" {
 				// If this job is of type task (aka run-to-completion), let it exit the loop

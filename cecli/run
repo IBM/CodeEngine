@@ -13,8 +13,6 @@ function clean() {
   ibmcloud iam api-keys | grep cecli | sed "s/.*\(ApiKey\)/\1/" | while read a
     do ibmcloud iam api-key-delete -f $a
   done
-
-  rm -f out .apikey
   ) > /dev/null 2>&1
 }
 
@@ -26,24 +24,20 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 set -ex
 
 # Create an API Key so that our App can use it to talk to Code Engine
-ibmcloud iam api-key-create -q cecli | awk '/API Key/{ print $3 }' > .apikey
+apikey="$(ibmcloud iam api-key-create cecli -q -o json|jq -r '.apikey')"
 
 # Create a 'secret' to hold our API Key, Project name, Resource Group and
 # Region
 ibmcloud ce secret create -n cecli-keys \
-  --from-file APIKEY=.apikey \
-  --from-literal PROJECT=$(ibmcloud ce project current|awk '/^Name/{ print $2 }') \
-  --from-literal GROUP=$(ibmcloud target | awk '/group:/{ print $3 }') \
-  --from-literal REGION=$(ibmcloud target | awk '/Region:/{ print $2 }')
+  --from-literal "APIKEY=$apikey" \
+  --from-literal "GROUP=$(ibmcloud target -o json|jq -r '.resource_group.name')"
 
-rm .apikey   #  erase it since we don't need it any more
 
 # Create our application that will kick off the "ibmcloud ce app list".
 # Note that the App will take a little longer than normal to start-up because we
 # setup the cloud CLI environment (eg. login) before starting the HTTP server.
 # Need to give it a little more CPU than the default.
-ibmcloud ce app create -n lister --image $REGISTRY/cecli \
-  --env-sec cecli-keys --cpu .5
+ibmcloud ce app create -n lister --image $REGISTRY/cecli --env-sec cecli-keys --cpu .125 --memory 0.25G
 
 # Save App's URL for later
 APP=$(ibmcloud ce app get -n lister -o url)
