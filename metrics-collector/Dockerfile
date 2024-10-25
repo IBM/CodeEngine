@@ -1,11 +1,11 @@
-FROM icr.io/codeengine/golang:alpine
-RUN apk -U upgrade
-ENV GOTOOLCHAIN auto
-COPY . /
-RUN  go build -o /main /main.go
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
+COPY . .
+
+RUN go mod download
+RUN CGO_ENABLED=0 go build -o /go/bin/app main.go
 
 # Copy the exe into a smaller base image
-FROM icr.io/codeengine/alpine
-RUN apk -U upgrade
-COPY --from=0 /main /main
-CMD /main
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
+CMD ["/app"]

@@ -23,13 +23,13 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export COUNT=${COUNT:-50}
 
 # Create the app
-ibmcloud ce app create -n a2j-app --image ${REGISTRY}/a2j-app
+ibmcloud ce app create -n a2j-app --cpu .125 --memory 0.25G --image ${REGISTRY}/a2j-app
 
 # Get metadata about the app for later use
 URL=$(ibmcloud ce app get -n a2j-app -o url)
 
 # Create the job definition
-ibmcloud ce job create -n a2j-job --ai=1-${COUNT} --image ${REGISTRY}/a2j-job
+ibmcloud ce job create -n a2j-job --ai=1-${COUNT} --cpu .125 --memory 0.25G --image ${REGISTRY}/a2j-job
 
 # Now, curl the app and see if it creates the job
 curl -fs ${URL}/a2j-job -X PUT | tee out

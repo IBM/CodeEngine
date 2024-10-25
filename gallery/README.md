@@ -217,7 +217,7 @@ Utilize local build capabilities, which is able to take your local source code a
 ```
 $ ibmcloud ce fn create --name change-color \
     --build-source . \
-    --runtime nodejs-18 \
+    --runtime nodejs-20 \
     --memory 4G \
     --cpu 1 \
     --env BUCKET=$BUCKET

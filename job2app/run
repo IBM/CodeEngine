@@ -22,13 +22,13 @@ export REGISTRY=${REGISTRY:-icr.io/codeengine}
 export COUNT=${COUNT:-50}
 
 # Create the app
-ibmcloud ce app create -n j2a-app --min=1 --max=1 --image ${REGISTRY}/j2a-app
+ibmcloud ce app create -n j2a-app --min=1 --max=1 --cpu 0.125 --memory 0.25G --image ${REGISTRY}/j2a-app
 
 # Get metadata about the app for later use
 URL=$(ibmcloud ce app get -n j2a-app -o url)
 
 # Create/run the job, passing in the project/namespace - and wait to finish
-ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} \
+ibmcloud ce jobrun submit -n j2a-job --ai=1-${COUNT} --cpu 0.125 --memory 0.25G  \
   --image ${REGISTRY}/j2a-job --wait
 
 # Check the app to see how many times it was hit

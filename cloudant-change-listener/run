@@ -1,18 +1,24 @@
 #!/bin/bash
 
+echo ""
+echo "Installing cloudant-change-listener example ..."
+echo ""
+
 # Ensure that jq tool is installed
 if ! command -v jq &>/dev/null; then
   echo "FAILED - 'jq' tool is not installed"
   exit 1
 fi
 
+echo ""
+echo "Install necessary IBM Cloud CLI plugins ..."
+
 # Ensure that latest versions of used IBM Cloud ClI is installed
-ibmcloud update --force
+ibmcloud update -f --quiet
 
 # Ensure that latest versions of used IBM Cloud CLI plugins are installed
-echo "Install necessary ibmcloud cli plugins ..."
-ibmcloud plugin install cloudant -f
-ibmcloud plugin install code-engine -f
+ibmcloud plugin install cloudant -f  --quiet
+ibmcloud plugin install code-engine -f --quiet
 
 function delete_serviceids() {
   service_ids=$(ibmcloud resource search "type:serviceid AND $1" --output JSON | jq -r '.items')
@@ -26,8 +32,8 @@ function delete_serviceids() {
 
 # Clean up previous run
 function clean() {
-  echo "=================================================================================="
-  echo "Cleaning... (FAILED results are expected for NON-existing elements while cleaning)"
+  echo ""
+  echo "Cleaning up resources from previous runs ..."
   (
     ## first select the project with the name like is was created in last session
     #  if project does not exist, then there is no need to delete the artifacts
@@ -52,9 +58,8 @@ function clean() {
     
     ibmcloud resource service-key-delete cloudant-creds-ce-project --force
 
-  )
-  echo Cleaning DONE ...
-  echo "=================================================================================="
+  ) > /dev/null 2>&1
+  echo "Cleaning up resources from previous runs [DONE]"
 }
 
 clean
@@ -62,6 +67,12 @@ clean
 # In case this script has been executed with `./run clean`, we stop right after the cleanup
 [[ "$1" == "clean" ]] && exit 0
 
+echo ""
+echo "=================================================================================="
+echo "Starting to setup the cloudant-change-listener ..."
+echo ""
+
+echo ""
 echo "Check if a Cloudant instance 'CE-Cloudant-SampleDB' is properly initialized ..."
 COUNTER=0
 
@@ -85,6 +96,7 @@ if [ -z "$cloudant_instances" ]; then
   exit 1
 fi
 
+echo ""
 echo "Obtain the service URL of the newly created Cloudant instance '$cloudant_instance_name' (id: $cloudant_instance_guid) ..."
 cloudant_url=$(ibmcloud cloudant url --resource-id $cloudant_instance_guid --output JSON)
 echo "$cloudant_url"
@@ -105,6 +117,7 @@ echo ""
 echo "Try to delete the sample-db Cloudant database if exists from a previous run "
 curl -H "Authorization: $iam_access_token" -X DELETE "$cloudant_url/sample-db"
 
+echo ""
 echo "Creating a new database 'sample-db' within Cloudant instance '$cloudant_instance_name' ..."
 echo "using cloudant API  https://cloud.ibm.com/apidocs/cloudant#putdatabase"
 curl -H "Authorization: $iam_access_token" -X PUT "$cloudant_url/sample-db"
@@ -113,6 +126,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Creating Code Engine project 'ce-sample-cloudant-change-listener-project' ..."
 ibmcloud ce proj create --name ce-sample-cloudant-change-listener-project
 if [ $? != 0 ]; then
@@ -131,12 +145,14 @@ if [ -z "$ce_project_region" ]; then
   exit 1
 fi
 
+echo ""
 echo "Creating the Code Engine function 'cloudant-change-listener-function' ..."
 ibmcloud ce fn create \
   --name cloudant-change-listener-function \
-  --runtime nodejs-18 \
+  --runtime nodejs-20 \
   --inline-code ./function/function.js
 
+echo ""
 echo "Waiting for the function to get properly initialized ..."
 ce_fn_endpoint="null"
 ce_fn_endpoint_internal="null"
@@ -155,6 +171,7 @@ while [ "$ce_fn_endpoint" == "null" ]; do
 done
 echo "Function public endpoint: '$ce_fn_endpoint', internal endpoint: '$ce_fn_endpoint_internal'"
 
+echo ""
 echo "Creating a config map to store the event state"
 ibmcloud ce configmap create \
   --name cloudant-change-listener-job-config \
@@ -165,6 +182,7 @@ if [ $? != 0 ]; then
 fi
 
 # See Code Engine docs: Managing user access (https://cloud.ibm.com/docs/codeengine?topic=codeengine-iam#service)
+echo ""
 echo "Creating an IAM ServiceID that contains a policy to access the Code Engine project '${ce_project_guid}' ..."
 ibmcloud iam service-id-create ce-sample-cloudant-change-listener-api-credentials --description "Service ID to operate towards the Code Engine project ${ce_project_guid}"
 if [ $? != 0 ]; then
@@ -182,6 +200,7 @@ if [ -z "$ce_api_key" ]; then
   exit 1
 fi
 
+echo ""
 echo "Creating a secret that stores a serviceID APIKey to enable the job storing state in a Configmap within the project '$ce_project_guid' ..."
 ibmcloud ce secret create \
   --name cloudant-change-listener-credentials \
@@ -191,6 +210,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Creating the Code Engine daemon job 'cloudant-change-listener-job' ..."
 ibmcloud ce job create \
   --name cloudant-change-listener-job \
@@ -207,6 +227,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Creating the service credential on the Cloudant database to be able to bind the job and the function ..."
 ibmcloud resource service-key-create cloudant-creds-ce-project Reader --instance-id $cloudant_instance_guid
 if [ $? != 0 ]; then
@@ -214,6 +235,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Binding the Cloudant credentials to the Code Engine function to enable that the function code can access the DB via Env vars ..."
 ibmcloud ce fn bind \
   --name cloudant-change-listener-function \
@@ -224,6 +246,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Binding the Cloudant credentials to the Code Engine job ..."
 ibmcloud ce job bind \
   --name cloudant-change-listener-job \
@@ -234,6 +257,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
+echo ""
 echo "Starting the daemon job ..."
 job_run_name=$(ibmcloud ce jobrun submit --job cloudant-change-listener-job --output json | jq -r '.metadata|.name')
 echo "with job id = $job_run_name"
@@ -242,6 +266,7 @@ if [ -z "$job_run_name" ]; then
   exit 1
 fi
 
+echo ""
 echo "Check whether the job started properly ..."
 COUNTER=0
 while ! ibmcloud ce jobrun get -n ${job_run_name} | grep "1/1" | grep "Running"; do
@@ -256,6 +281,7 @@ while ! ibmcloud ce jobrun get -n ${job_run_name} | grep "1/1" | grep "Running";
 done
 sleep 2
 
+echo ""
 echo "Upload a file to the Cloudant database ..."
 curl -H "Authorization: $iam_access_token" -X POST "$cloudant_url/sample-db" -H "Content-Type: application/json" --data '{
   "_id": "small-appliances:1000043",
@@ -265,18 +291,19 @@ curl -H "Authorization: $iam_access_token" -X POST "$cloudant_url/sample-db" -H 
   "name": "Digital Kitchen Scales"
 }'
 
+echo ""
 echo "Verify job receives the Cloudant event by fetching the job run logs ..."
 
 COUNTER=0
 while true; do
-  echo "Waiting on job to detect change"
+  echo "   Waiting on job to detect change"
   sleep 5
   foundDetectedChange=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Detected 1 change(s) in the DB")
   foundCalledFunction=$(ibmcloud ce jobrun logs -n ${job_run_name} | grep "Successfully called CE")
 
   if [[ $foundDetectedChange && $foundCalledFunction ]]; then
     echo ""
-    echo "That was a success :)"
+    echo "   That was a success :)"
     break
   fi
   COUNTER=$((COUNTER + 1))
@@ -292,6 +319,10 @@ while true; do
     exit 1
   fi
 done
+
+echo ""
+echo "Completed successfully :)"
+echo ""
 
 # Clean up
 clean

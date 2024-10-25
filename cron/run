@@ -21,7 +21,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create the app
-ibmcloud ce app create -n cron-app --image ${REGISTRY}/cron --min-scale=1
+ibmcloud ce app create --name cron-app --cpu 0.125 --memory 0.25G --min-scale=1 --image ${REGISTRY}/cron
 
 # Setup the cron Event Source, send event every minute
 ibmcloud ce sub cron create -n cron-sub -d cron-app \

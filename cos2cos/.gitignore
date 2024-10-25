@@ -1,4 +1,0 @@
-# .gitignore file for cos2cos
-venv/
-__pycache__/
-*.egg-info
