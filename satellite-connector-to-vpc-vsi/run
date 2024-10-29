@@ -486,7 +486,7 @@ project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
 #
 # Create the Code Engine function
 print_msg "\nCreating the Code Engine function '$ce_function_name' (see 'ce-function.js' for details) ..."
-ibmcloud ce function create --name $ce_function_name --inline-code ce-function/index.js --runtime nodejs-18 --env "SAT_LINK_ENDPOINT=http://$nginx_endpoint_host:$nginx_endpoint_port"
+ibmcloud ce function create --name $ce_function_name --inline-code ce-function/index.js --runtime nodejs-20 --env "SAT_LINK_ENDPOINT=http://$nginx_endpoint_host:$nginx_endpoint_port"
 if [ $? -ne 0 ]; then
     print_error "Code Engine function creation failed!"
     abortScript
