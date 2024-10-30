@@ -18,10 +18,10 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create our business logic app - don't expose it on the internet
-ibmcloud ce app create -n auth-app --image $REGISTRY/auth-app --cluster-local
+ibmcloud ce app create -n auth-app --image $REGISTRY/auth-app --cluster-local --cpu 0.125 --memory 0.25G
 
 # Now create our proxy/authorization app, this one is exposed on the internet
-ibmcloud ce app create -n auth-proxy --image $REGISTRY/auth-proxy
+ibmcloud ce app create -n auth-proxy --image $REGISTRY/auth-proxy --cpu 0.125 --memory 0.25G
 
 # Get its URL
 URL=$(ibmcloud ce app get -n auth-proxy -o url)
