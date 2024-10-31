@@ -1,5 +1,10 @@
-FROM icr.io/codeengine/golang
-WORKDIR /go/src/
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
 COPY . .
-RUN go build -o /sessions /go/src/sessions.go
-CMD ["/sessions"]
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app sessions.go
+
+# Copy the exe into a smaller base image
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
+CMD ["/app"]

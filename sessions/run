@@ -21,7 +21,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Deploy redis as an app. Make sure we only ever have 1 instance running
-ibmcloud ce app create -n session-redis --image redis --user 999 --cl --min=1 --max=1 \
+ibmcloud ce app create -n session-redis --image quay.io/sclorg/redis-6-c9s --cluster-local --min=1 --max=1 --cpu 0.25 --memory 0.5G \
   --port 6379
 
 # Get the session-redis pod's IP address so we can hit it directly.
@@ -35,7 +35,7 @@ ibmcloud ce app create -n session-redis --image redis --user 999 --cl --min=1 --
 IP=$(ibmcloud ce app get -n session-redis -o jsonpath='{.instances[].status.podIP}')
 
 # Create the stateful app and pass it the session-redis IP
-ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 --min=3
+ibmcloud ce app create -n session-app -i ${REGISTRY}/sessions -e IP=$IP --cn=5 --min=3 --cpu 0.125 --memory 0.25G
 
 # Get the URL of the app for later use
 URL=$(ibmcloud ce app get -n session-app -o url)
