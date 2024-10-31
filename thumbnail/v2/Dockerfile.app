@@ -9,4 +9,4 @@ FROM gcr.io/distroless/static-debian12
 COPY --from=build-env /go/bin/app /
 COPY page.html /
 COPY pictures/* /pictures/
-CMD ["/app"]
+ENTRYPOINT ["/app"]

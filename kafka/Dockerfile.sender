@@ -9,4 +9,4 @@ RUN go build -o /sender sender.go
 FROM icr.io/codeengine/alpine
 RUN apk add ca-certificates
 COPY --from=bootstrap /sender /sender
-CMD ["/sender"]
+ENTRYPOINT ["/sender"]

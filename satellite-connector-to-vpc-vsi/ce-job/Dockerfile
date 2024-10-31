@@ -11,4 +11,4 @@ RUN npm install
 FROM gcr.io/distroless/nodejs20-debian12
 COPY --from=build-env /job /job
 WORKDIR /job
-CMD ["job.mjs"]
+ENTRYPOINT ["job.mjs"]

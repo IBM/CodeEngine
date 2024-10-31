@@ -6,4 +6,4 @@ RUN CGO_ENABLED=0 go build -o /go/bin/daemonjob daemonjob.go
 # Copy the exe into a smaller base image
 FROM gcr.io/distroless/static-debian12
 COPY --from=build-env /go/bin/daemonjob /
-CMD ["/daemonjob"]
+ENTRYPOINT ["/daemonjob"]
