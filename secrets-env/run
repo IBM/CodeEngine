@@ -32,7 +32,7 @@ ibmcloud ce secret create --name sec-secret-env \
   --from-file MY_FILE=file
 
 # Create the app
-ibmcloud ce app create -n sec-app-env --image ${REGISTRY}/ce-secret-env \
+ibmcloud ce app create -n sec-app-env --src . --cpu 0.125 --memory 0.25G \
   --env-from-secret sec-secret-env
 
 # Get the URL of the app for later use
@@ -52,13 +52,13 @@ exit 0
 # Now check the logs to see if the env vars were set
 ibmcloud ce app logs --instance $name | tee out
 grep MY_ out
-if ! [[ $(grep MY_ out | wc -l) == "4" ]]; then
+if (( $(grep MY_ out | wc -l) != 4 )); then
   echo "Unexpected output"
   exit 1
 fi
 
 # Check to see if the context of "file" are assign to the "file" env var.
-if ! [[ $(grep '^file=In Congress' out | wc -l) == "1" ]]; then
+if (( $(grep '^file=In Congress' out | wc -l) != 1 )); then
   echo "Unexpected output"
   exit 1
 fi
