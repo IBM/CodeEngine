@@ -1,11 +1,12 @@
-FROM icr.io/codeengine/golang AS bootstrap
-WORKDIR /go/src/
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
 COPY . .
-RUN go build -o /app app.go
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app app.go
 
 # Copy the exe into a smaller base image
-FROM icr.io/codeengine/ubuntu
-COPY --from=bootstrap /app /app
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
 COPY page.html /
 COPY pictures/* /pictures/
 CMD ["/app"]

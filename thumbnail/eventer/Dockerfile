@@ -1,9 +1,10 @@
-FROM icr.io/codeengine/golang:alpine AS bootstrap
-WORKDIR /go/src/
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
 COPY . .
-RUN go build -o /eventer eventer.go
+
+RUN CGO_ENABLED=0 go build -o /go/bin/app eventer.go
 
 # Copy the exe into a smaller base image
-FROM icr.io/codeengine/alpine
-COPY --from=bootstrap /eventer /eventer
-CMD ["/eventer"]
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
+CMD ["/app"]
