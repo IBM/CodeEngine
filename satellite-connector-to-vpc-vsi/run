@@ -3,7 +3,7 @@
 # Env vars
 CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
 CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
-REGION="${REGION:=us-east}"
+REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-to-private-vsi}"
 VPC_SSH_KEY="${VPC_SSH_KEY:=}"
 DEBUG_MODE="${DEBUG_MODE:=false}"
@@ -43,9 +43,9 @@ function print_success {
     echo -e "${GREEN}$1${ENDCOLOR}"
 }
 
-# Helper function to work around the fact that the sat experimental CLI is quite limited in its current version
+# Helper function to work around the fact that the sat CLI is quite limited in its current version
 function getSatConnectorId() {
-    connector_details=$(ibmcloud sat experimental connector ls | grep -m 1 $1)
+    connector_details=$(ibmcloud sat connector ls | grep -m 1 $1)
     if [ -z "$connector_details" ]; then
         echo "not_found"
         return 1
@@ -80,7 +80,7 @@ function clean() {
 
         connector_id=$(getSatConnectorId $sat_connector_name)
         if [[ $connector_id != 'not_found' ]]; then
-            ibmcloud sat experimental connector rm --connector-id $connector_id -f -q
+            ibmcloud sat connector rm --connector-id $connector_id -f -q
         fi
 
         ibmcloud is instance-delete $vsi_agent_name --force 2>/dev/null
@@ -115,7 +115,7 @@ function clean() {
         if [[ $? == 0 ]]; then
             COUNTER=0
             # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
-            while [[ "$(ibmcloud resource service-instances --type all -g $resource_group_name --output json | jq -r '. | length')" != "0" ]]; do
+            while (( "$(ibmcloud resource service-instances --type all -g $resource_group_name --output json | jq -r '. | length')" > 0 )); do
                 sleep 5
                 COUNTER=$((COUNTER + 1))
                 if ((COUNTER > 30)); then
@@ -185,7 +185,7 @@ ibmcloud target -g $resource_group_name
 #
 # Create the connector and obtain its identifier
 print_msg "\nCreating the Satellite Connector '$sat_connector_name' ..."
-ibmcloud sat experimental connector create --name $sat_connector_name --region $REGION
+ibmcloud sat connector create --name $sat_connector_name --region $REGION
 if [ $? -ne 0 ]; then
     print_error "Failed to create the Satellite Connector"
     abortScript
@@ -539,7 +539,7 @@ if [ $? -ne 0 ]; then
 fi
 
 print_msg "\nCreating a Code Engine job '$ce_job_name' that will connect to the database ..."
-ibmcloud ce job create --name $ce_job_name \
+IBMCLOUD_TRACE=true ibmcloud ce job create --name $ce_job_name \
     --build-source ./ce-job \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
@@ -561,8 +561,8 @@ print_msg "\nListing submitted job runs..."
 ibmcloud ce jobrun list
 
 print_msg "\nCreating a Code Engine app '$ce_app_name' that retrieve records from the database ..."
-ibmcloud ce app create --name $ce_app_name \
-    --build-source ce-app \
+IBMCLOUD_TRACE=true ibmcloud ce app create --name $ce_app_name \
+    --build-source ./ce-app \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
     --cpu 0.25
