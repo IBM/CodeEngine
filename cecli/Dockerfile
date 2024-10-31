@@ -13,4 +13,4 @@ RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
 RUN ibmcloud plugin install code-engine
 
 COPY --from=0 /go/bin/app /
-ENTRYPOINT ["/app"]
+CMD ["/app"]
