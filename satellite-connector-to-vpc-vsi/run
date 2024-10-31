@@ -539,7 +539,7 @@ if [ $? -ne 0 ]; then
 fi
 
 print_msg "\nCreating a Code Engine job '$ce_job_name' that will connect to the database ..."
-IBMCLOUD_TRACE=true ibmcloud ce job create --name $ce_job_name \
+ibmcloud ce job create --name $ce_job_name \
     --build-source ./ce-job \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
@@ -561,7 +561,7 @@ print_msg "\nListing submitted job runs..."
 ibmcloud ce jobrun list
 
 print_msg "\nCreating a Code Engine app '$ce_app_name' that retrieve records from the database ..."
-IBMCLOUD_TRACE=true ibmcloud ce app create --name $ce_app_name \
+ibmcloud ce app create --name $ce_app_name \
     --build-source ./ce-app \
     --env-from-secret $ce_db_credentials \
     --memory 0.5G \
