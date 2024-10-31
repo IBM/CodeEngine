@@ -1,15 +1,10 @@
-FROM icr.io/codeengine/golang:latest AS stage
-
-WORKDIR /app/src
-
+FROM quay.io/projectquay/golang:1.22 AS build-env
+WORKDIR /go/src/app
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o app .
+RUN CGO_ENABLED=0 go build -o /go/bin/app .
 
-FROM icr.io/codeengine/alpine
-
-WORKDIR /app/src
-
-COPY --from=stage /app/src/app .
-
-CMD [ "./app" ]
+# Copy the exe into a smaller base image
+FROM gcr.io/distroless/static-debian12
+COPY --from=build-env /go/bin/app /
+CMD ["/app"]
