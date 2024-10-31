@@ -32,7 +32,7 @@ ibmcloud ce secret create --name sec-secret-env \
   --from-file MY_FILE=file
 
 # Create the app
-ibmcloud ce app create -n sec-app-env --src . --cpu 0.125 --memory 0.25G \
+ibmcloud ce app create -n sec-app-env --image ${REGISTRY}/ce-secret-env --cpu 0.125 --memory 0.25G \
   --env-from-secret sec-secret-env
 
 # Get the URL of the app for later use

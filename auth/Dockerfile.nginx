@@ -8,15 +8,10 @@ COPY call-nginx /
 # htpasswd contains the user/password info - for auth
 COPY htpasswd /etc/apache2/.htpasswd
 
-RUN ls -l /etc/nginx
-RUN ls -l /etc/nginx/conf.d
-
 # Use our custom nginx config file
 COPY --chown=root:root nginx.conf /etc/nginx/conf.d/my-site.conf.template
-
-RUN ls -l /etc/nginx/conf.d
 
 USER root:root
 
 # At runtime, call the wrapper script to do the "NS" substitutions
-CMD ["/call-nginx"]
+ENTRYPOINT ["/call-nginx"]
