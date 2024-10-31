@@ -4,7 +4,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 docker build --platform linux/amd64 -f - -t ${REGISTRY}/ce-tester . <<-EOF
-	FROM icr.io/codeengine/ce-bash
+	FROM icr.io/codeengine/cecli
 	WORKDIR /root
 	COPY tester /
 	CMD /tester

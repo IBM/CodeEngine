@@ -1,4 +1,5 @@
-FROM icr.io/codeengine/nginx
+# see https://catalog.redhat.com/software/containers/ubi9/nginx-124/657b066b6c1bc124a1d7ff39?image=66eb4e38617376c887d5d95d
+FROM registry.access.redhat.com/ubi9/nginx-124:latest
 
 # call-ngninx is just a script that'll replace "NS" in the config file with
 # the proper project ID
@@ -8,7 +9,9 @@ COPY call-nginx /
 COPY htpasswd /etc/apache2/.htpasswd
 
 # Use our custom nginx config file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chown=root:root nginx.conf /etc/nginx/conf.d/my-site.conf.template
+
+USER root:root
 
 # At runtime, call the wrapper script to do the "NS" substitutions
-CMD ["/call-nginx"]
+ENTRYPOINT ["/call-nginx"]

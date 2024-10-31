@@ -21,7 +21,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Create the websocket server app
-ibmcloud ce app create -n ws-server --image ${REGISTRY}/ws-server
+ibmcloud ce app create -n ws-server --image ${REGISTRY}/ws-server --cpu 0.125 --memory 0.25G
 
 # Get the URL of the app for later use
 URL=$(ibmcloud ce app get -n ws-server -o url)
@@ -29,7 +29,7 @@ URL=$(ibmcloud ce app get -n ws-server -o url)
 # Now submit a job to run the client, passing in the URL to the App as an arg.
 # Change the protocol on the App from https to wss (secure websocket).
 # And wait for the job to finish.
-ibmcloud ce jobrun submit -n ws-client --image ${REGISTRY}/ws-client \
+ibmcloud ce jobrun submit -n ws-client --image ${REGISTRY}/ws-client --cpu 0.125 --memory 0.25G \
   --arg ${URL/https/wss} --wait
 
 # Get the overall status of the job and verify that the client exited properly
