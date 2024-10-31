@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 var IP = os.Getenv("IP")
@@ -20,8 +21,10 @@ func NewClient() *redis.Client {
 	})
 }
 
+var ctx = context.Background()
+
 func Handler(w http.ResponseWriter, r *http.Request) {
-	count, err := client.Incr("count").Result()
+	count, err := client.Incr(ctx, "count").Result()
 	if err != nil {
 		fmt.Fprintf(w, "Err: %v\n", err)
 	}
