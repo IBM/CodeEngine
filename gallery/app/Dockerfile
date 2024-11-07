@@ -15,4 +15,4 @@ FROM gcr.io/distroless/nodejs20-debian12
 COPY --from=build-env /app /app
 WORKDIR /app
 EXPOSE 8080
-ENTRYPOINT ["app.js"]
+CMD ["app.js"]
