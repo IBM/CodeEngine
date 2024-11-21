@@ -111,9 +111,6 @@ is demonstrating.
 - [auth](auth)<br>
   This shows how to setup an nginx proxy in-front of a private application
   to ensure that only authorized people can access it.
-- [bash](bash)<br>
-  This shows how you can create an application from a bash script without
-  the need to write your own HTTP server.
 - [bind-app](bind-app)<br>
   This will create an instance of Event Streams in the IBM Cloud and then ask
   Code Engine to bind it to an Application so we can access it from the App.
@@ -122,9 +119,6 @@ is demonstrating.
   Show how to invoke the Code Engine CLI from within an App. This can be used
   to then start additional Code Engine resources (Apps/Jobs) dynamically.
   Same logic could be used in Batch Jobs.
-- [private](private)<br>
-  Show how to create a "private" application that is only accessible from
-  within the project (no external/internet access).
 - [sessions](sessions)<br>
   Starts a stateful application that scales based on load. The state is kept
   in an instance of Redis, also running within Code Engine. Demonstrates the
@@ -133,20 +127,13 @@ is demonstrating.
   Shows how to interact with an Application via WebSockets.
 
 #### Batch Jobs
-- [job](job)<br>
-  This will create a Batch Job that will print basic debugging information to
-  the logs, and then show those logs. It'll create the Batch Job with and
-  without a Job definition to show both options.
-- [testjob](testjob)<br>
+- [helloworld](helloworld)<br>
   This is another simple Batch Job sample, similar to the previous one, but
   shows how to use environment variables to modify the behavior of the runtime
   of the job.
 - [cronjob](cronjob)<br>
   This will create a Batch Job that will be invoked based on a cron
   event. Meaning, it'll be executed based on a timer.
-- [app-n-job](app-n-job)<br>
-  This will use the same image for both an Application and a Batch Job.
-  Just to show that it's possible.
 - [app2job](app2job)<br>
   This will show how to submit a Job from an Application based on an incoming
   HTTP request to the Application.
@@ -181,16 +168,6 @@ is demonstrating.
 - [function-http-python](helloworld-samples/function-http-python)
   This example shows how to create Python functions which can perfome a http request without additional modules
 
-#### Source-to-Image
-- [s2i-buildpacks](s2i-buildpacks)<br>
-  This will show how to use the source-to-image feature of Code Engine to
-  build an Application from a git repo (using a Buildpack), push it to a
-  private registry, and then deploy an Application using that image.
-- [s2i-dockerfile](s2i-dockerfile)<br>
-  This will show how to use the source-to-image feature of Code Engine to
-  build an Application from a git repo (using a Dockerfile), push it to a
-  private registry, and then deploy an app using that image.
-
 #### Eventing
 - [cron](cron)<br>
   This will show how to setup a simple Cron Event Source and send
@@ -201,18 +178,15 @@ is demonstrating.
 - [cos-event](cos-event)<br>
   This will show how to setup a COS Event Source and send its events to
   an Application.
-- [cos2cos](cos2cos)<br>
-  This will show how you can use eventing to monitor changes in a Cloud
-  Object Storage bucket, and then act on those changes by processing any
-  new files in the bucket and then uploading a new object into a secondary
-  bucket. It can also get Cron events to periodically check for missed
-  files.
 - [github](github)<br>
   This sample will show how to get events from Github (via its webhooks)
   delivered to a Code Engine Application.
 - [kafka](kafka)<br>
   This sample shows how to create a Kafka subscription to automatically have
   messages in a Kafka instances delivered to an application.
+- [kafka-observer](kafka)<br>
+  This provides a sample implementation of the observer pattern, 
+  which is a native approach to consume Kafka messages in IBM Cloud Code Engine.
 - [cloudant-change-listener](cloudant-change-listener)<br>
   This is a sample of a Cloudant Databases changes listener that continously 
   listen on all changes in a database. For each change a Code Engine function 
@@ -259,7 +233,7 @@ followed is:
 
 ## Additional Resources
 
-- [IBM Cloud Code Engine](https://ibm.com/cloud/code-engine)
+- [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine)
 - For questions/comments join us on Slack:<br>
   [Register](https://cloud.ibm.com/kubernetes/slack) |
   [Login](https://ibm-cloud-success.slack.com/) and join us on the
