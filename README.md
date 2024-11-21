@@ -84,7 +84,7 @@ $ ibmcloud ce project create --name demos
 With that, `cd` into the directory of interest, and read the README to see how
 to get started.
 
-## Tutorials
+## Tutorials / Assets
 
 - [Gallery](gallery)<br>
   Walks through the complete growth path of a solution from the prototype
@@ -96,6 +96,9 @@ to get started.
   stage through to production - demonstrating how to switch from an in-app
   processor to one where the data is persisted and processed via an
   event-driven architecture.
+
+- [Metrics Collector](metrics-collector)<br>
+  Re-usable asset that helps to gain insights on the CPU and memory consumption of apps, jobs and builds.
 
 ## Samples
 
