@@ -2,6 +2,8 @@
 
 Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds
 
+![Dashboard overview](./images/icl-dashboard-overview.png)
+
 ## Installation
 
 ### Capture metrics every n seconds
@@ -17,11 +19,11 @@ $ ibmcloud ce job create \
     --wait
 ```
 
-* Submit a daemon job that collects metrics in an endless loop. The daemon job queries the Metrics API every 10 seconds
+* Submit a daemon job that collects metrics in an endless loop. The daemon job queries the Metrics API every 30 seconds
 ```
 $ ibmcloud ce jobrun submit \
     --job metrics-collector \
-    --env INTERVAL=10 
+    --env INTERVAL=30 
 ```
 
 
@@ -56,6 +58,81 @@ One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect th
 ## IBM Cloud Logs setup
 
 Once your IBM Cloud Code Engine project has detected a corresponding IBM Cloud Logs instance, which is configured to receive platform logs, you can consume the resource metrics in IBM Cloud Logs. Use the filter `metric:instance-resources` to filter for log lines that print resource metrics for each detected IBM Cloud Code Engine instance that is running in a project.
+
+### Custom dashboard
+
+Follow the steps below to create a custom dashboard in your IBM Cloud Logs instance, to gain insights into resource consumption metrics.
+
+![Dashboard overview](./images/icl-dashboard-overview.png)
+
+**Setup instructions:**
+
+* Navigate to the "Custom dashboards" view, hover of the "New" button, and click "Import dashboard"
+
+![New dashboard](./images/icl-dashboard-new.png)
+
+* In the "Import" modal, select the file [./setup/dashboard-code_engine_resource_consumption_metrics.json](./setup/dashboard-code_engine_resource_consumption_metrics.json) located in this repository, and click "Import"
+
+![Import modal](./images/icl-dashboard-import.png)
+
+* Confirm the import by clicking "Import" again
+
+![Import confirmation](./images/icl-dashboard-import-confirm.png)
+
+
+### Logs view
+
+Follow the steps below to create a Logs view in your IBM Cloud Logs instance, that allows you to drill into individual instance-resources log lines.
+
+![Logs overview](./images/icl-logs-view-overview.png)
+
+**Setup instructions:**
+
+* Filter only log lines related collected istio-proxy logs, by filtering for the following query
+```
+app:"codeengine" AND message.metric:"instance-resources"
+```
+
+![Query](./images/icl-logs-view-query.png)
+
+* In the left bar, click "Add Filter" and add the following filters
+    * `Application`
+    * `App`
+    * `Label.Project`
+    * `Message.Component_name`
+
+![Filters](./images/icl-logs-view-filters.png)
+
+* In the top-right corner, click on "Columns" and configure the following columns:
+    * `Timestamp`
+    * `label.Project`
+    * `message.component_type`
+    * `message.component_name`
+    * `message.message`
+    * `Text`
+
+![Columns](./images/icl-logs-view-columns.png)
+
+* Once applied adjust the column widths appropriately
+
+* In the top-right corner, select `1-line` as view mode
+
+![View](./images/icl-logs-view-mode.png)
+
+* In the graph title it says "**Count** all grouped by **Severity**". Click on `Severity` and select `message.component_name` instead. Furthermore, select `Max` as aggregation metric and choose `message.memory.usage` as aggregation field
+
+![Graph](./images/icl-logs-view-graph.png)
+
+* Save the view
+
+![Save](./images/icl-logs-view-save.png)
+
+* Utilize the custom logs view to drill into HTTP requests
+
+![Logs overview](./images/icl-logs-view-overview.png)
+
+
+## IBM Log Analysis setup (deprecated)
 
 ### Log lines
 

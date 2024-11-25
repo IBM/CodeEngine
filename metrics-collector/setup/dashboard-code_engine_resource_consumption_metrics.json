@@ -1,0 +1,573 @@
+{
+  "id": "RQac8BNYDtzOIAaz9PXVF",
+  "name": "Code Engine - Resource consumption metrics",
+  "layout": {
+    "sections": [
+      {
+        "id": {
+          "value": "1eeb5f84-2fa5-4967-8b15-7e8a15691555"
+        },
+        "rows": [
+          {
+            "id": {
+              "value": "dd094835-c83a-49ad-a95f-e1b623fe8c31"
+            },
+            "appearance": {
+              "height": 19
+            },
+            "widgets": [
+              {
+                "id": {
+                  "value": "f7790a61-0de6-47d0-905d-ee386b0d4a11"
+                },
+                "title": "CPU usage (in %)",
+                "definition": {
+                  "lineChart": {
+                    "legend": {
+                      "isVisible": true,
+                      "columns": [],
+                      "groupByQuery": true,
+                      "placement": "LEGEND_PLACEMENT_AUTO"
+                    },
+                    "tooltip": {
+                      "showLabels": false,
+                      "type": "TOOLTIP_TYPE_ALL"
+                    },
+                    "queryDefinitions": [
+                      {
+                        "id": "76071e2e-b28e-4a14-bf47-ca0b3dfea660",
+                        "query": {
+                          "logs": {
+                            "luceneQuery": {
+                              "value": "app:\"codeengine\" AND message.metric:\"instance-resources\""
+                            },
+                            "groupBy": [],
+                            "aggregations": [
+                              {
+                                "max": {
+                                  "observationField": {
+                                    "keypath": [
+                                      "message",
+                                      "cpu",
+                                      "usage"
+                                    ],
+                                    "scope": "DATASET_SCOPE_USER_DATA"
+                                  }
+                                }
+                              }
+                            ],
+                            "filters": [],
+                            "groupBys": [
+                              {
+                                "keypath": [
+                                  "message",
+                                  "component_type"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              },
+                              {
+                                "keypath": [
+                                  "message",
+                                  "name"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              }
+                            ]
+                          }
+                        },
+                        "seriesCountLimit": "20",
+                        "unit": "UNIT_UNSPECIFIED",
+                        "scaleType": "SCALE_TYPE_LINEAR",
+                        "name": "Query 1",
+                        "isVisible": true,
+                        "colorScheme": "classic",
+                        "resolution": {
+                          "bucketsPresented": 96
+                        },
+                        "dataModeType": "DATA_MODE_TYPE_HIGH_UNSPECIFIED",
+                        "customUnit": "",
+                        "decimal": 2
+                      }
+                    ],
+                    "stackedLine": "STACKED_LINE_UNSPECIFIED"
+                  }
+                }
+              },
+              {
+                "id": {
+                  "value": "8b3b1968-aaa9-4ab2-a5ea-94f222a24e58"
+                },
+                "title": "CPU usage (in vCore millis)",
+                "definition": {
+                  "lineChart": {
+                    "legend": {
+                      "isVisible": true,
+                      "columns": [],
+                      "groupByQuery": true,
+                      "placement": "LEGEND_PLACEMENT_AUTO"
+                    },
+                    "tooltip": {
+                      "showLabels": false,
+                      "type": "TOOLTIP_TYPE_ALL"
+                    },
+                    "queryDefinitions": [
+                      {
+                        "id": "69a80b40-c5e4-462b-8067-28c0d7e0fc75",
+                        "query": {
+                          "logs": {
+                            "luceneQuery": {
+                              "value": "app:\"codeengine\" AND message.metric:\"instance-resources\""
+                            },
+                            "groupBy": [],
+                            "aggregations": [
+                              {
+                                "max": {
+                                  "observationField": {
+                                    "keypath": [
+                                      "message",
+                                      "cpu",
+                                      "current"
+                                    ],
+                                    "scope": "DATASET_SCOPE_USER_DATA"
+                                  }
+                                }
+                              }
+                            ],
+                            "filters": [],
+                            "groupBys": [
+                              {
+                                "keypath": [
+                                  "message",
+                                  "component_type"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              },
+                              {
+                                "keypath": [
+                                  "message",
+                                  "name"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              }
+                            ]
+                          }
+                        },
+                        "seriesCountLimit": "20",
+                        "unit": "UNIT_UNSPECIFIED",
+                        "scaleType": "SCALE_TYPE_LINEAR",
+                        "name": "Query 1",
+                        "isVisible": true,
+                        "colorScheme": "classic",
+                        "resolution": {
+                          "bucketsPresented": 96
+                        },
+                        "dataModeType": "DATA_MODE_TYPE_HIGH_UNSPECIFIED",
+                        "customUnit": "",
+                        "decimal": 2
+                      }
+                    ],
+                    "stackedLine": "STACKED_LINE_UNSPECIFIED"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "options": {
+          "custom": {
+            "name": "CPU consumption",
+            "collapsed": false,
+            "color": {
+              "predefined": "SECTION_PREDEFINED_COLOR_UNSPECIFIED"
+            }
+          }
+        }
+      },
+      {
+        "id": {
+          "value": "469c61d5-9a4b-4193-a477-33759997ff54"
+        },
+        "rows": [
+          {
+            "id": {
+              "value": "cba8703d-9074-427d-be10-3c18465a74a1"
+            },
+            "appearance": {
+              "height": 19
+            },
+            "widgets": [
+              {
+                "id": {
+                  "value": "9244e0ea-fe55-4308-8d5e-846266bc503b"
+                },
+                "title": "Memory usage (in %)",
+                "definition": {
+                  "lineChart": {
+                    "legend": {
+                      "isVisible": true,
+                      "columns": [],
+                      "groupByQuery": true,
+                      "placement": "LEGEND_PLACEMENT_AUTO"
+                    },
+                    "tooltip": {
+                      "showLabels": false,
+                      "type": "TOOLTIP_TYPE_ALL"
+                    },
+                    "queryDefinitions": [
+                      {
+                        "id": "65f68702-6215-4972-b18a-a36e3663bccc",
+                        "query": {
+                          "logs": {
+                            "luceneQuery": {
+                              "value": "app:\"codeengine\" AND message.metric:\"instance-resources\""
+                            },
+                            "groupBy": [],
+                            "aggregations": [
+                              {
+                                "max": {
+                                  "observationField": {
+                                    "keypath": [
+                                      "message",
+                                      "memory",
+                                      "usage"
+                                    ],
+                                    "scope": "DATASET_SCOPE_USER_DATA"
+                                  }
+                                }
+                              }
+                            ],
+                            "filters": [],
+                            "groupBys": [
+                              {
+                                "keypath": [
+                                  "message",
+                                  "component_type"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              },
+                              {
+                                "keypath": [
+                                  "message",
+                                  "name"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              }
+                            ]
+                          }
+                        },
+                        "seriesCountLimit": "20",
+                        "unit": "UNIT_UNSPECIFIED",
+                        "scaleType": "SCALE_TYPE_LINEAR",
+                        "name": "Query 1",
+                        "isVisible": true,
+                        "colorScheme": "classic",
+                        "resolution": {
+                          "bucketsPresented": 96
+                        },
+                        "dataModeType": "DATA_MODE_TYPE_HIGH_UNSPECIFIED",
+                        "customUnit": "",
+                        "decimal": 2
+                      }
+                    ],
+                    "stackedLine": "STACKED_LINE_UNSPECIFIED"
+                  }
+                }
+              },
+              {
+                "id": {
+                  "value": "ea14669a-36da-4958-8503-1a00f7d9d5ed"
+                },
+                "title": "Memory usage (in MB)",
+                "definition": {
+                  "lineChart": {
+                    "legend": {
+                      "isVisible": true,
+                      "columns": [],
+                      "groupByQuery": true,
+                      "placement": "LEGEND_PLACEMENT_AUTO"
+                    },
+                    "tooltip": {
+                      "showLabels": false,
+                      "type": "TOOLTIP_TYPE_ALL"
+                    },
+                    "queryDefinitions": [
+                      {
+                        "id": "b461bcb4-58d3-4c85-af14-4c9a89474dc2",
+                        "query": {
+                          "logs": {
+                            "luceneQuery": {
+                              "value": "app:\"codeengine\" AND message.metric:\"instance-resources\""
+                            },
+                            "groupBy": [],
+                            "aggregations": [
+                              {
+                                "max": {
+                                  "observationField": {
+                                    "keypath": [
+                                      "message",
+                                      "memory",
+                                      "current"
+                                    ],
+                                    "scope": "DATASET_SCOPE_USER_DATA"
+                                  }
+                                }
+                              }
+                            ],
+                            "filters": [],
+                            "groupBys": [
+                              {
+                                "keypath": [
+                                  "message",
+                                  "component_type"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              },
+                              {
+                                "keypath": [
+                                  "message",
+                                  "name"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              }
+                            ]
+                          }
+                        },
+                        "seriesCountLimit": "20",
+                        "unit": "UNIT_UNSPECIFIED",
+                        "scaleType": "SCALE_TYPE_LINEAR",
+                        "name": "Query 1",
+                        "isVisible": true,
+                        "colorScheme": "classic",
+                        "resolution": {
+                          "bucketsPresented": 96
+                        },
+                        "dataModeType": "DATA_MODE_TYPE_HIGH_UNSPECIFIED",
+                        "customUnit": "",
+                        "decimal": 2
+                      }
+                    ],
+                    "stackedLine": "STACKED_LINE_UNSPECIFIED"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "options": {
+          "custom": {
+            "name": "Memory consumption",
+            "collapsed": false,
+            "color": {
+              "predefined": "SECTION_PREDEFINED_COLOR_UNSPECIFIED"
+            }
+          }
+        }
+      },
+      {
+        "id": {
+          "value": "33fa5523-5d8a-4145-a7a6-70e4d2d2b1f4"
+        },
+        "rows": [
+          {
+            "id": {
+              "value": "652c4e29-a22f-4930-bd67-b61b3e89232d"
+            },
+            "appearance": {
+              "height": 19
+            },
+            "widgets": [
+              {
+                "id": {
+                  "value": "763356d2-690c-4d41-906b-0f7c6e583a23"
+                },
+                "title": "Disk usage usage (in MB)",
+                "definition": {
+                  "lineChart": {
+                    "legend": {
+                      "isVisible": true,
+                      "columns": [],
+                      "groupByQuery": true,
+                      "placement": "LEGEND_PLACEMENT_AUTO"
+                    },
+                    "tooltip": {
+                      "showLabels": false,
+                      "type": "TOOLTIP_TYPE_ALL"
+                    },
+                    "queryDefinitions": [
+                      {
+                        "id": "3f5be437-9aad-4f0e-a944-884ebfab3a0c",
+                        "query": {
+                          "logs": {
+                            "luceneQuery": {
+                              "value": "app:\"codeengine\" AND message.metric:\"instance-resources\""
+                            },
+                            "groupBy": [],
+                            "aggregations": [
+                              {
+                                "max": {
+                                  "observationField": {
+                                    "keypath": [
+                                      "message",
+                                      "disk_usage",
+                                      "current"
+                                    ],
+                                    "scope": "DATASET_SCOPE_USER_DATA"
+                                  }
+                                }
+                              }
+                            ],
+                            "filters": [],
+                            "groupBys": [
+                              {
+                                "keypath": [
+                                  "message",
+                                  "component_type"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              },
+                              {
+                                "keypath": [
+                                  "message",
+                                  "name"
+                                ],
+                                "scope": "DATASET_SCOPE_USER_DATA"
+                              }
+                            ]
+                          }
+                        },
+                        "seriesCountLimit": "20",
+                        "unit": "UNIT_UNSPECIFIED",
+                        "scaleType": "SCALE_TYPE_LINEAR",
+                        "name": "Query 1",
+                        "isVisible": true,
+                        "colorScheme": "classic",
+                        "resolution": {
+                          "bucketsPresented": 96
+                        },
+                        "dataModeType": "DATA_MODE_TYPE_HIGH_UNSPECIFIED",
+                        "customUnit": "",
+                        "decimal": 2
+                      }
+                    ],
+                    "stackedLine": "STACKED_LINE_UNSPECIFIED"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "options": {
+          "custom": {
+            "name": "Disk usage",
+            "collapsed": false,
+            "color": {
+              "predefined": "SECTION_PREDEFINED_COLOR_UNSPECIFIED"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "variables": [],
+  "filters": [
+    {
+      "source": {
+        "logs": {
+          "operator": {
+            "equals": {
+              "selection": {
+                "list": {
+                  "values": []
+                }
+              }
+            }
+          },
+          "observationField": {
+            "keypath": [
+              "label",
+              "Project"
+            ],
+            "scope": "DATASET_SCOPE_USER_DATA"
+          }
+        }
+      },
+      "enabled": true,
+      "collapsed": false
+    },
+    {
+      "source": {
+        "logs": {
+          "operator": {
+            "equals": {
+              "selection": {
+                "list": {
+                  "values": []
+                }
+              }
+            }
+          },
+          "observationField": {
+            "keypath": [
+              "message",
+              "component_name"
+            ],
+            "scope": "DATASET_SCOPE_USER_DATA"
+          }
+        }
+      },
+      "enabled": true,
+      "collapsed": false
+    },
+    {
+      "source": {
+        "logs": {
+          "operator": {
+            "equals": {
+              "selection": {
+                "list": {
+                  "values": []
+                }
+              }
+            }
+          },
+          "observationField": {
+            "keypath": [
+              "message",
+              "parent"
+            ],
+            "scope": "DATASET_SCOPE_USER_DATA"
+          }
+        }
+      },
+      "enabled": true,
+      "collapsed": false
+    },
+    {
+      "source": {
+        "logs": {
+          "operator": {
+            "equals": {
+              "selection": {
+                "list": {
+                  "values": []
+                }
+              }
+            }
+          },
+          "observationField": {
+            "keypath": [
+              "message",
+              "name"
+            ],
+            "scope": "DATASET_SCOPE_USER_DATA"
+          }
+        }
+      },
+      "enabled": true,
+      "collapsed": false
+    }
+  ],
+  "relativeTimeFrame": "86400s",
+  "annotations": [],
+  "off": {}
+}

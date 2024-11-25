@@ -34,9 +34,12 @@ func main() {
 	}
 
 	// If the 'INTERVAL' env var is set then sleep for that many seconds
-	sleepDuration := 10
+	sleepDuration := 30
 	if t := os.Getenv("INTERVAL"); t != "" {
 		sleepDuration, _ = strconv.Atoi(t)
+		if sleepDuration < 30 {
+			sleepDuration = 30
+		}
 	}
 
 	// In daemon mode, collect resource metrics in an endless loop
@@ -111,10 +114,10 @@ func collectInstanceMetrics() {
 
 	// fetches all pods
 	pods := getAllPods(coreClientset, namespace, config)
-	
+
 	// fetch all pod metrics
 	podMetrics := getAllPodMetrics(namespace, config)
-	
+
 	var wg sync.WaitGroup
 
 	for _, metric := range *podMetrics {
@@ -258,7 +261,7 @@ func getAllPods(coreClientset *kubernetes.Clientset, namespace string, config *r
 
 // Helper function to retrieve all pods from the Kube API
 func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod string, container string, config *rest.Config) float64 {
-	
+
 	// per default, we do not collect disk space statistics
 	if os.Getenv("COLLECT_DISKUSAGE") != "true" {
 		return 0
@@ -304,12 +307,16 @@ func obtainDiskUsage(coreClientset *kubernetes.Clientset, namespace string, pod 
 
 		// Render captured system error messages, in case the stdout stream did not receive any valid content
 		if err != nil {
-			fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + " failed with a stream err - " + err.Error() + " - stderr: '" + errBuf.String() + "'")
+			if err.Error() == "Internal error occurred: failed calling webhook \"validating.webhook.pod-exec-auth-check.codeengine.cloud.ibm.com\": failed to call webhook: Post \"https://validating-webhook-serving.ibm-cfn-system.svc:443/validate/pod-exec?timeout=5s\": EOF" {
+				// Do nothing and silently ignore this issue as it is most likely related to pod terminations
+			} else {
+				fmt.Println("obtainDiskUsage of pod:" + pod + "/container:" + container + " failed with a stream err - " + err.Error() + " - stderr: '" + errBuf.String() + "'")
+			}
 		}
 
 		return float64(0)
 	}
-	
+
 	// Parse the output "4000   /" by splitting the words
 	diskUsageOutput := strings.Fields(strings.TrimSuffix(diskUsageOutputStr, "\n"))
 	if len(diskUsageOutput) > 2 {
