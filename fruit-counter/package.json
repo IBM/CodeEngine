@@ -11,7 +11,7 @@
   "dependencies": {
     "@ibm-cloud/cloudant": "^0.10.1",
     "body-parser": "^1.20.3",
-    "express": "^4.21.1"
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "standard": "^17.0.0"
