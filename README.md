@@ -170,6 +170,8 @@ is demonstrating.
   This example shows how to create NodeJS functions with can perfome a http request without additional modules
 - [function-http-python](helloworld-samples/function-http-python)
   This example shows how to create Python functions which can perfome a http request without additional modules
+- [function-python-go-binary](helloworld-samples/function-python-go-binary/README.md)
+  This example shows how to create a Python function which includes and executes a Go binary
 
 #### Eventing
 - [cron](cron)<br>
