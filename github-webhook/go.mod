@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.0
-	github.com/IBM/go-sdk-core v1.1.0
+	github.com/IBM/go-sdk-core/v5 v5.17.0
 	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/go-openapi/strfmt v0.23.0
@@ -18,11 +18,9 @@ require (
 )
 
 require (
-	github.com/IBM/go-sdk-core/v5 v5.17.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
@@ -55,7 +53,6 @@ require (
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
-	gopkg.in/go-playground/validator.v9 v9.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
