@@ -17,5 +17,5 @@ COPY ./src ./
 
 # Copy the dependencies and other project related files
 COPY --from=build-env /app ./
-EXPOSE 8080
-CMD ["app.mjs"]
+
+CMD ["job.mjs"]

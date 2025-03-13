@@ -43,6 +43,20 @@ ibmcloud code-engine job create \
     --wait
 ```
 
+Create the app:
+```
+ibmcloud code-engine app create \
+    --name csv-to-sql-app \
+    --source ./ \
+    --cpu 0.25 \
+    --memory 0.5G \
+    --env COS_REGION=eu-es \
+    --env COS_TRUSTED_PROFILE_NAME=code-engine-cos-access \
+    --env SM_TRUSTED_PROFILE_NAME=code-engine-sm-access \
+    --env SM_SERVICE_URL=https://4e61488a-b76f-4d44-ba0e-ed2489d8a57a.private.eu-es.secrets-manager.appdomain.cloud \
+    --env SM_PG_SECRET_ID=04abb32c-bbe3-a069-e4c4-8899853ef053
+```
+
 Create the COS instance:
 ```
 ibmcloud resource service-instance-create csv-to-sql-cos cloud-object-storage standard global
@@ -98,6 +112,13 @@ ibmcloud ce sub cos create \
     --bucket $BUCKET \
     --destination csv-to-sql \
     --destination-type job
+
+ibmcloud ce sub cos create \
+    --name coswatch \
+    --bucket $BUCKET \
+    --destination csv-to-sql-app \
+    --destination-type app \
+    --path /cos-to-sql
 ```
 
 Create a PostgreSQL service instance:
@@ -199,4 +220,5 @@ jobrunname=$(ibmcloud ce jr list -j csv-to-sql -s age -o json | jq -r '.items[0]
 
 ```
 kubectl patch jobdefinitions csv-to-sql --type='json' -p='[{"op": "add", "path": "/spec/template/mountComputeResourceToken", "value":true}]'
+kubectl patch ksvc csv-to-sql-app --type='json' -p='[{"op": "add", "path": "/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1mount-compute-resource-token", "value":"true"}]'
 ```
