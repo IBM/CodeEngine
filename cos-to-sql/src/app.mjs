@@ -187,7 +187,7 @@ const server = http
     // Endpoint that drops the users table
     if (request.url == "/clear") {
       const pgClient = await getPgClient(secretsManager, smPgSecretId);
-      await dropUsers(pgClient);
+      await deleteUsers(pgClient);
       console.log(`Deletions done!`);
       response.writeHead(200, { "Content-Type": "application/json" });
       response.end(`{"status": "done"}`);
@@ -375,12 +375,12 @@ function listUsers(client) {
     });
   });
 }
-function dropUsers(client) {
-  const fn = "dropUsers ";
+function deleteUsers(client) {
+  const fn = "deleteUsers ";
   const startTime = Date.now();
   console.log(`${fn} >`);
   return new Promise(function (resolve, reject) {
-    const queryText = "DROP TABLE users";
+    const queryText = "DELETE FROM users";
     client.query(queryText, undefined, function (error, result) {
       if (error) {
         console.log(`${fn} < failed - error: ${error}; duration ${Date.now() - startTime} ms`);
