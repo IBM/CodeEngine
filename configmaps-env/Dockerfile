@@ -1,4 +1,4 @@
-FROM quay.io/projectquay/golang:1.22 AS build-env
+FROM quay.io/projectquay/golang:1.23 AS build-env
 WORKDIR /go/src/app
 COPY config.go .
 
