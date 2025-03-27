@@ -141,7 +141,7 @@ TRUSTED_PROFILE_NAME=code-engine-cos-access
 ibmcloud ce job create --name ${JOB_NAME} \
   --build-source https://github.com/IBM/CodeEngine \
   --build-context-dir trusted-profiles/${PROGRAMMING_LANGUAGE} \
-  --trusted-profiles-enabled true \
+  --trusted-profiles-enabled=true \
   --env COS_REGION=${REGION} \
   --env COS_BUCKET=${COS_BUCKET} \
   --env TRUSTED_PROFILE_NAME=${TRUSTED_PROFILE_NAME}
