@@ -26,12 +26,16 @@ ibmcloud ce secret create --name oidc-credentials --from-env-file .env
 
 * Create the application
 ```
+ENCRYPTION_KEY=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null | base64 | tr -d -- '\n' | tr -- '+/' '-_' ; echo)
 LANGUAGE=go
-cd $LANGUAGE
-ibmcloud ce app create --name oidc-sample-$LANGUAGE --src . \
+ibmcloud ce app create --name oidc-sample-$LANGUAGE \
+    --src "." \
+    --build-context-dir "$LANGUAGE" \
     --cpu 0.125 \
     --memory 0.25G \
-    --env-from-secret oidc-credentials
+    --env-from-secret oidc-credentials \
+    --env COOKIE_SIGNING_PASSPHRASE=$ENCRYPTION_KEY \
+    --env OIDC_REDIRECT_URL=https://oidc-sample-$LANGUAGE.1ryejitws058.eu-es.codeengine.appdomain.cloud/auth/callback
 
 OIDC_REDIRECT_URL=$(ibmcloud ce app get -n oidc-sample-$LANGUAGE --output url)
 ibmcloud ce app update --name oidc-sample-$LANGUAGE --env OIDC_REDIRECT_URL=$OIDC_REDIRECT_URL/auth/callback
