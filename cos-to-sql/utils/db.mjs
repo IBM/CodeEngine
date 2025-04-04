@@ -17,40 +17,24 @@ function connectDb(connectionString, caCert) {
     };
 
     // set up a new client using our config details
-    let client = new Pool(postgreConfig);
+    let pool = new Pool({ ...postgreConfig, max: 20, idleTimeoutMillis: 5000, connectionTimeoutMillis: 2000 });
 
-    client.connect((err) => {
-      if (err) {
-        console.error(`Failed to connect to postgreSQL host '${postgreConfig.host}'`, err);
-        return reject(err);
-      }
-
-      client.query(
-        "CREATE TABLE IF NOT EXISTS users (firstname varchar(256) NOT NULL, lastname varchar(256) NOT NULL)",
-        (err, result) => {
-          if (err) {
-            console.log(`Failed to create PostgreSQL table 'users'`, err);
-            return reject(err);
-          }
-          console.log(
-            `Established PostgreSQL client connection to '${postgreConfig.host}' - user table init: ${JSON.stringify(
-              result
-            )}`
-          );
-          return resolve(client);
+    pool.query(
+      "CREATE TABLE IF NOT EXISTS users (firstname varchar(256) NOT NULL, lastname varchar(256) NOT NULL)",
+      (err, result) => {
+        if (err) {
+          console.log(`Failed to create PostgreSQL table 'users'`, err);
+          return reject(err);
         }
-      );
-    });
+        console.log(
+          `Established PostgreSQL client connection to '${postgreConfig.host}' - user table init: ${JSON.stringify(
+            result
+          )}`
+        );
+        return resolve(pool);
+      }
+    );
   });
-}
-
-export async function closeDBConnection() {
-  if (_pgPool) {
-    console.log("Draining PG pool.");
-    await _pgPool.end();
-    console.log("PG pool has drained.");
-  }
-  Promise.resolve();
 }
 
 export async function getPgClient(secretsManager, secretId) {
@@ -80,6 +64,10 @@ export async function getPgClient(secretsManager, secretId) {
   const pgCaCert = Buffer.from(res.result.credentials.connection.postgres.certificate.certificate_base64, "base64");
   const pgConnectionString = res.result.credentials.connection.postgres.composed[0];
   _pgPool = await connectDb(pgConnectionString, pgCaCert);
+
+  _pgPool.on("error", (err) => {
+    console.log("Pool received an error event", err);
+  });
 
   console.log(`${fn} < done - duration ${Date.now() - startTime} ms`);
   return _pgPool;
@@ -133,4 +121,12 @@ export function deleteUsers(client) {
       return resolve(result);
     });
   });
+}
+
+export async function closeDBConnection() {
+  if (_pgPool) {
+    console.log("Draining PG pool...");
+    await _pgPool.end();
+    console.log("PG pool has drained.");
+  }
 }

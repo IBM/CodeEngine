@@ -71,6 +71,17 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 const router = express.Router();
 app.use("/", router);
 
+
+//
+// Default http endpoint, which prints the list of all users in the database
+router.get("/", async (req, res) => {
+  console.log(`handling / for '${req.url}'`);
+  const pgClient = await getPgClient(secretsManager, smPgSecretId);
+  const allUsers = await listUsers(pgClient);
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ users: allUsers.rows }));
+});
+
 //
 // Readiness endpoint
 router.get("/readiness", (req, res) => {
@@ -177,15 +188,6 @@ router.get("/clear", async (req, res) => {
   return;
 });
 
-//
-// Default http endpoint, which prints the list of all users in the database
-router.get("/", async (req, res) => {
-  console.log(`handling / for '${req.url}'`);
-  const pgClient = await getPgClient(secretsManager, smPgSecretId);
-  const allUsers = await listUsers(pgClient);
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ users: allUsers.rows }));
-});
 
 // start server
 const port = process.env.PORT || 8080;
@@ -195,6 +197,7 @@ const server = app.listen(port, () => {
 
 process.on("SIGTERM", async () => {
   console.info("SIGTERM signal received.");
+
   await closeDBConnection();
 
   server.close(() => {

@@ -78,7 +78,8 @@ ibmcloud resource service-instance-create $SM_INSTANCE_NAME secrets-manager 7713
 
 export SM_INSTANCE_ID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .id')
 export SM_INSTANCE_GUID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .guid')
-export SECRETS_MANAGER_URL=https://$SM_INSTANCE_GUID.${REGION}.secrets-manager.appdomain.cloud
+export SECRETS_MANAGER_URL=https://${SM_INSTANCE_GUID}.${REGION}.secrets-manager.appdomain.cloud
+export SECRETS_MANAGER_URL_PRIVATE=https://${SM_INSTANCE_GUID}.private.${REGION}.secrets-manager.appdomain.cloud
 ```
 
 * Create a S2S policy "Key Manager" between SM and the DB
@@ -116,7 +117,7 @@ ibmcloud code-engine app create \
     --env COS_REGION=${REGION} \
     --env COS_TRUSTED_PROFILE_NAME=${TRUSTED_PROFILE_FOR_COS_NAME} \
     --env SM_TRUSTED_PROFILE_NAME=${TRUSTED_PROFILE_FOR_SM_NAME} \
-    --env SM_SERVICE_URL=${SECRETS_MANAGER_URL} \
+    --env SM_SERVICE_URL=${SECRETS_MANAGER_URL_PRIVATE} \
     --env SM_PG_SECRET_ID=${SM_SECRET_FOR_PG_ID}
 ```
 
