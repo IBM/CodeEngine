@@ -26,10 +26,7 @@ requiredEnvVars.forEach((envVarName) => {
     process.exit(1);
   }
 });
-console.log('Files in root:')
-fs.readdirSync(path.join(__dirname, "")).forEach(file => {
-  console.log(file);
-});
+
 // check whether the auth cookie is set
 async function checkAuth(req, res, next) {
   console.log(`performing auth check for '${req.url}'`);
