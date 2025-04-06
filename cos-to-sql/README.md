@@ -2,6 +2,8 @@
 
 This sample demonstrates how to read CSV files hosted on a IBM Cloud Object Storage and save their contents line by line into relational PostgreSQL database.
 
+![Architecture overview](./docs/trusted-profiles-part2-arch-overview.png)
+
 ## Prerequisites
 
 Make sure the following [IBM Cloud CLI](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started) and the following list of plugins are installed
@@ -23,7 +25,7 @@ ibmcloud login -r ${REGION} -g $RESOURCE_GROUP
 * Create the Code Engine project
 ```
 export CE_INSTANCE_NAME=cos-to-sql--ce
-ibmcloud code-engine project create -n ${CE_INSTANCE_NAME}
+ibmcloud code-engine project create --name ${CE_INSTANCE_NAME}
 
 export CE_INSTANCE_GUID=$(ibmcloud ce project current -o json | jq -r .guid)
 export CE_INSTANCE_ID=$(ibmcloud resource service-instance ${CE_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
@@ -93,7 +95,10 @@ ibmcloud iam authorization-policy-create secrets-manager databases-for-postgresq
 * Create the service credential to access the PostgreSQL instance
 ```
 SM_SECRET_FOR_PG_NAME=pg-access-credentials
-ibmcloud secrets-manager secret-create --secret-type="service_credentials" --secret-name="$SM_SECRET_FOR_PG_NAME" --secret-source-service="{\"instance\": {\"crn\": \"$DB_INSTANCE_ID\"},\"parameters\": {},\"role\": {\"crn\": \"crn:v1:bluemix:public:iam::::serviceRole:Writer\"}}"
+ibmcloud secrets-manager secret-create \
+    --secret-type="service_credentials" \
+    --secret-name="$SM_SECRET_FOR_PG_NAME" \
+    --secret-source-service="{\"instance\": {\"crn\": \"$DB_INSTANCE_ID\"},\"parameters\": {},\"role\": {\"crn\": \"crn:v1:bluemix:public:iam::::serviceRole:Writer\"}}"
 
 export SM_SECRET_FOR_PG_ID=$(ibmcloud sm secret-by-name --name $SM_SECRET_FOR_PG_NAME --secret-type service_credentials --secret-group-name default --output JSON|jq -r '.id')
 ```
@@ -126,16 +131,32 @@ ibmcloud code-engine app create \
 * Create a trusted profile that grants a Code Engine app access to your COS bucket
 ```
 ibmcloud iam trusted-profile-create ${TRUSTED_PROFILE_FOR_COS_NAME}
-ibmcloud iam trusted-profile-link-create ${TRUSTED_PROFILE_FOR_COS_NAME} --name ce-app-${CE_APP_NAME} --cr-type CE --link-crn ${CE_INSTANCE_ID} --link-component-type application --link-component-name ${CE_APP_NAME}
-ibmcloud iam trusted-profile-policy-create ${TRUSTED_PROFILE_FOR_COS_NAME} --roles "Content Reader" --service-name cloud-object-storage --service-instance ${COS_INSTANCE_ID} --resource-type bucket --resource ${COS_BUCKET_NAME}
+ibmcloud iam trusted-profile-link-create ${TRUSTED_PROFILE_FOR_COS_NAME} \
+    --name ce-app-${CE_APP_NAME} \
+    --cr-type CE --link-crn ${CE_INSTANCE_ID} \
+    --link-component-type application \
+    --link-component-name ${CE_APP_NAME}
+ibmcloud iam trusted-profile-policy-create ${TRUSTED_PROFILE_FOR_COS_NAME} \
+    --roles "Content Reader" \
+    --service-name cloud-object-storage \
+    --service-instance ${COS_INSTANCE_ID} \
+    --resource-type bucket \
+    --resource ${COS_BUCKET_NAME}
 ```
 
 
 * Create the trusted profile to access Secrets Manager
 ```
 ibmcloud iam trusted-profile-create ${TRUSTED_PROFILE_FOR_SM_NAME}
-ibmcloud iam trusted-profile-link-create ${TRUSTED_PROFILE_FOR_SM_NAME} --name ce-app-${CE_APP_NAME} --cr-type CE --link-crn ${CE_INSTANCE_ID} --link-component-type application --link-component-name ${CE_APP_NAME}
-ibmcloud iam trusted-profile-policy-create ${TRUSTED_PROFILE_FOR_SM_NAME} --roles "SecretsReader" --service-name secrets-manager --service-instance ${SM_INSTANCE_ID}
+ibmcloud iam trusted-profile-link-create ${TRUSTED_PROFILE_FOR_SM_NAME} \
+    --name ce-app-${CE_APP_NAME} \
+    --cr-type CE --link-crn ${CE_INSTANCE_ID} \
+    --link-component-type application \
+    --link-component-name ${CE_APP_NAME}
+ibmcloud iam trusted-profile-policy-create ${TRUSTED_PROFILE_FOR_SM_NAME} \
+    --roles "SecretsReader" \
+    --service-name secrets-manager \
+    --service-instance ${SM_INSTANCE_ID}
 ```
 
 ## Setting up eventing
@@ -153,6 +174,7 @@ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
 ibmcloud ce sub cos create \
     --name "coswatch-${CE_APP_NAME}" \
     --bucket ${COS_BUCKET_NAME} \
+    --event-type "write" \
     --destination ${CE_APP_NAME} \
     --destination-type app \
     --path /cos-to-sql
