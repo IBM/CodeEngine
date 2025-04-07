@@ -10,9 +10,7 @@ RUN npm ci --omit=dev
 FROM gcr.io/distroless/nodejs22
 
 COPY --chown=1001:0 --from=builder /app/node_modules /app/node_modules
-COPY --chown=1001:0 app.mjs /app
-COPY --chown=1001:0 utils/ /app/utils
-COPY --chown=1001:0 public/ /app/public
+COPY --chown=1001:0 app.mjs utils public /app/
 
 USER 1001:0
 WORKDIR /app
