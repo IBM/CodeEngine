@@ -169,7 +169,7 @@ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
     --target-service-instance-id ${COS_INSTANCE_ID}
 ```
 
-* Create the subscription for all COS events:
+* Create the subscription for COS events of type "write":
 ```
 ibmcloud ce sub cos create \
     --name "coswatch-${CE_APP_NAME}" \
