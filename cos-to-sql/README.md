@@ -6,7 +6,7 @@ This sample demonstrates how to read CSV files hosted on a IBM Cloud Object Stor
 
 ## Prerequisites
 
-Make sure the following [IBM Cloud CLI](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started) and the following list of plugins are installed
+Make sure the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started) and the following list of plugins are installed
 - `ibmcloud plugin install code-engine`
 - `ibmcloud plugin install cloud-object-storage`
 - `ibmcloud plugin install secrets-manager`
