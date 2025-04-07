@@ -19,7 +19,7 @@ Install `jq`. On MacOS, you can use following [brew formulae](https://formulae.b
 ```
 export REGION=ca-tor
 export RESOURCE_GROUP=Default
-ibmcloud login -r ${REGION} -g $RESOURCE_GROUP
+ibmcloud login -r ${REGION} -g ${RESOURCE_GROUP}
 ```
 
 * Create the Code Engine project
