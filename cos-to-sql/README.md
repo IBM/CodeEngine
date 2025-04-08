@@ -6,7 +6,7 @@ This sample demonstrates how to read CSV files hosted on a IBM Cloud Object Stor
 
 ## Prerequisites
 
-Make sure the following [IBM Cloud CLI](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started) and the following list of plugins are installed
+Make sure the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started) and the following list of plugins are installed
 - `ibmcloud plugin install code-engine`
 - `ibmcloud plugin install cloud-object-storage`
 - `ibmcloud plugin install secrets-manager`
@@ -19,7 +19,7 @@ Install `jq`. On MacOS, you can use following [brew formulae](https://formulae.b
 ```
 REGION=ca-tor
 RESOURCE_GROUP=Default
-ibmcloud login -r ${REGION} -g $RESOURCE_GROUP
+ibmcloud login -r ${REGION} -g ${RESOURCE_GROUP}
 ```
 
 * Create the Code Engine project
@@ -169,7 +169,7 @@ ibmcloud iam authorization-policy-create codeengine cloud-object-storage \
     --target-service-instance-id ${COS_INSTANCE_ID}
 ```
 
-* Create the subscription for all COS events:
+* Create the subscription for COS events of type "write":
 ```
 ibmcloud ce sub cos create \
     --name "coswatch-${CE_APP_NAME}" \
