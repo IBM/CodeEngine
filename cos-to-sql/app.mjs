@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import { stat } from "fs/promises";
 import express from "express";
 import favicon from "serve-favicon";
 import path from "path";
@@ -37,40 +37,32 @@ requiredEnvVars.forEach((envVarName) => {
 // Initialize COS
 const cosRegion = process.env.COS_REGION;
 const cosTrustedProfileName = process.env.COS_TRUSTED_PROFILE_NAME;
-let cosAuthenticator;
-if (cosTrustedProfileName) {
-  // create an authenticator to access the COS instance based on a trusted profile
-  cosAuthenticator = new ContainerAuthenticator({
-    iamProfileName: cosTrustedProfileName,
-  });
-}
+// Create an authenticator to access the COS instance based on a trusted profile
+const cosAuthenticator = new ContainerAuthenticator({
+  iamProfileName: cosTrustedProfileName,
+});
 
 //
 // Initialize Secrets Manager SDK
 const smTrustedProfileName = process.env.SM_TRUSTED_PROFILE_NAME;
 const smServiceURL = process.env.SM_SERVICE_URL;
 const smPgSecretId = process.env.SM_PG_SECRET_ID;
-let secretsManager;
-if (smTrustedProfileName && smServiceURL) {
-  // create an authenticator to access the SecretsManager instance based on a trusted profile
-  const smAuthenticator = new ContainerAuthenticator({
+// Create an instance of the SDK by providing an authentication mechanism and your Secrets Manager instance URL
+const secretsManager = new SecretsManager({
+  // Create an authenticator to access the SecretsManager instance based on a trusted profile
+  authenticator: new ContainerAuthenticator({
     iamProfileName: smTrustedProfileName,
-  });
-  // Create an instance of the SDK by providing an authentication mechanism and your Secrets Manager instance URL
-  secretsManager = new SecretsManager({
-    authenticator: smAuthenticator,
-    serviceUrl: smServiceURL,
-  });
-}
+  }),
+  serviceUrl: smServiceURL,
+});
 
 const app = express();
 app.use(express.json());
-app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 
 // use router to bundle all routes to /
 const router = express.Router();
 app.use("/", router);
-
 
 //
 // Default http endpoint, which prints the list of all users in the database
@@ -84,9 +76,9 @@ router.get("/", async (req, res) => {
 
 //
 // Readiness endpoint
-router.get("/readiness", (req, res) => {
+router.get("/readiness", async (req, res) => {
   console.log(`handling /readiness`);
-  if (!existsSync("/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token")) {
+  if (!await stat("/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token")) {
     console.error("Mounting the trusted profile compute resource token is not enabled");
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end('{"error": "Mounting the trusted profile compute resource token is not enabled"}');
@@ -114,7 +106,7 @@ router.post("/cos-to-sql", async (req, res) => {
     res.end('{"error": "request does not contain any event data"}');
     return;
   }
-  
+
   //
   // make sure that the event relates to a COS write operation
   if (event.notification.event_type !== "Object:Write") {
@@ -187,7 +179,6 @@ router.get("/clear", async (req, res) => {
   res.end(`{"status": "done"}`);
   return;
 });
-
 
 // start server
 const port = process.env.PORT || 8080;

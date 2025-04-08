@@ -1,6 +1,6 @@
 # IBM Cloud Code Engine - Integrate Cloud Object Storage and PostgreSQL through a app and an event subscription
 
-This sample demonstrates how to read CSV files hosted on a IBM Cloud Object Storage and save their contents line by line into relational PostgreSQL database.
+This sample demonstrates how to read CSV files hosted on a IBM Cloud Object Storage and save their contents line by line into relational PostgreSQL database, leveraging IAM trusted profiles.
 
 ![Architecture overview](./docs/trusted-profiles-part2-arch-overview.png)
 
@@ -17,26 +17,26 @@ Install `jq`. On MacOS, you can use following [brew formulae](https://formulae.b
 
 * Login to IBM Cloud via the CLI and target the `ca-tor` region:
 ```
-export REGION=ca-tor
-export RESOURCE_GROUP=Default
+REGION=ca-tor
+RESOURCE_GROUP=Default
 ibmcloud login -r ${REGION} -g $RESOURCE_GROUP
 ```
 
 * Create the Code Engine project
 ```
-export CE_INSTANCE_NAME=cos-to-sql--ce
+CE_INSTANCE_NAME=cos-to-sql--ce
 ibmcloud code-engine project create --name ${CE_INSTANCE_NAME}
 
-export CE_INSTANCE_GUID=$(ibmcloud ce project current -o json | jq -r .guid)
-export CE_INSTANCE_ID=$(ibmcloud resource service-instance ${CE_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
+CE_INSTANCE_GUID=$(ibmcloud ce project current -o json | jq -r .guid)
+CE_INSTANCE_ID=$(ibmcloud resource service-instance ${CE_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
 ```
 
 * Create the COS instance
 ```
-export COS_INSTANCE_NAME=cos-to-sql--cos
+COS_INSTANCE_NAME=cos-to-sql--cos
 ibmcloud resource service-instance-create ${COS_INSTANCE_NAME} cloud-object-storage standard global
 
-export COS_INSTANCE_ID=$(ibmcloud resource service-instance ${COS_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
+COS_INSTANCE_ID=$(ibmcloud resource service-instance ${COS_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
 ```
 
 * Create a COS bucket
@@ -45,7 +45,7 @@ ibmcloud cos config crn --crn ${COS_INSTANCE_ID} --force
 ibmcloud cos config auth --method IAM
 ibmcloud cos config region --region ${REGION}
 ibmcloud cos config endpoint-url --url s3.${REGION}.cloud-object-storage.appdomain.cloud
-export COS_BUCKET_NAME=${CE_INSTANCE_GUID}-csv-to-sql
+COS_BUCKET_NAME=${CE_INSTANCE_GUID}-csv-to-sql
 ibmcloud cos bucket-create \
     --class smart \
     --bucket $COS_BUCKET_NAME
@@ -53,7 +53,7 @@ ibmcloud cos bucket-create \
 
 * Create the PostgreSQL instance
 ```
-export DB_INSTANCE_NAME=cos-to-sql--pg
+DB_INSTANCE_NAME=cos-to-sql--pg
 ibmcloud resource service-instance-create $DB_INSTANCE_NAME databases-for-postgresql standard ${REGION} --service-endpoints private -p \
  '{
     "disk_encryption_instance_crn": "none",
@@ -67,21 +67,21 @@ ibmcloud resource service-instance-create $DB_INSTANCE_NAME databases-for-postgr
     "version": "16"
 }'
 
-export DB_INSTANCE_ID=$(ibmcloud resource service-instance $DB_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .id')
+DB_INSTANCE_ID=$(ibmcloud resource service-instance $DB_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .id')
 ```
 
 * Create the Secrets Manager instance
 ```
-export SM_INSTANCE_NAME=cos-to-sql--sm
+SM_INSTANCE_NAME=cos-to-sql--sm
 ibmcloud resource service-instance-create $SM_INSTANCE_NAME secrets-manager 7713c3a8-3be8-4a9a-81bb-ee822fcaac3d ${REGION} -p \
 '{
     "allowed_network": "public-and-private"
 }'
 
-export SM_INSTANCE_ID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .id')
-export SM_INSTANCE_GUID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .guid')
-export SECRETS_MANAGER_URL=https://${SM_INSTANCE_GUID}.${REGION}.secrets-manager.appdomain.cloud
-export SECRETS_MANAGER_URL_PRIVATE=https://${SM_INSTANCE_GUID}.private.${REGION}.secrets-manager.appdomain.cloud
+SM_INSTANCE_ID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .id')
+SM_INSTANCE_GUID=$(ibmcloud resource service-instance $SM_INSTANCE_NAME --location ${REGION} --output json | jq -r '.[0] | .guid')
+SECRETS_MANAGER_URL=https://${SM_INSTANCE_GUID}.${REGION}.secrets-manager.appdomain.cloud
+SECRETS_MANAGER_URL_PRIVATE=https://${SM_INSTANCE_GUID}.private.${REGION}.secrets-manager.appdomain.cloud
 ```
 
 * Create a S2S policy "Key Manager" between SM and the DB
@@ -100,21 +100,21 @@ ibmcloud secrets-manager secret-create \
     --secret-name="$SM_SECRET_FOR_PG_NAME" \
     --secret-source-service="{\"instance\": {\"crn\": \"$DB_INSTANCE_ID\"},\"parameters\": {},\"role\": {\"crn\": \"crn:v1:bluemix:public:iam::::serviceRole:Writer\"}}"
 
-export SM_SECRET_FOR_PG_ID=$(ibmcloud sm secret-by-name --name $SM_SECRET_FOR_PG_NAME --secret-type service_credentials --secret-group-name default --output JSON|jq -r '.id')
+SM_SECRET_FOR_PG_ID=$(ibmcloud sm secret-by-name --name $SM_SECRET_FOR_PG_NAME --secret-type service_credentials --secret-group-name default --output JSON|jq -r '.id')
 ```
 
 
 * Create the Code Engine app:
 ```
-export CE_APP_NAME=csv-to-sql
-export TRUSTED_PROFILE_FOR_COS_NAME=cos-to-sql--ce-to-cos-access
-export TRUSTED_PROFILE_FOR_SM_NAME=cos-to-sql--ce-to-sm-access
+CE_APP_NAME=csv-to-sql
+TRUSTED_PROFILE_FOR_COS_NAME=cos-to-sql--ce-to-cos-access
+TRUSTED_PROFILE_FOR_SM_NAME=cos-to-sql--ce-to-sm-access
 
 ibmcloud code-engine app create \
     --name ${CE_APP_NAME} \
-    --source ./ \
-    --cpu 0.25 \
-    --memory 0.5G \
+    --build-source https://github.com/IBM/CodeEngine \
+    --build-commit 
+    --build-context-dir cos-to-sql/ \
     --trusted-profiles-enabled="true" \
     --probe-ready type=http \
     --probe-ready path=/readiness \
@@ -184,10 +184,14 @@ ibmcloud ce sub cos create \
 
 * Upload a CSV file to COS, to initate an event that leads to a job execution:
 ```
+curl -s https://raw.githubusercontent.com/IBM/CodeEngine/main/cos-to-sql/samples/users.csv > CodeEngine-sample-users.csv
+
+cat CodeEngine-sample-users.csv
+
 ibmcloud cos object-put \
     --bucket ${COS_BUCKET_NAME} \
     --key users.csv \
-    --body ./samples/users.csv \
+    --body ./CodeEngine-sample-users.csv \
     --content-type text/csv
 ```
 
