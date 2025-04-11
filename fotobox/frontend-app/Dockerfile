@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:23 as build
+FROM --platform=linux/amd64 node:22 as build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY . .
 RUN npm install && npm run build
 
 
-FROM --platform=linux/amd64 node:23
+FROM --platform=linux/amd64 node:22
 
 WORKDIR /app
 
