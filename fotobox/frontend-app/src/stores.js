@@ -4,5 +4,5 @@ import { writable } from 'svelte/store';
 export const toggelGridTimer = writable(false);
 export const toggleDownload = writable(false)
 
-export const uploadURL = "https://fotobox-cos-upload.1pbeufitp1uq.eu-de.codeengine.appdomain.cloud"
-export const downloadURL = "https://fotobox-get-pics.1pbeufitp1uq.eu-de.codeengine.appdomain.cloud"
+export let uploadURL = "https://gd-25-fotobox-cos-upload.8kyziehrspg.eu-de.codeengine.appdomain.cloud"
+export let downloadURL = "https://gd-25-fotobox-get-pics.8kyziehrspg.eu-de.codeengine.appdomain.cloud"

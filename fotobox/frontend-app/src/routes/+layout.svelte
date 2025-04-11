@@ -96,7 +96,7 @@
 		
 </script>
   
-<Header persistentHamburgerMenu={true}  company="IBM" platformName="Technology Sales Christmas Dinner" href="/" bind:isSideNavOpen>
+<Header persistentHamburgerMenu={true}  company="IBM" platformName="Girls Day 2025" href="/" bind:isSideNavOpen>
 	<svelte:fragment slot="skip-to-content">
 		<SkipToContent />
 	</svelte:fragment>
