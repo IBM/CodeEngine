@@ -14,7 +14,7 @@
     import { default as GridIcon } from "carbon-icons-svelte/lib/Grid.svelte";
     import {default as ParentChildIcon } from "carbon-icons-svelte/lib/ParentChild.svelte";
 
-    let url = "https://fotobox-frontend.1pbeufitp1uq.eu-de.codeengine.appdomain.cloud" // make dynamic
+    let url = "https://gd-25-fotobox-frontend.8kyziehrspg.eu-de.codeengine.appdomain.cloud/" // make dynamic
     let qrCodeData = "";
   
     const generateQRCode = async () => {
@@ -48,7 +48,7 @@
 <Grid>
     <Row>
         <Column>
-            <h1>IBM Technology Sales Christmas Dinner</h1>
+            <h1>IBM Girls Day 2025</h1>
             <h2>The easy way to save a snapshot of the Event</h2>
         </Column>
     </Row>

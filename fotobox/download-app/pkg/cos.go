@@ -17,10 +17,10 @@ import (
 var (
 	apiKey            = os.Getenv("apikey")
 	serviceInstanceID = os.Getenv("resource_instance_id")
+	region            = os.Getenv("region") // "eu-de"
+	endpointURL       = os.Getenv("endpointURL") // "https://s3.direct.eu-de.cloud-object-storage.appdomain.cloud" 
 	authEndpoint      = "https://iam.cloud.ibm.com/identity/token"
-	endpointURL       = "https://s3.direct.eu-de.cloud-object-storage.appdomain.cloud" 
-	bucketName        = aws.String(os.Getenv("bucket"))                                
-	region            = "eu-de"
+	bucketName        = aws.String(os.Getenv("bucket"))
 )
 
 const (

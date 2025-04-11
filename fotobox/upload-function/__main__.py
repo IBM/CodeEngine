@@ -7,7 +7,7 @@ import string
 import random
 from PIL import Image, ImageOps
 
-COS_ENDPOINT = "https://s3.eu-de.cloud-object-storage.appdomain.cloud"
+COS_ENDPOINT = os.environ.get('endpointURL', "https://s3.us-south.cloud-object-storage.appdomain.cloud")
 COS_API_KEY = os.environ.get('apikey', "apikey")
 COS_INSTANCE_CRN =os.environ.get('resource_instance_id', "resource_instance_id")
 COS_BUCKET_NAME = os.environ.get('bucket', "fotobox")
