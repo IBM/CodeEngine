@@ -113,7 +113,6 @@ TRUSTED_PROFILE_FOR_SM_NAME=cos-to-sql--ce-to-sm-access
 ibmcloud code-engine app create \
     --name ${CE_APP_NAME} \
     --build-source https://github.com/IBM/CodeEngine \
-    --build-commit 
     --build-context-dir cos-to-sql/ \
     --trusted-profiles-enabled="true" \
     --probe-ready type=http \
