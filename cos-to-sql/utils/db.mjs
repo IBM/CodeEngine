@@ -7,11 +7,15 @@ import pgConnectionString from "pg-connection-string";
 
 let _pgPool;
 
+/**
+ * Connect to PostgreSQL
+ * https://node-postgres.com/
+ */ 
 function connectDb(connectionString, caCert) {
   return new Promise((resolve, reject) => {
     const postgreConfig = pgConnectionString.parse(connectionString);
 
-    // Add some ssl
+    // Add the ssl ca cert
     postgreConfig.ssl = {
       ca: caCert,
     };
@@ -55,11 +59,8 @@ export async function getPgClient(secretsManager, secretId) {
   });
   console.log(`Secret '${secretId}' fetched in ${Date.now() - startTime} ms`);
 
-  //
-  // Connect to PostgreSQL
-  // https://node-postgres.com/
   console.log(
-    `Establishing connection to PostgreSQL database using SM secret '${res.result.name}' (last updated: '${res.result.updated_at}') ...`
+    `Connecting to the DB using SM secret '${res.result.name}' (last updated: '${res.result.updated_at}') ...`
   );
   const pgCaCert = Buffer.from(res.result.credentials.connection.postgres.certificate.certificate_base64, "base64");
   const pgConnectionString = res.result.credentials.connection.postgres.composed[0];
@@ -78,7 +79,8 @@ export function addUser(client, firstName, lastName) {
   const startTime = Date.now();
   console.log(`${fn} > firstName: '${firstName}', lastName: '${lastName}'`);
   return new Promise(function (resolve, reject) {
-    const queryText = "INSERT INTO users(firstname,lastname) VALUES($1, $2) ON CONFLICT (firstname, lastname) DO NOTHING";
+    const queryText =
+      "INSERT INTO users(firstname,lastname) VALUES($1, $2) ON CONFLICT (firstname, lastname) DO NOTHING";
     client.query(queryText, [firstName, lastName], function (error, result) {
       if (error) {
         console.log(`${fn} < failed - error: ${error}; duration ${Date.now() - startTime} ms`);

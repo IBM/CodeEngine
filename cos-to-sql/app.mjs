@@ -140,7 +140,7 @@ router.post("/cos-to-sql", async (req, res) => {
 
   const pgClient = await getPgClient(secretsManager, smPgSecretId);
 
-  // 
+  //
   // Iterate through the list of users
   console.log(`Writing converted CSV data to the PostgreSQL database ...`);
   let numberOfProcessedUsers = 0;
@@ -153,7 +153,7 @@ router.post("/cos-to-sql", async (req, res) => {
     } catch (err) {
       console.error(`Failed to add user '${JSON.stringify(userToAdd)}' to the database`, err);
     }
-  };
+  }
 
   console.log(`Processed ${numberOfProcessedUsers} user records!`);
   res.writeHead(200, { "Content-Type": "application/json" });
@@ -174,7 +174,7 @@ router.get("/clear", async (req, res) => {
 });
 
 // start server
-const port = process.env.PORT || 8080;
+const port = 8080;
 const server = app.listen(port, () => {
   console.log(`Server is up and running on port ${port}!`);
 });
