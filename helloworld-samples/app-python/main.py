@@ -1,12 +1,17 @@
-from flask import Flask
 import os
+import jsonify
+from flask import Flask
 
 app = Flask(__name__)
 
 # set up root route
 @app.route("/")
 def hello_world():
-	return "Hello World"
+    response = {
+        "message": "Hello World",
+        "status": 200
+    }
+    return jsonify(response)
 
 # Get the PORT from environment
 port = os.getenv('PORT', '8080')

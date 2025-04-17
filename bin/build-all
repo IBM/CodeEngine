@@ -7,20 +7,25 @@
 # will fail due to an auth failure. Which means, you also need to be logged
 # into that registry before you run it.
 
-cd $(dirname $0)/..
+set -euo pipefail
 
-set -e
-for file in */build ; do (
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 
-  echo -e "\n### `dirname $file`\n"
-  cd `dirname $file`
+find "${REPO_DIR}" -maxdepth 3 -type f -executable -name build | while read -r buildFile; do
+  sampleDir="$(dirname "${buildFile}")"
+  echo
+  echo "### ${sampleDir}"
+  if [ -f "${sampleDir}/.SKIP" ]; then
+    echo "SKIPPING"
+    continue
+  fi
 
-  # Skip this dir
-  [[ -e .SKIP ]] && echo "SKIPPING `dirname $file`" && continue
+  pushd "${sampleDir}" >/dev/null
 
-  # Build the image(s)
   ./build
 
-) done
+  popd >/dev/null
+done
 
+echo
 echo "All done!"

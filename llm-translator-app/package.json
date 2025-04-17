@@ -13,13 +13,13 @@
   },
   "dependencies": {
     "@carbon/react": "^1.48.1",
-    "concurrently": "^8.2.2",
-    "next": "^14.2.21",
+    "next": "^14.2.26",
     "react": "18.2.0"
   },
   "devDependencies": {
     "@types/node": "20.11.16",
     "@types/react": "18.2.51",
+    "concurrently": "^8.2.2",
     "typescript": "5.3.3"
   }
 }
