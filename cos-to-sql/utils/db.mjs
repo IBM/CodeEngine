@@ -20,7 +20,7 @@ function connectDb(connectionString, caCert) {
     let pool = new Pool({ ...postgreConfig, max: 20, idleTimeoutMillis: 5000, connectionTimeoutMillis: 2000 });
 
     pool.query(
-      "CREATE TABLE IF NOT EXISTS users (firstname varchar(256) NOT NULL, lastname varchar(256) NOT NULL)",
+      "CREATE TABLE IF NOT EXISTS users (firstname varchar(256) NOT NULL, lastname varchar(256) NOT NULL, CONSTRAINT pk_users PRIMARY KEY(firstname, lastname));",
       (err, result) => {
         if (err) {
           console.log(`Failed to create PostgreSQL table 'users'`, err);
@@ -78,7 +78,7 @@ export function addUser(client, firstName, lastName) {
   const startTime = Date.now();
   console.log(`${fn} > firstName: '${firstName}', lastName: '${lastName}'`);
   return new Promise(function (resolve, reject) {
-    const queryText = "INSERT INTO users(firstname,lastname) VALUES($1, $2)";
+    const queryText = "INSERT INTO users(firstname,lastname) VALUES($1, $2) ON CONFLICT (firstname, lastname) DO NOTHING";
     client.query(queryText, [firstName, lastName], function (error, result) {
       if (error) {
         console.log(`${fn} < failed - error: ${error}; duration ${Date.now() - startTime} ms`);
@@ -111,7 +111,7 @@ export function deleteUsers(client) {
   const startTime = Date.now();
   console.log(`${fn} >`);
   return new Promise(function (resolve, reject) {
-    const queryText = "DELETE FROM users";
+    const queryText = "DROP TABLE users";
     client.query(queryText, undefined, function (error, result) {
       if (error) {
         console.log(`${fn} < failed - error: ${error}; duration ${Date.now() - startTime} ms`);

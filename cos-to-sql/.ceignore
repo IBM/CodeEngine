@@ -1,2 +1,4 @@
 node_modules
 samples
+docs
+.DS_Store

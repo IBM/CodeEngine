@@ -78,7 +78,7 @@ router.get("/", async (req, res) => {
 // Readiness endpoint
 router.get("/readiness", async (req, res) => {
   console.log(`handling /readiness`);
-  if (!await stat("/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token")) {
+  if (!(await stat("/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token"))) {
     console.error("Mounting the trusted profile compute resource token is not enabled");
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end('{"error": "Mounting the trusted profile compute resource token is not enabled"}');
@@ -140,29 +140,22 @@ router.post("/cos-to-sql", async (req, res) => {
 
   const pgClient = await getPgClient(secretsManager, smPgSecretId);
 
-  //
-  // Perform a single SQL insert statement per user
+  // 
+  // Iterate through the list of users
   console.log(`Writing converted CSV data to the PostgreSQL database ...`);
-  const insertOperations = [];
-  users.forEach((userToAdd) => {
-    insertOperations.push(addUser(pgClient, userToAdd.Firstname, userToAdd.Lastname));
-  });
+  let numberOfProcessedUsers = 0;
+  for (const userToAdd of users) {
+    try {
+      // Perform a single SQL insert statement per user
+      const result = await addUser(pgClient, userToAdd.Firstname, userToAdd.Lastname);
+      console.log(`Added ${JSON.stringify(userToAdd)} -> ${JSON.stringify(result)}`);
+      numberOfProcessedUsers++;
+    } catch (err) {
+      console.error(`Failed to add user '${JSON.stringify(userToAdd)}' to the database`, err);
+    }
+  };
 
-  // Wait for all SQL insert operations to finish
-  console.log(`Waiting for all SQL INSERT operations to finish ...`);
-  await Promise.all(insertOperations)
-    .then((results) => {
-      results.forEach((result, idx) => console.log(`Added ${JSON.stringify(users[idx])} -> ${JSON.stringify(result)}`));
-      console.info("COMPLETED");
-      return Promise.resolve();
-    })
-    .catch((err) => {
-      console.error("Failed to add users to the database", err);
-      console.info("FAILED");
-      return Promise.reject();
-    });
-
-  console.log(`All ${insertOperations?.length} insertions done!`);
+  console.log(`Processed ${numberOfProcessedUsers} user records!`);
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(`{"status": "done"}`);
   return;
