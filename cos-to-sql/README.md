@@ -181,7 +181,7 @@ Install `jq`. On MacOS, you can use following [brew formulae](https://formulae.b
 
 * Upload a CSV file to COS, to initate an event that leads to a job execution:
     ```
-    curl -s https://raw.githubusercontent.com/IBM/CodeEngine/main/cos-to-sql/samples/users.csv > CodeEngine-sample-users.csv
+    curl --silent --location --request GET 'https://raw.githubusercontent.com/IBM/CodeEngine/main/cos-to-sql/samples/users.csv' > CodeEngine-sample-users.csv
 
     cat CodeEngine-sample-users.csv
 
