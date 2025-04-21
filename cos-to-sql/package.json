@@ -1,0 +1,28 @@
+{
+  "name": "ce-cos-to-sql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.mjs",
+  "scripts": {
+    "start": "node .",
+    "local": "node ./src/job.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "code-engine",
+    "cos",
+    "cloud-object-storage",
+    "csv"
+  ],
+  "license": "MIT",
+  "homepage": "https://cloud.ibm.com/containers/serverless",
+  "dependencies": {
+    "@ibm-cloud/secrets-manager": "^2.0.9",
+    "csv-parser": "^3.2.0",
+    "express": "^4.21.2",
+    "ibm-cloud-sdk-core": "^5.3.0",
+    "pg": "^8.14.0",
+    "pg-connection-string": "^2.7.0",
+    "serve-favicon": "^2.5.0"
+  }
+}
