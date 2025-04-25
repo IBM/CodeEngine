@@ -94,12 +94,14 @@ Install `jq`. On MacOS, you can use following [brew formulae](https://formulae.b
 * Create the service credential to access the PostgreSQL instance
     ```
     SM_SECRET_FOR_PG_NAME=pg-access-credentials
-    ibmcloud secrets-manager secret-create \
+    ibmcloud secrets-manager config set instance-id $SM_INSTANCE_GUID
+    ibmcloud secrets-manager config set region $REGION
+    ibmcloud secrets-manager config set service-url https://$SM_INSTANCE_GUID.$REGION.secrets-manager.appdomain.cloud
+    SM_SECRET_FOR_PG_ID=$(ibmcloud secrets-manager secret-create \
         --secret-type="service_credentials" \
         --secret-name="$SM_SECRET_FOR_PG_NAME" \
-        --secret-source-service="{\"instance\": {\"crn\": \"$DB_INSTANCE_ID\"},\"parameters\": {},\"role\": {\"crn\": \"crn:v1:bluemix:public:iam::::serviceRole:Writer\"}}"
-
-    SM_SECRET_FOR_PG_ID=$(ibmcloud sm secret-by-name --name $SM_SECRET_FOR_PG_NAME --secret-type service_credentials --secret-group-name default --instance-id $SM_INSTANCE_GUID --region $REGION --output JSON|jq -r '.id')
+        --secret-source-service="{\"instance\": {\"crn\": \"$DB_INSTANCE_ID\"},\"parameters\": {},\"role\": {\"crn\": \"crn:v1:bluemix:public:iam::::serviceRole:Writer\"}}" \
+        --output JSON|jq -r '.id')
     ```
 
 * Create the Code Engine app:
