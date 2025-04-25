@@ -27,17 +27,35 @@ requiredEnvVars.forEach((envVarName) => {
   }
 });
 
+function encrypt(plaintext, key, iv) {
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  let ciphertext = cipher.update(plaintext, "utf8", "base64");
+  ciphertext += cipher.final("base64");
+  return ciphertext;
+}
+
+function decrypt(ciphertext, key, iv) {
+  const decipher = crypto.createDecipheriv("aes-256-gcm", Buffer.from(key, "base64"), Buffer.from(iv, "base64"));
+  let plaintext = decipher.update(ciphertext, "base64", "utf8");
+  plaintext += decipher.final("utf8");
+
+  return plaintext;
+}
+
 // check whether the auth cookie is set
 async function checkAuth(req, res, next) {
   console.log(`performing auth check for '${req.url}'`);
 
   console.log("Cookies: ", req.cookies);
-  const sessionToken = req.cookies[SESSION_COOKIE];
+  const encryptedSessionToken = req.cookies[SESSION_COOKIE];
 
-  if (!sessionToken) {
+  if (!encryptedSessionToken) {
     console.log(`session cookie '${SESSION_COOKIE}' not found`);
     return res.redirect("/auth/login");
   }
+
+  // decrypt session token
+  const sessionToken = decrypt(encryptedSessionToken, process.env.COOKIE_SIGNING_PASSPHRASE, IV);
 
   const opts = {
     method: "GET",
@@ -113,8 +131,11 @@ router.get("/auth/callback", async (req, res) => {
   const access_token_data = await response.json();
   console.log(`access_token_data: '${JSON.stringify(access_token_data)}'`);
 
+  // encrypt the access token
+  const sessionCookieValue = encrypt(access_token_data.access_token, process.env.COOKIE_SIGNING_PASSPHRASE, IV);
+
   console.log("Setting session cookie.");
-  res.cookie(SESSION_COOKIE, access_token_data.access_token, {
+  res.cookie(SESSION_COOKIE, sessionCookieValue, {
     maxAge: 1000 * access_token_data.expires_in,
     httpOnly: true,
     path: "/",
