@@ -12,8 +12,15 @@
 set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
-# Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/metrics-collector . --platform linux/amd64
+# Build and push the notebook image
+cd notebook
+docker build ${NOCACHE} -t ${REGISTRY}/jupyter-notebook . --platform linux/amd64
+docker push ${REGISTRY}/jupyter-notebook
+cd ..
 
-# And push it
-docker push ${REGISTRY}/metrics-collector
+# Build and push the nginx image
+cd nginx
+docker build ${NOCACHE} -t ${REGISTRY}/jupyter-nginx . --platform linux/amd64
+docker push ${REGISTRY}/jupyter-nginx
+cd ..
+
