@@ -1,8 +1,17 @@
 #!/bin/bash
 
+pushd cos-setup
+
+terraform init
+
+terraform apply && sleep 10
+
+popd
+
 echo "create upload-function and download-application in code engine"
 
-ibmcloud target -g Default
+ibmcloud login --apikey $1
+ibmcloud target -g $(ibmcloud resource groups --default --output JSON | jq -r '.[0].id')
 
 ibmcloud ce project select -n codeengine-fotobox-project # name of the project that was setup in terraform script
 
