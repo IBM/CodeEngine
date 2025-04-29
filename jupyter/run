@@ -162,7 +162,7 @@ CE_PROJECT_DOMAIN=$(echo "$CE_PROJECT" | jq -r '.domain')
 CE_PROJECT_NAMESPACE=$(echo "$CE_PROJECT" | jq -r '.kube_config_context')
 
 # 
-# Obtain the Kubernetes Context of the Code Engine project
+# Obtain the Kubernetes context of the Code Engine project
 print_msg "\nObtaining the Kube config of the Code Engine project ..."
 ibmcloud ce project select --id ${CE_PROJECT_GUID} --kubecfg
 
@@ -255,11 +255,10 @@ if [ ! -f oidc.properties ]; then
     echo "Skipping the configuration of the authentication credentials. Specify all authz/authn properties in 'oidc.properties' to enable it."
 else
     echo "Authn/Authz configuration file 'oidc.properties' found!"
-    authcreds_op_create_or_update=update
-    if ! ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
-        authcreds_op_create_or_update=create
+    if ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
+        ibmcloud ce secret delete --name $CE_SECRET_AUTH --force
     fi
-    ibmcloud ce secret $authcreds_op_create_or_update --name $CE_SECRET_AUTH \
+    ibmcloud ce secret create --name $CE_SECRET_AUTH \
         --from-env-file oidc.properties
 fi
 

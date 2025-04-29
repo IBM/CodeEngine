@@ -98,21 +98,68 @@
 
 ## Prerequisites
 
+### Github.com OIDC SSO
+
+* Create Github OIDC app through https://github.com/settings/developers
+    ```
+    name: jupyter
+    homepage: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
+    callback URL: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
+    ```
+* Store the client id and the secret in local file called `oidc.properties`
+    ```
+    OIDC_CLIENT_ID=<CLIENT_ID>
+    OIDC_CLIENT_SECRET=<CLIENT_SECRET>
+    ```
+* Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
+    ```
+    COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)
+    ```
+* From your OIDC provider obtain the following values and add ithem to the `oidc.properties` file
+    ```
+    OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=https://github.com/login/oauth/authorize
+    OIDC_PROVIDER_TOKEN_ENDPOINT=https://github.com/login/oauth/access_token
+    OIDC_PROVIDER_USERINFO_ENDPOINT=https://api.github.com/user
+    ```
+* To add authorization checks one can either check for a specific user property
+    ```
+    AUTHZ_USER_PROPERTY=login
+    AUTHZ_ALLOWED_USERS=<<comma-separated-list-of-github-users>
+    ```
+
+### IBMers-only: w3Id OIDC SSO
+
 * Create w3Id OIDC configuration through https://ies-provisioner.prod.identity-services.intranet.ibm.com/tools/sso/home
-```
-name: jupyter
-homepage: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
-authz callback URL: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
-```
-* Store the client id and the secret in local environment variable
-```
-CLIENT_ID=<CLIENT_ID>
-CLIENT_SECRET=<CLIENT_SECRET>
-```
-* Generate a random cookie secret that is used to encrypt the auth cookie value
-```
-ENCRYPTION_KEY=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null | base64 | tr -d -- '\n' | tr -- '+/' '-_' ; echo)
-```
+    ```
+    name: jupyter
+    homepage: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
+    callback URL: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
+    ```
+* Store the client id and the secret in local file called `oidc.properties`
+    ```
+    OIDC_CLIENT_ID=<CLIENT_ID>
+    OIDC_CLIENT_SECRET=<CLIENT_SECRET>
+    ```
+* Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
+    ```
+    COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)
+    ```
+* From your OIDC provider obtain the following values and add ithem to the `oidc.properties` file
+    ```
+    OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=
+    OIDC_PROVIDER_TOKEN_ENDPOINT=
+    OIDC_PROVIDER_USERINFO_ENDPOINT=
+    ```
+* To add authorization checks one can either check for a specific user property, for a group property match
+    ```
+    AUTHZ_USER_PROPERTY=preferred_username
+    AUTHZ_ALLOWED_USERS=<comma-separated-list-of-usernames>
+    ```
+* Or for a group property match
+    ```
+    AUTHZ_USER_PROPERTY=blueGroups
+    AUTHZ_ALLOWED_USERS=<comma-separated-list-of-groups>
+    ```
 
 ## Configuration
 

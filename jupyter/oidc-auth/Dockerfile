@@ -9,6 +9,5 @@ FROM gcr.io/distroless/nodejs22-debian12
 COPY --from=build-env /app /app
 WORKDIR /app
 COPY public/ public/
-COPY views/ views/
 EXPOSE 8080
 CMD ["index.mjs"]

@@ -1,2 +1,2 @@
-oidc.properties
+oidc*.properties
 node_modules
