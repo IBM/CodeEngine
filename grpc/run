@@ -29,7 +29,7 @@ echo "[INFO] Local endpoint is: ${SERVER_INTERNAL_ENDPOINT}"
 
 # Create the client server app
 echo "[INFO] Creating CE client/server application ${CLIENT_APP_NAME}"
-ibmcloud ce app create --name "${CLIENT_APP_NAME}" --image icr.io/codeengine/grpc-client --min-scale 0 --env LOCAL_ENDPOINT_WITH_PORT="${SERVER_INTERNAL_ENDPOINT}:80"
+ibmcloud ce app create --name "${CLIENT_APP_NAME}" --image icr.io/codeengine/grpc-client --min-scale 0 --env INSECURE=true --env ENDPOINT_WITH_PORT="${SERVER_INTERNAL_ENDPOINT}:80"
 
 # Get the client server public endpoint
 echo "[INFO] Retrieving client/server public endpoint"
