@@ -113,7 +113,7 @@ export function deleteUsers(client) {
   const startTime = Date.now();
   console.log(`${fn} >`);
   return new Promise(function (resolve, reject) {
-    const queryText = "DROP TABLE users";
+    const queryText = "DELETE * FROM users";
     client.query(queryText, undefined, function (error, result) {
       if (error) {
         console.log(`${fn} < failed - error: ${error}; duration ${Date.now() - startTime} ms`);
