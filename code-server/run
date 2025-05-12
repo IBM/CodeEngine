@@ -1,0 +1,286 @@
+#!/bin/bash
+set -eo pipefail
+
+# Customizable vars
+CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
+CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
+REGION="${REGION:=eu-es}"
+
+# Static variables
+RESOURCE_GROUP_NAME="code-server--rg"
+COS_INSTANCE_NAME=code-server--cos
+CE_PROJECT_NAME="code-server-${REGION}--ce"
+CE_APP_CODE_SERVER="code-server"
+COS_HMAC_CREDENTIALS_NAME=ce-${REGION}-code-server-cos-credentials
+
+# ==============================
+# COMMON FUNCTIONS
+# ==============================
+RED="\033[31m"
+BLUE="\033[94m"
+GREEN="\033[32m"
+ENDCOLOR="\033[0m"
+
+function print_error {
+    echo -e "${RED}\n==========================================${ENDCOLOR}"
+    echo -e "${RED} FAILED${ENDCOLOR}"
+    echo -e "${RED}==========================================\n${ENDCOLOR}"
+    echo -e "${RED}$1${ENDCOLOR}"
+    echo ""
+}
+function print_msg {
+    echo -e "${BLUE}$1${ENDCOLOR}"
+}
+function print_success {
+    echo -e "${GREEN}$1${ENDCOLOR}"
+}
+
+# Helper function to check whether prerequisites are installed
+function check_prerequisites {
+    # Ensure that jq tool is installed
+    if ! command -v jq &>/dev/null; then
+        print_error "'jq' tool is not installed"
+        exit 1
+    fi
+    echo "Done!"
+}
+
+# Clean up previous run
+function clean() {
+
+    # COS_INSTANCE_ID=$(ibmcloud resource service-instance ${COS_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
+
+    ibmcloud target -g $RESOURCE_GROUP_NAME
+
+    ibmcloud resource service-key-delete ${COS_HMAC_CREDENTIALS_NAME} --force
+
+    # delete cos instance
+    ibmcloud resource service-instance-delete ${COS_INSTANCE_NAME} -g $RESOURCE_GROUP_NAME --force
+
+    # hard delete ce project
+    ibmcloud ce project delete --name $CE_PROJECT_NAME --hard --force
+
+    # delete resource group
+    ibmcloud resource group-delete $RESOURCE_GROUP_NAME --force
+
+    echo "Done!"
+}
+
+# ==============================
+# MAIN SCRIPT FLOW
+# ==============================
+
+print_msg "\n======================================================"
+print_msg " Setting up \"Code Server on Code Engine \" sample"
+print_msg "======================================================\n"
+
+echo ""
+echo "Please note: This script will install various IBM Cloud resources within the resource group '$RESOURCE_GROUP_NAME'."
+
+print_msg "\nChecking prerequisites ..."
+check_prerequisites
+
+# Ensure that latest versions of used IBM Cloud ClI is installed
+print_msg "\nPulling latest IBM Cloud CLI release ..."
+#ibmcloud update --force
+echo "Done!"
+
+# Ensure that latest versions of used IBM Cloud CLI plugins are installed
+print_msg "\nInstalling required IBM Cloud CLI plugins ..."
+#ibmcloud plugin install code-engine -f --quiet
+#ibmcloud plugin install cos -f --quiet
+echo "Done!"
+
+
+if [[ "$1" == "clean" ]]; then
+    print_msg "\nCleaning up the remains of previous executions ..."
+    clean
+    print_success "\n==========================================\n DONE\n==========================================\n"
+    exit 0
+fi
+
+print_msg "\nTargetting IBM Cloud region '$REGION' ..."
+ibmcloud target -r $REGION
+
+#
+# Create the resource group, if it does not exist
+if ! ibmcloud resource group $RESOURCE_GROUP_NAME --quiet >/dev/null 2>&1; then
+    print_msg "\nCreating resource group '$RESOURCE_GROUP_NAME' ..."
+    ibmcloud resource group-create $RESOURCE_GROUP_NAME
+fi
+print_msg "\nTargetting resource group '$RESOURCE_GROUP_NAME' ..."
+ibmcloud target -g $RESOURCE_GROUP_NAME
+
+#
+# Create the COS instance, if it does not exist
+print_msg "\nInitializing the COS instance '$COS_INSTANCE_NAME' ..."
+if ! ibmcloud resource service-instance ${COS_INSTANCE_NAME} 2>/dev/null; then
+    print_msg "\nCreating the COS instance '$COS_INSTANCE_NAME' ..."
+    ibmcloud resource service-instance-create ${COS_INSTANCE_NAME} cloud-object-storage standard global -d premium-global-deployment-iam
+fi
+COS_INSTANCE_ID=$(ibmcloud resource service-instance ${COS_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
+ibmcloud cos config crn --crn ${COS_INSTANCE_ID} --force
+ibmcloud cos config auth --method IAM
+ibmcloud cos config region --region ${REGION}
+ibmcloud cos config endpoint-url --url s3.${REGION}.cloud-object-storage.appdomain.cloud
+
+
+print_msg "\nListing buckets of the instance ..."
+buckets=$(ibmcloud cos buckets -output json)
+COS_BUCKET_NAME=""
+if [[ "$(echo "${buckets}" | jq -r '.Buckets')" != "null" ]]; then
+    echo "Found $(echo "${buckets}" | jq -r '.Buckets|length') bucket(s):"
+    for bucket in $(echo "${buckets}" | jq -r '.Buckets|.[] | @base64'); do
+        _jq() {
+            echo ${bucket} | base64 --decode | jq -r ${1}
+        }
+        bucket_name=$(_jq '.Name')
+        echo "- $bucket_name"
+
+        if [[ "$bucket_name" =~ ^ce-${REGION}-code-server-* ]]; then 
+            COS_BUCKET_NAME=$bucket_name
+        fi
+    done
+fi
+
+#
+# Create a COS bucket, if it does not exist
+if [[ $COS_BUCKET_NAME == "" ]]; then
+    random_chars=$(openssl rand -hex 6)
+    COS_BUCKET_NAME=ce-${REGION}-code-server-${random_chars}
+    print_msg "\nCreating the COS bucket '$COS_BUCKET_NAME' ..."
+    ibmcloud cos bucket-create \
+        --class smart \
+        --region $REGION \
+        --ibm-service-instance-id $COS_INSTANCE_ID \
+        --bucket $COS_BUCKET_NAME
+else 
+    print_msg "\nUsing the COS bucket '$COS_BUCKET_NAME' ..."
+    echo "Done!"
+fi
+
+#
+# Create the Code Engine project, if it does not exist
+print_msg "\nInitializing the Code Engine project '$CE_PROJECT_NAME' ..."
+if ! ibmcloud ce proj select --name $CE_PROJECT_NAME 2>/dev/null; then
+    print_msg "\nCreating Code Engine project '$CE_PROJECT_NAME' ..."
+    ibmcloud ce proj create --name $CE_PROJECT_NAME
+fi
+CE_PROJECT=$(ibmcloud ce project current --output json)
+CE_PROJECT_GUID=$(echo "$CE_PROJECT" | jq -r '.guid')
+CE_PROJECT_DOMAIN=$(echo "$CE_PROJECT" | jq -r '.domain')
+CE_PROJECT_NAMESPACE=$(echo "$CE_PROJECT" | jq -r '.kube_config_context')
+
+# 
+# Obtain the Kubernetes context of the Code Engine project
+print_msg "\nObtaining the Kube config of the Code Engine project ..."
+ibmcloud ce project select --id ${CE_PROJECT_GUID} --kubecfg
+
+print_msg "\nInitializing HMAC credentials to access the COS instance '$COS_INSTANCE_ID' ..."
+CE_SECRET_NAME=cos-secret-$COS_BUCKET_NAME
+if ibmcloud ce secret get --name $CE_SECRET_NAME --quiet >/dev/null 2>&1; then
+    echo "Done! Code Engine secret '$CE_SECRET_NAME' does exist"
+else
+
+    #
+    # Create the credentials to access the COS instance
+    print_msg "\nCreating the HMAC credentials '$COS_HMAC_CREDENTIALS_NAME' to access the COS instance ..."
+    COS_HMAC_CREDENTIALS=$(ibmcloud resource service-key-create ${COS_HMAC_CREDENTIALS_NAME} Writer --instance-id $COS_INSTANCE_ID --parameters '{"HMAC":true}' --output JSON)
+    COS_HMAC_CREDENTIALS_ACCESS_KEY_ID=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.access_key_id')
+    COS_HMAC_CREDENTIALS_SECRET_ACCESS_ID=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.secret_access_key')
+
+    #
+    # Store the HMAC credentials in a Code Engine secret
+    
+    print_msg "\nStore the HMAC credentials in a Code Engine secret '$CE_SECRET_NAME' ..."
+    kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+type: codeengine.cloud.ibm.com/hmac-auth
+metadata:
+    name: $CE_SECRET_NAME
+stringData:
+    accessKey: $COS_HMAC_CREDENTIALS_ACCESS_KEY_ID
+    secretKey: $COS_HMAC_CREDENTIALS_SECRET_ACCESS_ID
+EOF
+
+fi
+
+print_msg "\nInitializing the persistent storage to mount the bucket '$COS_BUCKET_NAME' ..."
+CE_STORAGE_NAME=$COS_BUCKET_NAME
+if kubectl get PersistentStorage $CE_STORAGE_NAME >/dev/null 2>&1; then
+    echo "Done! Code Engine persistent storage '$CE_STORAGE_NAME' does exist"
+else
+    print_msg "\nCreating Code Engine persistent storage '$CE_STORAGE_NAME' ..."
+    kubectl apply -f - <<EOF
+apiVersion: codeengine.cloud.ibm.com/v1beta1
+kind: PersistentStorage
+metadata:
+    name: $CE_STORAGE_NAME
+spec:
+    objectStorage:
+        bucketName: $COS_BUCKET_NAME
+        bucketLocation: $REGION
+        secretRef: $CE_SECRET_NAME
+EOF
+fi
+
+CE_CONFIG_NAME=code-server-config
+print_msg "\nInitializing the code-server configuration '$CE_CONFIG_NAME' ..."
+if ! ibmcloud ce configmap get --name $CE_CONFIG_NAME >/dev/null 2>&1; then
+    print_msg "\nCreating the configuration '$CE_CONFIG_NAME' ..."
+    ibmcloud ce configmap create --name $CE_CONFIG_NAME --from-file config.yaml
+else 
+    echo "Done!"
+fi
+
+# Deploy the Code Engine app to run the code server
+print_msg "\nInitializing the code-server app '$CE_APP_CODE_SERVER' ..."
+if ! ibmcloud ce app get --name $CE_APP_CODE_SERVER >/dev/null 2>&1; then
+    print_msg "\nCreating the code server app '$CE_APP_CODE_SERVER' ..."
+    ibmcloud ce app create --name $CE_APP_CODE_SERVER \
+        --build-source "." \
+        --min-scale 1 \
+        --port 12345 \
+        --cpu 8 --memory 16G \
+        --command "/bin/bash" --command "-c" \
+        --argument '/usr/bin/entrypoint.sh --extensions-dir ${EXTENSION_DIR} /data/workspace' \
+        --env CODE_SERVER_CONFIG=/home/coder/.config/code-server/config.yaml \
+        --env MAVEN_OPTS="-Dmaven.repo.local=/data/cache/.m2" \
+        --env VSCODE_PROXY_URI=./absproxy/{{port}} \
+        --argument /data/workspace \
+        --scale-down-delay 600 \
+        --no-wait
+
+    print_msg "\nConfiguring the volume mounts for the app '$CE_APP_CODE_SERVER' ..."
+    ./add-volume-mount-to-app.sh $CE_APP_CODE_SERVER $CE_STORAGE_NAME /data
+    sleep 3
+
+else 
+    echo "Done!"
+fi
+
+print_msg "\nUpdate the app '$CE_APP_CODE_SERVER' ..."
+ibmcloud ce app update --name $CE_APP_CODE_SERVER \
+    --build-source "."
+
+ROOT_DOMAIN=.${CE_PROJECT_NAMESPACE}.${CE_PROJECT_DOMAIN}
+FQDN_CODE_SERVER_APP=${CE_APP_CODE_SERVER}${ROOT_DOMAIN}
+URL_CODE_SERVER_APP=https://${FQDN_CODE_SERVER_APP}
+
+print_msg "\nThis end-to-end sample created the following set of IBM Cloud resources:"
+ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+
+print_msg "\nSo far, following files have been stored in the COS bucket '$COS_BUCKET_NAME':"
+ibmcloud cos objects --bucket $COS_BUCKET_NAME
+
+echo ""
+ibmcloud ce app list
+
+print_msg "\nFollowing commands can be used to further play around with the sample setup:"
+echo "1. Open the browser and type '$URL_CODE_SERVER_APP' to access code server"
+echo "2. Tear down the sample setup: './run clean'"
+
+print_success "\n=========================================="
+print_success " SUCCESS"
+print_success "==========================================\n"

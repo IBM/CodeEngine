@@ -1,0 +1,9 @@
+bind-addr: 127.0.0.1:12345
+auth: none
+cert: false
+disable-telemetry: true
+disable-update-check: true
+disable-workspace-trust: true
+disable-getting-started-override: true
+user-data-dir: /data/user-data
+session-socket: /home/coder/code-server-ipc.sock
