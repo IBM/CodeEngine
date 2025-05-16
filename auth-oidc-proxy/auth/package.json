@@ -1,0 +1,17 @@
+{
+  "name": "code-engine-oidc-auth-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js OIDC auth app hosted on IBM Cloud Code Engine",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "node-cache": "^5.1.2"
+  }
+}
