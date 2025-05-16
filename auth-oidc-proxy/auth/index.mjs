@@ -137,7 +137,7 @@ async function checkAuthn(req, res, next) {
     // This error indicates that the encrypted string couldn't get decrypted using the encryption key
     // maybe the cookie value has been encrypted with an old key
     // full error: 'error:1C800064:Provider routines::bad decrypt'
-    if (err.message.indexOf("error:1C800064") > -1) {
+    if (err.message.includes("error:1C800064")) {
       console.log(`${fn} enryption key has been changed. Deleting existing cookie`);
       res.clearCookie(SESSION_COOKIE);
       return sendJSONResponse(res, 400, { reason: "invalid_session" });
