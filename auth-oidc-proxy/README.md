@@ -27,7 +27,7 @@ The following diagram depicts the components that are involved:
     ```
     COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)
     ```
-* From your OIDC provider obtain the following values and add ithem to the `oidc.properties` file
+* From your OIDC provider obtain the following values and add them to the `oidc.properties` file
     ```
     OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=https://github.com/login/oauth/authorize
     OIDC_PROVIDER_TOKEN_ENDPOINT=https://github.com/login/oauth/access_token
