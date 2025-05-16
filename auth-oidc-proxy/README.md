@@ -1,6 +1,6 @@
 # OIDC Proxy sample
 
-This sample demonstrates how to configure an authentication/authorization layer that fronts any arbitrary Code Engine application. In principal, this pattern is pretty generic. To demonstrate it, we chose to implement it with OIDC, an authentication framework that is built on top of the OAuth 2.0 protocol.
+This sample demonstrates how to configure an authentication/authorization layer that fronts any arbitrary Code Engine application. In principal, this pattern is pretty generic. To demonstrate it, we chose to implement it with OpenID Connect (OIDC), an authentication framework that is built on top of the OAuth 2.0 protocol.
 
 The following diagram depicts the components that are involved:
 ![OIDC Proxy architecture overview](./docs/ce-oidc-proxy-overview.png)
