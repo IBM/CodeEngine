@@ -240,8 +240,7 @@ async function checkAuthz(req, res, next) {
     const userGroups = req.user[AUTHZ_GROUP_PROPERTY] || [];
     console.log(`${fn} checking whether at least one of the user.${AUTHZ_GROUP_PROPERTY} is allow listed.`);
 
-    let authorized = false;
-    Array.isArray(userGroups) &&
+    const authorized = Array.isArray(userGroups) &&
       userGroups.some((group) => {
         return AUTHZ_ALLOWED_GROUPS_LIST.includes(group);
       });
