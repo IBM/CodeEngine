@@ -1,6 +1,5 @@
 FROM registry.access.redhat.com/ubi9/nodejs-22:latest AS build-env
 WORKDIR /app
-COPY index.mjs .
 COPY package.json .
 RUN npm install
 
@@ -8,6 +7,6 @@ RUN npm install
 FROM gcr.io/distroless/nodejs22-debian12
 COPY --from=build-env /app /app
 WORKDIR /app
-COPY public/ public/
+COPY index.mjs public/.
 EXPOSE 8080
 CMD ["index.mjs"]
