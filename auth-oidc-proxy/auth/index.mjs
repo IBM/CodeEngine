@@ -70,12 +70,9 @@ function parseAllowlist(listAsStr) {
   if (!listAsStr) {
     return [];
   }
-  const strArr = listAsStr.split(",");
-  strArr.forEach((element, index) => {
-    strArr[index] = element.trim();
-  });
-
-  return strArr;
+  return listAsStr
+    .split(",")
+    .map((item) => item.trim());
 }
 
 // =================================================
