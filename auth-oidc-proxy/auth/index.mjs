@@ -144,7 +144,7 @@ async function checkAuthn(req, res, next) {
     }
 
     // error:1C80006B:Provider routines::wrong final block length
-    if (err.message.indexOf("error:1C80006B") > -1) {
+    if (err.message.includes("error:1C80006B")) {
       console.log(`${fn} enryption key has been changed. Deleting existing cookie`);
       res.clearCookie(SESSION_COOKIE);
       return sendJSONResponse(res, 401, { reason: "invalid_session" });
