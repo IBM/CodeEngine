@@ -10,67 +10,73 @@ The following diagram depicts the components that are involved:
 
 ## Setting up an OIDC SSO configuration
 
+In order to be able to authenticate using OIDC SSO, you'll need to choose and configure a suitable OIDC provider. For this sample we demonstrate how this can be achieved by either using GitHub, or an IBM-internal provider. While many other OIDC providers will also work out-of-the-box, some may require few adjustments in the implementation of the `auth` app that we provide in this sample.
+
 ### Github.com OIDC SSO
+
+Github.com provides a publicly available OIDC provider, that can be used to point to Code Engine applications, which you deployed in your IBM Cloud account. Use the following steps to configure an SSO app:
 
 * Create Github OIDC app through https://github.com/settings/developers
     ```
-    name: jupyter
-    homepage: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
-    callback URL: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
+    name: oidc-sample
+    homepage: https://oidc-sample-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
+    callback URL: https://oidc-sample-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
     ```
 * Store the client id and the secret in local file called `oidc.properties`
     ```
-    OIDC_CLIENT_ID=<CLIENT_ID>
-    OIDC_CLIENT_SECRET=<CLIENT_SECRET>
+    echo "OIDC_CLIENT_ID=<CLIENT_ID>" > oidc.properties
+    echo "OIDC_CLIENT_SECRET=<CLIENT_SECRET>" >> oidc.properties
     ```
 * Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
     ```
-    COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)
+    echo "COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
     ```
 * From your OIDC provider obtain the following values and add them to the `oidc.properties` file
     ```
-    OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=https://github.com/login/oauth/authorize
-    OIDC_PROVIDER_TOKEN_ENDPOINT=https://github.com/login/oauth/access_token
-    OIDC_PROVIDER_USERINFO_ENDPOINT=https://api.github.com/user
+    echo "OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=https://github.com/login/oauth/authorize" >> oidc.properties
+    echo "OIDC_PROVIDER_TOKEN_ENDPOINT=https://github.com/login/oauth/access_token" >> oidc.properties
+    echo "OIDC_PROVIDER_USERINFO_ENDPOINT=https://api.github.com/user" >> oidc.properties
     ```
-* To add authorization checks one can either check for a specific user property
+* To add authorization checks one can check for a specific user property
     ```
-    AUTHZ_USER_PROPERTY=login
-    AUTHZ_ALLOWED_USERS=<<comma-separated-list-of-github-users>
+    echo "AUTHZ_USER_PROPERTY=login" >> oidc.properties
+    echo "AUTHZ_ALLOWED_USERS=<<comma-separated-list-of-github-users>" >> oidc.properties
     ```
 
 ### IBMers-only: w3Id OIDC SSO
 
-* Create w3Id OIDC configuration through https://ies-provisioner.prod.identity-services.intranet.ibm.com/tools/sso/home
+To protect IBM's workforce, the SSO Provisioner provides the ability to configure an w3Id SSO. Note: This SSO provider can only be used by IBMers
+
+* Create w3Id OIDC configuration through https://w3.ibm.com/security/sso-provisioner
     ```
-    name: jupyter
-    homepage: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
-    callback URL: https://jupyter-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
+    name: oidc-sample
+    homepage: https://oidc-sample-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud
+    callback URL: https://oidc-sample-auth.<CE_SUBDOMAIN>.<REGION>.codeengine.appdomain.cloud/auth/callback
     ```
 * Store the client id and the secret in local file called `oidc.properties`
     ```
-    OIDC_CLIENT_ID=<CLIENT_ID>
-    OIDC_CLIENT_SECRET=<CLIENT_SECRET>
+    echo "OIDC_CLIENT_ID=<CLIENT_ID>" > oidc.properties
+    echo "OIDC_CLIENT_SECRET=<CLIENT_SECRET>" >> oidc.properties
     ```
 * Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
     ```
-    COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)
+    echo "COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
     ```
 * From your OIDC provider obtain the following values and add them to the `oidc.properties` file
     ```
-    OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=
-    OIDC_PROVIDER_TOKEN_ENDPOINT=
-    OIDC_PROVIDER_USERINFO_ENDPOINT=
+    echo "OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=" >> oidc.properties
+    echo "OIDC_PROVIDER_TOKEN_ENDPOINT=" >> oidc.properties
+    echo "OIDC_PROVIDER_USERINFO_ENDPOINT=" >> oidc.properties
     ```
 * To add authorization checks one can either check for a specific user property, for a group property match
     ```
-    AUTHZ_USER_PROPERTY=preferred_username
-    AUTHZ_ALLOWED_USERS=<comma-separated-list-of-usernames>
+    echo "AUTHZ_USER_PROPERTY=preferred_username" >> oidc.properties
+    echo "AUTHZ_ALLOWED_USERS=<comma-separated-list-of-usernames>" >> oidc.properties
     ```
 * Or for a group property match
     ```
-    AUTHZ_USER_PROPERTY=blueGroups
-    AUTHZ_ALLOWED_USERS=<comma-separated-list-of-groups>
+    echo "AUTHZ_USER_PROPERTY=blueGroups" >> oidc.properties
+    echo "AUTHZ_ALLOWED_USERS=<comma-separated-list-of-groups>" >> oidc.properties
     ```
 
 ## Installing the sample
