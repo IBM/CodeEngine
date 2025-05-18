@@ -1,2 +1,12 @@
 oidc*.properties
+.ceignore
+.dockerignore
+.gitignore
+auth
+build
+docs
+Dockerfile
+nginx
 node_modules
+README.md
+run
