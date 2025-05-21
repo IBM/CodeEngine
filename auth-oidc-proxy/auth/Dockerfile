@@ -7,6 +7,6 @@ RUN npm install
 FROM gcr.io/distroless/nodejs22-debian12
 COPY --from=build-env /app /app
 WORKDIR /app
-COPY index.mjs public/.
+COPY index.mjs public/ .
 EXPOSE 8080
 CMD ["index.mjs"]
