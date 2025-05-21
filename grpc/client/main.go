@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	ec "github.com/qu1queee/CodeEngine/grpc/ecommerce"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -98,10 +100,28 @@ func BuyHandler(w http.ResponseWriter, r *http.Request, groceryClient ec.Grocery
 }
 
 func main() {
-	localEndpoint := os.Getenv("LOCAL_ENDPOINT_WITH_PORT")
+	endpoint := os.Getenv("ENDPOINT_WITH_PORT")
+	if endpoint == "" {
+		log.Fatalf("no endpoint set: %s", endpoint)
+	}
+	certPool, err := x509.SystemCertPool()
+	if err != nil {
+		log.Fatalf("failed to get cert pool: %v", err)
+	}
+	creds := credentials.NewClientTLSFromCert(certPool, "")
+	insArg := os.Getenv("INSECURE")
+	if insArg != "" {
+		unencrypted, err := strconv.ParseBool(insArg)
+		if err != nil {
+			log.Fatalf("could not parse %v: ", err)
+		}
+		if unencrypted {
+			creds = insecure.NewCredentials()
+		}
+	}
 
-	fmt.Printf("using local endpoint: %s\n", localEndpoint)
-	conn, err := grpc.Dial(localEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	fmt.Printf("using endpoint: %s\n", endpoint)
+	conn, err := grpc.Dial(endpoint, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}

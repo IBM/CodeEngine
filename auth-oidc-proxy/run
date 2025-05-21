@@ -1,0 +1,271 @@
+#!/bin/bash
+set -eo pipefail
+
+# Customizable vars
+CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
+CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
+REGION="${REGION:=eu-es}"
+NAME_PREFIX="${NAME_PREFIX:=oidc-sample}"
+
+# Static variables
+RESOURCE_GROUP_NAME="oidc-sample--rg"
+CE_PROJECT_NAME="${NAME_PREFIX}-project"
+CE_APP_ORIGIN="${NAME_PREFIX}-origin"
+CE_APP_PROXY="${NAME_PREFIX}-proxy"
+CE_APP_AUTH="${NAME_PREFIX}-auth"
+CE_SECRET_AUTH="${NAME_PREFIX}-auth-credentials"
+
+
+# ==============================
+# COMMON FUNCTIONS
+# ==============================
+RED="\033[31m"
+BLUE="\033[94m"
+GREEN="\033[32m"
+ENDCOLOR="\033[0m"
+
+function print_error {
+    echo -e "${RED}\n==========================================${ENDCOLOR}"
+    echo -e "${RED} FAILED${ENDCOLOR}"
+    echo -e "${RED}==========================================\n${ENDCOLOR}"
+    echo -e "${RED}$1${ENDCOLOR}"
+    echo ""
+}
+function print_msg {
+    echo -e "${BLUE}$1${ENDCOLOR}"
+}
+function print_success {
+    echo -e "${GREEN}$1${ENDCOLOR}"
+}
+
+# Helper function to check whether prerequisites are installed
+function check_prerequisites {
+    # Ensure that jq tool is installed
+    if ! command -v jq &>/dev/null; then
+        print_error "'jq' tool is not installed"
+        exit 1
+    fi
+    echo "Done!"
+}
+
+# Clean up previous run
+function clean() {
+    # cleanup everything within this resource group
+
+    ibmcloud ce project delete --name ${CE_PROJECT_NAME} --hard --force 2>/dev/null
+
+    ibmcloud resource group $RESOURCE_GROUP_NAME --quiet 2>/dev/null
+    if [[ $? == 0 ]]; then
+        COUNTER=0
+        # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
+        while (($(ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME --output json | jq -r '. | length') > 0)); do
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+            if ((COUNTER > 30)); then
+                print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
+                ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+                exit 1
+            fi
+        done
+    fi
+
+    ibmcloud resource group-delete $RESOURCE_GROUP_NAME --force 2>/dev/null
+    
+    echo "Done!"
+}
+
+
+function abortScript() {
+    if [[ "${CLEANUP_ON_ERROR}" == true ]]; then
+        clean
+    else
+        print_msg "\nSkipping deletion of the created IBM Cloud resources." 
+        echo "$ ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME"
+        ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+    fi
+    exit 1
+}
+
+# ==============================
+# MAIN SCRIPT FLOW
+# ==============================
+
+print_msg "\n======================================================"
+print_msg " Setting up \"OIDC proxy on Code Engine \" sample"
+print_msg "======================================================\n"
+
+echo ""
+echo "Please note: This script will install various IBM Cloud resources within the resource group '$RESOURCE_GROUP_NAME'."
+
+print_msg "\nChecking prerequisites ..."
+check_prerequisites
+
+# Ensure that latest versions of used IBM Cloud ClI is installed
+print_msg "\nPulling latest IBM Cloud CLI release ..."
+#ibmcloud update --force
+echo "Done!"
+
+# Ensure that latest versions of used IBM Cloud CLI plugins are installed
+print_msg "\nInstalling required IBM Cloud CLI plugins ..."
+#ibmcloud plugin install code-engine -f --quiet
+echo "Done!"
+
+
+if [[ "$1" == "clean" ]]; then
+    print_msg "\nCleaning up the remains of previous executions ..."
+    clean
+    print_success "\n==========================================\n DONE\n==========================================\n"
+    exit 0
+fi
+
+print_msg "\nTargetting IBM Cloud region '$REGION' ..."
+ibmcloud target -r $REGION
+
+#
+# Create the resource group, if it does not exist
+if ! ibmcloud resource group $RESOURCE_GROUP_NAME --quiet >/dev/null 2>&1; then
+    print_msg "\nCreating resource group '$RESOURCE_GROUP_NAME' ..."
+    ibmcloud resource group-create $RESOURCE_GROUP_NAME
+fi
+print_msg "\nTargetting resource group '$RESOURCE_GROUP_NAME' ..."
+ibmcloud target -g $RESOURCE_GROUP_NAME
+
+#
+# Create the Code Engine project, if it does not exist
+print_msg "\nInitializing the Code Engine project '$CE_PROJECT_NAME' ..."
+if ! ibmcloud ce proj select --name $CE_PROJECT_NAME 2>/dev/null; then
+    print_msg "\nCreating Code Engine project '$CE_PROJECT_NAME' ..."
+    ibmcloud ce proj create --name $CE_PROJECT_NAME
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine project create failed!"
+        abortScript
+    fi
+fi
+CE_PROJECT=$(ibmcloud ce project current --output json)
+CE_PROJECT_GUID=$(echo "$CE_PROJECT" | jq -r '.guid')
+CE_PROJECT_DOMAIN=$(echo "$CE_PROJECT" | jq -r '.domain')
+CE_PROJECT_NAMESPACE=$(echo "$CE_PROJECT" | jq -r '.kube_config_context')
+
+# Deploy the Code Engine app to run the origin
+print_msg "\nInitializing the origin app '$CE_APP_ORIGIN' ..."
+if ! ibmcloud ce app get --name $CE_APP_ORIGIN >/dev/null 2>&1; then
+    print_msg "\nCreating the origin app '$CE_APP_ORIGIN' ..."
+    ibmcloud ce app create --name $CE_APP_ORIGIN \
+        --image icr.io/codeengine/helloworld \
+        --cpu 0.125 \
+        --memory 0.25G
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine origin app create/update failed!"
+        abortScript
+    fi
+else 
+    echo "Done!"
+fi
+
+ROOT_DOMAIN=.${CE_PROJECT_NAMESPACE}.${CE_PROJECT_DOMAIN}
+FQDN_ORIGIN_APP=${CE_APP_ORIGIN}${ROOT_DOMAIN}
+URL_ORIGIN_APP=https://${FQDN_ORIGIN_APP}
+
+# ================================================
+# OPTIONAL: Configuring Authn and Authz
+# ================================================
+
+print_msg "\nCheck whether the authentication credentials should be configured, or not ..."
+if [ ! -f oidc.properties ]; then
+    echo "Skipping the configuration of the authentication credentials. Specify all authz/authn properties in 'oidc.properties' to enable it."
+else
+    echo "Authn/Authz configuration file 'oidc.properties' found!"
+    if ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
+        ibmcloud ce secret delete --name $CE_SECRET_AUTH --force
+    fi
+    ibmcloud ce secret create \
+        --name $CE_SECRET_AUTH \
+        --from-env-file oidc.properties
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine auth secret create/update failed!"
+        abortScript
+    fi
+fi
+
+print_msg "\nCheck whether the authentication app should be configured, or not ..."
+if ! ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
+    echo "Skipping the deployment of the authentication app"
+else
+    echo "Yes! Setting up the authentication and the proxy apps"
+
+    URL_AUTH_APP=https://${CE_APP_AUTH}${ROOT_DOMAIN}
+    FQDN_ORIGIN_APP=${CE_APP_PROXY}${ROOT_DOMAIN}
+    URL_ORIGIN_APP=https://${FQDN_ORIGIN_APP}
+
+    authapp_op_create_or_update=update
+    if ! ibmcloud ce app get --name $CE_APP_AUTH >/dev/null 2>&1; then
+        print_msg "\nCreating the auth app '$CE_APP_AUTH' ..."
+        authapp_op_create_or_update=create
+    else
+        print_msg "\nUpdating the auth app '$CE_APP_AUTH' ..."
+    fi
+
+    # Deploy the Code Engine app to run the OIDC authentication
+    ibmcloud ce app $authapp_op_create_or_update --name $CE_APP_AUTH \
+        --build-source "." \
+        --build-context-dir "auth/" \
+        --max-scale 1 \
+        --cpu 0.125 \
+        --memory 0.25G \
+        --scale-down-delay 600 \
+        --port 8080 \
+        --env-from-secret $CE_SECRET_AUTH \
+        --env COOKIE_DOMAIN="$ROOT_DOMAIN" \
+        --env REDIRECT_URL="$URL_ORIGIN_APP" \
+        --env OIDC_REDIRECT_URL="${URL_AUTH_APP}/auth/callback"
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine auth app create/update failed!"
+        abortScript
+    fi
+
+    # Deploy the Code Engine app to the run the nginx reverse proxy
+    proxyapp_op_create_or_update=update
+    if ! ibmcloud ce app get --name $CE_APP_PROXY >/dev/null 2>&1; then
+        print_msg "\nCreating the proxy app '$CE_APP_PROXY' ..."
+        proxyapp_op_create_or_update=create
+    else
+        print_msg "\nUpdating the proxy app '$CE_APP_PROXY' ..."
+    fi
+    ibmcloud ce app $proxyapp_op_create_or_update --name $CE_APP_PROXY \
+        --build-source "." \
+        --build-context-dir "nginx/" \
+        --max-scale 1 \
+        --cpu 1 \
+        --memory 2G \
+        --scale-down-delay 600 \
+        --env ORIGIN_APP_FQDN=$FQDN_ORIGIN_APP \
+        --env ORIGIN_APP_NAME=$CE_APP_ORIGIN \
+        --env AUTH_APP_NAME=$CE_APP_AUTH \
+        --port 8080
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine proxy app create/update failed!"
+        abortScript
+    fi
+
+    print_msg "\nMake sure the app '$CE_APP_ORIGIN' is not exposed publicly ..."
+    ibmcloud ce app update --name $CE_APP_ORIGIN --cluster-local
+fi
+
+print_msg "\nThis end-to-end sample created the following set of IBM Cloud resources:"
+ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+
+echo ""
+ibmcloud ce app list
+
+if [[ "${CLEANUP_ON_SUCCESS}" == true ]]; then
+    print_msg "\nCleaning up the created IBM Cloud resources ..."
+    clean
+else    
+    print_msg "\nFollowing commands can be used to further play around with the sample setup:"
+    echo "1. Open the browser and type '$URL_ORIGIN_APP' to access the origin app"
+    echo "2. Tear down the sample setup: './run clean'"
+fi
+
+print_success "\n=========================================="
+print_success " SUCCESS"
+print_success "==========================================\n"
