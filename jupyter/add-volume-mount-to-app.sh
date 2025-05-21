@@ -63,6 +63,6 @@ PATCH='[
 ]'
 
 # Apply the patch
-kubectl patch ksvc  "$CE_APP_NAME" --type='json' --patch "$PATCH"
+kubectl patch ksvc  "$CE_APP_NAME" --type='json' --patch "$PATCH" 2> /dev/null
 
 echo "Patched app '$CE_APP_NAME' with volume '$VOLUME_NAME' mounted at '$MOUNT_PATH' with new revision '$NEW_REVISION_NAME'"

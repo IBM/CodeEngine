@@ -6,6 +6,8 @@ CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
 CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
 REGION="${REGION:=eu-es}"
 NAME_PREFIX="${NAME_PREFIX:=jupyter}"
+DEBUG="${DEBUG:=false}"
+BRAVE_MODE="${BRAVE_MODE:=false}"
 
 # Static variables
 RESOURCE_GROUP_NAME="jupyter-notebooks--rg"
@@ -51,14 +53,46 @@ function check_prerequisites {
 
 # Clean up previous run
 function clean() {
-    # TODO cleanup everything within this resource group
+    # cleanup everything within this resource group
 
+    ibmcloud ce project delete --name ${CE_PROJECT_NAME} --hard --force 2>/dev/null
+
+    ibmcloud resource group $RESOURCE_GROUP_NAME --quiet 2>/dev/null
+    if [[ $? == 0 ]]; then
+        COUNTER=0
+        # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
+        while (($(ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME --output json | jq -r '. | length') > 0)); do
+            sleep 5
+            COUNTER=$((COUNTER + 1))
+            if ((COUNTER > 30)); then
+                print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
+                ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+                exit 1
+            fi
+        done
+    fi
+
+    ibmcloud resource group-delete $RESOURCE_GROUP_NAME --force 2>/dev/null
+    
     echo "Done!"
+}
+
+function ensure_plugin_is_up_to_date() {
+    echo "Checking $1 ..."
+    # check whether plugin is installed
+    if ! ibmcloud plugin show $1 -q >/dev/null; then
+        # install it
+        ibmcloud plugin install $1 -f --quiet
+    else 
+        # check whether there is an update available
+        ibmcloud plugin update $1 -f --quiet
+    fi
 }
 
 # ==============================
 # MAIN SCRIPT FLOW
 # ==============================
+startTime=$(date +%s)
 
 print_msg "\n======================================================"
 print_msg " Setting up \"Jupyter on Code Engine \" sample"
@@ -72,15 +106,14 @@ check_prerequisites
 
 # Ensure that latest versions of used IBM Cloud ClI is installed
 print_msg "\nPulling latest IBM Cloud CLI release ..."
-#ibmcloud update --force
+ibmcloud update --force
 echo "Done!"
 
 # Ensure that latest versions of used IBM Cloud CLI plugins are installed
 print_msg "\nInstalling required IBM Cloud CLI plugins ..."
-#ibmcloud plugin install code-engine -f --quiet
-#ibmcloud plugin install cos -f --quiet
+ensure_plugin_is_up_to_date code-engine
+ensure_plugin_is_up_to_date cloud-object-storage
 echo "Done!"
-
 
 if [[ "$1" == "clean" ]]; then
     print_msg "\nCleaning up the remains of previous executions ..."
@@ -89,17 +122,14 @@ if [[ "$1" == "clean" ]]; then
     exit 0
 fi
 
-print_msg "\nTargetting IBM Cloud region '$REGION' ..."
-ibmcloud target -r $REGION
-
 #
 # Create the resource group, if it does not exist
 if ! ibmcloud resource group $RESOURCE_GROUP_NAME --quiet >/dev/null 2>&1; then
     print_msg "\nCreating resource group '$RESOURCE_GROUP_NAME' ..."
     ibmcloud resource group-create $RESOURCE_GROUP_NAME
 fi
-print_msg "\nTargetting resource group '$RESOURCE_GROUP_NAME' ..."
-ibmcloud target -g $RESOURCE_GROUP_NAME
+print_msg "\nTargetting IBM Cloud resource group '$RESOURCE_GROUP_NAME' and region '$REGION'..."
+ibmcloud target -g $RESOURCE_GROUP_NAME -r $REGION
 
 #
 # Create the COS instance, if it does not exist
@@ -149,22 +179,23 @@ else
     echo "Done!"
 fi
 
+opt_wait=--wait
+if [[ "$BRAVE_MODE" == "true" ]]; then
+    opt_wait=--no-wait
+fi
+
 #
 # Create the Code Engine project, if it does not exist
 print_msg "\nInitializing the Code Engine project '$CE_PROJECT_NAME' ..."
-if ! ibmcloud ce proj select --name $CE_PROJECT_NAME 2>/dev/null; then
+if ! ibmcloud ce proj select --name $CE_PROJECT_NAME --kubecfg 2>/dev/null; then
     print_msg "\nCreating Code Engine project '$CE_PROJECT_NAME' ..."
     ibmcloud ce proj create --name $CE_PROJECT_NAME
+    ibmcloud ce proj select --name $CE_PROJECT_NAME --kubecfg 2>/dev/null
 fi
 CE_PROJECT=$(ibmcloud ce project current --output json)
 CE_PROJECT_GUID=$(echo "$CE_PROJECT" | jq -r '.guid')
 CE_PROJECT_DOMAIN=$(echo "$CE_PROJECT" | jq -r '.domain')
 CE_PROJECT_NAMESPACE=$(echo "$CE_PROJECT" | jq -r '.kube_config_context')
-
-# 
-# Obtain the Kubernetes context of the Code Engine project
-print_msg "\nObtaining the Kube config of the Code Engine project ..."
-ibmcloud ce project select --id ${CE_PROJECT_GUID} --kubecfg
 
 print_msg "\nInitializing HMAC credentials to access the COS instance '$COS_INSTANCE_ID' ..."
 CE_SECRET_NAME=cos-secret-$COS_BUCKET_NAME
@@ -182,19 +213,11 @@ else
 
     #
     # Store the HMAC credentials in a Code Engine secret
-    
     print_msg "\nStore the HMAC credentials in a Code Engine secret '$CE_SECRET_NAME' ..."
-    kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Secret
-type: codeengine.cloud.ibm.com/hmac-auth
-metadata:
-    name: $CE_SECRET_NAME
-stringData:
-    accessKey: $COS_HMAC_CREDENTIALS_ACCESS_KEY_ID
-    secretKey: $COS_HMAC_CREDENTIALS_SECRET_ACCESS_ID
-EOF
-
+    ibmcloud ce secret create --name $CE_SECRET_NAME \
+        --format hmac \
+        --access-key-id ${COS_HMAC_CREDENTIALS_ACCESS_KEY_ID} \
+        --secret-access-key ${COS_HMAC_CREDENTIALS_SECRET_ACCESS_ID}
 fi
 
 print_msg "\nInitializing the persistent storage to mount the bucket '$COS_BUCKET_NAME' ..."
@@ -221,25 +244,40 @@ print_msg "\nInitializing the jupyter notebook app '$CE_APP_NOTEBOOK' ..."
 if ! ibmcloud ce app get --name $CE_APP_NOTEBOOK >/dev/null 2>&1; then
     print_msg "\nCreating the notebook app '$CE_APP_NOTEBOOK' ..."
     ibmcloud ce app create --name $CE_APP_NOTEBOOK \
-        --build-source "." \
-        --build-context-dir "notebook/" \
-        --port 8888 \
-        --no-wait
+        --image "icr.io/codeengine/helloworld" \
+        --cpu 0.125 \
+        --memory 0.25G \
+        $opt_wait
 else 
     echo "Done!"
 fi
 
 print_msg "\nConfiguring the volume mounts for the app '$CE_APP_NOTEBOOK' ..."
-./notebook/add-volume-mount-to-app.sh $CE_APP_NOTEBOOK $CE_STORAGE_NAME /mnt/work $NAME_PREFIX
+./add-volume-mount-to-app.sh $CE_APP_NOTEBOOK $CE_STORAGE_NAME /mnt/work $NAME_PREFIX
 sleep 3
 
 print_msg "\nUpdate the app '$CE_APP_NOTEBOOK' ..."
 ibmcloud ce app update --name $CE_APP_NOTEBOOK \
-    --build-source "." \
-    --build-context-dir "notebook/" \
+    --image "quay.io/jupyter/minimal-notebook:latest" \
     --max-scale 1 \
     --scale-down-delay 600 \
-    --port 8888
+    --cpu 1 \
+    --memory 4G \
+    --command "jupyter" \
+    --command "notebook" \
+    --command "--ip" \
+    --command "*" \
+    --command "--NotebookApp.allow_origin" \
+    --command "*" \
+    --command "--NotebookApp.token" \
+    --command "''" \
+    --command "--NotebookApp.password" \
+    --command "''" \
+    --command "--notebook-dir" \
+    --command "/mnt/work" \
+    --port 8888 \
+    --visibility project \
+    $opt_wait
 
 
 ROOT_DOMAIN=.${CE_PROJECT_NAMESPACE}.${CE_PROJECT_DOMAIN}
@@ -265,6 +303,9 @@ fi
 print_msg "\nCheck whether the authentication app should be configured, or not ..."
 if ! ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
     echo "Skipping the deployment of the authentication app"
+
+    print_msg "\nMake sure the app '$CE_APP_NOTEBOOK' is exposed publicly ..."
+    ibmcloud ce app update --name $CE_APP_NOTEBOOK --no-cluster-local
 else
     echo "Yes! Setting up the authentication and the proxy apps"
 
@@ -282,8 +323,7 @@ else
 
     # Deploy the Code Engine app to run the OIDC authentication
     ibmcloud ce app $authapp_op_create_or_update --name $CE_APP_AUTH \
-        --build-source "." \
-        --build-context-dir "oidc-auth/" \
+        --image "icr.io/codeengine/auth-oidc-proxy/auth" \
         --max-scale 1 \
         --cpu 0.125 \
         --memory 0.25G \
@@ -292,7 +332,8 @@ else
         --env-from-secret $CE_SECRET_AUTH \
         --env COOKIE_DOMAIN="$ROOT_DOMAIN" \
         --env REDIRECT_URL="$URL_NOTEBOOK_APP" \
-        --env OIDC_REDIRECT_URL="${URL_AUTH_APP}/auth/callback"
+        --env OIDC_REDIRECT_URL="${URL_AUTH_APP}/auth/callback" \
+        $opt_wait
 
     # Deploy the Code Engine app to the run the nginx reverse proxy
     proxyapp_op_create_or_update=update
@@ -303,34 +344,34 @@ else
         print_msg "\nUpdating the proxy app '$CE_APP_PROXY' ..."
     fi
     ibmcloud ce app $proxyapp_op_create_or_update --name $CE_APP_PROXY \
-        --build-source "." \
-        --build-context-dir "nginx/" \
+        --image "icr.io/codeengine/auth-oidc-proxy/nginx" \
         --max-scale 1 \
         --cpu 1 \
         --memory 2G \
         --scale-down-delay 600 \
-        --env JUPYTER_NOTEBOOK_APP_FQDN=$FQDN_NOTEBOOK_APP \
-        --env JUPYTER_NOTEBOOK_APP_NAME=$CE_APP_NOTEBOOK \
-        --env JUPYTER_AUTH_APP_NAME=$CE_APP_AUTH \
-        --port 8080
-
-    print_msg "\nMake sure the app '$CE_APP_NOTEBOOK' is not exposed publicly ..."
-    ibmcloud ce app update --name $CE_APP_NOTEBOOK --cluster-local
+        --env ORIGIN_APP_FQDN=$FQDN_NOTEBOOK_APP \
+        --env ORIGIN_APP_NAME=$CE_APP_NOTEBOOK \
+        --env AUTH_APP_NAME=$CE_APP_AUTH \
+        --port 8080 \
+        $opt_wait
 fi
 
 print_msg "\nThis end-to-end sample created the following set of IBM Cloud resources:"
 ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
 
-print_msg "\nSo far, following files have been stored in the COS bucket '$COS_BUCKET_NAME':"
-ibmcloud cos objects --bucket $COS_BUCKET_NAME
+if [[ "$DEBUG" == "true" ]]; then
+    print_msg "\nSo far, following files have been stored in the COS bucket '$COS_BUCKET_NAME':"
+    ibmcloud cos objects --bucket $COS_BUCKET_NAME
+fi 
 
-echo ""
+print_msg "\nFollowing apps have been created in the Code Engine project '${CE_PROJECT_NAME}':"
 ibmcloud ce app list
 
 print_msg "\nFollowing commands can be used to further play around with the sample setup:"
 echo "1. Open the browser and type '$URL_NOTEBOOK_APP' to access Jupyter notebook"
 echo "2. Tear down the sample setup: './run clean'"
 
-print_success "\n=========================================="
-print_success " SUCCESS"
-print_success "==========================================\n"
+duration=$((($(date +%s) - $startTime)))
+print_success "\n================================================"
+print_success " SUCCESS - Setup completed in ${duration} seconds"
+print_success "================================================\n"
