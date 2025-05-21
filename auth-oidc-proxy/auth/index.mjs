@@ -275,7 +275,7 @@ router.get("/auth/login", (req, res) => {
   // redirect to the configured OIDC provider
   res.redirect(
     `${process.env.OIDC_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${
-      process.env.OIDC_CLIENT_ID
+      encodeURIComponent(process.env.OIDC_CLIENT_ID)
     }&redirect_uri=${encodeURIComponent(
       process.env.OIDC_REDIRECT_URL
     )}&response_type=code&scope=openid+profile&state=state`
