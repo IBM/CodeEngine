@@ -187,7 +187,7 @@
         <mxCell id="WM-v1DaIQSyS6HY4rJgb-4" value="" style="shape=rect;fillColor=#1192E8;aspect=fixed;resizable=0;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;strokeColor=none;part=1;spacingLeft=5;fontSize=14;" vertex="1" parent="WM-v1DaIQSyS6HY4rJgb-1">
           <mxGeometry width="4" height="48" relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="dumidqeYpeRgvJJi3u-3-102" value="OAuth Apps&#xa;" style="shape=rect;fillColor=#FA4D56;aspect=fixed;resizable=0;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;strokeColor=none;fontSize=12;" parent="WM-v1DaIQSyS6HY4rJgb-1" vertex="1">
+        <mxCell id="dumidqeYpeRgvJJi3u-3-102" value="OAuth Apps&#xa;github.com" style="shape=rect;fillColor=#FA4D56;aspect=fixed;resizable=0;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;strokeColor=none;fontSize=12;" parent="WM-v1DaIQSyS6HY4rJgb-1" vertex="1">
           <mxGeometry x="70" y="50" width="48" height="48" as="geometry" />
         </mxCell>
         <mxCell id="dumidqeYpeRgvJJi3u-3-103" value="" style="fillColor=#ffffff;strokeColor=none;dashed=0;outlineConnect=0;html=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;part=1;movable=0;resizable=0;rotatable=0;shape=mxgraph.ibm_cloud.ibm-cloud--app-id" parent="dumidqeYpeRgvJJi3u-3-102" vertex="1">
