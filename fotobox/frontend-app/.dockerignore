@@ -1,0 +1,6 @@
+node_modules
+mock_server
+.svelte-kit
+function-get-images
+function-upload
+get-images-app
