@@ -1,22 +1,40 @@
 #!/bin/bash
 set -eo pipefail
 
+startTime=$(date +%s)
+
 # Customizable vars
-CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=true}
-CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=true}
 REGION="${REGION:=eu-es}"
-NAME_PREFIX="${NAME_PREFIX:=jupyter}"
-DEBUG="${DEBUG:=false}"
-BRAVE_MODE="${BRAVE_MODE:=false}"
+VERBOSE="${VERBOSE:=false}"
 
 # Static variables
-RESOURCE_GROUP_NAME="jupyter-notebooks--rg"
-COS_INSTANCE_NAME=jupyter-notebooks--cos
-CE_PROJECT_NAME="jupyter-notebooks-${REGION}--ce"
-CE_APP_NOTEBOOK="${NAME_PREFIX}-notebook"
-CE_APP_PROXY="${NAME_PREFIX}-proxy"
-CE_APP_AUTH="${NAME_PREFIX}-auth"
-CE_SECRET_AUTH="${NAME_PREFIX}-auth-credentials"
+RESOURCE_GROUP_NAME="jupyter-labs--rg"
+COS_INSTANCE_NAME=jupyter-labs--cos
+CE_PROJECT_NAME="jupyter-labs-${REGION}--ce"
+
+# Check whether all required input params are set
+if [[ -z "$1" ]]; then
+    echo "One or more arguments are missing"
+    echo -e "\nUsage: ./run init|deploy|remove|clean [<gh-username>]\n"
+    exit 1
+fi
+OPERATION=$1
+
+if [[ "$OPERATION" == "deploy" || "$OPERATION" == "remove" ]]; then
+    if [[ -z "$2" ]]; then
+        echo "One or more arguments are missing"
+        echo -e "\nUsage: ./run deploy|remove <gh-username>\n"
+        exit 1
+    fi
+
+    # make sure to only use lower case characters
+    USERNAME=$(echo "$2" | tr '[:upper:]' '[:lower:]')
+fi
+
+CE_APP_NOTEBOOK="${USERNAME}-jupyter"
+CE_APP_PROXY="${USERNAME}-jupyter-proxy"
+CE_APP_AUTH="${USERNAME}-jupyter-auth"
+CE_SECRET_AUTH="${USERNAME}-auth-credentials"
 
 
 # ==============================
@@ -25,14 +43,22 @@ CE_SECRET_AUTH="${NAME_PREFIX}-auth-credentials"
 RED="\033[31m"
 BLUE="\033[94m"
 GREEN="\033[32m"
+PURPLE="\033[35m"
 ENDCOLOR="\033[0m"
 
 function print_error {
-    echo -e "${RED}\n==========================================${ENDCOLOR}"
+    echo -e "${RED}\n============================================================${ENDCOLOR}"
     echo -e "${RED} FAILED${ENDCOLOR}"
-    echo -e "${RED}==========================================\n${ENDCOLOR}"
+    echo -e "${RED}============================================================\n${ENDCOLOR}"
     echo -e "${RED}$1${ENDCOLOR}"
     echo ""
+}
+function completion_message {
+    print_msg "\n$1"
+    duration=$((($(date +%s) - $startTime)))
+    print_success "\n================================================"
+    print_success " SUCCESS - Completed '$OPERATION' in ${duration} seconds"
+    print_success "================================================\n"
 }
 function print_msg {
     echo -e "${BLUE}$1${ENDCOLOR}"
@@ -51,32 +77,6 @@ function check_prerequisites {
     echo "Done!"
 }
 
-# Clean up previous run
-function clean() {
-    # cleanup everything within this resource group
-
-    ibmcloud ce project delete --name ${CE_PROJECT_NAME} --hard --force 2>/dev/null
-
-    ibmcloud resource group $RESOURCE_GROUP_NAME --quiet 2>/dev/null
-    if [[ $? == 0 ]]; then
-        COUNTER=0
-        # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
-        while (($(ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME --output json | jq -r '. | length') > 0)); do
-            sleep 5
-            COUNTER=$((COUNTER + 1))
-            if ((COUNTER > 30)); then
-                print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
-                ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
-                exit 1
-            fi
-        done
-    fi
-
-    ibmcloud resource group-delete $RESOURCE_GROUP_NAME --force 2>/dev/null
-    
-    echo "Done!"
-}
-
 function ensure_plugin_is_up_to_date() {
     echo "Checking $1 ..."
     # check whether plugin is installed
@@ -92,34 +92,65 @@ function ensure_plugin_is_up_to_date() {
 # ==============================
 # MAIN SCRIPT FLOW
 # ==============================
-startTime=$(date +%s)
 
-print_msg "\n======================================================"
-print_msg " Setting up \"Jupyter on Code Engine \" sample"
-print_msg "======================================================\n"
+print_msg "\n============================================================"
+print_msg " Setting up 'Jupyter on Code Engine'"
+print_msg "============================================================\n"
 
-echo ""
 echo "Please note: This script will install various IBM Cloud resources within the resource group '$RESOURCE_GROUP_NAME'."
+echo ""
 
-print_msg "\nChecking prerequisites ..."
-check_prerequisites
+if [[ "$OPERATION" == "remove" ]]; then
+    print_msg "\nCleaning up the JupyterLabs environment of '${USERNAME}' ..."
+    if ! ibmcloud resource group $RESOURCE_GROUP_NAME --quiet >/dev/null 2>&1; then
+        echo "Done! resource group '${$RESOURCE_GROUP_NAME}' does not exist"
+        return
+    fi
+    ibmcloud target -g $RESOURCE_GROUP_NAME -r $REGION
 
-# Ensure that latest versions of used IBM Cloud ClI is installed
-print_msg "\nPulling latest IBM Cloud CLI release ..."
-ibmcloud update --force
-echo "Done!"
+    if ! ibmcloud ce project get --name ${CE_PROJECT_NAME} --quiet >/dev/null 2>&1; then
+        echo "Done! Code Engine project '${$CE_PROJECT_NAME}' does not exist"
+        return
+    fi
+    
+    echo ""
+    ibmcloud ce project select --name ${CE_PROJECT_NAME} 2>/dev/null
 
-# Ensure that latest versions of used IBM Cloud CLI plugins are installed
-print_msg "\nInstalling required IBM Cloud CLI plugins ..."
-ensure_plugin_is_up_to_date code-engine
-ensure_plugin_is_up_to_date cloud-object-storage
-echo "Done!"
+    # helper function to delete all sorts of Code Engine components; e.g. apps and secrets 
+    function delete_ce_component() {
+        if ibmcloud ce $1 get --name $2 --quiet >/dev/null 2>&1; then
+            ibmcloud ce $1 delete --name $2 --force  2>/dev/null
+        fi
+    }
 
-if [[ "$1" == "clean" ]]; then
-    print_msg "\nCleaning up the remains of previous executions ..."
-    clean
-    print_success "\n==========================================\n DONE\n==========================================\n"
+    # clean-up everything related to this user
+    delete_ce_component app $CE_APP_NOTEBOOK
+    delete_ce_component app $CE_APP_PROXY
+    delete_ce_component app $CE_APP_AUTH
+    delete_ce_component app $CE_SECRET_AUTH
+    delete_ce_component secret $CE_SECRET_AUTH
+    
+    # done!
+    completion_message "All Components related this user have been removed"
     exit 0
+fi
+
+#
+# We only need to initialize the CLI, if the init operation is processed
+if [[ "$OPERATION" == "init" ]]; then
+    print_msg "\nChecking prerequisites ..."
+    check_prerequisites
+
+    # Ensure that latest versions of used IBM Cloud ClI is installed
+    print_msg "\nPulling latest IBM Cloud CLI release ..."
+    ibmcloud update --force
+    echo "Done!"
+
+    # Ensure that latest versions of used IBM Cloud CLI plugins are installed
+    print_msg "\nInstalling required IBM Cloud CLI plugins ..."
+    ensure_plugin_is_up_to_date code-engine
+    ensure_plugin_is_up_to_date cloud-object-storage
+    echo "Done!"
 fi
 
 #
@@ -139,11 +170,10 @@ if ! ibmcloud resource service-instance ${COS_INSTANCE_NAME} 2>/dev/null; then
     ibmcloud resource service-instance-create ${COS_INSTANCE_NAME} cloud-object-storage standard global -d premium-global-deployment-iam
 fi
 COS_INSTANCE_ID=$(ibmcloud resource service-instance ${COS_INSTANCE_NAME} --output json | jq -r '.[0] | .id')
-ibmcloud cos config crn --crn ${COS_INSTANCE_ID} --force
-ibmcloud cos config auth --method IAM
-ibmcloud cos config region --region ${REGION}
-ibmcloud cos config endpoint-url --url s3.${REGION}.cloud-object-storage.appdomain.cloud
-
+ibmcloud cos config crn --crn ${COS_INSTANCE_ID} --force >/dev/null
+ibmcloud cos config auth --method IAM >/dev/null
+ibmcloud cos config region --region ${REGION} >/dev/null
+ibmcloud cos config endpoint-url --url s3.${REGION}.cloud-object-storage.appdomain.cloud >/dev/null
 
 print_msg "\nListing buckets of the instance ..."
 buckets=$(ibmcloud cos buckets -output json)
@@ -157,17 +187,62 @@ if [[ "$(echo "${buckets}" | jq -r '.Buckets')" != "null" ]]; then
         bucket_name=$(_jq '.Name')
         echo "- $bucket_name"
 
-        if [[ "$bucket_name" =~ ^ce-${REGION}-jupyter-notebooks-* ]]; then 
+        if [[ "$bucket_name" =~ ^ce-${REGION}-jupyter-labs-* ]]; then 
             COS_BUCKET_NAME=$bucket_name
         fi
     done
 fi
 
+
+if [[ "$OPERATION" == "clean" ]]; then
+    print_msg "\nCleaning up all Cloud resources that have been created as part of this sample ..."
+
+    if [[ $COS_BUCKET_NAME != "" ]]; then
+        bucket_contents=$(ibmcloud cos list-objects-v2 --bucket ${COS_BUCKET_NAME} --output json)
+        for row in $(echo "${bucket_contents}" | jq -r '.Contents|.[] | @base64'); do
+            _jq() {
+                echo ${row} | base64 --decode | jq -r ${1}
+            }
+            key=$(_jq '.Key')
+            if ! ibmcloud cos object-delete --bucket ${COS_BUCKET_NAME} --key "${key}" --force; then
+                echo "Failed to delete '$key'"
+            fi
+            
+        done
+
+        ibmcloud cos bucket-delete --bucket ${COS_BUCKET_NAME} --force
+    fi
+    
+    service_keys=$(ibmcloud resource service-keys --instance-id ${COS_INSTANCE_ID} --output json)
+    for row in $(echo "${service_keys}" | jq -r '.[] | @base64'); do
+        _jq() {
+            echo ${row} | base64 --decode | jq -r ${1}
+        }
+
+        ibmcloud resource service-key-delete $(_jq '.guid') -f
+    done
+
+    if ibmcloud resource service-instance ${COS_INSTANCE_ID} 2>/dev/null; then
+        ibmcloud resource service-instance-delete ${COS_INSTANCE_ID} -f -q 
+    fi
+
+    if ibmcloud ce proj get --name $CE_PROJECT_NAME 2>/dev/null; then
+        ibmcloud ce proj delete --name $CE_PROJECT_NAME --hard --force
+    fi
+
+    ibmcloud resource group-delete $RESOURCE_GROUP_NAME -f
+    
+    # done!
+    completion_message "All resources related this sample have been deleted from this IBM Cloud account"
+    exit 0
+fi 
+
+
 #
 # Create a COS bucket, if it does not exist
 if [[ $COS_BUCKET_NAME == "" ]]; then
     random_chars=$(openssl rand -hex 6)
-    COS_BUCKET_NAME=ce-${REGION}-jupyter-notebooks-${random_chars}
+    COS_BUCKET_NAME=ce-${REGION}-jupyter-labs-${random_chars}
     print_msg "\nCreating the COS bucket '$COS_BUCKET_NAME' ..."
     ibmcloud cos bucket-create \
         --class smart \
@@ -179,10 +254,7 @@ else
     echo "Done!"
 fi
 
-opt_wait=--wait
-if [[ "$BRAVE_MODE" == "true" ]]; then
-    opt_wait=--no-wait
-fi
+
 
 #
 # Create the Code Engine project, if it does not exist
@@ -196,6 +268,10 @@ CE_PROJECT=$(ibmcloud ce project current --output json)
 CE_PROJECT_GUID=$(echo "$CE_PROJECT" | jq -r '.guid')
 CE_PROJECT_DOMAIN=$(echo "$CE_PROJECT" | jq -r '.domain')
 CE_PROJECT_NAMESPACE=$(echo "$CE_PROJECT" | jq -r '.kube_config_context')
+ROOT_DOMAIN=.${CE_PROJECT_NAMESPACE}.${CE_PROJECT_DOMAIN}
+FQDN_NOTEBOOK_APP=${CE_APP_NOTEBOOK}${ROOT_DOMAIN}
+URL_NOTEBOOK_APP=https://${FQDN_NOTEBOOK_APP}
+URL_AUTH_APP=https://${CE_APP_AUTH}${ROOT_DOMAIN}
 
 print_msg "\nInitializing HMAC credentials to access the COS instance '$COS_INSTANCE_ID' ..."
 CE_SECRET_NAME=cos-secret-$COS_BUCKET_NAME
@@ -239,21 +315,38 @@ spec:
 EOF
 fi
 
-# Deploy the Code Engine app to run the notebook
-print_msg "\nInitializing the jupyter notebook app '$CE_APP_NOTEBOOK' ..."
+if [[ "$OPERATION" == "init" ]]; then
+    # done!
+    completion_message "Congratulations! JupyterLabs on Code Engine has been initialized, successfully."
+
+    print_msg "\nContinue as follows:"
+    echo -e "\n1. Create an OAuth app in GitHub for each user: 'https://github.com/settings/developers'"
+    echo -e "   - Application name:           '${PURPLE}ce-jupyter-<gh-username>${ENDCOLOR}'"
+    echo -e "   - Homepage URL:               '${PURPLE}https://<gh-username>-jupyter-auth${ROOT_DOMAIN}${ENDCOLOR}'"
+    echo -e "   - Authorization callback URL: '${PURPLE}https://<gh-username>-jupyter-auth${ROOT_DOMAIN}/auth/callback${ENDCOLOR}'"
+    echo -e "\n2. Store the following properties in '${PURPLE}./oidc-<gh-username>.properties${ENDCOLOR}':"
+    echo -e "${PURPLE}$(cat ./oidc.properties.template)${ENDCOLOR}\n"
+    echo -e "3. Setup the JupyterLab for a user by running: '${PURPLE}./run deploy <gh-username>${ENDCOLOR}'"
+    echo ""
+    echo ""
+    exit 0
+fi
+
+# Deploy the Code Engine app to run the JupyterLab
+print_msg "\nInitializing the jupyter app '$CE_APP_NOTEBOOK' ..."
 if ! ibmcloud ce app get --name $CE_APP_NOTEBOOK >/dev/null 2>&1; then
-    print_msg "\nCreating the notebook app '$CE_APP_NOTEBOOK' ..."
+    print_msg "\nCreating the jupyter app '$CE_APP_NOTEBOOK' ..."
     ibmcloud ce app create --name $CE_APP_NOTEBOOK \
         --image "icr.io/codeengine/helloworld" \
         --cpu 0.125 \
         --memory 0.25G \
-        $opt_wait
+        --no-wait
 else 
     echo "Done!"
 fi
 
 print_msg "\nConfiguring the volume mounts for the app '$CE_APP_NOTEBOOK' ..."
-./add-volume-mount-to-app.sh $CE_APP_NOTEBOOK $CE_STORAGE_NAME /mnt/work $NAME_PREFIX
+./add-volume-mount-to-app.sh $CE_APP_NOTEBOOK $CE_STORAGE_NAME /mnt/work $USERNAME
 sleep 3
 
 print_msg "\nUpdate the app '$CE_APP_NOTEBOOK' ..."
@@ -264,7 +357,7 @@ ibmcloud ce app update --name $CE_APP_NOTEBOOK \
     --cpu 1 \
     --memory 4G \
     --command "jupyter" \
-    --command "notebook" \
+    --command "lab" \
     --command "--ip" \
     --command "*" \
     --command "--NotebookApp.allow_origin" \
@@ -277,27 +370,32 @@ ibmcloud ce app update --name $CE_APP_NOTEBOOK \
     --command "/mnt/work" \
     --port 8888 \
     --visibility project \
-    $opt_wait
-
-
-ROOT_DOMAIN=.${CE_PROJECT_NAMESPACE}.${CE_PROJECT_DOMAIN}
-FQDN_NOTEBOOK_APP=${CE_APP_NOTEBOOK}${ROOT_DOMAIN}
-URL_NOTEBOOK_APP=https://${FQDN_NOTEBOOK_APP}
+    --wait
 
 # ================================================
 # OPTIONAL: Configuring Authn and Authz
 # ================================================
 
 print_msg "\nCheck whether the authentication credentials should be configured, or not ..."
-if [ ! -f oidc.properties ]; then
-    echo "Skipping the configuration of the authentication credentials. Specify all authz/authn properties in 'oidc.properties' to enable it."
+if [ ! -f oidc-${USERNAME}.properties ]; then
+    echo "Skipping the configuration of the authentication credentials. Specify all authz/authn properties in 'oidc-${USERNAME}.properties' to enable it."
+
+    expected_number_of_pods=1
 else
-    echo "Authn/Authz configuration file 'oidc.properties' found!"
+    echo "Authn/Authz configuration file 'oidc-${USERNAME}.properties' found!"
     if ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
         ibmcloud ce secret delete --name $CE_SECRET_AUTH --force
     fi
     ibmcloud ce secret create --name $CE_SECRET_AUTH \
-        --from-env-file oidc.properties
+        --from-env-file oidc-${USERNAME}.properties \
+        --from-literal "OIDC_PROVIDER_AUTHORIZATION_ENDPOINT=https://github.com/login/oauth/authorize" \
+        --from-literal "OIDC_PROVIDER_TOKEN_ENDPOINT=https://github.com/login/oauth/access_token" \
+        --from-literal "OIDC_PROVIDER_USERINFO_ENDPOINT=https://api.github.com/user" \
+        --from-literal "COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)" \
+        --from-literal "AUTHZ_USER_PROPERTY=login" \
+        --from-literal "AUTHZ_ALLOWED_USERS=${USERNAME}"
+    
+    expected_number_of_pods=3
 fi
 
 print_msg "\nCheck whether the authentication app should be configured, or not ..."
@@ -307,9 +405,8 @@ if ! ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
     print_msg "\nMake sure the app '$CE_APP_NOTEBOOK' is exposed publicly ..."
     ibmcloud ce app update --name $CE_APP_NOTEBOOK --no-cluster-local
 else
-    echo "Yes! Setting up the authentication and the proxy apps"
+    echo "Yes! Setting up the auth and the proxy app"
 
-    URL_AUTH_APP=https://${CE_APP_AUTH}${ROOT_DOMAIN}
     FQDN_NOTEBOOK_APP=${CE_APP_PROXY}${ROOT_DOMAIN}
     URL_NOTEBOOK_APP=https://${FQDN_NOTEBOOK_APP}
 
@@ -333,7 +430,7 @@ else
         --env COOKIE_DOMAIN="$ROOT_DOMAIN" \
         --env REDIRECT_URL="$URL_NOTEBOOK_APP" \
         --env OIDC_REDIRECT_URL="${URL_AUTH_APP}/auth/callback" \
-        $opt_wait
+        --wait
 
     # Deploy the Code Engine app to the run the nginx reverse proxy
     proxyapp_op_create_or_update=update
@@ -346,32 +443,50 @@ else
     ibmcloud ce app $proxyapp_op_create_or_update --name $CE_APP_PROXY \
         --image "icr.io/codeengine/auth-oidc-proxy/nginx" \
         --max-scale 1 \
-        --cpu 1 \
-        --memory 2G \
+        --cpu 0.5 \
+        --memory 1G \
         --scale-down-delay 600 \
         --env ORIGIN_APP_FQDN=$FQDN_NOTEBOOK_APP \
         --env ORIGIN_APP_NAME=$CE_APP_NOTEBOOK \
         --env AUTH_APP_NAME=$CE_APP_AUTH \
         --port 8080 \
-        $opt_wait
+        --wait
 fi
 
-print_msg "\nThis end-to-end sample created the following set of IBM Cloud resources:"
-ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
+if [[ "$VERBOSE" == "true" ]]; then
+    print_msg "\nThis end-to-end sample created the following set of IBM Cloud resources:"
+    ibmcloud resource service-instances --type all -g $RESOURCE_GROUP_NAME
 
-if [[ "$DEBUG" == "true" ]]; then
     print_msg "\nSo far, following files have been stored in the COS bucket '$COS_BUCKET_NAME':"
     ibmcloud cos objects --bucket $COS_BUCKET_NAME
+
+    print_msg "\nFollowing apps have been created in the Code Engine project '${CE_PROJECT_NAME}':"
+    ibmcloud ce app list
 fi 
 
-print_msg "\nFollowing apps have been created in the Code Engine project '${CE_PROJECT_NAME}':"
-ibmcloud ce app list
+print_msg "\nWaiting for the JupyterLab to start properly (this can take up to a minute) ..."
+number_of_pods=0
+count=0
+while (( $number_of_pods < $expected_number_of_pods )); do
+    # fetch the number of pods that are in state Running 
+    number_of_pods="$(kubectl get pods |grep ${USERNAME}-|grep Running|wc -l | tr -d '[:space:]')"
+    ((count++))
+    if (( count == 240 )); then
+        print_error "Failed to start the app(s) properly!"
+        print_msg "\nFollowing apps have been created in the Code Engine project '${CE_PROJECT_NAME}':"
+        ibmcloud ce app list
+        exit 1
+    fi
 
-print_msg "\nFollowing commands can be used to further play around with the sample setup:"
-echo "1. Open the browser and type '$URL_NOTEBOOK_APP' to access Jupyter notebook"
-echo "2. Tear down the sample setup: './run clean'"
+    sleep 1
+done
+echo "Startup completed"
 
-duration=$((($(date +%s) - $startTime)))
-print_success "\n================================================"
-print_success " SUCCESS - Setup completed in ${duration} seconds"
-print_success "================================================\n"
+completion_message "Congratulations! Everything has been configured, successfully."
+
+print_msg "\nContinue as follows:"
+echo -e "\n1. Open the browser and type '${PURPLE}$URL_NOTEBOOK_APP${ENDCOLOR}' to access the JupyterLab"
+echo -e "\n2. If want to remove the configured user: '${PURPLE}./run remove ${USERNAME}${ENDCOLOR}'"
+echo -e "\n3. If you are done, tear down the sample setup: '${PURPLE}./run clean${ENDCOLOR}'"
+echo ""
+echo ""
