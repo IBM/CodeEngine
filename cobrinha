@@ -1,0 +1,126 @@
+import pygame
+import time
+import random
+
+# Inicialização do pygame
+pygame.init()
+
+# Cores
+branco = (255, 255, 255)
+preto = (0, 0, 0)
+vermelho = (255, 0, 0)
+verde = (0, 255, 0)
+
+# Tamanho da tela
+largura = 600
+altura = 400
+
+# Tamanho do bloco da cobra
+tamanho_bloco = 20
+velocidade = 15
+
+# Fonte
+fonte = pygame.font.SysFont(None, 35)
+
+# Criar tela
+tela = pygame.display.set_mode((largura, altura))
+pygame.display.set_caption('Jogo da Cobrinha')
+
+# Relógio
+relogio = pygame.time.Clock()
+
+def mensagem(msg, cor):
+    texto = fonte.render(msg, True, cor)
+    tela.blit(texto, [largura / 6, altura / 3])
+
+def desenhar_cobra(tamanho_bloco, lista_cobra):
+    for x in lista_cobra:
+        pygame.draw.rect(tela, verde, [x[0], x[1], tamanho_bloco, tamanho_bloco])
+
+def jogo():
+    fim_jogo = False
+    game_over = False
+
+    x = largura / 2
+    y = altura / 2
+
+    x_mudanca = 0
+    y_mudanca = 0
+
+    corpo_cobra = []
+    tamanho_cobra = 1
+
+    comida_x = round(random.randrange(0, largura - tamanho_bloco) / 20.0) * 20.0
+    comida_y = round(random.randrange(0, altura - tamanho_bloco) / 20.0) * 20.0
+
+    while not fim_jogo:
+
+        while game_over:
+            tela.fill(preto)
+            mensagem("Fim de jogo! Pressione C para jogar novamente ou Q para sair", vermelho)
+            pygame.display.update()
+
+            for evento in pygame.event.get():
+                if evento.type == pygame.KEYDOWN:
+                    if evento.key == pygame.K_q:
+                        fim_jogo = True
+                        game_over = False
+                    if evento.key == pygame.K_c:
+                        jogo()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                fim_jogo = True
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_LEFT:
+                    x_mudanca = -tamanho_bloco
+                    y_mudanca = 0
+                elif evento.key == pygame.K_RIGHT:
+                    x_mudanca = tamanho_bloco
+                    y_mudanca = 0
+                elif evento.key == pygame.K_UP:
+                    y_mudanca = -tamanho_bloco
+                    x_mudanca = 0
+                elif evento.key == pygame.K_DOWN:
+                    y_mudanca = tamanho_bloco
+                    x_mudanca = 0
+
+        x += x_mudanca
+        y += y_mudanca
+
+        # Checagem de borda
+        if x >= largura or x < 0 or y >= altura or y < 0:
+            game_over = True
+
+        tela.fill(preto)
+        pygame.draw.rect(tela, vermelho, [comida_x, comida_y, tamanho_bloco, tamanho_bloco])
+
+        cabeca = []
+        cabeca.append(x)
+        cabeca.append(y)
+        corpo_cobra.append(cabeca)
+
+        if len(corpo_cobra) > tamanho_cobra:
+            del corpo_cobra[0]
+
+        for segmento in corpo_cobra[:-1]:
+            if segmento == cabeca:
+                game_over = True
+
+        desenhar_cobra(tamanho_bloco, corpo_cobra)
+
+        pygame.display.update()
+
+        # Comer a comida
+        if x == comida_x and y == comida_y:
+            comida_x = round(random.randrange(0, largura - tamanho_bloco) / 20.0) * 20.0
+            comida_y = round(random.randrange(0, altura - tamanho_bloco) / 20.0) * 20.0
+            tamanho_cobra += 1
+
+        relogio.tick(velocidade)
+
+    pygame.quit()
+    quit()
+
+# Iniciar o jogo
+jogo()
