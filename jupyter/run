@@ -6,10 +6,10 @@ startTime=$(date +%s)
 # Customizable vars
 REGION="${REGION:=eu-es}"
 VERBOSE="${VERBOSE:=false}"
+RESOURCE_GROUP_NAME="${RESOURCE_GROUP_NAME:=jupyter-labs--rg}"
+COS_INSTANCE_NAME="${COS_INSTANCE_NAME:=jupyter-labs--cos}"
 
 # Static variables
-RESOURCE_GROUP_NAME="jupyter-labs--rg"
-COS_INSTANCE_NAME=jupyter-labs--cos
 CE_PROJECT_NAME="jupyter-labs-${REGION}--ce"
 
 # Check whether all required input params are set

@@ -1,8 +1,8 @@
 # JupyterLab Sample
 
-This example provides an end-to-end running solution that provides JupyterLab hosted on IBM Cloud Code Engine. 
+This example demonstrates how to deploy JupyterLab on IBM Cloud Code Engine. 
 
-The solution comprises of 
+The example comprises of 
 - OIDC SSO based on GitHub OAuthApps
 - Storing JupyterLabs state in COS 
 - Each Jupter user uses its own Jupyter Notebook instance
@@ -36,6 +36,8 @@ The solution comprises of
 
 | Name | Description | Default value |
 |:----|:---|:---|
+| COS_INSTANCE_NAME | Set the name of the COS instance that should host all buckets to persist user data  | `jupyter-labs--cos` |
 | REGION | Region of the Code Engine project | `eu-es` |
+| RESOURCE_GROUP_NAME | Set the name of the resource group that should contain all artifacts created by this example | `jupyter-labs--rg` |
 | VERBOSE | Determine whether debug output should be rendered, or not  | `false` |
 
