@@ -371,7 +371,7 @@ ibmcloud ce app update --name $CE_APP_NOTEBOOK \
     --command "/mnt/work" \
     --port 8888 \
     --visibility project \
-    --wait
+    --no-wait
 
 # ================================================
 # OPTIONAL: Configuring Authn and Authz
@@ -431,7 +431,7 @@ else
         --env COOKIE_DOMAIN="$ROOT_DOMAIN" \
         --env REDIRECT_URL="$URL_NOTEBOOK_APP" \
         --env OIDC_REDIRECT_URL="${URL_AUTH_APP}/auth/callback" \
-        --wait
+        --no-wait
 
     # Deploy the Code Engine app to the run the nginx reverse proxy
     proxyapp_op_create_or_update=update
@@ -451,7 +451,7 @@ else
         --env ORIGIN_APP_NAME=$CE_APP_NOTEBOOK \
         --env AUTH_APP_NAME=$CE_APP_AUTH \
         --port 8080 \
-        --wait
+        --no-wait
 fi
 
 if [[ "$VERBOSE" == "true" ]]; then
