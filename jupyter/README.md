@@ -3,9 +3,9 @@
 This example demonstrates how to deploy JupyterLab on IBM Cloud Code Engine. 
 
 The example comprises of 
-- OIDC SSO based on GitHub OAuthApps
-- Storing JupyterLabs state in COS 
-- Each Jupter user uses its own Jupyter Notebook instance
+- OIDC SSO based on GitHub "OAuth apps"
+- State of all JupyterLabs is being stored in Cloud Object Storage 
+- Each user has its own, dedicated Jupyter Notebook instance
 
 
 ![architecture overview](./docs/ce-jupyter.architecture-overview.png)
