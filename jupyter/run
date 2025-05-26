@@ -226,8 +226,8 @@ if [[ "$OPERATION" == "clean" ]]; then
         ibmcloud resource service-instance-delete ${COS_INSTANCE_ID} -f -q 
     fi
 
-    if ibmcloud ce proj get --name $CE_PROJECT_NAME 2>/dev/null; then
-        ibmcloud ce proj delete --name $CE_PROJECT_NAME --hard --force
+    if ibmcloud ce project get --name $CE_PROJECT_NAME --quiet >/dev/null 2>&1; then
+        ibmcloud ce project delete --name $CE_PROJECT_NAME --hard --force
     fi
 
     ibmcloud resource group-delete $RESOURCE_GROUP_NAME -f
@@ -327,6 +327,7 @@ if [[ "$OPERATION" == "init" ]]; then
     echo -e "\n2. Store the following properties in '${PURPLE}./oidc-<gh-username>.properties${ENDCOLOR}':"
     echo -e "${PURPLE}$(cat ./oidc.properties.template)${ENDCOLOR}\n"
     echo -e "3. Setup the JupyterLab for a user by running: '${PURPLE}./run deploy <gh-username>${ENDCOLOR}'"
+    echo -e "\n4. If you are done, tear down the sample setup: '${PURPLE}./run clean${ENDCOLOR}'"
     echo ""
     echo ""
     exit 0

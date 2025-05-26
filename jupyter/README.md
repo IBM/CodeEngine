@@ -1,6 +1,12 @@
 # JupyterLab Sample
 
-This example provides an end-to-end running solution that provides JupyterLab  
+This example provides an end-to-end running solution that provides JupyterLab hosted on IBM Cloud Code Engine. 
+
+The solution comprises of 
+- OIDC SSO based on GitHub OAuthApps
+- Storing JupyterLabs state in COS 
+- Each Jupter user uses its own Jupyter Notebook instance
+
 
 ![architecture overview](./docs/ce-jupyter.architecture-overview.png)
 
@@ -16,7 +22,7 @@ This example provides an end-to-end running solution that provides JupyterLab
 ./run deploy <gh-username>
 ```
 
-* Command to remove tenant 
+* Command to remove a tenant 
 ```
 ./run remove <gh-username>
 ```
