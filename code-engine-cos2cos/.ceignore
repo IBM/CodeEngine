@@ -1,0 +1,13 @@
+.env
+.DS_Store
+.gitignore
+.git/
+*.md
+testFiles/
+Unused/
+cos2cos
+cronjob.yaml
+data
+*.sh
+input-data
+output-data
