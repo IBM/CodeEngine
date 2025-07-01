@@ -17,90 +17,6 @@ func TestBucketOps(t *testing.T) {
 	ginkgo.RunSpecs(t, "BucketOperations Suite")
 }
 
-var _ = ginkgo.Describe("ListAvailableBuckets", func() {
-	var (
-		mockS3Client *MockS3Client
-		bucket       *Bucket
-	)
-
-	// Before each test, initialize the mock and the Bucket struct
-	ginkgo.BeforeEach(func() {
-		mockS3Client = new(MockS3Client)
-		bucket = &Bucket{
-			Name:   "test-bucket",
-			Client: mockS3Client,
-		}
-	})
-
-	// Test case struct format
-	type TestCase struct {
-		name           string
-		mockResponse   *s3.ListBucketsOutput
-		mockError      error
-		expectedOutput *s3.ListBucketsOutput
-		expectedError  error
-	}
-
-	// Define test cases
-	var testCases = []TestCase{
-		{
-			name: "Successful ListBuckets",
-			mockResponse: &s3.ListBucketsOutput{
-				Buckets: []*s3.Bucket{
-					{
-						Name: aws.String("bucket1"),
-					},
-					{
-						Name: aws.String("bucket2"),
-					},
-				},
-			},
-			mockError: nil,
-			expectedOutput: &s3.ListBucketsOutput{
-				Buckets: []*s3.Bucket{
-					{
-						Name: aws.String("bucket1"),
-					},
-					{
-						Name: aws.String("bucket2"),
-					},
-				},
-			},
-			expectedError: nil,
-		},
-		{
-			name:           "Error Listing Buckets",
-			mockResponse:   nil,
-			mockError:      errors.New("failed to list buckets"),
-			expectedOutput: nil,
-			expectedError:  errors.New("failed to list buckets"),
-		},
-	}
-
-	// Iterate over test cases
-	for _, testCase := range testCases {
-		ginkgo.It(testCase.name, func() {
-			// Arrange mock behavior
-			mockS3Client.On("ListBuckets", mock.Anything).Return(testCase.mockResponse, testCase.mockError)
-
-			// Act
-			result, err := bucket.ListAvailableBuckets()
-
-			// Assert the results
-			if testCase.expectedError != nil {
-				gomega.Expect(err).To(gomega.HaveOccurred())
-				gomega.Expect(err.Error()).To(gomega.Equal(testCase.expectedError.Error()))
-			} else {
-				gomega.Expect(err).ToNot(gomega.HaveOccurred())
-				gomega.Expect(result).To(gomega.Equal(testCase.expectedOutput))
-			}
-
-			// Assert that the mock was called as expected
-			mockS3Client.AssertExpectations(ginkgo.GinkgoT())
-		})
-	}
-})
-
 var _ = ginkgo.Describe("ListBucketObjects", func() {
 
 	var (
@@ -148,7 +64,6 @@ var _ = ginkgo.Describe("ListBucketObjects", func() {
 
 	// Iterate through the test cases
 	for _, tc := range testCases {
-		tc := tc // capture the range variable
 		ginkgo.Context(tc.description, func() {
 			ginkgo.It("should handle the response correctly", func() {
 				// Setup mock expectation

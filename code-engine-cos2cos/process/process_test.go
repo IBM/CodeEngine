@@ -359,7 +359,4 @@ var _ = ginkgo.Describe("StartProcessing", func() {
 
 		gomega.Expect(err).To(gomega.BeNil())
 	})
-	// ginkgo.Context("should handle errors", func() {
-
-	// })
 })

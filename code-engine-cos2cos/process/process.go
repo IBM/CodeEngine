@@ -17,7 +17,6 @@ import (
 func ListAllObjectsForProcessing(b *bucketOperations.Bucket, last_time_modified time.Time) ([]string, error) {
 	// Get all objects
 	objects, err := b.ListBucketObjects()
-	// objectsAllPages, err := b.ListBucketObjectsPagination()
 
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch bucket:%s objects\nError:%w", b.Name, err)
@@ -28,13 +27,10 @@ func ListAllObjectsForProcessing(b *bucketOperations.Bucket, last_time_modified 
 
 	requiredObjectsKey := make([]string, 0)
 
-	// for _, object := range objects.Contents {
 	for _, object := range objects.Contents {
 		jobIndex := getObjectIndex(*object.Key, array_size)
-		// jobIndex := getObjectIndex(object, array_size)
 		if jobIndex == cur_job_index {
 			exists, err := b.CheckIfTagExists(*object.Key)
-			// exists, err := b.CheckIfTagExists(object)
 			if err != nil {
 				return nil, err
 			}
@@ -48,7 +44,6 @@ func ListAllObjectsForProcessing(b *bucketOperations.Bucket, last_time_modified 
 
 func ListAllObjectsForProcessingPagination(b *bucketOperations.Bucket, last_time_modified time.Time) ([]string, error) {
 	// Get all objects
-	// objects, err := b.ListBucketObjects()
 	objectsAllPages, err := b.ListBucketObjectsPagination()
 	fmt.Print(objectsAllPages)
 	if err != nil {
@@ -60,13 +55,10 @@ func ListAllObjectsForProcessingPagination(b *bucketOperations.Bucket, last_time
 
 	requiredObjectsKey := make([]string, 0)
 
-	// for _, object := range objects.Contents {
 	for _, object := range objectsAllPages.Contents {
 		jobIndex := getObjectIndex(*object.Key, array_size)
-		// jobIndex := getObjectIndex(object, array_size)
 		if jobIndex == cur_job_index {
 			exists, err := b.CheckIfTagExists(*object.Key)
-			// exists, err := b.CheckIfTagExists(object)
 			if err != nil {
 				return nil, err
 			}
@@ -86,9 +78,6 @@ func getObjectIndex(object string, array_size int64) int64 {
 	num := int64(object[0] - 'a')
 
 	return num % array_size
-	// chunk_size := math.Ceil((26 / array_size))
-
-	// return int(float64(num) / chunk_size)
 }
 
 func StartProcessing(primary_bucket *bucketOperations.Bucket, secondary_bucket *bucketOperations.Bucket) error {
@@ -180,8 +169,6 @@ func StartProcessingPagination(primary_bucket *bucketOperations.Bucket, secondar
 }
 
 func processObject(key string, primary_bucket *bucketOperations.Bucket, secondary_bucket *bucketOperations.Bucket, errorChan chan error) error {
-	// fmt.Println("The object:", key, " will be processed")
-
 	// Adding a tag to it, value is the jobrun name
 	err := primary_bucket.AddTag(key, "isInProcessing", os.Getenv("CE_JOBRUN"))
 	if err != nil {
@@ -198,12 +185,7 @@ func processObject(key string, primary_bucket *bucketOperations.Bucket, secondar
 		return err
 	}
 
-	// 1. Either Let user get the object and process it
-	// processedObject := userDefinedProcess(object)
-	// Put the object into another bucket
-	// bucket.UploadObjectToBucket(processedObject)
-
-	// 2. Let the user get the bytes and process it
+	// 1. Let the user get the bytes and process it
 	// Convert to Bytes
 	objectBytes, err := utils.ConvertObjectToByte(object)
 	if err != nil {

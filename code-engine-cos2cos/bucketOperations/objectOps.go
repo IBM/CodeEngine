@@ -35,7 +35,7 @@ func (b *Bucket) CheckIfTagExists(objectKey string) (bool, error) {
 	})
 
 	if err != nil {
-		return false, fmt.Errorf("Error getting object tags: %v", err)
+		return false, fmt.Errorf("error getting object tags: %v", err)
 
 	}
 	tagKeyToCheck := "isInProcessing"
@@ -43,7 +43,6 @@ func (b *Bucket) CheckIfTagExists(objectKey string) (bool, error) {
 	// Iterate through the tags and check if the key exists
 	for _, tag := range resp.TagSet {
 		if *tag.Key == tagKeyToCheck {
-			// fmt.Println(tag)
 			return true, nil
 		}
 	}
@@ -52,7 +51,6 @@ func (b *Bucket) CheckIfTagExists(objectKey string) (bool, error) {
 
 func IsProcessingRequired(res *s3.Object, timestamp time.Time) bool {
 	compareVal := CompareUpdateTime(res, timestamp)
-	// fmt.Printf("The time for last process is: %s\nObject last time:%s\n", timestamp.String(), res.LastModified.String())
 	// A negative value indicates that process is required.
 	return compareVal > 0
 }
@@ -73,62 +71,6 @@ func (b *Bucket) GetObject(objectKey string) (*s3.GetObjectOutput, error) {
 
 	return response, nil
 }
-
-/*
-Function to store the object in a file in local storage
-func StoreObject(objectKey string, response *s3.GetObjectOutput) error {
-
-	tempFile, err := os.Create(fmt.Sprintf("temp/%s", objectKey))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Read from response body
-	_, err = tempFile.ReadFrom(response.Body)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-*/
-
-/*
-// Function to get the metadata of an object without getting the object itself - Unused
-func (b *Bucket) GetObjectMetadata(objectKey string) (*s3.HeadObjectOutput, error) {
-	client := b.Client
-	bucketName := b.Name
-
-	input := &s3.HeadObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
-	}
-
-	result, err := client.HeadObject(input)
-	if err != nil {
-		// log.Fatalf("Failed to retrieve metadata: %v", err)
-		return nil, err
-	}
-
-	// fmt.Println("Metadata for object:", objectKey)
-	// fmt.Printf("Last Modified: %v\n", result.LastModified)
-	// fmt.Printf("Size: %d bytes\n", *result.ContentLength)
-	// fmt.Printf("Content-Type: %s\n", *result.ContentType)
-	// fmt.Printf("ETag: %s\n", *result.ETag)
-
-	// Print custom metadata
-	if result.Metadata != nil {
-		fmt.Println("Custom Metadata:")
-		for key, value := range result.Metadata {
-			fmt.Printf("%s: %s\n", key, *value)
-		}
-	}
-
-	return result, nil
-}
-*/
-// test
 
 // Add a tag to the object (for example, a custom tag)
 // The tag is added as a key-value pair
@@ -170,6 +112,5 @@ func (b *Bucket) DeleteTag(objectKey, tagKey string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete tag to object: %v", err)
 	}
-	// fmt.Printf("Tag Deleted successfully from the object: %s\n", objectKey)
 	return nil
 }

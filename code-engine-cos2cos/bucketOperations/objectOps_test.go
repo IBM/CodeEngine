@@ -13,11 +13,6 @@ import (
 	mockS3 "ibm.com/codeengine/cos2cos/mock"
 )
 
-// func TestObjectOps(t *testing.T) {
-// 	gomega.RegisterFailHandler(ginkgo.Fail)
-// 	ginkgo.RunSpecs(t, "ObjectOperations Suite")
-// }
-
 var _ = ginkgo.Describe("CompareUpdateTime", func() {
 	type testCase struct {
 		name            string

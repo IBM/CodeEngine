@@ -40,7 +40,6 @@ type CosSession struct {
 }
 
 func NewCosClient(apiKey, resourceInstanceID, serviceEndpoint, region string, authEndpoint ...string) *s3.S3 {
-	// fmt.Println("Creating cos Client")
 	var authEndpointVal string
 	if len(authEndpoint) == 0 {
 		authEndpointVal = "https://iam.cloud.ibm.com/identity/token"
@@ -120,35 +119,14 @@ func (c *CosSession) CreateIBMCOSSessionTrustedProfile() *s3.S3 {
 
 	return client
 }
-
-// Function to list all the available buckets for a config.
-func (b *Bucket) ListAvailableBuckets() (*s3.ListBucketsOutput, error) {
-
-	// Create client
-	// client := CreateIBMCOSSession()
-	client := b.Client
-	// Call Function
-	d, err := client.ListBuckets(&s3.ListBucketsInput{})
-
-	if err != nil {
-		fmt.Println("Could not list the buckets")
-		return nil, err
-	}
-	return d, nil
-}
-
 func (b *Bucket) ListBucketObjects() (*s3.ListObjectsV2Output, error) {
 	bucketName := b.Name
-	// fmt.Println("Listing Bucket Objects in Bucket:", bucketName)
-	// Create client
-	// client := CreateIBMCOSSession()
 	client := b.Client
 
 	// Call Function
 	Input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucketName),
 	}
-	// fmt.Println("Input object created", Input)
 	objectList, e := client.ListObjectsV2(Input)
 
 	if e != nil {
@@ -161,9 +139,6 @@ func (b *Bucket) ListBucketObjects() (*s3.ListObjectsV2Output, error) {
 
 func (b *Bucket) ListBucketObjectsPagination() (*s3.ListObjectsV2Output, error) {
 	bucketName := b.Name
-	// fmt.Println("Listing Bucket Objects in Bucket:", bucketName)
-	// Create client
-	// client := CreateIBMCOSSession()
 	client := b.Client
 
 	// Call Function
@@ -211,72 +186,3 @@ func (bucket *Bucket) UploadBytesToBucket(objectKey string, data []byte) error {
 
 	return nil
 }
-
-// Function to upload a object to a bucket. - Not Tested.
-/*
-func (b *Bucket) UploadObjectToBucket(object *s3.GetObjectOutput) error {
-	client := b.Client
-
-	var buf bytes.Buffer
-	_, err := buf.ReadFrom(object.Body)
-	if err != nil {
-		log.Fatalf("Unable to read object body: %v", err)
-		return fmt.Errorf("Unable to read object body: %v", err)
-	}
-
-	_, err = client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(destinationBucket),
-		Key:    aws.String(destinationKey),
-		Body:   bytes.NewReader(buf.Bytes()),
-	})
-	if err != nil {
-		log.Fatalf("Unable to upload object to destination bucket: %v", err)
-		return fmt.Errorf("Unable to upload object to destination bucket: %v", err)
-	}
-	return nil
-}
-*/
-
-// Returns an error if the upload fails. - Unused
-/*
-func (b *Bucket) UploadFileToBucket(objectKey string, filePath string) error {
-
-	// Create client
-	// client := CreateIBMCOSSession()
-	client := b.Client
-	bucketName := b.Name
-
-	// Read object into byte
-
-	file, err := os.Open(filePath)
-
-	if err != nil {
-		log.Fatalf("Unable to open file: %v", err)
-		return err
-	}
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		log.Fatalf("Unable to get file stats: %v", err)
-		return err
-	}
-	fileBytes := make([]byte, fileInfo.Size())
-	_, err = file.Read(fileBytes)
-
-	if err != nil {
-		log.Fatalf("Unable to read file: %v", err)
-		return err
-	}
-
-	input := s3.PutObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
-		Body:   bytes.NewReader(fileBytes),
-	}
-
-	// Call Function to upload (Put) an object
-	_, _ = client.PutObject(&input)
-	// fmt.Println(result)
-	return nil
-}
-*/

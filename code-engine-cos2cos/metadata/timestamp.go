@@ -49,6 +49,7 @@ func GetLastProcessTime(buckets ...*bucketOperations.Bucket) time.Time {
 func LoadTimestamp(buckets []*bucketOperations.Bucket) ([]byte, error) {
 
 	filename := os.Getenv("BUCKET_TIMESTAMP_FILENAME")
+
 	if len(buckets) > 0 {
 		bucket := buckets[0]
 		res, err := bucket.GetObject(filename)
@@ -65,6 +66,7 @@ func LoadTimestamp(buckets []*bucketOperations.Bucket) ([]byte, error) {
 	return file, err
 
 	// TODO: Add functionality to get modified time directly from bucket object instead of file. (saves processing)
+	// As of now there is no otpion to get a last_modified_timestamp of a bucket.
 }
 
 // Function expects a timestamp as string in format "time.RFC3339"
@@ -97,6 +99,4 @@ func saveTimestamp(filename string, jsonData []byte, bucket []*bucketOperations.
 	}
 	// To save as local file, will overwrite the existing file
 	return os.WriteFile(filename, jsonData, 0644)
-
-	// TODO: save it as object in secondary bucket
 }
