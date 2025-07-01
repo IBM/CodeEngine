@@ -9,12 +9,10 @@ import (
 	"ibm.com/codeengine/cos2cos/process"
 )
 
-// Note: When running the program in local env, pass false, false as cmd-line arg.
-// Arg1: isInCodeEngine <- to load the env file from local Os.
-// Arg2: isUsingTrustedProfile <- Works only with kubernetes cluster.
 func main() {
 	fmt.Println("Starting application with Job Index:", os.Getenv("JOB_INDEX"))
 
+	// Setting default values
 	os.Setenv("IBM_COS_CRTokenFilePath_PRIMARY", "/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token")
 	os.Setenv("IBM_COS_CRTokenFilePath_SECONDARY", "/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token")
 	os.Setenv("BUCKET_TIMESTAMP_FILENAME", "last_modified_time.json")
