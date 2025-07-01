@@ -1,0 +1,1 @@
+ { "command":"mpirun", "args": ["-np", "4", "--use-hwthread-cpus", "python", "pyscf_mpi.py", "atom1", "/mnt/ce/data/result"]}
