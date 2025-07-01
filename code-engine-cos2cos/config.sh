@@ -103,7 +103,7 @@ if [ $? -eq 0 ]; then
 fi
 
 echo "-----"
-echo "Step 6: Creating Secrets (Base Secret, Auth Secret, Registry Secret)"
+echo "Step 6: Creating Secrets (Base Secret, Auth Secret)"
 echo "---"
 echo "Step 6.1: Creating Base Secret: $BASE_SECRET"
 ibmcloud ce secret create --name ${BASE_SECRET} \
@@ -147,45 +147,9 @@ else
   echo -e "${GREEN}SUCCESS${NC}: Step 6.1: Base secret creation complete."
 fi
 
-# Creating a container registry secret
-echo "---"
-echo "Step 6.2: Creating Container Registry Secret: $CONTAINER_REGISTRY_SECRET"
-echo "Step 6.2.1: Checking if API key '${API_KEY_NAME}' exists"
-API_KEY=$(ibmcloud iam api-keys --output json | jq -r ".[] | select(.name == \"$API_KEY_NAME\") | .apikey")
-
-if [ -z "$API_KEY" ]; then
-  echo "API key '${API_KEY_NAME}' does not exist. Creating a new one..."
-  API_KEY=$(ibmcloud iam api-key-create ${API_KEY_NAME} -d "API Key for IBM CR COS-to-COS" -o JSON | jq -r '.apikey' )
-  # ibmcloud iam api-key-create ${API_KEY_NAME} -d "API Key for IBM CR COS-to-COS" --file key_file
-  echo "API key '${API_KEY_NAME}' created."
-else
-  echo "API key '${API_KEY_NAME}' already exists. Skipping creation."
-fi
-
-ibmcloud ce secret create --name ${CONTAINER_REGISTRY_SECRET} --format registry --password ${API_KEY} --server ${REGISTRY_SERVER}
-if [ $? -ne 0 ]; then
-    echo "Secret '${CONTAINER_REGISTRY_SECRET}' already exists."
-    read -p "Do you want to override the existing container registry secret? (y/n): " confirm
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        echo "Updating secret ${CONTAINER_REGISTRY_SECRET}..."
-        ibmcloud ce secret update --name ${CONTAINER_REGISTRY_SECRET} --password ${API_KEY} --server ${REGISTRY_SERVER}
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}SUCCESS${NC}: Step 6.2: Container Registry secret update complete."
-        else
-            echo -e "${RED}ERROR${NC}: Failed to update container registry secret."
-            exit 1
-        fi
-    else
-        echo "Container registry secret update cancelled by user. Exiting..."
-        exit 0
-    fi
-else
-    echo -e "${GREEN}SUCCESS${NC}: Step 6.2: Container Registry secret creation complete."
-fi
 # Auth secrets
 echo "---"
-echo "Step 6.3: Creating Auth Secret: $AUTH_SECRET"
+echo "Step 6.2: Creating Auth Secret: $AUTH_SECRET"
 ibmcloud ce secret create --name ${AUTH_SECRET} \
   --from-literal IBM_COS_CRTokenFilePath_PRIMARY=${IBM_COS_CRTokenFilePath_PRIMARY} \
   --from-literal IBM_COS_CRTokenFilePath_SECONDARY=${IBM_COS_CRTokenFilePath_SECONDARY} \
@@ -213,27 +177,30 @@ if [ $? -ne 0 ]; then
         exit 0
     fi
 else
-    echo -e "${GREEN}SUCCESS${NC}: Step 6.3: Auth secret creation complete."
+    echo -e "${GREEN}SUCCESS${NC}: Step 6.2: Auth secret creation complete."
 fi
 # Create a job
 # Create the job with environment variables, including the bucket's region
 echo "-----"
 echo "Step 7: Creating JOB with name $JOB_NAME"
-ibmcloud ce job create --name ${JOB_NAME} --image "${JOB_IMAGE}" \
-  --registry-secret ${CONTAINER_REGISTRY_SECRET} \
+ibmcloud ce job create --name ${JOB_NAME} \
+  --src "." \
   --env-from-secret ${BASE_SECRET} \
   --env-from-secret ${AUTH_SECRET} \
-  --argument true 2>/dev/null
+  --argument true 2>/dev/null \
+  --wait
+  # --registry-secret ${CONTAINER_REGISTRY_SECRET} \
+
 if [ $? -ne 0 ]; then
   # echo "Job '${JOB_NAME}' already exists. Exiting"
   # exit 1
 
   echo "Job '${JOB_NAME}' already exists. Updating Job."
   ibmcloud ce job update --name ${JOB_NAME} --image "${JOB_IMAGE}" \
-  --registry-secret ${CONTAINER_REGISTRY_SECRET} \
   --env-from-secret ${BASE_SECRET} \
   --env-from-secret ${AUTH_SECRET} \
   --argument true 2>/dev/null
+  # --registry-secret ${CONTAINER_REGISTRY_SECRET} \
 fi
 if [ $? -eq 0 ]; then
 echo -e "${GREEN}SUCCESS${NC}Step 7: Job Created" 
@@ -277,11 +244,3 @@ curl \
   }" 2>/dev/null
 # echo "******* DONE: Compute Resource Token *******"
 
-# echo "-----"
-# echo "Step 9"
-# # Submit the job
-# echo "LIVE !"
-# echo " ********** Submitting the job and Logs *********"
-# RANDOM_CODE=$(printf "%06d" $((RANDOM % 1000000)))
-# ibmcloud ce jobrun submit --job ${JOB_NAME} --name ${JOB_NAME}-${RANDOM_CODE}
-# ibmcloud ce jobrun logs --name ${JOB_NAME}-${RANDOM_CODE} --follow
