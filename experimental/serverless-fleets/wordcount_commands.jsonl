@@ -1,0 +1,6 @@
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/alice_in_wonderland.txt > result/wordcount_alice_in_wonderland.txt"]}
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/der_struwwelpeter.txt > result/wordcount_der_struwwelpeter.txt"]}
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/dracula.txt > result/wordcount_dracula.txt"]}
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/gullivers_travels.txt > result/wordcount_gullivers_travels.txt"]}
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/romeo_and_juliet.txt > result/wordcount_romeo_and_juliet.txt"]}
+ { "command":"/bin/bash", "args": ["-c", "cd /mnt/ce/data; wc tutorials/wordcount/the_call_of_the_wild.txt > result/wordcount_the_call_of_the_wild.txt"]}

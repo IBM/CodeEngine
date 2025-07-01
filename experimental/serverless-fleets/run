@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+echo ibmcloud code-engine experimental fleet run 
+echo "  " --name "fleet-${uuid}-1" 
+echo "  " --image registry.access.redhat.com/ubi8/ubi-minimal:latest 
+echo "  " --registry-secret fleet-registry-secret 
+echo "  " --command="sleep" 
+echo "  " --arg "60" 
+echo "  " --worker-profile cx2-2x4 
+echo "  " --tasks 1 
+echo "  " --cpu 2
+echo "  " --memory 4G
+echo "  " --max-scale 1
+
+ibmcloud code-engine experimental fleet run --name "fleet-${uuid}-1" --image registry.access.redhat.com/ubi8/ubi-minimal:latest --registry-secret fleet-registry-secret --worker-profile cx2-2x4 --max-scale 1 --command="sleep" --arg "60" --tasks 1 --cpu 2 --memory 4G 

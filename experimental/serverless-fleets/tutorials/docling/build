@@ -1,0 +1,11 @@
+#!/bin/sh
+
+REGISTRY=$(ibmcloud ce secret get -n fleet-registry-secret --output json | jq -r '.data.server')
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+ibmcloud ce buildrun submit --source . --strategy dockerfile --image $REGISTRY/ce--fleet-docling/docling:latest --registry-secret fleet-registry-secret --name ce--fleet-docling-build-${uuid} --size xxlarge --timeout 1800 
+
+ibmcloud ce buildrun logs -f -n ce--fleet-docling-build-${uuid}
+
+# takes about 365.8s.

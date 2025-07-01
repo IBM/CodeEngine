@@ -1,0 +1,12 @@
+#!/bin/sh
+
+IP=$1
+NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
+
+JUMPBOX_FIP=$(ibmcloud is instance "${NAME_PREFIX}--is-vsi-jumpbox" --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
+
+echo "copy private ssh-key './${NAME_PREFIX}--sshkey' to jumpbox $JUMPBOX_FIP"
+scp -i "./${NAME_PREFIX}--sshkey" -o UserKnownHostsFile=/dev/null -o StrictHostKeychecking=no "./${NAME_PREFIX}--sshkey" root@${JUMPBOX_FIP}:/root/.ssh/id_rsa
+
+echo "jump to $IP via jumpbox $JUMPBOX_FIP"
+ssh -i "./${NAME_PREFIX}--sshkey" -o UserKnownHostsFile=/dev/null -o StrictHostKeychecking=no -o IdentitiesOnly=yes root@$JUMPBOX_FIP

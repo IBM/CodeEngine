@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+watch -n 2 ibmcloud code-engine experimental fleet task list --fleet-name "$1"
+
+

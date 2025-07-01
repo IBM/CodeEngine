@@ -1,0 +1,11 @@
+#!/bin/sh
+
+REGISTRY=$(ibmcloud ce secret get -n fleet-registry-secret --output json | jq -r '.data.server')
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+ibmcloud ce buildrun submit --source . --strategy dockerfile --image $REGISTRY/ce--fleet-montecarlo/montecarlo:latest --registry-secret fleet-registry-secret --name ce--fleet-montecarlo-build-${uuid} --size medium --timeout 300 
+
+ibmcloud ce buildrun logs -f -n ce--fleet-montecarlo-build-${uuid}
+
+# takes about ??s.

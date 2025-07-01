@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+echo ibmcloud code-engine experimental fleet run --name "fleet-${uuid}-1"
+echo "  " --image docker.io/nvidia/cuda:12.8.0-base-ubuntu24.04
+echo "  " --registry-secret fleet-registry-secret
+echo "  " --worker-profile gx3-24x120x1l40s
+echo "  " --command="nvidia-smi"
+echo "  " --arg "pmon -c 120" 
+echo "  " --tasks 1 
+echo "  " --cpu 1
+echo "  " --memory 4G
+echo "  " --max-scale 1
+
+ibmcloud code-engine experimental fleet run --name "fleet-${uuid}-1" --image docker.io/nvidia/cuda:12.8.0-base-ubuntu24.04 --registry-secret fleet-registry-secret --worker-profile gx3-24x120x1l40s --max-scale 1 --command="nvidia-smi" --arg "pmon" --arg "-c" --arg "120" --tasks 1 --cpu 1 --memory 4G
