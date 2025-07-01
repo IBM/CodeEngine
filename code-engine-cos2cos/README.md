@@ -34,9 +34,9 @@ Before you begin, ensure you have the following:
    1. ce
    2. cos
    3. iam
-- **Podman** or **Docker**(Refer, [Build Steps](#build-steps)): For building the container.
+
 - **IBM Cloud Object Storage (COS)**(Not required when using config.sh script): Ensure you have created two buckets (primary and secondary). Refer, [Getting started with IBM Cloud Object Storage](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage).
-- **IBM Code Engine**(Not required when using config.sh script): Set up and create a project on IBM Code Engine. Refer, [Getting started with IBM Cloud Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-getting-started).
+- **IBM Code Engine Project**(Not required when using config.sh script): Set up and create a project on IBM Code Engine. Refer, [Getting started with IBM Cloud Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-getting-started).
 - **Go**: For modifying and testing the source code.
 
 ### Setup & Configuration
@@ -56,11 +56,11 @@ Before you begin, ensure you have the following:
    ```
 4. **Update [data.sh](/data.sh)**:
    
-   Please update the variable values in the file as per your requirement. The details for creating the cos2cos job with config.sh and building image with build.sh is fetched from this file. 
+   Please update the variable values in the file as per your requirement. The details for creating the cos2cos job with config.sh is fetched from this file. 
    
-   Note:- The variable CRTokenFilePath should remain same as mentioned in the data.sh file.
 5. **Build the Image from the source code**:
-   Refer [Build Steps](#build-steps)
+   
+   Image build is done automatically in the config.sh file from source.
 6. **Setup the required IBM Cloud resources**:
    
    To automatically set up the required IBM Cloud resources, including COS buckets and secrets, simply run the provided `config.sh` script:
@@ -77,36 +77,17 @@ Before you begin, ensure you have the following:
    Note:
    - The script will either take the existing project with the project name provided in data.sh or create a new project with the same name.
    - The script will create a trusted profile if it does not exists. 
-   - The script will work only with authentication mechanism of Trusted Profile. In-case the user wants to use service-credentials then he/she needs to manually update the AUTH_SECRET and create the API_KEY for both COS Instance as well as add second command-line argument as "false". The first argument can be set to "true" or "false". See below for more.
-   - The two command line arguments are:
-      1. The first argument "isInCodeEngine", a boolean value, is set to true by-default (meaning the job is running in IBM Cloud Code-Engine). It can be set to "false" when the user wants to run it locally.
-      2. The second argument "isUsingTrustedProfile", a boolean value, is set to true by-default (meaning authentication mechanism for COS bucket is TrustedProfile). It can be set to "false" when the user wants to use service-credentials. Please make sure that the AUTH_SECRET is also updated to have the following (in-case using service-credentials):
-         ```bash
-         IBM_COS_API_KEY_PRIMARY=<COS-API-KEY-Primary>
-         IBM_COS_API_KEY_SECONDARY=<COS-API-KEY-Secondary>
-         ```
-   - IMP: TrustedProfile Authentication method won't work when running the program locally.
 7. **Run the Program**:
    Once everything is configured, run it
-   
-   - Locally using
-      ```bash
-      go run .
-      ```
-   OR
    - On IBM Cloud Code-Engine using CLI:
       ```bash
       ibmcloud ce jobrun submit --job ${JOB_NAME} --name ${JOB_NAME} 
       ```
 
-
    This will:
    - Trigger the job in **IBM Code Engine** to process the files in the primary bucket.
    - Upload the processed files to the secondary bucket.
 
-   Note:
-   - If you are running the program locally, pass 2 command-line arguments "false" "false" while running main.go
-   - Also make sure that env file is configured accordingly.
 8. **Check the Logs**:
    After the job completes, check the IBM Cloud UI or the logs to confirm the processing status.
 
@@ -116,9 +97,6 @@ The system supports parallel execution using IBM Code Engine Job arrays. This en
 A sample version of the parallel job setup is included in the repository:
 https://github.ibm.com/Hamza/Sample-Running-Jobs-in-Parallel
 
-## Environment Setup
-
-To run the project locally, you need to create a `.env` file in the root directory. You can refer to the [`env_sample`](/env_sample) file for the required environment variables and their format.
 
 ## Testing
 
@@ -129,55 +107,6 @@ To run the tests:
 go test -v
 ```
 
-## Build Steps
-
-You can build and push the container image using one of the following methods.
-
-**Note**: If you are using the [build.sh](/build.sh), by-default the [Method-1](#1-build-using-source-code-local-source) is used.
-
-#### 1. Build Using Source Code (Local Source)
-
-To build the image from local source code using IBM Cloud Code Engine:
-
-```bash
-ibmcloud ce build create --name ${BUILD_NAME} --build-type local --image ${REGISTRY}/${NAMESPACE}/${IMAGE_NAME}
-ibmcloud ce buildrun submit --build ${BUILD_NAME} --name ${BUILD_NAME}-build-run
-```
-
-#### 2. Build Using Git-based Source
-
-To build the image using a Git repository:
-
-1. Create a deploy key or user-access key in your GitHub repository.
-2. Add the private key by creating an SSH secret in IBM Cloud Code Engine.
-3. Create a build using the Git repository:
-
-```bash
-ibmcloud ce build create \
-    --name ${BUILD_NAME} \
-    --image ${REGISTRY}/${NAMESPACE}/${IMAGE_NAME} \
-    --source ${GIT_SSH_URL} \
-    --context-dir / \
-    --strategy dockerfile \
-    --git-repo-secret ${GIT_SSH_SECRET}
-```
-
-4. Submit the build:
-
-```bash
-ibmcloud ce buildrun submit --build ${BUILD_NAME}
-```
-
-### View Build Logs
-
-To view the logs of a build run, use the following command:
-
-```bash
-ibmcloud ce buildrun logs -f -n <build-run-name>
-```
-
-Replace `<build-run-name>` with the actual name of your build run.
-
 ## Performance
 
 The program is optimized for handling large files (up to several GBs). For example, when tested with 50 files (each 65MB), the program processed the files in 70 to 100 seconds, with 13 parallel jobs.
@@ -185,5 +114,5 @@ The program is optimized for handling large files (up to several GBs). For examp
 ## Troubleshooting
 
 - **Error: Object Not Found**: Ensure that the primary bucket is correctly configured and contains the objects you expect.
-- **Authentication Failure**: Check that the authentication method (trusted profile or service credentials) is correctly set up.
+- **Authentication Failure**: Check that the authentication method (trusted profile) is correctly set up.
 - **Job Timeout or Failure**: If the job takes longer than expected, check the logs for any performance bottlenecks or errors.
