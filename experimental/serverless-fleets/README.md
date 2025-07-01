@@ -155,8 +155,10 @@ The tutorial has been tested on a MacOS and Ubuntu24 client machine with the fol
 
 Clone this repository
 ```
-git clone https://github.ibm.com/JEREWERN/serverless-fleets.git 
+git clone https://github.com/IBM/CodeEngine.git 
 ```
+
+Switch to the `experimental/serverless-fleets` directory, which will be the root directory for all steps of this tutorial
 
 To run this end-to-end sample, open a terminal, [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
