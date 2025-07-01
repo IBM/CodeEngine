@@ -42,7 +42,7 @@ Before you begin, ensure you have the following:
 ### Setup & Configuration
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.ibm.com/ibmcloud-codeengine-internship/code-engine-cos2cos
+   git clone https://github.com/IBM/CodeEngine.git
    cd code-engine-cos2cos
    ```
 2. **Modify the Processing Function (Optional)**:
@@ -133,19 +133,9 @@ go test -v
 
 You can build and push the container image using one of the following methods.
 
-**Note**: If you are using the [build.sh](/build.sh), by-default the [Method-2](#2-build-using-source-code-local-source) is used.
+**Note**: If you are using the [build.sh](/build.sh), by-default the [Method-1](#1-build-using-source-code-local-source) is used.
 
-#### 1. Build Using Podman (Local Source)
-
-If you want to build the container image using a local `Dockerfile` with Podman, follow these steps:
-
-```bash
-ibmcloud cr login
-podman build -t ${REGISTRY}/${NAMESPACE}/${IMAGE_NAME} --platform linux/amd64 .
-podman push ${REGISTRY}/${NAMESPACE}/${IMAGE_NAME}
-```
-
-#### 2. Build Using Source Code (Local Source)
+#### 1. Build Using Source Code (Local Source)
 
 To build the image from local source code using IBM Cloud Code Engine:
 
@@ -154,7 +144,7 @@ ibmcloud ce build create --name ${BUILD_NAME} --build-type local --image ${REGIS
 ibmcloud ce buildrun submit --build ${BUILD_NAME} --name ${BUILD_NAME}-build-run
 ```
 
-#### 3. Build Using Git-based Source
+#### 2. Build Using Git-based Source
 
 To build the image using a Git repository:
 
