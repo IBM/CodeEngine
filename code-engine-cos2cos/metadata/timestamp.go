@@ -48,7 +48,7 @@ func GetLastProcessTime(buckets ...*bucketOperations.Bucket) time.Time {
 // Function to load timestamp file locally or using a object in Bucket
 func LoadTimestamp(buckets []*bucketOperations.Bucket) ([]byte, error) {
 
-	filename := os.Getenv("BUCKET_TIMESTAMP_FILENAME")
+	filename := "last_modified_time.json"
 
 	if len(buckets) > 0 {
 		bucket := buckets[0]
@@ -71,7 +71,7 @@ func LoadTimestamp(buckets []*bucketOperations.Bucket) ([]byte, error) {
 
 // Function expects a timestamp as string in format "time.RFC3339"
 func PutLastBackupTime(timestamp string, bucket ...*bucketOperations.Bucket) error {
-	filename := os.Getenv("BUCKET_TIMESTAMP_FILENAME")
+	filename := "last_modified_time.json"
 
 	if timestamp == "" {
 		timestamp = time.Now().Format(time.RFC3339)
