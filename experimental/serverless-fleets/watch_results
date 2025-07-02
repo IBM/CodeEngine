@@ -2,8 +2,8 @@
 
 crn=$(ibmcloud resource service-instance  ce-fleet-sandbox--cos --crn | grep "crn")
 
-ibmcloud cos config crn $crn
+ibmcloud cos config crn --crn $crn
 
-bucket=$(ic cos buckets --json | jq -r '.Buckets[0].Name')
+bucket=$(ibmcloud cos buckets --json | jq -r '.Buckets[0].Name')
 
-watch -n 2 ibmcloud cos list-objects-v2 --bucket $bucket --prefix result/$1
+watch -n 2 ibmcloud cos list-objects-v2 --bucket "$bucket" --prefix "result/$1"
