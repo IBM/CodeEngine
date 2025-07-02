@@ -44,19 +44,24 @@ function create_instance_bucket(){
       COS_INSTANCE_CRN_SECONDARY=${COS_INSTANCE_CRN}
     fi
 
-    # Creating bucket in the instance - silent failure.
-    echo "Step $I.2: Creating $TYPE Bucket."
-    ibmcloud cos bucket-create \
-    --bucket ${COS_BUCKET_NAME} \
-    --class smart \
-    --ibm-service-instance-id ${COS_INSTANCE_CRN} \
-    --region ${COS_REGION} 2>/dev/null
-
     # Check if bucket exists.
+    ibmcloud cos config crn --crn "${COS_INSTANCE_CRN}" --force
     ibmcloud cos bucket-head --bucket "$COS_BUCKET_NAME" --region "$COS_REGION"
     if [ $? -ne 0 ]; then
-        echo -e "${RED}Failure${NC}: Step $I.2: $TYPE Bucket does not exists. Exiting..."
-        exit 1
+        echo "Step $I.2: Creating $TYPE Bucket."
+        ibmcloud cos bucket-create \
+        --bucket ${COS_BUCKET_NAME} \
+        --class smart \
+        --ibm-service-instance-id ${COS_INSTANCE_CRN} \
+        --region ${COS_REGION} 2>/dev/null
+        ibmcloud cos bucket-head --bucket "$COS_BUCKET_NAME" --region "$COS_REGION"
+
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failure${NC}: Step $I.2: $TYPE Bucket creation failed. Exiting..."
+            exit 0
+        else
+          echo -e "${GREEN}Success${NC}: Step $I.2: $TYPE Bucket Created."
+        fi
     else
         echo -e "${GREEN}Success${NC}: Step $I.2: $TYPE Bucket Found."
     fi
@@ -89,15 +94,15 @@ fi
 # Creating Trusted Profile
 echo "---"
 echo "Step 5: Creating/Fetching Trusted Profile $TRUSTED_PROFILE_NAME"
-COS_TRUSTED_PROFILE_ID_PRIMARY=$(ibmcloud iam trusted-profile ${TRUSTED_PROFILE_NAME} --id)
-if [ -z "$COS_TRUSTED_PROFILE_ID_PRIMARY" ] ; then
-  COS_TRUSTED_PROFILE_ID_PRIMARY=$(ibmcloud iam trusted-profile-create "${TRUSTED_PROFILE_NAME}" -o JSON | jq -r '.id')
+COS_TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profile ${TRUSTED_PROFILE_NAME} --id)
+if [ -z "$COS_TRUSTED_PROFILE_ID" ] ; then
+  COS_TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profile-create "${TRUSTED_PROFILE_NAME}" -o JSON | jq -r '.id')
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failure${NC}: Step 5: Could not create trusted-profile.Exiting\n"
     exit 1
   fi
 fi
-COS_TRUSTED_PROFILE_ID_SECONDARY=$(echo ${COS_TRUSTED_PROFILE_ID_PRIMARY})
+
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}SUCCESS${NC}: Step 5: Trusted Profile Created/Fetched.\n"
 fi
@@ -107,15 +112,14 @@ echo "Step 6: Creating Secrets (Base Secret, Auth Secret)"
 echo "---"
 echo "Step 6.1: Creating Base Secret: $BASE_SECRET"
 ibmcloud ce secret create --name ${BASE_SECRET} \
-  --from-literal SECONDARY_COS_BUCKET_NAME=${COS_BUCKET_NAME_SECONDARY} \
-  --from-literal IBM_COS_RESOURCE_INSTANCE_ID_SECONDARY=${COS_INSTANCE_CRN_SECONDARY} \
-  --from-literal IBM_COS_REGION_SECONDARY=${COS_REGION_SECONDARY} \
-  --from-literal IBM_COS_ENDPOINT_SECONDARY=${COS_ENDPOINT_SECONDARY} \
-  --from-literal PRIMARY_COS_BUCKET_NAME=${COS_BUCKET_NAME_PRIMARY} \
+  --from-literal COS_BUCKET_NAME_PRIMARY=${COS_BUCKET_NAME_PRIMARY} \
   --from-literal IBM_COS_RESOURCE_INSTANCE_ID_PRIMARY=${COS_INSTANCE_CRN_PRIMARY} \
   --from-literal IBM_COS_REGION_PRIMARY=${COS_REGION_PRIMARY} \
   --from-literal IBM_COS_ENDPOINT_PRIMARY=${COS_ENDPOINT_PRIMARY} \
-  --from-literal BUCKET_TIMESTAMP_FILENAME=${BUCKET_TIMESTAMP_FILENAME}
+  --from-literal COS_BUCKET_NAME_SECONDARY=${COS_BUCKET_NAME_SECONDARY} \
+  --from-literal IBM_COS_RESOURCE_INSTANCE_ID_SECONDARY=${COS_INSTANCE_CRN_SECONDARY} \
+  --from-literal IBM_COS_REGION_SECONDARY=${COS_REGION_SECONDARY} \
+  --from-literal IBM_COS_ENDPOINT_SECONDARY=${COS_ENDPOINT_SECONDARY}
 
 if [ $? -ne 0 ]; then
   echo "Secret '${BASE_SECRET}' already exists."
@@ -123,15 +127,14 @@ if [ $? -ne 0 ]; then
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     echo "Updating secret ${BASE_SECRET}..."
     ibmcloud ce secret update --name ${BASE_SECRET} \
-      --from-literal SECONDARY_COS_BUCKET_NAME=${COS_BUCKET_NAME_SECONDARY} \
-      --from-literal IBM_COS_RESOURCE_INSTANCE_ID_SECONDARY=${COS_INSTANCE_CRN_SECONDARY} \
-      --from-literal IBM_COS_REGION_SECONDARY=${COS_REGION_SECONDARY} \
-      --from-literal IBM_COS_ENDPOINT_SECONDARY=${COS_ENDPOINT_SECONDARY} \
-      --from-literal PRIMARY_COS_BUCKET_NAME=${COS_BUCKET_NAME_PRIMARY} \
-      --from-literal IBM_COS_RESOURCE_INSTANCE_ID_PRIMARY=${COS_INSTANCE_CRN_PRIMARY} \
-      --from-literal IBM_COS_REGION_PRIMARY=${COS_REGION_PRIMARY} \
-      --from-literal IBM_COS_ENDPOINT_PRIMARY=${COS_ENDPOINT_PRIMARY} \
-      --from-literal BUCKET_TIMESTAMP_FILENAME=${BUCKET_TIMESTAMP_FILENAME}
+    --from-literal COS_BUCKET_NAME_PRIMARY=${COS_BUCKET_NAME_PRIMARY} \
+    --from-literal IBM_COS_RESOURCE_INSTANCE_ID_PRIMARY=${COS_INSTANCE_CRN_PRIMARY} \
+    --from-literal IBM_COS_REGION_PRIMARY=${COS_REGION_PRIMARY} \
+    --from-literal IBM_COS_ENDPOINT_PRIMARY=${COS_ENDPOINT_PRIMARY} \
+    --from-literal COS_BUCKET_NAME_SECONDARY=${COS_BUCKET_NAME_SECONDARY} \
+    --from-literal IBM_COS_RESOURCE_INSTANCE_ID_SECONDARY=${COS_INSTANCE_CRN_SECONDARY} \
+    --from-literal IBM_COS_REGION_SECONDARY=${COS_REGION_SECONDARY} \
+    --from-literal IBM_COS_ENDPOINT_SECONDARY=${COS_ENDPOINT_SECONDARY}
 
     if [ $? -eq 0 ]; then
       echo -e "${GREEN}SUCCESS${NC}: Step 6.1: Base secret update complete."
@@ -151,20 +154,15 @@ fi
 echo "---"
 echo "Step 6.2: Creating Auth Secret: $AUTH_SECRET"
 ibmcloud ce secret create --name ${AUTH_SECRET} \
-  --from-literal IBM_COS_CRTokenFilePath_PRIMARY=${IBM_COS_CRTokenFilePath_PRIMARY} \
-  --from-literal IBM_COS_CRTokenFilePath_SECONDARY=${IBM_COS_CRTokenFilePath_SECONDARY} \
-  --from-literal IBM_COS_TRUSTED_PROFILE_ID_PRIMARY=${COS_TRUSTED_PROFILE_ID_PRIMARY} \
-  --from-literal IBM_COS_TRUSTED_PROFILE_ID_SECONDARY=${COS_TRUSTED_PROFILE_ID_SECONDARY}
+  --from-literal IBM_COS_TRUSTED_PROFILE_ID=${COS_TRUSTED_PROFILE_ID}
+
 if [ $? -ne 0 ]; then
     echo "Secret '${AUTH_SECRET}' already exists."
     read -p "Do you want to override the existing auth secret? (y/n): " confirm
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
         echo "Updating secret ${AUTH_SECRET}..."
         ibmcloud ce secret update --name ${AUTH_SECRET} \
-          --from-literal IBM_COS_CRTokenFilePath_PRIMARY=${IBM_COS_CRTokenFilePath_PRIMARY} \
-          --from-literal IBM_COS_CRTokenFilePath_SECONDARY=${IBM_COS_CRTokenFilePath_SECONDARY} \
-          --from-literal IBM_COS_TRUSTED_PROFILE_ID_PRIMARY=${COS_TRUSTED_PROFILE_ID_PRIMARY} \
-          --from-literal IBM_COS_TRUSTED_PROFILE_ID_SECONDARY=${COS_TRUSTED_PROFILE_ID_SECONDARY}
+          --from-literal IBM_COS_TRUSTED_PROFILE_ID=${COS_TRUSTED_PROFILE_ID}
         
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}SUCCESS${NC}: Step 6.3: Auth secret update complete."
@@ -187,20 +185,27 @@ ibmcloud ce job create --name ${JOB_NAME} \
   --src "." \
   --env-from-secret ${BASE_SECRET} \
   --env-from-secret ${AUTH_SECRET} \
-  --argument true 2>/dev/null \
-  --wait
-  # --registry-secret ${CONTAINER_REGISTRY_SECRET} \
+  --wait \
+  --trusted-profiles-enabled \
+  --argument true 2>/dev/null
 
 if [ $? -ne 0 ]; then
-  # echo "Job '${JOB_NAME}' already exists. Exiting"
-  # exit 1
+  echo "Job '${JOB_NAME}' already exists."
+  read -p "Do you want to override the existing Job? (y/n): " confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
 
-  echo "Job '${JOB_NAME}' already exists. Updating Job."
-  ibmcloud ce job update --name ${JOB_NAME} --image "${JOB_IMAGE}" \
-  --env-from-secret ${BASE_SECRET} \
-  --env-from-secret ${AUTH_SECRET} \
-  --argument true 2>/dev/null
-  # --registry-secret ${CONTAINER_REGISTRY_SECRET} \
+    echo "Job '${JOB_NAME}' already exists. Updating Job."
+    ibmcloud ce job update --name ${JOB_NAME} \
+    --src "." \
+    --env-from-secret ${BASE_SECRET} \
+    --env-from-secret ${AUTH_SECRET} \
+    --wait \
+    --trusted-profiles-enabled \
+    --argument true 2>/dev/null
+  else
+        echo "Job update cancelled by user. Exiting..."
+        exit 0
+  fi
 fi
 if [ $? -eq 0 ]; then
 echo -e "${GREEN}SUCCESS${NC}Step 7: Job Created" 
@@ -231,16 +236,3 @@ ibmcloud iam trusted-profile-policy-create ${TRUSTED_PROFILE_NAME} \
 --service-name cloud-object-storage \
 --service-instance ${COS_INSTANCE_CRN_SECONDARY} 2>/dev/null
 # echo "***** DONE: Linking Secondary COS To Trusted Profile"
-
-echo "Step 8.4: Compute Resource Token"
-curl \
-  --request PATCH "https://api.${PROJECT_REGION}.codeengine.cloud.ibm.com/v2/projects/$(ibmcloud ce project current --output json | jq -r .guid)/jobs/${JOB_NAME}" \
-  --header 'Accept: application/json' \
-  --header "Authorization: $(ibmcloud iam oauth-tokens --output json | jq -r '.iam_token')" \
-  --header 'Content-Type: application/merge-patch+json' \
-  --header 'If-Match: *' \
-  --data-raw "{
-    \"run_compute_resource_token_enabled\": true
-  }" 2>/dev/null
-# echo "******* DONE: Compute Resource Token *******"
-
