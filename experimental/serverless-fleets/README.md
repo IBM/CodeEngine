@@ -526,7 +526,7 @@ Repeat the steps to observe the fleet.
 
 ## Launch a fleet to count words of novels
 
-This example will run a simple `wc` (word count) on a list of [novels](./data/tutorial/wordcount) stored as objects in .txt format in Cloud Object Storage.
+This example will run a simple `wc` (word count) on a list of [novels](./data/tutorials/wordcount) stored as objects in .txt format in Cloud Object Storage.
 The 6 tasks are submitted using the `tasks-from-file` option using the [wordcount_commands.jsonl](./wordcount_commands.jsonl) as input.
 
 ![](./images/example_wordcount.png)
