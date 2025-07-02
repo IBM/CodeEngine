@@ -2,7 +2,7 @@
 REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 
-ibmcloud login --sso -r eu-de -g "${NAME_PREFIX}--rg"
+ibmcloud login --sso -r "$REGION" -g "${NAME_PREFIX}--rg"
 
 
 ibmcloud ce project select --name "${NAME_PREFIX}--ce-project"
