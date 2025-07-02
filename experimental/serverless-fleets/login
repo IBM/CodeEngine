@@ -1,5 +1,5 @@
 #!/bin/sh
-
+REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 
 ibmcloud login --sso -r eu-de -g "${NAME_PREFIX}--rg"
