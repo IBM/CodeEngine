@@ -492,7 +492,7 @@ ibmcloud ce secret create --name fleet-cos-config \
 --from-literal endpoint="https://s3.direct.${REGION}.cloud-object-storage.appdomain.cloud" \
 --from-literal bucket_name=${cos_bucket_name} \
 --from-literal bucket_region=$REGION \
---from-literal mountpoint="/ce/data" \
+--from-literal container_mount_point="/mnt/ce/data" \
 --from-literal prefix="" \
 --from-literal resource_instance_id=$COS_ID  
 
