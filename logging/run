@@ -1,0 +1,42 @@
+#!/bin/bash
+set -eo pipefail
+
+PREFIX="${PREFIX:=logging-sample}"
+LANGUAGE="${1:=all}"
+
+languages=(
+    node
+    python
+    go
+    java
+)
+
+for i in "${languages[@]}"; do
+
+    if [[ "$LANGUAGE" == "all" || "$LANGUAGE" == "$i" ]];then 
+        echo "Deploying Code Engine job for $i ..."
+        job_name="$i-${PREFIX}"
+
+        create_or_update=update
+        if ! ibmcloud ce job get --name $job_name >/dev/null 2>&1; then
+            echo -e "\nCreating the job '$job_name' ..."
+            create_or_update=create
+        else
+            echo -e "\nUpdating the job '$job_name' ..."
+        fi
+        
+        ibmcloud ce job $create_or_update --n "$job_name" --src . --context-dir "$i/" --memory 0.5G --cpu 0.25 --wait
+
+        echo "Submit a job run for $i ..."
+        jobrun_name="$job_name-$(openssl rand -hex 6)"
+        ibmcloud ce jobrun submit --job "$job_name" --name "$jobrun_name" --wait
+
+        echo "Printing the logs for '$jobrun_name' ..."
+        ibmcloud ce jobrun logs --jobrun "$jobrun_name"
+
+    else 
+        continue;
+    fi
+done
+
+echo "Done"

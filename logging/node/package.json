@@ -1,0 +1,16 @@
+{
+    "name": "ce-logging",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.mjs",
+    "scripts": {
+      "start": "node .",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "license": "MIT",
+    "homepage": "https://cloud.ibm.com/containers/serverless",
+    "dependencies": {
+      "winston": "^3.17.0"
+    }
+  }
