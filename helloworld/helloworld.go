@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +35,9 @@ func Curl(url string) (string, error) {
 	res, err := cmd.CombinedOutput()
 	return string(res), err
 }
+
+const bucketDir = "/mnt/bucket"
+const bucketServePath = "/bucket"
 
 var GlobalDebug = (os.Getenv("DEBUG") != "")
 var envs = []string{}
@@ -56,6 +60,7 @@ func Debug(doit bool, format string, args ...interface{}) {
 
 // Just print an cool essage to the Writer that's passed in
 func PrintMessage(w io.Writer, showAll bool) {
+	// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
 	fmt.Fprintf(w, "%s:\n", msg)
 	fmt.Fprintln(w, `. ___  __  ____  ____`)
 	fmt.Fprintln(w, `./ __)/  \(    \(  __)`)
@@ -83,6 +88,16 @@ func PrintMessage(w io.Writer, showAll bool) {
 			}
 		}
 		fmt.Fprintf(w, "%s\n", env)
+	}
+
+	if IsBucketMounted() {
+		fmt.Fprintf(w, "--------------\n")
+		fmt.Fprintf(w, "\n")
+		fmt.Fprintf(w, "Deteceted a mounted COS bucket under '%s'.\n", bucketDir)
+		fmt.Fprintf(w, "Feel free to explore!\n")
+		if !IsJob() {
+			fmt.Fprintf(w, "https://%s%s\n", AppURL(), bucketServePath)
+		}
 	}
 }
 
@@ -145,11 +160,80 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	// But if there is a body, echo it back to the client.
 	if len(body) == 0 {
 		w.Header().Add("Content-Type", "text/plain")
-		// http://patorjk.com/software/taag/#p=display&f=Graceful&t=Code%0AEngine
 		PrintMessage(w, showAll)
 	} else {
 		fmt.Fprintf(w, string(body)+"\n")
 	}
+}
+
+func IsJob() bool {
+	// If we're being run as a Batch Jobthen the JOB_INDEX env var will be set.
+	return os.Getenv("JOB_INDEX") != ""
+}
+
+func AppURL() string {
+	return fmt.Sprintf("%s.%s.%s", os.Getenv("CE_APP"), os.Getenv("CE_SUBDOMAIN"), os.Getenv("CE_DOMAIN"))
+}
+
+func IsBucketMounted() bool {
+	info, err := os.Stat(bucketDir)
+	return err == nil && info.IsDir()
+}
+
+func NewBucketRouter() http.Handler {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", BucketLandingPageHandler)
+	mux.HandleFunc("/upload", FileUploadHandler)
+
+	fileServer := http.FileServer(http.Dir(bucketDir))
+	mux.Handle("/files/", http.StripPrefix("/files/", fileServer))
+
+	return http.StripPrefix(bucketServePath, mux)
+}
+
+func BucketLandingPageHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprintf(w, `
+        <h2>Bucket Explorer</h2>
+        <p>Use this form to upload files to the bucket mounted at '%s'.</p>
+        <form action="%s/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="file">
+            <input type="submit" value="Upload File">
+        </form>
+        <br>
+        <h3><a href="%s/files/">Browse Uploaded Files</a></h3>
+    `, bucketDir, bucketServePath, bucketServePath)
+}
+
+func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	dstPath := filepath.Join(bucketDir, handler.Filename)
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		http.Error(w, "Unable to create the file for writing", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		http.Error(w, "Unable to copy file content", http.StatusInternalServerError)
+		return
+	}
+
+	Debug(false, "Successfully uploaded file: %s", handler.Filename)
+	http.Redirect(w, r, bucketServePath, http.StatusSeeOther)
 }
 
 func main() {
@@ -208,12 +292,10 @@ func main() {
 	Debug(false, "Envs:\n%s", strings.Join(envs, "\n"))
 
 	// Real work.
-	// If we're being run as a Batch Jobthen the JOB_INDEX env var
-	// will be set. In which case, just print the message to stdout.
+	// If we're being run as a Batch Job just print the message to stdout.
 	// Otherwise we're an App and we need to start the HTTP server
 	// to processing incoming requests
-	if jobIndex := os.Getenv("JOB_INDEX"); jobIndex != "" {
-
+	if IsJob() {
 		// Jobs can be either started in 'task' mode and run to completion or in 'daemon' mode which
 		jobMode := os.Getenv("JOB_MODE")
 
@@ -234,7 +316,7 @@ func main() {
 				time.Sleep(time.Duration(sleepDuration) * time.Second)
 			}
 
-			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s of %s\n\n", jobMode, jobIndex, os.Getenv("JOB_ARRAY_SIZE"))
+			fmt.Printf("Hello from helloworld! I'm a %s job! Index: %s of %s\n\n", jobMode, os.Getenv("JOB_INDEX"), os.Getenv("JOB_ARRAY_SIZE"))
 			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 			// If the 'CRASH' or 'FAIL' env vars are set then crash!
@@ -254,6 +336,10 @@ func main() {
 
 		// Debug the http handler for all requests
 		http.HandleFunc("/", HandleHTTP)
+
+		if IsBucketMounted() {
+			http.Handle(bucketServePath+"/", NewBucketRouter())
+		}
 
 		// HTTP_DELAY will pause for 'delay' seconds before starting the
 		// HTTP server. This is useful for simulating a long readiness probe
