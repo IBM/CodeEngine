@@ -1,33 +1,45 @@
 package main
 
 import (
+	"log/slog"
 	"os"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func init() {
-	stdout := zapcore.AddSync(os.Stdout)
 
-	level := zap.NewAtomicLevelAt(zap.InfoLevel)
+	logHandlerOptions := &slog.HandlerOptions{
 
-	encoderCfg := zap.NewProductionEncoderConfig()
-	encoderCfg.TimeKey = "timestamp"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderCfg.MessageKey = "message"
-	consoleEncoder := zapcore.NewJSONEncoder(encoderCfg)
+		Level: slog.Level(0),
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 
-	zap.ReplaceGlobals(zap.New(zapcore.NewCore(consoleEncoder, stdout, level)))
+			if a.Key == "msg" {
+				return slog.Attr{
+					Key:   "message",
+					Value: a.Value,
+				}
+			}
+			if a.Key == "time" {
+				return slog.Attr{
+					Key:   "timestamp",
+					Value: a.Value,
+				}
+			}
+			return a
+
+		},
+	}
+	handler := slog.NewJSONHandler(os.Stdout, logHandlerOptions)
+
+	slog.SetDefault(slog.New(handler))
 }
 
 func main() {
-	logger := zap.L()
+	logger := slog.With()
 
 	logger.Info("This is a simple log message")
 
 	logger.Info("A log entry that adds another key-value pair",
-		zap.String("extra_key", "extra_value"),
+		"extra_key", "extra_value",
 	)
 
 }
