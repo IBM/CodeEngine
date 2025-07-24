@@ -16,7 +16,6 @@ uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 resource_group_name="${NAME_PREFIX}--rg"
 ce_project_name="${NAME_PREFIX}--ce-project"
 vpc_name="${NAME_PREFIX}--is-vpc"
-vsi_jumpbox_name="${NAME_PREFIX}--is-vsi-jumpbox"
 apikey_name="${NAME_PREFIX}--apikey"
 sshkey_name="${NAME_PREFIX}--sshkey"
 cos_name="${NAME_PREFIX}--cos"
@@ -58,12 +57,6 @@ function clean() {
 
         ibmcloud iam api-key-delete ${apikey_name} --force 2>/dev/null
 
-        ibmcloud is floating-ip-release $vsi_jumpbox_name-ip --force 2>/dev/null
-        ibmcloud is instance-delete $vsi_jumpbox_name --force 2>/dev/null
-        while [ $? == 0 ]; do
-            sleep 2
-            ibmcloud is instance $vsi_jumpbox_name >/dev/null 2>&1
-        done
         ibmcloud is key-delete ${sshkey_name} --force 2>/dev/null
         ibmcloud is subnet-delete $vpc_name-subnet --force 2>/dev/null
         ibmcloud is network-acl-delete $vpc_name-acl --force 2>/dev/null
