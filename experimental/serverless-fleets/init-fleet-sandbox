@@ -5,10 +5,8 @@ CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=false}
 CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
 REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
-DEBUG_MODE="${DEBUG_MODE:=false}"
-REGISTRY=${REGISTRY:-icr.io/codeengine}
 SETUP_LOGGING="${SETUP_LOGGING:-true}"
-SETUP_MONITORING="${SETUP_MONITORING:-false}"
+SETUP_MONITORING="${SETUP_MONITORING:-true}"
 
 
 # Generate a short uuid for some resources
@@ -31,33 +29,9 @@ sysdig_key_name="${NAME_PREFIX}--sysdig-key"
 # ==============================
 # COMMON FUNCTIONS
 # ==============================
-RED="\033[31m"
-BLUE="\033[94m"
-GREEN="\033[32m"
-ENDCOLOR="\033[0m"
 
-function print_error {
-    echo -e "${RED}\n==========================================${ENDCOLOR}"
-    echo -e "${RED} FAILED${ENDCOLOR}"
-    echo -e "${RED}==========================================\n${ENDCOLOR}"
-    echo -e "${RED}$1${ENDCOLOR}"
-    echo ""
-}
-function print_msg {
-    echo -e "${BLUE}$1${ENDCOLOR}"
-}
-function print_success {
-    echo -e "${GREEN}$1${ENDCOLOR}"
-}
-
-# Helper function to check whether prerequisites are installed
-function check_prerequisites {
-    # Ensure that jq tool is installed
-    if ! command -v jq &>/dev/null; then
-        print_error "'jq' tool is not installed"
-        exit 1
-    fi
-}
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source ${SCRIPT_DIR}/common.sh
 
 # Clean up previous run
 function clean() {
@@ -140,6 +114,8 @@ function abortScript() {
     exit 1
 }
 
+
+
 if [[ "$1" == "clean" ]]; then
     print_msg "\nCleaning up the created IBM Cloud resources ..."
     clean
@@ -168,13 +144,13 @@ ibmcloud update --force
 # Ensure that latest versions of used IBM Cloud CLI plugins are installed
 print_msg "\nInstalling required experiemental IBM Cloud CLI plugins ..."
 export CE_EXPERIMENTAL_FLEET=true 
-ibmcloud plugin install code-engine -f --quiet
-ibmcloud plugin install vpc-infrastructure -f --quiet
-ibmcloud plugin install cloud-object-storage -f --quiet
-ibmcloud plugin install container-registry -f --quiet
+ensure_plugin_is_up_to_date code-engine
+ensure_plugin_is_up_to_date vpc-infrastructure
+ensure_plugin_is_up_to_date cloud-object-storage
+ensure_plugin_is_up_to_date container-registry
 
 print_msg "\nTargetting IBM Cloud region '$REGION' ..."
-ibmcloud target -r $REGION
+target_region $REGION
 
 #
 # Create the resource group, if it does not exist
@@ -183,8 +159,7 @@ if [ $? != 0 ]; then
     print_msg "\nCreating resource group '$resource_group_name' ..."
     ibmcloud resource group-create $resource_group_name
 fi
-print_msg "\nTargetting resource group '$resource_group_name' ..."
-ibmcloud target -g $resource_group_name
+target_resource_group $resource_group_name
 
 #
 # Check whether Logging should be configured
@@ -307,13 +282,8 @@ if [ $? -ne 0 ]; then
     abortScript
 fi
 
-# Allow access to the jumpbox via ssh only from your current IP
-remote_ip=$(curl -s https://ipv4.icanhazip.com/)
-print_msg "\nLimit access to the jumpbox via SSH to your current IP address '${remote_ip}' ..."
-
 print_msg "\nCreating required VPC Security group rules ..."
 ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 0.0.0.0/0 --vpc $vpc_name >/dev/null
-ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --remote ${remote_ip} --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
 ibmcloud is security-group-rule-add $vpc_name-group inbound all --remote $vpc_name-group --vpc $vpc_name >/dev/null
 echo "Done"
 
@@ -355,54 +325,6 @@ if [[ "$SETUP_MONITORING" == "true" ]]; then
         abortScript
     fi
 fi
-
-#
-# Create the ssh key for jump box server VSI
-print_msg "\nGenerating a ssh key-pair in './${sshkey_name}' and './${sshkey_name}.pub'  ..."
-ssh-keygen -t rsa -b 4096 -f ${sshkey_name} -N ''
-ibmcloud is key-create ${sshkey_name} @./${sshkey_name}.pub
-
-#
-# Create the jump box server VSI
-print_msg "\nCreating the VPC VSI '$vsi_jumpbox_name', which acts as the jumpbox server ..."
-ibmcloud is instance-create $vsi_jumpbox_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
-    --image "ibm-ubuntu-24-04-6-minimal-amd64-1" \
-    --boot-volume '{"name": "boot-vol-attachment-name", "volume": {"name": "my-agent-boot-vol", "capacity": 100, "profile": {"name": "general-purpose"}}, "delete_volume_on_instance_delete": true}' \
-    --resource-group-name $resource_group_name \
-    --host-failure-policy restart \
-    --primary-network-interface "{\"name\": \"eth0\", \"allow_ip_spoofing\": false, \"auto_delete\": true, \"subnet\": {\"name\":\"${vpc_name}-subnet\"}, \"primary_ip\": {\"auto_delete\": true}, \"security_groups\": [{\"name\": \"${vpc_name}-group\"}]}" \
-    --keys "${sshkey_name}"
-if [ $? -ne 0 ]; then
-    print_error "VPC VSI creation failed!"
-    abortScript
-fi
-
-print_msg "\nWaiting for the VSI '$vsi_jumpbox_name' to start ..."
-COUNTER=0
-while ! [[ $(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.status') == "running" ]]; do
-    sleep 2
-    COUNTER=$((COUNTER + 1))
-    if ((COUNTER > 10)); then
-        print_error "The VSI does not became ready as expected. Perform 'ibmcloud is instance $vsi_jumpbox_name' for further details."
-        abortScript
-    fi
-done
-echo "VSI '$vsi_jumpbox_name' is running, now!"
-
-#
-# Assign the floating IP
-print_msg "\nAssigning a VPC Floating IP to the primary network interface of VSI '$vsi_jumpbox_name' ..."
-ibmcloud is floating-ip-reserve $vsi_jumpbox_name-ip --nic eth0 --in $vsi_jumpbox_name
-if [ $? -ne 0 ]; then
-    print_error "VPC Floating IP assignment failed!"
-    abortScript
-fi
-public_ip_address=$(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
-private_ip_address=$(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.primary_network_interface|.primary_ip|.address')
-
-#
-# Copying ssh private ssh-key over to the jumpbox
-scp -i ${sshkey_name} -o UserKnownHostsFile=/dev/null -o StrictHostKeychecking=no ./${sshkey_name} root@${public_ip_address}:/root/.ssh/id_rsa
 
 #
 # Creating COS instance and bucket
@@ -461,14 +383,20 @@ if [ $? -ne 0 ]; then
 fi
 project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
 
+#
+# Create the ssh key for jump box server VSI
+print_msg "\nGenerating a ssh key-pair in './${sshkey_name}' and './${sshkey_name}.pub'  ..."
+ssh-keygen -t rsa -b 4096 -f ${sshkey_name} -N ''
+ibmcloud is key-create ${sshkey_name} @./${sshkey_name}.pub
+
+print_msg "\nCreating a Code Engine secret 'fleet-ssh-secret' for public ssh key  ..."
+ibmcloud ce secret create --name fleet-ssh-secret --format ssh --key-path ./${sshkey_name}.pub
+
 print_msg "\nCreating an API Key '${apikey_name}' for ICR credentials ..."
 apikey="$(ibmcloud iam api-key-create ${apikey_name} -q -o json|jq -r '.apikey')"
 
 print_msg "\nCreating a Code Engine secret 'fleet-registry-secret' for ICR credentials ..."
 ibmcloud ce secret create --name fleet-registry-secret --format registry --server 'de.icr.io' --username iamapikey --password $apikey
-
-print_msg "\nCreating a Code Engine secret 'fleet-ssh-secret' for public ssh key  ..."
-ibmcloud ce secret create --name fleet-ssh-secret --format ssh --key-path ./${sshkey_name}.pub
 
 # using the common base VSI image "jwe-ubuntu24-gpu" enabled for GPU and including podman and s3fs 
 print_msg "\nCreating a Code Engine configmap 'fleet-vpc-config' to access the new VPC ..."
@@ -513,22 +441,14 @@ if [[ "$SETUP_MONITORING" == "true" ]]; then
         --from-literal MONITORING_INGESTION_REGION=${REGION}
 fi
 
-print_msg "\nBefore cleaning up, this end-to-end sample created the following set of IBM Cloud resources:"
+print_msg "\nThe Fleet demo sandbox has been configured. Please be aware that the created resources will occur costs in your account."
+echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
 ibmcloud resource service-instances --type all -g $resource_group_name
 
-if [[ "${CLEANUP_ON_SUCCESS}" == true ]]; then
-    print_msg "\nCleaning up the created IBM Cloud resources ..."
-    clean
-else
-    print_msg "\nThe Fleet demo sandbox has been configured. Please be aware that the created resources will occur costs in your account."
-    echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
-    ibmcloud resource service-instances --type all -g $resource_group_name
+print_msg "\nFollow the tutorial to launch your first Serverless Fleet with './run'"
 
-    print_msg "\nFollow the tutorial to launch your first Serverless Fleet with './run'"
-
-    if [[ "$SETUP_LOGGING" == "true" ]]; then
-        print_msg "\nLogging is enabled and logs can be accessed using the IBM Cloud Logs instance '$icl_name': $icl_dashboard_url"
-    fi
+if [[ "$SETUP_LOGGING" == "true" ]]; then
+    print_msg "\nLogging is enabled and logs can be accessed using the IBM Cloud Logs instance '$icl_name': $icl_dashboard_url"
 fi
 
 print_success "\n=========================================="
