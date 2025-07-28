@@ -18,7 +18,7 @@ locals {
   resource_credentials =jsondecode(ibm_resource_key.cos-credentials.credentials_json)
 }
 
-# create cos-but to upload 
+# create cos-but to upload
 resource "ibm_cos_bucket" "cos_bucket" {
   bucket_name = "fotobox-bucket"
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -39,22 +39,11 @@ resource "ibm_code_engine_secret" "fotobox-secret" {
   project_id = ibm_code_engine_project.ce-fotobox-project.id
   name = "fotobox-secret"
   format = "generic"
-  
+
   data = {
     "apikey" = local.resource_credentials.apikey
   }
 }
-
-#resource "ibm_code_engine_secret" "registry_secret" {
-#  project_id = ibm_code_engine_project.ce-fotobox-project.id
-#  name       = "container-registry-secret"
-#  format = "registry"
-#  data = {
-#    "username" = "iamapikey" # Use 'iamapikey' as username for IBM Cloud
-#    "password" = var.icr_secret
-#    "server"   = "us.icr.io" # Change if using a different registry
-#  }
-#}
 
 # create config map in project
 

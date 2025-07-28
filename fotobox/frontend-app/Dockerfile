@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:22 as build
+FROM egistry.access.redhat.com/ubi9/nodejs-22:latest as build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY . .
 RUN npm install && npm run build
 
 
-FROM --platform=linux/amd64 node:22
+FROM gcr.io/distroless/nodejs22
 
 WORKDIR /app
 
