@@ -29,17 +29,19 @@ $ brew install jq
 
 Login into IBM Cloud using the CLI 
 ```
-$ ibmcloud login 
+> ibmcloud login 
 ```
 
 Choose a proper region and resource group. In this script, we'll use the Frankfurt region and the default resource group.
 ```
-$ ibmcloud target -r eu-de
+> REGION=eu-de
+
+> ibmcloud target -r $REGION
 ```
 
 Create a new project 
 ```
-$ ibmcloud ce project create --name gallery 
+> ibmcloud ce project create --name gallery 
 
 Creating project 'gallery'...
 ID for project 'gallery' is '91efff97-1001-4144-997a-744ec8009303'.
@@ -51,8 +53,10 @@ OK
 Read the project guid from the CLI output and store it in a local variable. 
 We'll need it later on to configure the bucket.
 ```
-$ export CE_PROJECT_GUID=$(ibmcloud ce project current --output json|jq -r '.guid')
-$ echo "CE_PROJECT_GUID: $CE_PROJECT_GUID"
+> export CE_PROJECT_GUID=$(ibmcloud ce project current --output json|jq -r '.guid')
+> echo "CE_PROJECT_GUID: $CE_PROJECT_GUID"
+
+CE_PROJECT_GUID: 91efff97-1001-4144-997a-744ec8009303
 ```
 
 Once the project has become active, you are good to proceed with the next step.
@@ -61,7 +65,7 @@ Once the project has become active, you are good to proceed with the next step.
 
 Create an application
 ```
-$ ibmcloud ce app create --name gallery --image icr.io/codeengine/gallery
+> ibmcloud ce app create --name gallery --image icr.io/codeengine/gallery
 
 Creating application 'gallery'...
 Configuration 'gallery' is waiting for a Revision to become ready.
@@ -78,7 +82,7 @@ to compose an image gallery by either dragging the sample images into
 the preview box and click `Add`. Furthermore, it is possible to upload images 
 from the local workstation, by clicking `Upload`. 
 
-Note, that the image gallery will reset, once the browser reloads.
+Note, that the image gallery will reset, once the app instance tears down.
 
 ![Gallery application](./docs/application-in-memory.png)
 
@@ -91,8 +95,8 @@ in this case IBM Cloud Object Storage.
 
 First we'll create a new instance of that service:
 ```
-$ ibmcloud resource service-instance-create gallery-cos \
-    cloud-object-storage standard global
+> ibmcloud resource service-instance-create gallery-cos \
+    cloud-object-storage standard global -d premium-global-deployment-iam
 
 Creating service instance gallery-cos in resource group default of account John Doe's Account as abc@ibm.com...
 OK
@@ -118,13 +122,13 @@ From this output you'll need to save the `ID` value for a future command.
 So to make life easier, let's save it as an environment variable:
 
 ```
-$ export COS_ID=$(ibmcloud resource service-instance gallery-cos --output json|jq -r '.[]|.crn')
-$ echo "COS_ID: $COS_ID" 
+> export COS_INSTANCE_ID=$(ibmcloud resource service-instance gallery-cos --output json|jq -r '.[]|.id')
+> echo "COS_INSTANCE_ID: $COS_INSTANCE_ID" 
 ```
 
 Let's direct all COS CLI uses to our COS instance:
 ```
-$ ibmcloud cos config crn --crn $COS_ID --force
+> ibmcloud cos config crn --crn $COS_INSTANCE_ID --force
 
 Saving new Service Instance ID...
 OK
@@ -135,10 +139,18 @@ Now, let's use the "IAM" authentication method which will use the same API Key
 that the rest of our CLI commands will use:
 
 ```
-$ ibmcloud cos config auth --method IAM
+> ibmcloud cos config auth --method IAM
 
 OK
 Successfully switched to IAM-based authentication. The program will access your Cloud Object Storage account using your IAM Credentials.
+```
+
+Last, let's set the region for the bucket
+```
+> ibmcloud cos config region --region ${REGION}
+
+OK
+Successfully saved default region. The program will look for buckets in the region eu-de.
 ```
 
 Next, let's go ahead and create a new bucket into which our data will be stored.
@@ -148,14 +160,14 @@ we'll use our project's ID appended with "-gallery", but you can technically use
 easy use:
 
 ```
-$ export BUCKET="$CE_PROJECT_GUID-gallery"
-$ echo "BUCKET: $BUCKET"
+> export BUCKET="$CE_PROJECT_GUID-gallery"
+> echo "BUCKET: $BUCKET"
 ```
 
-Now let's ask COS to create our bucket:
+Now, let's ask COS to create our bucket:
 
 ```
-$ ibmcloud cos bucket-create --bucket $BUCKET
+> ibmcloud cos bucket-create --bucket $BUCKET
 
 OK
 Details about bucket 91efff97-1001-4144-997a-744ec8009303-gallery:
@@ -163,10 +175,29 @@ Region: eu-de
 Class: Standard
 ```
 
+In order to enable the Code Engine app to interact with the COS bucket, we'll create a service credential that contains HMAC credentials, store it in a Code Engine secret and create a persistent data store so that Code Engine components can mount the bucket.
+```
+> COS_HMAC_CREDENTIALS=$(ibmcloud resource service-key-create gallery-cos-credentials Writer --instance-id $COS_INSTANCE_ID --parameters '{"HMAC":true}' --output JSON)
+
+> ibmcloud ce secret create --name gallery-cos-hmac-credentials \
+    --format hmac \
+    --access-key-id "$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.access_key_id')" \
+    --secret-access-key "$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.secret_access_key')"
+
+Creating hmac_auth secret 'gallery-cos-hmac-credentials'...
+OK
+
+> ibmcloud ce persistentdatastore create --name gallery-cos-pds --cos-bucket-name $BUCKET --cos-access-secret gallery-cos-hmac-credentials
+
+Successfully created persistent data store named 'gallery-cos-pds'.
+OK
+```
+
 To complete this setup, we'll need to adjust the application configuration and make it aware of the persistence store.
 ```
-$ ibmcloud ce app update --name gallery \
-    --env BUCKET=$BUCKET \
+> ibmcloud ce app update --name gallery \
+    --mount-data-store /mnt/bucket=gallery-cos-pds: \
+    --env MOUNT_LOCATION=/mnt/bucket \
     --scale-down-delay 3600
 
 Updating application 'gallery' to latest revision.
@@ -177,21 +208,6 @@ Run 'ibmcloud ce application get -n gallery' to check the application status.
 OK
 
 https://gallery.172utxcdky5l.eu-de.codeengine.appdomain.cloud
-```
-
-Furthermore, we'll create a service binding between the application and the COS instance, which will expose
-credentials to the application allowing it to read and write to the COS instance.
-```
-$ ibmcloud ce app bind --name gallery --service-instance gallery-cos
-
-Binding service instance...
-Status: Done
-Waiting for application revision to become ready...
-The Configuration is still working to reflect the latest desired specification.
-Traffic is not yet migrated to the latest revision.
-Ingress has not yet been reconciled.
-Waiting for load balancer to be ready.
-OK
 ```
 
 Open the gallery application in your browser. Notice the Gallery title on the right-hand side has slightly changed. It now says `My Gallery hosted on IBM Cloud Object Storage`. Play around with the gallery by adding a few images. Notice, that the gallery images re-appear after reloading the page.
@@ -243,7 +259,7 @@ In order to allow the function to read and write to the bucket, we'll need to cr
 
 List all service credentials of the Object Storage instance:
 ```
-$ ibmcloud resource service-keys --instance-id $COS_ID
+$ ibmcloud resource service-keys --instance-id $COS_INSTANCE_ID
 
 Retrieving all service keys in resource group default under account John Does's Account as abc@ibm.com...
 OK
@@ -253,7 +269,7 @@ gallery-ce-service-binding-prw1t   active   Fri Sep  8 07:56:19 UTC 2023
 
 Extract the name of the service access secret, that has been created for the app
 ```
-$ export COS_SERVICE_CREDENTIAL=$(ibmcloud resource service-keys --instance-id $COS_ID --output json|jq -r '.[0].name')
+$ export COS_SERVICE_CREDENTIAL=$(ibmcloud resource service-keys --instance-id $COS_INSTANCE_ID --output json|jq -r '.[0].name')
 $ echo "COS_SERVICE_CREDENTIAL: $COS_SERVICE_CREDENTIAL"
 ```
 

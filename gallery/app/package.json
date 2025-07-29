@@ -9,6 +9,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "ibm-cos-sdk": "^1.13.1"
+    
   }
 }
