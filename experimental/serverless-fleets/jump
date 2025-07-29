@@ -1,7 +1,84 @@
-#!/bin/sh
+#!/bin/bash
 
 IP=$1
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
+REGION="${REGION:=eu-de}"
+vpc_name="${NAME_PREFIX}--is-vpc"
+vsi_jumpbox_name="${NAME_PREFIX}--is-vsi-jumpbox"
+sshkey_name="${NAME_PREFIX}--sshkey"
+ce_project_name="${NAME_PREFIX}--ce-project"
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source ${SCRIPT_DIR}/common.sh
+
+ibmcloud account show
+if [ $? != 0 ]; then
+    print_error "\nMake sure your logged in into the correct IBM Cloud account"
+    exit 1
+fi
+
+target_region $REGION
+
+target_resource_group $resource_group_name
+
+
+function clean() {
+    ibmcloud is floating-ip-release $vsi_jumpbox_name-ip --force 2>/dev/null
+    ibmcloud is instance-delete $vsi_jumpbox_name --force 2>/dev/null
+    while [ $? == 0 ]; do
+        sleep 2
+        ibmcloud is instance $vsi_jumpbox_name >/dev/null 2>&1
+    done
+}
+
+
+# Allow access to the jumpbox via ssh only from your current IP
+remote_ip=$(curl -s https://ipv4.icanhazip.com/)
+print_msg "\nLimit access to the jumpbox via SSH to your current IP address '${remote_ip}' ..."
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --remote ${remote_ip} --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
+
+#
+# Create the jump box server VSI
+print_msg "\nCreating the VPC VSI '$vsi_jumpbox_name', which acts as the jumpbox server ..."
+ibmcloud is instance-create $vsi_jumpbox_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
+    --image "ibm-ubuntu-24-04-6-minimal-amd64-1" \
+    --boot-volume '{"name": "boot-vol-attachment-name", "volume": {"name": "my-agent-boot-vol", "capacity": 100, "profile": {"name": "general-purpose"}}, "delete_volume_on_instance_delete": true}' \
+    --resource-group-name $resource_group_name \
+    --host-failure-policy restart \
+    --primary-network-interface "{\"name\": \"eth0\", \"allow_ip_spoofing\": false, \"auto_delete\": true, \"subnet\": {\"name\":\"${vpc_name}-subnet\"}, \"primary_ip\": {\"auto_delete\": true}, \"security_groups\": [{\"name\": \"${vpc_name}-group\"}]}" \
+    --keys "${sshkey_name}"
+if [ $? -ne 0 ]; then
+    print_error "VPC VSI creation failed!"
+    abortScript
+fi
+
+print_msg "\nWaiting for the VSI '$vsi_jumpbox_name' to start ..."
+COUNTER=0
+while ! [[ $(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.status') == "running" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        print_error "The VSI does not became ready as expected. Perform 'ibmcloud is instance $vsi_jumpbox_name' for further details."
+        abortScript
+    fi
+done
+echo "VSI '$vsi_jumpbox_name' is running, now!"
+
+#
+# Assign the floating IP
+print_msg "\nAssigning a VPC Floating IP to the primary network interface of VSI '$vsi_jumpbox_name' ..."
+ibmcloud is floating-ip-reserve $vsi_jumpbox_name-ip --nic eth0 --in $vsi_jumpbox_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Floating IP assignment failed!"
+    abortScript
+fi
+public_ip_address=$(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
+private_ip_address=$(ibmcloud is instance $vsi_jumpbox_name --output json | jq -r '.primary_network_interface|.primary_ip|.address')
+
+#
+# Copying ssh private ssh-key over to the jumpbox
+scp -i ${sshkey_name} -o UserKnownHostsFile=/dev/null -o StrictHostKeychecking=no ./${sshkey_name} root@${public_ip_address}:/root/.ssh/id_rsa
+
 
 JUMPBOX_FIP=$(ibmcloud is instance "${NAME_PREFIX}--is-vsi-jumpbox" --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
 
