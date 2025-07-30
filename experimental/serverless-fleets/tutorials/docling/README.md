@@ -57,7 +57,9 @@ cat commands.jsonl
 
 ### Step 3 - Run the Fleet
 
-Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--tasks-from-file commands.jsonl` to specify the tasks for the 11 pdfs. We give each task 24 vCPU, run docling with `--num-threads 24` and choose a mx3d-24x240 worker profile with 24 vCPU. Therefore we run only 1 docling command per worker at a time and utilize the full worker per pdf processing. We run `--max-scale 4` instances and workers in parallel. Launch the fleet with the following command in the `tutorials/docling` directory.
+Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--tasks-from-file commands.jsonl` to specify the tasks for the 11 pdfs. We give each task 24 vCPU, run docling with `--num-threads 24` and choose a mx3d-24x240 worker profile with 24 vCPU. Therefore we run only 1 docling command per worker at a time and utilize the full worker per pdf processing. We run `--max-scale 4` instances and workers in parallel. 
+
+Launch the fleet with the following command in the `tutorials/docling` directory.
 ```
 ./run
 ```
@@ -172,6 +174,10 @@ If you want to modify the tutorial to add some more parallism, e.g. to run 4 doc
 1. the arguments in commands.jsonl to `--num-threads 6`
 2. the cpu per task to `--cpu 6`
 Now, with `--max-scale 4` you would only get a single worker. Modify `--max-scale 8` to get 2 workers, each processing 4 docling commands.
+
+#### Run with a Serverless GPU
+
+Run `./run_gpu` to launch the docling commands on a GPU. This example, is bringing up a single `gx3-24x120x1l40s` and runs the 11 pdfs sequentially.
 
 
 ### Step 4 - Download results
