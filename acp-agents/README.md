@@ -168,7 +168,7 @@ make stop-podman
 
 ## Deploy to Code Engine
 
-### Prerequisits
+### Prerequisites
 
 Let's deploy the ACP agents on IBM Cloud Code Engine. You need to [Login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
