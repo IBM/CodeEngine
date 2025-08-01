@@ -75,7 +75,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 ```
 
 ```sh
-OLLAMA_HOST=192.168.178.26:11434 ollama serve
+OLLAMA_HOST=$(ipconfig getifaddr en0):11434 ollama serve
 ```
 
 ```sh
