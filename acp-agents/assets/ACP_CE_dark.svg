@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 312.6 70.1">
+  <defs>
+    <style>
+      .cls-1 {
+        mask: url(#mask);
+      }
+
+      .cls-2 {
+        font-family: IBMPlexSans-Bold, 'IBM Plex Sans';
+        font-size: 73.3px;
+        font-weight: 700;
+      }
+
+      .cls-2, .cls-3 {
+        isolation: isolate;
+      }
+
+      .cls-2, .cls-4 {
+        fill: #fff;
+      }
+
+      .cls-5 {
+        fill: url(#linear-gradient-3);
+      }
+
+      .cls-6 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-7 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="182.4" y1="1057.6" x2="205.7" y2="1057.6" gradientTransform="translate(0 -1008)" gradientUnits="userSpaceOnUse">
+      <stop offset=".2" stop-color="#000"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="-732.1" y1="-2685.4" x2="-705.9" y2="-2685.4" gradientTransform="translate(-2442 770) rotate(90)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000"/>
+      <stop offset=".8" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="182.4" y1="1022.7" x2="214.4" y2="1022.7" gradientTransform="translate(0 -1008)" gradientUnits="userSpaceOnUse">
+      <stop offset=".2" stop-color="#000"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mask" x="182.4" y="-11.4" width="93" height="93" maskUnits="userSpaceOnUse">
+      <g id="d">
+        <path class="cls-4" d="M240.5,40.9v23.2h-29v-29h11.6v-5.8h-14.3c-1.7,0-3.1,1.4-3.1,3.1v14.3h-20.3v5.8h20.3v14.3c0,1.7,1.4,3.1,3.1,3.1h34.4c1.7,0,3.1-1.4,3.1-3.1v-25.9h-5.8ZM185.3,11.8h37.8v5.8h-37.8v-5.8Z"/>
+        <path class="cls-7" d="M182.4,43.8h23.2v11.6h-23.2v-11.6Z"/>
+        <path class="cls-6" d="M249.2,37.9v26.1h-11.6v-26.1h11.6Z"/>
+        <path class="cls-5" d="M182.4,8.9h32v11.6h-32v-11.6Z"/>
+      </g>
+    </mask>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.8, SVG Export Plug-In . SVG Version: 1.2.0 Build 200)  -->
+  <g>
+    <g id="Layer_1">
+      <path class="cls-4" d="M82.9,70.1c-3.7,0-7.5-1.4-10.3-4.3-5.7-5.7-5.7-15,0-20.7l24.9-24.9v35.3c0,4-1.6,7.7-4.3,10.3-1.4,1.4-3,2.5-4.7,3.2s-3.6,1.1-5.6,1.1ZM57.1,44.3c-3.7,0-7.5-1.4-10.3-4.3s-4.3-6.6-4.3-10.3.4-3.8,1.1-5.4c.7-1.8,1.8-3.5,3.2-4.9,2.6-2.6,6.3-4.3,10.3-4.3h35.3l-24.9,24.9c-2.9,2.8-6.6,4.3-10.3,4.3h-.1ZM104,21.1c-2-2-2-5.2,0-7.1s5.2-2,7.1,0,2,5.2,0,7.1-5.2,2-7.1,0ZM91.5,8.6c-2-2-2-5.2,0-7.1,2-2,5.2-2,7.1,0,2,2,2,5.2,0,7.1-2,2-5.2,2-7.1,0Z"/>
+      <g class="cls-1">
+        <path class="cls-4" d="M182.4-11.4h93v93h-93s0-93,0-93Z"/>
+      </g>
+      <path class="cls-4" d="M266.7,40.9h-34.9c-1.6,0-2.9-1.3-2.9-2.9V3.1c0-1.6,1.3-2.9,2.9-2.9h34.9c1.6,0,2.9,1.3,2.9,2.9v34.9c0,1.6-1.3,2.9-2.9,2.9M234.7,35h29V6h-29v29Z"/>
+      <g class="cls-3">
+        <text class="cls-2" transform="translate(125.1 59.7)"><tspan x="0" y="0">+</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>
