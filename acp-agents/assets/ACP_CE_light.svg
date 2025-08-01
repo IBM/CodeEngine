@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 312.6 70.1">
+  <defs>
+    <linearGradient id="a" x1="182.4" x2="205.7" y1="22.4" y2="22.4"
+      gradientTransform="matrix(1 0 0 -1 0 72)" gradientUnits="userSpaceOnUse">
+      <stop offset=".2" />
+      <stop offset="1" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="b" x1="-433.1" x2="-406.9" y1="2458.4" y2="2458.4"
+      gradientTransform="matrix(0 1 1 0 -2215 471)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" />
+      <stop offset=".8" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient xlink:href="#a" id="c" x2="214.4" y1="57.3" y2="57.3" />
+    <mask id="d" width="93" height="93" x="182.4" y="-11.4" maskUnits="userSpaceOnUse">
+      <path
+        d="M240.5 40.9v23.2h-29v-29h11.6v-5.8h-14.3c-1.7 0-3.1 1.4-3.1 3.1v14.3h-20.3v5.8h20.3v14.3c0 1.7 1.4 3.1 3.1 3.1h34.4c1.7 0 3.1-1.4 3.1-3.1V40.9h-5.8Zm-55.2-29.1h37.8v5.8h-37.8v-5.8Z"
+        style="fill:#fff" />
+      <path d="M182.4 43.8h23.2v11.6h-23.2V43.8Z" style="fill:url(#a)" />
+      <path d="M249.2 37.9V64h-11.6V37.9h11.6Z" style="fill:url(#b)" />
+      <path d="M182.4 8.9h32v11.6h-32V8.9Z" style="fill:url(#c)" />
+    </mask>
+  </defs>
+  <path
+    d="M82.9 70.1c-3.7 0-7.5-1.4-10.3-4.3-5.7-5.7-5.7-15 0-20.7l24.9-24.9v35.3c0 4-1.6 7.7-4.3 10.3-1.4 1.4-3 2.5-4.7 3.2-1.7.7-3.6 1.1-5.6 1.1ZM57.1 44.3c-3.7 0-7.5-1.4-10.3-4.3s-4.3-6.6-4.3-10.3c0-1.9.4-3.8 1.1-5.4.7-1.8 1.8-3.5 3.2-4.9 2.6-2.6 6.3-4.3 10.3-4.3h35.3L67.5 40c-2.9 2.8-6.6 4.3-10.3 4.3ZM104 21.1c-2-2-2-5.2 0-7.1s5.2-2 7.1 0 2 5.2 0 7.1-5.2 2-7.1 0ZM91.5 8.6c-2-2-2-5.2 0-7.1 2-2 5.2-2 7.1 0 2 2 2 5.2 0 7.1-2 2-5.2 2-7.1 0Z" />
+  <path d="M182.4-11.4h93v93h-93v-93Z" style="mask:url(#d)" />
+  <path
+    d="M266.7 40.9h-34.9c-1.6 0-2.9-1.3-2.9-2.9V3.1c0-1.6 1.3-2.9 2.9-2.9h34.9c1.6 0 2.9 1.3 2.9 2.9V38c0 1.6-1.3 2.9-2.9 2.9m-32-5.9h29V6h-29v29Z" />
+  <text
+    style="font-family:IBMPlexSans-Bold,&quot;IBM Plex Sans&quot;;font-size:73.3px;font-weight:700"
+    transform="translate(125.1 59.7)">
+    <tspan x="0" y="0">+</tspan>
+  </text>
+</svg>

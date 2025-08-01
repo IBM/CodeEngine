@@ -1,0 +1,15 @@
+[project]
+name = "acp-multi-agent-code-engine-example"
+version = "0.1.0"
+description = "Add your description here"
+maintainers = [{ name = "Kai Wedekind", email = "kai.wedekind@de.ibm.com" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "acp-sdk>=0.9.1",
+    "crewai[tools]==0.120.1",
+    "mypy>=1.15.0",
+    "pre-commit>=4.2.0",
+    "pydantic-ai>=0.2.6",
+    "ruff>=0.11.10",
+]
