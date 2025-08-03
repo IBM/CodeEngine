@@ -4,8 +4,8 @@
   "description": "Change event listener for cloudant DB",
   "main": "job.mjs",
   "engines": {
-    "node": "^20",
-    "npm": "^10"
+    "node": "^22",
+    "npm": "^11"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
