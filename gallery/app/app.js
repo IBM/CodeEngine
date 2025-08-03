@@ -6,37 +6,20 @@ const { CosService } = require("./cos-service");
 
 const basePath = __dirname; // serving files from here
 
-const getCosConfig = () => {
-  const endpoint =
-    process.env.CLOUD_OBJECT_STORAGE_ENDPOINT ||
-    "s3.eu-de.cloud-object-storage.appdomain.cloud";
-  const serviceInstanceId =
-    process.env.CLOUD_OBJECT_STORAGE_RESOURCE_INSTANCE_ID;
-  const apiKeyId = process.env.CLOUD_OBJECT_STORAGE_APIKEY;
-  console.log(
-    `getCosConfig - endpoint: '${endpoint}', serviceInstanceId: ${serviceInstanceId}, apiKeyId: '${
-      apiKeyId && "*****"
-    }'`
-  );
+let GALLERY_PATH = "/app/tmp";
 
-  return {
-    endpoint,
-    apiKeyId,
-    serviceInstanceId,
-  };
-};
-
-// Init COS
-let cosService;
-if (process.env.CLOUD_OBJECT_STORAGE_APIKEY) {
-  cosService = new CosService(getCosConfig());
+// if the optional env var 'MOUNT_LOCATION' is not set, but a bucket has been mounted to /mnt/bucket assume it is a COS mount
+let isCosEnabled = false;
+if (process.env.MOUNT_LOCATION || existsSync("/mnt/bucket")) {
+  isCosEnabled = true;
+  GALLERY_PATH = process.env.MOUNT_LOCATION || "/mnt/bucket";
 }
 
 function getFunctionEndpoint() {
   if (!process.env.COLORIZER) {
     return undefined;
   }
-  return `https://${process.env.COLORIZER}.${process.env.CE_SUBDOMAIN}.${process.env.CE_DOMAIN}`;
+  return `http://${process.env.COLORIZER}.${process.env.CE_SUBDOMAIN}.function.cluster.local`;
 }
 
 async function invokeColorizeFunction(imageId) {
@@ -62,7 +45,7 @@ const mimetypeByExtension = Object.assign(Object.create(null), {
   png: "image/png",
 });
 
-function handleHttpReq(req, res) {
+async function handleHttpReq(req, res) {
   let reqPath = req.url;
   if (reqPath.startsWith("//")) {
     reqPath = reqPath.slice(1);
@@ -89,10 +72,9 @@ function handleHttpReq(req, res) {
 
     const enabledFeatures = {};
 
-    if (process.env.BUCKET && process.env.CLOUD_OBJECT_STORAGE_APIKEY) {
-      enabledFeatures.cos = {
-        bucket: process.env.BUCKET,
-        interval: parseInt(process.env.CHECK_INTERVAL) || 1_000,
+    if (existsSync(GALLERY_PATH)) {
+      enabledFeatures.fs = {
+        cos: isCosEnabled,
       };
     }
     if (process.env.COLORIZER) {
@@ -207,32 +189,18 @@ function handleHttpReq(req, res) {
   if (reqPath === "/delete-bucket-content") {
     console.info("Delete entire bucket content ...");
 
-    cosService
-      .getBucketContents(process.env.BUCKET, "")
-      .then((bucketContents) => {
-        return bucketContents.map((obj) => {
-          return {
-            Key: obj.Key,
-          };
-        });
-      })
-      .then((toBeDeletedObjects) => {
-        return cosService.deleteBucketObjects(
-          process.env.BUCKET,
-          toBeDeletedObjects
-        );
-      })
-      .then(() => {
-        res.setHeader("Content-Type", "application/json");
-        res.statusCode = 200;
-        res.end(`{"done": "true"}`);
-      })
-      .catch((reason) => {
-        console.log(`Error deleting bucket content: ${reason}`);
-        res.statusCode = 503;
-        res.end(`Error deleting bucket content: ${reason}`);
-        return;
-      });
+    try {
+      for (const file of await readdir(GALLERY_PATH)) {
+        await unlink(`${GALLERY_PATH}/${file}`);
+      }
+      res.setHeader("Content-Type", "application/json");
+      res.statusCode = 200;
+      res.end(`{"done": "true"}`);
+    } catch (err) {
+      console.log(`Error deleting gallery content: ${err}`);
+      res.statusCode = 503;
+      res.end(`Error deleting gallery content: ${err}`);
+    }
     return;
   }
 

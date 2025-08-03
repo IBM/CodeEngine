@@ -53,6 +53,13 @@ We'll need it later on to configure the bucket.
 ```
 $ export CE_PROJECT_GUID=$(ibmcloud ce project current --output json|jq -r '.guid')
 $ echo "CE_PROJECT_GUID: $CE_PROJECT_GUID"
+
+CE_PROJECT_GUID: 91efff97-1001-4144-997a-744ec8009303
+
+$ export CE_PROJECT_CRN=$(ibmcloud ce project get --name gallery --output json|jq -r '.crn')
+$ echo "CE_PROJECT_CRN: $CE_PROJECT_CRN"
+
+CE_PROJECT_CRN: crn:v1:bluemix:public:codeengine:eu-de:a/7658687ea07db8386963ebe2b8f1897a:91efff97-1001-4144-997a-744ec8009303::
 ```
 
 Once the project has become active, you are good to proceed with the next step.
@@ -99,7 +106,7 @@ OK
 Service instance gallery-cos was created.
                   
 Name:             gallery-cos
-ID:               crn:v1:bluemix:public:cloud-object-storage:global:a/7658687ea07db8396963ebe2b8e1897d:c0f324be-33fd-4989-a4af-376a13abb316::
+ID:               crn:v1:bluemix:public:cloud-object-storage:global:a/7658687ea07db8386963ebe2b8f1897a:c0f324be-33fd-4989-a4af-376a13abb316::
 GUID:             c0f324be-33fd-4989-a4af-376a13abb316
 Location:         global
 State:            active
@@ -217,10 +224,14 @@ Utilize local build capabilities, which is able to take your local source code a
 ```
 $ ibmcloud ce fn create --name change-color \
     --build-source . \
-    --runtime nodejs-20 \
+    --runtime nodejs-22 \
     --memory 4G \
     --cpu 1 \
-    --env BUCKET=$BUCKET
+    --env TRUSTED_PROFILE_NAME=ce-gallery-to-cos \
+    --env COS_BUCKET=$BUCKET \
+    --env COS_REGION=$REGION \
+    --trusted-profiles-enabled \
+    --visibility project
 
 Preparing function 'change-color' for build push...
 Creating function 'change-color'...
@@ -239,33 +250,15 @@ Run 'ibmcloud ce function get -n change-color' to see more details.
 https://change-color.172utxcdky5l.eu-de.codeengine.appdomain.cloud
 ```
 
-In order to allow the function to read and write to the bucket, we'll need to create a binding between the COS instance and the function to expose the Object Storage credentials to the functions code. As we already created such credentials for the application, we'll want to make sure to re-use it, as opposed to create new ones.
+In order to allow the function to read and write to the bucket, we'll need to create an IAM trusted profile between the COS instance and the function to expose the Object Storage credentials to the functions code. 
 
-List all service credentials of the Object Storage instance:
 ```
-$ ibmcloud resource service-keys --instance-id $COS_ID
+$ ibmcloud iam trusted-profile-create ce-gallery-to-cos
 
-Retrieving all service keys in resource group default under account John Does's Account as abc@ibm.com...
-OK
-Name                               State    Created At
-gallery-ce-service-binding-prw1t   active   Fri Sep  8 07:56:19 UTC 2023
-```
+$ ibmcloud iam trusted-profile-link-create ce-gallery-to-cos --name ce-fn-change-color --cr-type CE --link-crn ${CE_PROJECT_CRN} --link-component-type function --link-component-name change-color
 
-Extract the name of the service access secret, that has been created for the app
-```
-$ export COS_SERVICE_CREDENTIAL=$(ibmcloud resource service-keys --instance-id $COS_ID --output json|jq -r '.[0].name')
-$ echo "COS_SERVICE_CREDENTIAL: $COS_SERVICE_CREDENTIAL"
-```
+$ ibmcloud iam trusted-profile-policy-create ce-gallery-to-cos --roles "Writer" --service-name cloud-object-storage --service-instance ${COS_INSTANCE_ID} --resource-type bucket --resource ${BUCKET}
 
-Finally expose the COS credentials to the function by binding the service access secret to the function
-```
-$ ibmcloud ce function bind --name change-color \
-    --service-instance gallery-cos \
-    --service-credential $COS_SERVICE_CREDENTIAL
-
-Binding service instance...
-Status: Done
-OK
 ```
 
 In order to complete this step, we'll update the app and make it aware that there is a function that allows to change the colors of individual images.
