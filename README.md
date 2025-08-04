@@ -164,6 +164,8 @@ is demonstrating.
   This example shows how to create simple inline Python function
 - [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)
   This example shows how to create NodeJS functions with additional modules
+- [function-typescript-codebundle-nodejs](helloworld-samples/function-typescript-codebundle-nodejs)
+  This example shows how to create TypeScript functions with additional modules
 - [function-codebundle-python](helloworld-samples/function-codebundle-python)
   This example shows how to create Python functions with additional modules
 - [function-http-nodejs](helloworld-samples/function-http-nodejs)
