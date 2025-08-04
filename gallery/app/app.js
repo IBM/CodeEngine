@@ -6,13 +6,20 @@ const { open, readFile, writeFile, readdir, unlink } = require("fs/promises");
 
 const basePath = __dirname; // serving files from here
 
-const GALLERY_PATH = process.env.MOUNT_LOCATION || "/app/tmp";
+let GALLERY_PATH = "/app/tmp";
+
+// if the optional env var 'MOUNT_LOCATION' is not set, but a bucket has been mounted to /mnt/bucket assume it is a COS mount
+let isCosEnabled = false;
+if (process.env.MOUNT_LOCATION || existsSync("/mnt/bucket")) {
+  isCosEnabled = true;
+  GALLERY_PATH = process.env.MOUNT_LOCATION || "/mnt/bucket";
+}
 
 function getFunctionEndpoint() {
   if (!process.env.COLORIZER) {
     return undefined;
   }
-  return `https://${process.env.COLORIZER}.${process.env.CE_SUBDOMAIN}.${process.env.CE_DOMAIN}`;
+  return `http://${process.env.COLORIZER}.${process.env.CE_SUBDOMAIN}.function.cluster.local`;
 }
 
 async function invokeColorizeFunction(imageId) {
@@ -67,7 +74,7 @@ async function handleHttpReq(req, res) {
 
     if (existsSync(GALLERY_PATH)) {
       enabledFeatures.fs = {
-        cos: !!process.env.MOUNT_LOCATION,
+        cos: isCosEnabled,
       };
     }
     if (process.env.COLORIZER) {
@@ -183,7 +190,6 @@ async function handleHttpReq(req, res) {
       console.log(`Error deleting gallery content: ${err}`);
       res.statusCode = 503;
       res.end(`Error deleting gallery content: ${err}`);
-      
     }
     return;
   }

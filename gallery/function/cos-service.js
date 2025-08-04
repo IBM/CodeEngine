@@ -6,23 +6,38 @@
  * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
  ******************************************************************************/
 
-const ibm = require("ibm-cos-sdk");
+const { ContainerAuthenticator } = require("ibm-cloud-sdk-core");
+const { Readable } = require('node:stream');
 
+const responseToReadable = (response) => {
+  const reader = response.body.getReader();
+  const rs = new Readable();
+  rs._read = async () => {
+    const result = await reader.read();
+    if (!result.done) {
+      rs.push(Buffer.from(result.value));
+    } else {
+      rs.push(null);
+      return;
+    }
+  };
+  return rs;
+};
 class CosService {
-  cos;
   config;
+  authenticator;
 
   constructor(config) {
     const fn = "constructor";
     this.config = config;
-    this.cos = new ibm.S3(config);
-    console.debug(
-      `${fn}- initialized! instance: '${config.serviceInstanceId}'`
-    );
-  }
 
-  getServiceInstanceId() {
-    return this.config.serviceInstanceId;
+    // create an authenticator based on a trusted profile
+    this.authenticator = new ContainerAuthenticator({
+      iamProfileName: config.trustedProfileName,
+    });
+    console.log(
+      `CosService init - region: '${this.config.cosRegion}', bucket: ${this.config.cosBucket}, trustedProfileName: '${this.config.trustedProfileName}'`
+    );
   }
 
   getContentTypeFromFileName(fileName) {
@@ -60,61 +75,64 @@ class CosService {
   /**
    * https://ibm.github.io/ibm-cos-sdk-js/AWS/S3.html#putObject-property
    */
-  createObject(bucket, id, dataToUpload, mimeType, contentLength) {
+  async createObject(id, dataToUpload, mimeType, contentLength) {
     const fn = "createObject ";
     console.debug(`${fn}> id: '${id}', mimeType: '${mimeType}', contentLength: '${contentLength}'`);
 
-    return this.cos
-      .putObject({
-        Bucket: bucket,
-        Key: id,
-        Body: dataToUpload,
-        ContentType: mimeType,
-        ContentLength: contentLength,
-      })
-      .promise()
-      .then((obj) => {
-        console.debug(`${fn}< done`);
-        return true;
-      })
-      .catch((err) => {
-        console.error(err);
-        console.debug(`${fn}< failed`);
-        throw err;
-      });
-  }
+    // prepare the request to create the object files in the bucket
+    const requestOptions = {
+      method: "PUT",
+      body: dataToUpload,
+      headers: {
+        "Content-Type": mimeType,
+        "Content-Length": contentLength,
+      },
+    };
 
-  /**
-   * https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-node#node-examples-list-objects
-   */
-  getBucketContents(bucketName, prefix) {
-    const fn = "getBucketContents ";
-    console.debug(`${fn}> bucket: '${bucketName}', prefix: '${prefix}'`);
-    return this.cos
-      .listObjects({ Bucket: bucketName, Prefix: prefix })
-      .promise()
-      .then((data) => {
-        console.debug(`${fn}< done`);
-        if (data != null && data.Contents != null) {
-          return data.Contents;
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        console.debug(`${fn}< failed`);
-        return undefined;
-      });
+    // authenticate the request
+    await this.authenticator.authenticate(requestOptions);
+
+    // perform the request
+    const response = await fetch(
+      `https://s3.direct.${this.config.cosRegion}.cloud-object-storage.appdomain.cloud/${this.config.cosBucket}/${id}`,
+      requestOptions
+    );
+
+    if (response.status !== 200) {
+      console.error(`Unexpected status code: ${response.status}`);
+      throw new Error(`Failed to upload image: '${response.status}'`);
+    }
+    return;
   }
 
   /**
    * https://ibm.github.io/ibm-cos-sdk-js/AWS/S3.html#getObject-property
    * @param id
    */
-  getObjectAsStream(bucket, id) {
+  async getObjectAsStream(id) {
     const fn = "getObjectAsStream ";
     console.debug(`${fn}> id: '${id}'`);
 
-    return this.cos.getObject({ Bucket: bucket, Key: id }).createReadStream();
+    // prepare the request to list the files in the bucket
+    const requestOptions = {
+      method: "GET",
+    };
+
+    // authenticate the request
+    await this.authenticator.authenticate(requestOptions);
+
+    // perform the request
+    return fetch(
+      `https://s3.direct.${this.config.cosRegion}.cloud-object-storage.appdomain.cloud/${this.config.cosBucket}/${id}`,
+      requestOptions
+    ).then((response) => {
+      if (!response.ok) {
+        console.error(`${fn}< HTTP error, status = ${response.status}`);
+        throw new Error(`HTTP error, status = ${response.status}`);
+      }
+      console.debug(`${fn}< receiving response as readable stream`);
+      return responseToReadable(response);
+    });
   }
 }
 

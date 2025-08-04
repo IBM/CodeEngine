@@ -1,0 +1,496 @@
+#!/bin/bash
+
+# Env vars
+CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=false}
+CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
+REGION="${REGION:=eu-es}"
+NAME_PREFIX="${NAME_PREFIX:=ce-to-private-path}"
+VPC_SSH_KEY="${VPC_SSH_KEY:=}"
+DEBUG_MODE="${DEBUG_MODE:=false}"
+
+# Dependent variables
+resource_group_name="${NAME_PREFIX}--rg"
+ce_project_name="${NAME_PREFIX}--ce-project"
+ce_job_name="friendship-book-writer"
+ce_app_name="friendship-book-api"
+ce_db_credentials="db-credentials"
+vpc_name="${NAME_PREFIX}--is-vpc"
+vsi_originserver_name="${NAME_PREFIX}--is-vsi-originserver"
+
+# ==============================
+# COMMON FUNCTIONS
+# ==============================
+RED="\033[31m"
+BLUE="\033[94m"
+GREEN="\033[32m"
+ENDCOLOR="\033[0m"
+
+function print_error {
+    echo -e "${RED}\n==========================================${ENDCOLOR}"
+    echo -e "${RED} FAILED${ENDCOLOR}"
+    echo -e "${RED}==========================================\n${ENDCOLOR}"
+    echo -e "${RED}$1${ENDCOLOR}"
+    echo ""
+}
+function print_msg {
+    echo -e "${BLUE}$1${ENDCOLOR}"
+}
+function print_success {
+    echo -e "${GREEN}$1${ENDCOLOR}"
+}
+
+# Helper function to check whether prerequisites are installed
+function check_prerequisites {
+    # Ensure that jq tool is installed
+    if ! command -v jq &>/dev/null; then
+        print_error "'jq' tool is not installed"
+        exit 1
+    fi
+}
+
+# helper function to check whether IBM Cloud CLI plugins should get updated, or not
+function ensure_plugin_is_up_to_date() {
+    echo "Checking $1 ..."
+    # check whether plugin is installed
+    if ! ibmcloud plugin show $1 -q >/dev/null; then
+        # install it
+        ibmcloud plugin install $1 -f --quiet
+    else 
+        # check whether there is an update available
+        ibmcloud plugin update $1 -f --quiet
+    fi
+}
+
+
+# Clean up previous run
+function clean() {
+    (
+        rm -f userdata-vsi-agent.sh
+
+        ibmcloud is floating-ip-release $vsi_originserver_name-ip --force 2>/dev/null
+        ibmcloud is instance-delete $vsi_originserver_name --force 2>/dev/null
+        while [ $? == 0 ]; do
+            sleep 2
+            ibmcloud is instance $vsi_originserver_name >/dev/null 2>&1
+        done
+        ibmcloud is private-path-service-gateway-delete $vpc_name-pps --force
+        ibmcloud is load-balancer-delete $vpc_name-ppnlb  --force 
+        ibmcloud is subnet-delete $vpc_name-subnet --force 
+        ibmcloud is network-acl-delete $vpc_name-acl --force
+        ibmcloud is public-gateway-delete $vpc_name-gateway --force 
+        ibmcloud is security-group-delete $vpc_name-group --force 
+        ibmcloud is vpc-delete $vpc_name --force
+        while [ $? == 0 ]; do
+            sleep 2
+            ibmcloud is vpc $vpc_name
+        done
+
+        ibmcloud ce project select --name $ce_project_name --quiet 2>/dev/null
+        if [ $? == 0 ]; then
+            ibmcloud ce project delete --name $ce_project_name --force --hard --no-wait
+        fi
+
+        ibmcloud resource group $resource_group_name --quiet 2>/dev/null
+        if [[ $? == 0 ]]; then
+            COUNTER=0
+            # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
+            while (( "$(ibmcloud resource service-instances --type all -g $resource_group_name --output json | jq -r '. | length')" > 0 )); do
+                sleep 5
+                COUNTER=$((COUNTER + 1))
+                if ((COUNTER > 30)); then
+                    print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
+                    ibmcloud resource service-instances --type all -g $resource_group_name
+                    exit 1
+                fi
+            done
+        fi
+
+        ibmcloud resource group-delete $resource_group_name --force 2>/dev/null
+    )
+}
+
+function abortScript() {
+    if [[ "${CLEANUP_ON_ERROR}" == true ]]; then
+        clean
+    else
+        print_msg "\nSkipping deletion of the created IBM Cloud resources. Please be aware that the created resources will occur costs in your account."
+        echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
+        ibmcloud resource service-instances --type all -g $resource_group_name
+    fi
+    exit 1
+}
+
+# ==============================
+# MAIN SCRIPT FLOW
+# ==============================
+
+print_msg "\n======================================================"
+print_msg " Setting up \"Code Engine -> private backend\" sample"
+print_msg "======================================================\n"
+
+echo ""
+echo "Please note: This script will install various IBM Cloud resources within the resource group '$resource_group_name'."
+
+print_msg "\nChecking prerequisites ..."
+check_prerequisites
+
+# Ensure that latest versions of used IBM Cloud ClI is installed
+print_msg "\nPulling latest IBM Cloud CLI release ..."
+ibmcloud update --force
+
+# Ensure that latest versions of used IBM Cloud CLI plugins are installed
+print_msg "\nInstalling required IBM Cloud CLI plugins ..."
+ensure_plugin_is_up_to_date code-engine
+ensure_plugin_is_up_to_date vpc-infrastructure
+
+print_msg "\nCleaning up the remains of previous executions ..."
+clean
+[[ "$1" == "clean" ]] && print_success "\n==========================================\n DONE\n==========================================\n" && exit 0
+
+print_msg "\nTargetting IBM Cloud region '$REGION' ..."
+ibmcloud target -r $REGION
+
+#
+# Create the resource group, if it does not exist
+ibmcloud resource group $resource_group_name --quiet
+if [ $? != 0 ]; then
+    print_msg "\nCreating resource group '$resource_group_name' ..."
+    ibmcloud resource group-create $resource_group_name
+fi
+print_msg "\nTargetting resource group '$resource_group_name' ..."
+ibmcloud target -g $resource_group_name
+
+#
+# Create the VPC
+print_msg "Creating the VPC '$vpc_name' ..."
+ibmcloud is vpc-create $vpc_name --resource-group-name $resource_group_name
+if [ $? -ne 0 ]; then
+    print_error "VPC creation failed!"
+    abortScript
+fi
+
+#
+# Wait for the VPC to become available
+print_msg "\nWaiting for the VPC $vpc_name to become available ..."
+COUNTER=0
+while ! [[ $(ibmcloud is vpc $vpc_name --output json | jq -r '.status') == "available" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        echo $(ibmcloud is vpc $vpc_name)
+        print_error "The VPC does not became ready as expected.\nRun 'ibmcloud is vpc $vpc_name' for further insights"
+        abortScript
+    fi
+done
+echo "VPC '$vpc_name' is now available, now!"
+
+#
+# Create the Public gateway
+print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway' ..."
+ibmcloud is public-gateway-create $vpc_name-gateway $vpc_name $REGION-1 --resource-group-name $resource_group_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Public gateway creation failed!"
+    abortScript
+fi
+
+#
+# Create the Network ACL
+print_msg "\nCreating the VPC Network ACL '$vpc_name-acl' ..."
+ibmcloud is network-acl-create $vpc_name-acl $vpc_name --rules '[{ "name": "egress", "action": "allow", "destination": "0.0.0.0/0", "direction": "outbound", "source": "0.0.0.0/0", "protocol": "all" }, { "name": "ingress", "action": "allow", "destination": "0.0.0.0/0", "direction": "inbound", "source": "0.0.0.0/0", "protocol": "all" }]'
+if [ $? -ne 0 ]; then
+    print_error "VPC Network ACL creation failed!"
+    abortScript
+fi
+
+#
+# Create the VPC subnet
+print_msg "\nCreating the VPC Subnet '$vpc_name-subnet' ..."
+ibmcloud is subnet-create $vpc_name-subnet $vpc_name --zone $REGION-1 --resource-group-name $resource_group_name --ipv4-address-count 16 --pgw $vpc_name-gateway --acl $vpc_name-acl
+if [ $? -ne 0 ]; then
+    print_error "VPC Subnet creation failed!"
+    abortScript
+fi
+
+# Create the security group and its rules
+print_msg "\nCreating the VPC Security group '$vpc_name-group' ..."
+ibmcloud is security-group-create $vpc_name-group $vpc_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Security group creation failed!"
+    abortScript
+fi
+
+print_msg "\nCreating required VPC Security group rules ..."
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 443 --port-max 443 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound udp --port-min 53 --port-max 53 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound tcp --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound icmp --icmp-type 8 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 166.9.0.0/16 --vpc $vpc_name >/dev/null
+# from https://cloud.ibm.com/docs/vpc?topic=vpc-service-endpoints-for-vpc
+ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 161.26.0.0/16 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --port-min 22 --port-max 22 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound tcp --port-min 80 --port-max 80 --vpc $vpc_name >/dev/null
+ibmcloud is security-group-rule-add $vpc_name-group inbound icmp --icmp-type 8 --vpc $vpc_name >/dev/null
+echo "Done"
+
+print_msg "\nPrinting the VPC Security group '$vpc_name-group' ..."
+ibmcloud is security-group $vpc_name-group
+
+#
+# Create the origin server VSI
+print_msg "\nCreating the VPC VSI '$vsi_originserver_name', which acts as the origin server ..."
+ibmcloud is instance-create $vsi_originserver_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
+    --image ibm-centos-stream-9-amd64-6 \
+    --boot-volume "{\"name\": \"boot-vol-attachment-name\", \"volume\": {\"name\": \"$vsi_originserver_name-boot-vol\", \"capacity\": 100, \"profile\": {\"name\": \"general-purpose\"}}, \"delete_volume_on_instance_delete\": true}" \
+    --resource-group-name $resource_group_name \
+    --host-failure-policy restart \
+    --primary-network-interface "{\"name\": \"eth0\", \"allow_ip_spoofing\": false, \"auto_delete\": true, \"subnet\": {\"name\":\"${vpc_name}-subnet\"}, \"primary_ip\": {\"auto_delete\": true}, \"security_groups\": [{\"name\": \"${vpc_name}-group\"}]}" \
+    --user-data @userdata-vsi-originserver.sh \
+    --keys "$VPC_SSH_KEY"
+if [ $? -ne 0 ]; then
+    print_error "VPC VSI creation failed!"
+    abortScript
+fi
+
+print_msg "\nWaiting for the VSI '$vsi_originserver_name' to start ..."
+COUNTER=0
+while ! [[ $(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.status') == "running" ]]; do
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 10)); then
+        print_error "The VSI does not became ready as expected. Perform 'ibmcloud is instance $vsi_originserver_name' for further details."
+        abortScript
+    fi
+done
+echo "VSI '$vsi_originserver_name' is running, now!"
+
+#
+# Assign the floating IP
+print_msg "\nAssigning a VPC Floating IP to the primary network interface of VSI '$vsi_originserver_name' ..."
+ibmcloud is floating-ip-reserve $vsi_originserver_name-ip --nic eth0 --in $vsi_originserver_name
+if [ $? -ne 0 ]; then
+    print_error "VPC Floating IP assignment failed!"
+    abortScript
+fi
+public_ip_address=$(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.primary_network_interface|.floating_ips|.[0]|.address')
+private_ip_address=$(ibmcloud is instance $vsi_originserver_name --output json | jq -r '.primary_network_interface|.primary_ip|.address')
+
+#
+# Verify that the originserver VSI exposes a HTTP server
+print_msg "\nWaiting for the VSI '$vsi_originserver_name' to be fully initialized (This can take several minutes) ..."
+COUNTER=0
+while ! [[ $(curl -s -o /dev/null -w "%{http_code}" http://$public_ip_address:80) == "200" ]]; do
+    sleep 10
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 50)); then
+        print_error "The VSI does not serve any HTTP traffic on port 80"
+        abortScript
+    fi
+    echo "Checking curl http://$public_ip_address:80 ..."
+done
+echo "VSI $vsi_originserver_name is fully initialized, now!"
+
+print_msg "\nVSI serves following payload on endpoint 'http://$public_ip_address:80':"
+curl http://$public_ip_address:80
+
+if [[ "${DEBUG_MODE}" != true ]]; then
+    #
+    # Detaching floating ip address
+    print_msg "\nDetaching VPC Floating IP '$vsi_originserver_name-ip' from the VSI '$vsi_originserver_name' ..."
+    ibmcloud is floating-ip-release $vsi_originserver_name-ip --force
+fi
+
+
+#
+# Create the Private Path Service, the Private Path Load balancer and configure the origin pool
+#
+
+# Create Private Path network load balancer
+# see: https://cloud.ibm.com/docs/vpc?topic=vpc-ppnlb-ui-creating-private-path-network-load-balancer&interface=cli
+print_msg "\nCreating the VPC Private Path network load balancer '$vpc_name-ppnlb' ..."
+ibmcloud is load-balancer-create $vpc_name-ppnlb private-path --family network --subnet $vpc_name-subnet
+if [ $? -ne 0 ]; then
+    print_error "VPC Private Path network load balancer creation failed!"
+    abortScript
+fi
+
+# Create a LB pool 
+print_msg "\nCreating the VPC Network load balancer pool '$vpc_name-ppnlb-pg-pool' ..."
+ibmcloud is load-balancer-pool-create $vpc_name-ppnlb-pg-pool $vpc_name-ppnlb weighted_round_robin tcp 10 2 5 tcp
+if [ $? -ne 0 ]; then
+    print_error "VPC Network load balancer pool creation failed!"
+    abortScript
+fi
+
+# Create a LB member
+print_msg "\nAdd the VSI '$vsi_originserver_name' as a member to the load balancer pool '$vpc_name-ppnlb-pg-pool' ..."
+ibmcloud is load-balancer-pool-member-create $vpc_name-ppnlb $vpc_name-ppnlb-pg-pool 5432 $vsi_originserver_name --weight 70
+if [ $? -ne 0 ]; then
+    print_error "Adding the VSI '$vsi_originserver_name' as a member to the load balancer pool failed!"
+    abortScript
+fi
+
+# Obtain the ID of the default backend pool
+print_msg "\nObtaining the ID of the default backend pool '$vpc_name-pool' ..."
+ppnlb_pg_pool=$(ibmcloud is load-balancer-pool $vpc_name-ppnlb $vpc_name-ppnlb-pg-pool --output JSON)
+ppnlb_pg_pool_id=$(echo "$ppnlb_pg_pool" | jq -r '.id')
+echo "ppnlb_pg_pool_id: '$ppnlb_pg_pool_id'"
+
+# Create a LB listener
+print_msg "\nCreating the listener for VPC Network load balancer '$vpc_name-ppnlb' ..."
+ibmcloud is load-balancer-listener-create $vpc_name-ppnlb --port-min 5432 --port-max 5432 --protocol tcp --default-pool $ppnlb_pg_pool_id
+if [ $? -ne 0 ]; then
+    print_error "VPC Network load balancer front-end listener creation for port 5432 failed!"
+    abortScript
+fi
+
+# Create the Private Path service
+# see: https://cloud.ibm.com/docs/vpc?topic=vpc-private-path-service-about&interface=cli
+random_chars=$(openssl rand -hex 6)
+print_msg "\nCreating the VPC Private Path service '$vpc_name-pps' for the service endpoint 'api.$random_chars.intra' ..."
+pps_service_endpoint="api.ce-$random_chars.intra"
+ibmcloud is private-path-service-gateway-create --name $vpc_name-pps --default-access-policy permit --zonal-affinity true --service-endpoints $pps_service_endpoint --load-balancer $vpc_name-ppnlb
+if [ $? -ne 0 ]; then
+    print_error "VPC Private Path service creation failed!"
+    abortScript
+fi
+
+# Obtain the Private Path service CRN
+pps_instance=$(ibmcloud is private-path-service-gateway $vpc_name-pps --output JSON)
+pps_instance_crn=$(echo "$pps_instance" | jq -r '.crn')
+pps_instance_id=$(echo "$pps_instance" | jq -r '.id')
+echo "pps_instance_crn: '$pps_instance_crn', pps_instance_id: '$pps_instance_id'"
+
+# Publish the Private Path service
+# see: https://cloud.ibm.com/docs/vpc?topic=vpc-pps-activating&interface=cli
+print_msg "\nPublish VPC Private Path service '$vpc_name-pps' so that it can be accessed from outside of the current account ..."
+ibmcloud is private-path-service-gateway-publish $vpc_name-pps
+if [ $? -ne 0 ]; then
+    print_error "Publishing the Private Path service '$vpc_name-pps' failed!"
+    abortScript
+fi
+
+
+#
+# Create the Code Engine project
+print_msg "\nCreating the Code Engine project '$ce_project_name' ..."
+ibmcloud ce project create --name $ce_project_name
+if [ $? -ne 0 ]; then
+    print_error "Code Engine project creation failed!"
+    abortScript
+fi
+project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
+
+#
+# Obtain the kube context of the current project
+print_msg "\nObtain the kube context of the Code Engine project '$ce_project_name' ..."
+ibmcloud ce project select --name $ce_project_name --kubecfg
+
+#
+# Create the private path integration
+ce_vpegatewayconnection_name=friendship-book-api-integration
+kubectl apply -f - <<EOF
+apiVersion: codeengine.cloud.ibm.com/v1beta1
+kind: VpeGatewayConnection
+metadata:
+  name: $ce_vpegatewayconnection_name
+spec:
+  target:
+    crn: $pps_instance_crn
+    resourceType: private_path_service_gateway
+EOF
+
+print_msg "\nWaiting for the Private Path integration '$ce_vpegatewayconnection_name' to become ready ..."
+COUNTER=0
+while ! [[ $(kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o JSON|jq -r '.status|.conditions|.[]|select(.type=="Ready")|.status') == "True" ]]; do
+    sleep 5
+    COUNTER=$((COUNTER + 1))
+    if ((COUNTER > 30)); then
+        kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o YAML
+        print_error "The Private Path integration does not became ready as expected. Perform 'kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o yaml' for further details."
+        abortScript
+    fi
+done
+echo "Private Path integration '$ce_vpegatewayconnection_name' is ready, now!"
+
+#
+# Creating a secret that contains the PostgreSQL credentials
+print_msg "\nCreating a Code Engine secret '$ce_db_credentials' to store the database credentials ..."
+ibmcloud ce secret create --name $ce_db_credentials --format generic \
+    --from-literal PGHOST=$pps_service_endpoint \
+    --from-literal PGPORT=5432 \
+    --from-literal PGUSER=dbuser \
+    --from-literal PGPASSWORD=myPassw0rd! \
+    --from-literal PGDATABASE=friendshipdb
+if [ $? -ne 0 ]; then
+    print_error "Code Engine secret creation failed!"
+    abortScript
+fi
+
+print_msg "\nCreating a Code Engine job '$ce_job_name' that will connect to the database ..."
+ibmcloud ce job create --name $ce_job_name \
+    --build-source ./ce-job \
+    --env-from-secret $ce_db_credentials \
+    --memory 0.5G \
+    --cpu 0.25 \
+    --wait
+if [ $? -ne 0 ]; then
+    print_error "Code Engine job creation failed!"
+    abortScript
+fi
+
+print_msg "\nPrinting source code of the deployed job:"
+cat ce-job/job.mjs
+echo ""
+
+print_msg "\nSubmitting a single job run that starts 10 instances, to store some records in the database ..."
+ibmcloud ce jobrun submit --job $ce_job_name --array-size 10 --wait
+
+print_msg "\nListing submitted job runs..."
+ibmcloud ce jobrun list
+
+print_msg "\nCreating a Code Engine app '$ce_app_name' that retrieve records from the database ..."
+ibmcloud ce app create --name $ce_app_name \
+    --build-source ./ce-app \
+    --env-from-secret $ce_db_credentials \
+    --memory 0.5G \
+    --cpu 0.25
+if [ $? -ne 0 ]; then
+    print_error "Code Engine app creation failed!"
+    abortScript
+fi
+
+ce_app_endpoint=$(ibmcloud ce app get --name $ce_app_name -o url)
+
+#
+# Verifying the end-to-end flow
+print_msg "\nInvoking the Code Engine app by using 'curl $ce_app_endpoint'."
+print_msg "The app will perform a SQL query towards the database hosted on the origin server and passthrough the result as JSON response payload ..."
+curl --silent $ce_app_endpoint | jq
+
+if [[ $(curl -s -o /dev/null -w "%{http_code}" $ce_app_endpoint) != "200" ]]; then
+    print_error "Code Engine app could not get invoked properly!"
+    abortScript
+fi
+
+print_msg "\nBefore cleaning up, this end-to-end sample created the following set of IBM Cloud resources:"
+ibmcloud resource service-instances --type all -g $resource_group_name
+
+if [[ "${CLEANUP_ON_SUCCESS}" == true ]]; then
+    print_msg "\nCleaning up the created IBM Cloud resources ..."
+    clean
+else
+    print_msg "\nSkipping deletion of the created IBM Cloud resources. Please be aware that the created resources will occur costs in your account."
+    echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
+    ibmcloud resource service-instances --type all -g $resource_group_name
+
+    print_msg "\nFollowing commands can be used to further play around with the sample setup:"
+    echo "1. Submit another job run: 'ibmcloud ce jobrun submit --job $ce_job_name --array-size 10'"
+    echo "2. Invoke the app: 'curl $ce_app_endpoint'"
+    echo "3. Private Path service configuration https://cloud.ibm.com/infrastructure/network/privatePathServices/${REGION}~${pps_instance_id}/overview"
+    echo "4. Inspect the Code Engine project setup https://cloud.ibm.com/codeengine/project/$REGION/$project_guid"
+    echo "5. Tear down the sample setup: './run clean'"
+fi
+
+print_success "\n=========================================="
+print_success " SUCCESS"
+print_success "==========================================\n"
