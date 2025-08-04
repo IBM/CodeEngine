@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build and push the oidc-auth image
-cd oidc-auth
+cd auth
 docker build ${NOCACHE} -t ${REGISTRY}/auth-oidc-proxy/auth . --platform linux/amd64
 docker push ${REGISTRY}/auth-oidc-proxy/auth
 cd ..
