@@ -1,0 +1,14 @@
+{
+  "name": "ts-func",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "postinstall": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "lorem-ipsum": "^2.0.8"
+  }
+}
