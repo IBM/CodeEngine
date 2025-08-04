@@ -156,7 +156,7 @@ button:disabled {
   justify-content: flex-start;
   overflow: scroll;
   border: 4px solid #555;
-  margin: 1.5rem 0 1rem;
+  margin: 2.5rem 0 1rem;
   overflow-x: hidden;
   overflow-y: hidden;
 }
@@ -166,7 +166,7 @@ button:disabled {
   min-height: 10rem;
   border: 0.25rem dotted #505050;
   background-color: #fff;
-  margin: 1.5rem 0 2rem;
+  margin: 2.5rem 0 2rem;
 }
 
 .picture-preview.highlight {

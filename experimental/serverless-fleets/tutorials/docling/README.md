@@ -4,8 +4,7 @@ This tutorial provides a comprehensive guide on using Docling to convert PDFs in
 
 Key steps covered in the Tutorial:
 1. Upload the examples PDFs to COS
-2. Containerization with Code Engine: Build the Docling container and push it to a registry for deployment.
-3. Run a fleet of workers that automatically runs the container, ensuring scalability and efficiency.
+2. Run a fleet of workers that automatically runs the official docling container, ensuring scalability and efficiency.
 4. Download the resulting markdown files from COS
 
 This setup is ideal for automating document conversion workflows in a cost-effective, serverless environment.
@@ -26,17 +25,41 @@ ls data/tutorials/docling/pdfs
 ./upload
 ```
 
-### Step 2 - Build and Push the container registry
+### Step 2 - Review the commands
 
-Build the container image using Code Engine's build capabilities by running the following command in the `tutorials/docling` directory.
+Review the `commands.jsonl` which defines the tasks to run the docling command and arguments for each of the pdfs.
 ```
 cd tutorials/docling
-./build
+cat commands.jsonl
 ```
+
+<a name="Output"></a>
+<details>
+  <summary>Output</summary>
+
+```
+➜  cat commands.jsonl
+
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2203.01017v2.pdf", "--output", "/mnt/ce/data/result/docling_2203.01017v2.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2206.01062.pdf", "--output", "/mnt/ce/data/result/docling_2206.01062.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2305.03393v1-pg9.pdf", "--output", "/mnt/ce/data/result/docling_2305.03393v1-pg9.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2305.03393v1.pdf", "--output", "/mnt/ce/data/result/docling_2305.03393v1.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/amt_handbook_sample.pdf", "--output", "/mnt/ce/data/result/docling_amt_handbook_sample.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/code_and_formula.pdf", "--output", "/mnt/ce/data/result/docling_code_and_formula.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/picture_classification.pdf", "--output", "/mnt/ce/data/result/docling_picture_classification.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/redp5110_sampled.pdf", "--output", "/mnt/ce/data/result/docling_redp5110_sampled.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_01.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_01.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_02.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_02.pdf.md" ]}
+{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_03.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_03.pdf.md" ]}
+```
+</details>
+<br/>
 
 ### Step 3 - Run the Fleet
 
-Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--task 11` to specify the tasks for the 11 pdfs. The command is a bash script which is using the `CE_TASK_ID`, which contains values `0..10`, to fetch the pdf file. It's then running docling with 24 CPUs on the mx3d-24x240 worker. Therefore it's only running one instance per worker and utilizing the full worker. We run 4 instance and workers in parallel. Run the fleet with the following command in the `tutorials/docling` directory.
+Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--tasks-from-file commands.jsonl` to specify the tasks for the 11 pdfs. We give each task 24 vCPU, run docling with `--num-threads 24` and choose a mx3d-24x240 worker profile with 24 vCPU. Therefore we run only 1 docling command per worker at a time and utilize the full worker per pdf processing. We run `--max-scale 4` instances and workers in parallel. 
+
+Launch the fleet with the following command in the `tutorials/docling` directory.
 ```
 ./run
 ```
@@ -53,12 +76,9 @@ ibmcloud code-engine experimental fleet run --name fleet-0eb02f2f-1
   --registry-secret fleet-registry-secret
   --worker-profile mx3d-24x240
   --max-scale 4
-  --tasks 11
+  --tasks-from-file commands.jsonl
   --cpu 24
   --memory 240G
-  --command=bash
-  --arg -c
-  --arg mkdir -p /mnt/ce/data/result/$CE_FLEET_ID/; cd /mnt/ce/data/tutorials/docling/pdfs; files=( * ); docling --artifacts-path=/root/.cache/docling/models ${files[CE_TASK_ID]} --num-threads 24 --output /mnt/ce/data/result/$CE_FLEET_ID/;
 Preparing your tasks: ⠼ Please wait...took 11.233582 seconds.
 Preparing your tasks: ⠴ Please wait...
 COS Bucket used 'ce-fleet-sandbox-data-fbfdde1d'...
@@ -139,13 +159,26 @@ Succeeded Tasks:  0
 </details>
 <br/>
 
-If you like you can jump to the machine and see docling processing by running the following command in the root directory:
+(optional) If you like you can jump to the machine and see docling processing by running the following command in the root directory:
 ```
 ./jump <IP>
 ```
 
 You can use `htop` to see that docling is processing the PDFs
 ![](../../images/examples_docling.jpg)
+
+
+#### Playing with more parallism
+
+If you want to modify the tutorial to add some more parallism, e.g. to run 4 docling commands per worker, you could change the arguments and run script as follows: 
+1. the arguments in commands.jsonl to `--num-threads 6`
+2. the cpu per task to `--cpu 6`
+Now, with `--max-scale 4` you would only get a single worker. Modify `--max-scale 8` to get 2 workers, each processing 4 docling commands.
+
+#### Run with a Serverless GPU
+
+Run `./run_gpu` to launch the docling commands on a GPU. This example, is bringing up a single `gx3-24x120x1l40s` and runs the 11 pdfs sequentially.
+
 
 ### Step 4 - Download results
 
@@ -156,7 +189,7 @@ Download the results from the COS by running the following command in the root d
 
 You can find the results under
 ```
-ls -l data/result/<fleet-id>/
+ls -l data/result/docling_*
 ```
 
 

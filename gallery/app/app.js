@@ -1,8 +1,8 @@
 "use strict";
 
 const { createServer } = require("http");
-const { readFileSync } = require("fs");
-const { CosService } = require("./cos-service");
+const { existsSync } = require("fs");
+const { open, readFile, writeFile, readdir, unlink } = require("fs/promises");
 
 const basePath = __dirname; // serving files from here
 
@@ -54,7 +54,7 @@ async function handleHttpReq(req, res) {
   if (reqPath === "/") {
     let pageContent;
     try {
-      pageContent = readFileSync(`${basePath}/page.html`);
+      pageContent = await readFile(`${basePath}/page.html`);
     } catch (err) {
       console.log(`Error reading page: ${err.message}`);
       res.statusCode = 503;
@@ -106,27 +106,21 @@ async function handleHttpReq(req, res) {
 
       invokeColorizeFunction(payload.imageId)
         .then((response) => {
-          console.log(
-            `Colorizer function has been invoked successfully: '${JSON.stringify(
-              response
-            )}'`
-          );
+          console.log(`Colorizer function has been invoked successfully: '${JSON.stringify(response)}'`);
           res.statusCode = 200;
           res.end();
         })
         .catch((reason) => {
           console.error(`Error colorizing image '${payload.imageId}'`, reason);
           res.statusCode = 503;
-          res.end(
-            `Error changing color of image '${payload.imageId}': ${reason}`
-          );
+          res.end(`Error changing color of image '${payload.imageId}': ${reason}`);
           return;
         });
     });
     return;
   }
 
-  // This handler takes care of uploading the input payload to a COS bucket
+  // This handler takes care of uploading the input payload to a local file system location
   if (reqPath === "/upload") {
     console.info("Uploading to COS ...");
     req.on("error", (err) => {
@@ -139,55 +133,51 @@ async function handleHttpReq(req, res) {
     req.on("data", (chunkBuf) => {
       bodyBuf = Buffer.concat([bodyBuf, chunkBuf]);
     });
-    req.on("end", () => {
-      console.log(
-        `received ${bodyBuf.toString("base64").length} chars as input data`
-      );
-      cosService
-        .createObject(
-          process.env.BUCKET,
-          `gallery-pic-${Date.now()}.png`,
-          bodyBuf,
-          "image/png"
-        )
-        .then((thumbnail) => {
-          res.setHeader("Content-Type", "application/json");
-          res.statusCode = 200;
-          res.end(`{"done": "true"}`);
-        })
-        .catch((reason) => {
-          console.log(`Error uploading picture: ${reason}`);
-          res.statusCode = 503;
-          res.end(`Error uploading picture: ${reason}`);
-          return;
-        });
+    req.on("end", async () => {
+      console.log(`received ${bodyBuf.toString("base64").length} chars as input data`);
+      try {
+        await writeFile(`${GALLERY_PATH}/gallery-pic-${Date.now()}.png`, bodyBuf, {});
+        res.setHeader("Content-Type", "application/json");
+        res.statusCode = 200;
+        res.end(`{"done": "true"}`);
+        return;
+      } catch (err) {
+        console.log(`Error uploading picture: ${err}`);
+        res.statusCode = 503;
+        res.end(`Error uploading picture: ${err}`);
+        return;
+      }
     });
     return;
   }
 
-  // Handler for listing all items in the bucket
-  if (reqPath === "/list-bucket-content") {
-    // console.info("List from COS ...");
-
-    cosService
-      .getBucketContents(process.env.BUCKET, "")
-      .then((bucketContents) => {
-        res.setHeader("Content-Type", "application/json");
-        res.statusCode = 200;
-        res.end(JSON.stringify(bucketContents));
-      })
-      .catch((reason) => {
-        console.log(`Error listing bucket content: ${reason}`);
-        res.statusCode = 503;
-        res.end(`Error listing bucket content: ${reason}`);
-        return;
+  // Handler for listing all items in the gallery
+  if (reqPath === "/list-gallery-content") {
+    try {
+      const filenames = await readdir(GALLERY_PATH);
+      const galleryContents = filenames.map((file) => {
+        // will also include directory names
+        console.log(file);
+        return {
+          Key: file,
+          LastModified: Date.now(),
+        };
       });
+
+      res.setHeader("Content-Type", "application/json");
+      res.statusCode = 200;
+      res.end(JSON.stringify(galleryContents));
+    } catch (err) {
+      console.log(`Error listing gallery content: ${err}`);
+      res.statusCode = 503;
+      res.end(`Error listing gallery content: ${err}`);
+    }
     return;
   }
 
-  // Handler for deleting all items in the bucket
-  if (reqPath === "/delete-bucket-content") {
-    console.info("Delete entire bucket content ...");
+  // Handler for deleting all items in the gallery
+  if (reqPath === "/delete-gallery-content") {
+    console.info("Delete entire gallery content ...");
 
     try {
       for (const file of await readdir(GALLERY_PATH)) {
@@ -209,14 +199,15 @@ async function handleHttpReq(req, res) {
     if (pictureId.indexOf("?") > -1) {
       pictureId = pictureId.substring(0, pictureId.indexOf("?"));
     }
-    console.info(`Render image from COS '${pictureId}' ...`);
+    console.info(`Render image from gallery '${pictureId}' ...`);
 
     try {
-      return cosService.streamObject(process.env.BUCKET, pictureId, res);
+      const fd = await open(`${GALLERY_PATH}/${pictureId}`);
+      return fd.createReadStream().pipe(res);
     } catch (err) {
-      console.error(`Error streaming bucket content '${pictureId}'`, err);
+      console.error(`Error streaming gallery content '${pictureId}'`, err);
       res.statusCode = 503;
-      res.end(`Error streaming bucket content: ${err}`);
+      res.end(`Error streaming gallery content: ${err}`);
       return;
     }
   }
@@ -234,17 +225,14 @@ async function handleHttpReq(req, res) {
   // serve file at basePath/reqPath
   let pageContent;
   try {
-    pageContent = readFileSync(`${basePath}/${reqPath}`);
+    pageContent = await readFile(`${basePath}/${reqPath}`);
   } catch (err) {
     console.log(`Error reading file: ${err.message}`);
     res.statusCode = 404;
     res.end(`Error reading file: ${err.message}`);
     return;
   }
-  res.setHeader(
-    "Content-Type",
-    mimetypeByExtension[(reqPath.match(/\.([^.]+)$/) || [])[1]] || "text/plain"
-  );
+  res.setHeader("Content-Type", mimetypeByExtension[(reqPath.match(/\.([^.]+)$/) || [])[1]] || "text/plain");
   res.statusCode = 200;
   res.end(pageContent);
 }
@@ -254,9 +242,9 @@ server.listen(8080, () => {
   console.log(`Listening on port 8080`);
 });
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM signal received.');
+process.on("SIGTERM", () => {
+  console.info("SIGTERM signal received.");
   server.close(() => {
-    console.log('Http server closed.');
+    console.log("Http server closed.");
   });
 });

@@ -1,11 +1,4 @@
-const ne = [
-  "file_input",
-  "add",
-  "picture_preview",
-  "progress",
-  "upload",
-  "clear",
-].reduce((p, c) => {
+const ne = ["file_input", "add", "picture_preview", "progress", "upload", "clear"].reduce((p, c) => {
   p[c] = document.querySelector(`[data-${c.replace("_", "-")}]`);
   return p;
 }, Object.create(null));
@@ -19,12 +12,12 @@ ne.clear.addEventListener("click", clearGallery, false);
 async function clearGallery() {
   ne.progress.innerText = "Deleting...";
   ne.add.disabled = true;
-  if (enabledFeatures.cos) {
-    // delete items from the COS bucket
-    await fetch("/delete-bucket-content", { method: "POST" });
+  if (enabledFeatures.fs) {
+    // delete items from the file system location
+    await fetch("/delete-gallery-content", { method: "POST" });
 
-    // reload the bucket
-    listBucketContent();
+    // reload the gallery
+    listGalleryContent();
   } else {
     // just delete the images from the HTML DOM
     const gallery = document.getElementById("gallery");
@@ -61,7 +54,7 @@ function uploadImg() {
           ne.progress.innerHTML = "";
 
           // reload the bucket
-          listBucketContent();
+          listGalleryContent();
         } else if (xhr.readyState == 4) {
           ne.progress.innerHTML = xhr.responseText;
         }
@@ -159,7 +152,7 @@ ne.picture_preview.addEventListener("drop", unhighlight, false);
 
 ne.picture_preview.addEventListener("drop", doDrop, false);
 
-function listBucketContent() {
+function listGalleryContent() {
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function () {
     if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -244,7 +237,7 @@ function listBucketContent() {
       }
     }
   };
-  xmlHttp.open("GET", "./list-bucket-content", true);
+  xmlHttp.open("GET", "./list-gallery-content", true);
   xmlHttp.send(null);
 }
 
@@ -254,10 +247,9 @@ const checkFeatures = async () => {
   enabledFeatures = await response.json();
   console.info(`Available features: ${JSON.stringify(enabledFeatures)}`);
 
-  if (enabledFeatures.cos) {
+  if (enabledFeatures.fs) {
     // list all images that are stored in the bucket
-    listBucketContent();
-    //setInterval(listBucketContent, enabledFeatures.cos.interval);
+    listGalleryContent();
 
     // enable the handler to upload images to COS
     ne.add.addEventListener("click", uploadImg, false);
@@ -266,12 +258,13 @@ const checkFeatures = async () => {
     var refreshBtn = document.createElement("button");
     refreshBtn.className = "cta-refresh";
     refreshBtn.innerText = "Refresh";
-    refreshBtn.addEventListener("click", listBucketContent, false);
+    refreshBtn.addEventListener("click", listGalleryContent, false);
 
     document.getElementById("gallery-cta-buttons").appendChild(refreshBtn);
 
-    document.getElementById("gallery-title-text").innerText =
-      "My Gallery hosted on IBM Cloud Object Storage";
+    if (enabledFeatures.fs.cos) {
+      document.getElementById("gallery-title-text").innerText = "My Gallery hosted on IBM Cloud Object Storage";
+    }
   } else {
     // fallback to store image on the client side
     ne.add.addEventListener("click", addImg, false);
