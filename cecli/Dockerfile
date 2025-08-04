@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 go build -o /go/bin/app cecli.go
 FROM quay.io/centos/centos:stream9
 
 # Install the IBM Cloud CLI and Code Engine plugin
-RUN dnf install yum && yum update -y
+RUN dnf install yum -y && yum update -y
 RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
 RUN ibmcloud plugin install code-engine
 
