@@ -1,4 +1,4 @@
-module github.com/IBM/CodeEngine/ce-satellite-connector
+module github.com/IBM/CodeEngine/ce-private-path
 
 go 1.23.0
 

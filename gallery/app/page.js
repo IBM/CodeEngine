@@ -1,4 +1,4 @@
-const ne = ["file_input", "add", "picture_preview", "progress", "upload", "clear"].reduce((p, c) => {
+const ne = ["file_input", "add", "picture_preview", "progress", "upload", "clear", "colorizer"].reduce((p, c) => {
   p[c] = document.querySelector(`[data-${c.replace("_", "-")}]`);
   return p;
 }, Object.create(null));
@@ -178,6 +178,7 @@ function listGalleryContent() {
               console.info(`setting onclick handler for '${id}'`);
               img.onclick = async () => {
                 console.info(`colorizer for '${id}'`);
+                ne.colorizer.innerText = "Colorizing ...";
 
                 const currentImage = document.getElementById(id);
 
@@ -185,15 +186,21 @@ function listGalleryContent() {
                 currentImage.className = "gallery-pic colorizable disabled";
                 try {
                   // trigger the color change
-                  await fetch("/change-colors", {
+                  const colorizeResp = await fetch("/change-colors", {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
                     },
                     body: `{"imageId": "${id}"}`,
                   });
+                  if (colorizeResp.status != 200) {
+                    ne.colorizer.innerText = await colorizeResp.text();
+                  } else {
+                    ne.colorizer.innerText = "";
+                  }
                 } catch (err) {
                   console.error(`Failed to change color of image '${id}'`, err);
+                  ne.colorizer.innerText = err.message;
                 } finally {
                   currentImage.className = "gallery-pic colorizable";
                 }

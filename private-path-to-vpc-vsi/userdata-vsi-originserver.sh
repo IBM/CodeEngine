@@ -17,7 +17,7 @@ sudo systemctl restart postgresql
 useradd dbuser
 sudo -i -u postgres bash << EOF
 createuser dbuser
-createdb friendshipdb -O dbuser 
+createdb guestbookdb -O dbuser 
 psql -c "ALTER USER dbuser PASSWORD 'myPassw0rd!';"
 EOF
 touch /tmp/postgresql_done
