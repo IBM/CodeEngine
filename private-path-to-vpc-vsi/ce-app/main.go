@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 
 var dbClient = connectToDb()
 
-type Friendship struct {
+type GuestbookEntry struct {
 	Name     string `json:"name"`
 	Created  int64  `json:"created"`
 	Greeting string `json:"greeting"`
@@ -41,39 +42,49 @@ func connectToDb() *sql.DB {
 // This func will handle all incoming HTTP requests
 func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 
-	friendships := []Friendship{}
+	guestbookEntries := []GuestbookEntry{}
 	var (
 		name       string
 		created_at int64
 		greeting   string
 	)
-	Debug("Fetching all friendship records ...")
-	rows, sqlErr := dbClient.Query("SELECT name, created_at, greeting FROM myfriendships")
+	Debug("Fetching all guestbook entries ...")
+	rows, sqlErr := dbClient.Query("SELECT name, created_at, greeting FROM guestbook")
 	if sqlErr != nil {
-		log.Printf("Retrieving friendship records failed - err: " + sqlErr.Error())
+		log.Printf("Retrieving guestbook entries failed - err: " + sqlErr.Error())
+		if strings.Contains(sqlErr.Error(), "dial tcp") {
+			w.WriteHeader(502)
+			fmt.Fprintf(w, "Can't reach '%s'", os.Getenv("PGHOST"))
+			return
+		}
 		w.WriteHeader(500)
+		fmt.Fprintf(w, "%s", sqlErr.Error())
+		return
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&name, &created_at, &greeting)
 		if err != nil {
-			log.Printf("Scanning friendship record failed - err: " + err.Error())
+			log.Printf("Scanning guestbook entries failed - err: " + err.Error())
 			w.WriteHeader(500)
+			fmt.Fprintf(w, "%s", err.Error())
+			return
 		}
-		log.Println("Retrieved friendship records", name, created_at, greeting)
-		friendships = append(friendships, Friendship{Name: name, Created: created_at, Greeting: greeting})
+		log.Println("Retrieved guestbook records", name, created_at, greeting)
+		guestbookEntries = append(guestbookEntries, GuestbookEntry{Name: name, Created: created_at, Greeting: greeting})
 	}
 
-	Debug("Fetched %d friendship records", len(friendships))
-	bytes, err := json.Marshal(&friendships)
+	Debug("Fetched %d guestbook entries", len(guestbookEntries))
+	bytes, err := json.Marshal(&guestbookEntries)
 	if err != nil {
 		log.Printf("Failed to marshal response - err: " + err.Error())
 		w.WriteHeader(500)
+		fmt.Fprintf(w, "%s", err.Error())
+		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, "%s", string(bytes))
-
 }
 
 func main() {
@@ -96,6 +107,7 @@ func main() {
 
 	<-signals
 	Debug("shutting down server")
+	dbClient.Close()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("failed to shutdown server: %v", err)
 	}

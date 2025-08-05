@@ -11,8 +11,8 @@ DEBUG_MODE="${DEBUG_MODE:=false}"
 # Dependent variables
 resource_group_name="${NAME_PREFIX}--rg"
 ce_project_name="${NAME_PREFIX}--ce-project"
-ce_job_name="friendship-book-writer"
-ce_app_name="friendship-book-api"
+ce_job_name="guestbook-writer"
+ce_app_name="guestbook-api"
 ce_db_credentials="db-credentials"
 vpc_name="${NAME_PREFIX}--is-vpc"
 vsi_originserver_name="${NAME_PREFIX}--is-vsi-originserver"
@@ -387,7 +387,7 @@ ibmcloud ce project select --name $ce_project_name --kubecfg
 
 #
 # Create the private path integration
-ce_vpegatewayconnection_name=friendship-book-api-integration
+ce_vpegatewayconnection_name=guestbook-integration
 kubectl apply -f - <<EOF
 apiVersion: codeengine.cloud.ibm.com/v1beta1
 kind: VpeGatewayConnection
@@ -420,7 +420,7 @@ ibmcloud ce secret create --name $ce_db_credentials --format generic \
     --from-literal PGPORT=5432 \
     --from-literal PGUSER=dbuser \
     --from-literal PGPASSWORD=myPassw0rd! \
-    --from-literal PGDATABASE=friendshipdb
+    --from-literal PGDATABASE=guestbookdb
 if [ $? -ne 0 ]; then
     print_error "Code Engine secret creation failed!"
     abortScript
