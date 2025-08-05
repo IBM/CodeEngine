@@ -15,6 +15,11 @@ if (process.env.MOUNT_LOCATION || existsSync("/mnt/bucket")) {
   GALLERY_PATH = process.env.MOUNT_LOCATION || "/mnt/bucket";
 }
 
+function sendResponse(res, statusCode, responseMessage) {
+  res.statusCode = statusCode;
+  return res.end(responseMessage);
+}
+
 function getFunctionEndpoint() {
   if (!process.env.COLORIZER) {
     return undefined;
@@ -57,13 +62,9 @@ async function handleHttpReq(req, res) {
       pageContent = await readFile(`${basePath}/page.html`);
     } catch (err) {
       console.log(`Error reading page: ${err.message}`);
-      res.statusCode = 503;
-      res.end(`Error reading page: ${err.message}`);
-      return;
+      return sendResponse(res, 503, `Error reading page: ${err.message}`);
     }
-    res.statusCode = 200;
-    res.end(pageContent);
-    return;
+    return sendResponse(res, 200, pageContent);
   }
 
   // This handler exposes the set of features that are available
@@ -91,9 +92,7 @@ async function handleHttpReq(req, res) {
   if (reqPath === "/change-colors") {
     req.on("error", (err) => {
       console.log(`Error reading body: ${err.message}`);
-      res.statusCode = 503;
-      res.end(`Error reading body: ${err.message}`);
-      return;
+      return sendResponse(res, 503, `Error reading body: ${err.message}`);
     });
     let bodyBuf = Buffer.alloc(0);
     req.on("data", (chunkBuf) => {
@@ -107,14 +106,15 @@ async function handleHttpReq(req, res) {
       invokeColorizeFunction(payload.imageId)
         .then((response) => {
           console.log(`Colorizer function has been invoked successfully: '${JSON.stringify(response)}'`);
-          res.statusCode = 200;
-          res.end();
+          return sendResponse(res, 200);
         })
-        .catch((reason) => {
-          console.error(`Error colorizing image '${payload.imageId}'`, reason);
-          res.statusCode = 503;
-          res.end(`Error changing color of image '${payload.imageId}': ${reason}`);
-          return;
+        .catch((err) => {
+          console.error(`Error colorizing image '${payload.imageId}'`, err);
+
+          if (err.message.indexOf("Access is denied due to invalid credentials") > -1) {
+            return sendResponse(res, 403, `Failed due to access permission issues`);
+          }
+          return sendResponse(res, 503, `Error changing color of image '${payload.imageId}': ${err.message}`);
         });
     });
     return;
@@ -125,9 +125,7 @@ async function handleHttpReq(req, res) {
     console.info("Uploading to COS ...");
     req.on("error", (err) => {
       console.log(`Error reading body: ${err.message}`);
-      res.statusCode = 503;
-      res.end(`Error reading body: ${err.message}`);
-      return;
+      return sendResponse(res, 503, `Error reading body: ${err.message}`);
     });
     let bodyBuf = Buffer.alloc(0);
     req.on("data", (chunkBuf) => {
@@ -138,14 +136,10 @@ async function handleHttpReq(req, res) {
       try {
         await writeFile(`${GALLERY_PATH}/gallery-pic-${Date.now()}.png`, bodyBuf, {});
         res.setHeader("Content-Type", "application/json");
-        res.statusCode = 200;
-        res.end(`{"done": "true"}`);
-        return;
+        return sendResponse(res, 200, `{"done": "true"}`);
       } catch (err) {
         console.log(`Error uploading picture: ${err}`);
-        res.statusCode = 503;
-        res.end(`Error uploading picture: ${err}`);
-        return;
+        return sendResponse(res, 503, `Error uploading picture: ${err}`);
       }
     });
     return;
@@ -165,14 +159,11 @@ async function handleHttpReq(req, res) {
       });
 
       res.setHeader("Content-Type", "application/json");
-      res.statusCode = 200;
-      res.end(JSON.stringify(galleryContents));
+      return sendResponse(res, 200, JSON.stringify(galleryContents));
     } catch (err) {
       console.log(`Error listing gallery content: ${err}`);
-      res.statusCode = 503;
-      res.end(`Error listing gallery content: ${err}`);
+      return sendResponse(res, 503, `Error listing gallery content: ${err}`);
     }
-    return;
   }
 
   // Handler for deleting all items in the gallery
@@ -184,12 +175,10 @@ async function handleHttpReq(req, res) {
         await unlink(`${GALLERY_PATH}/${file}`);
       }
       res.setHeader("Content-Type", "application/json");
-      res.statusCode = 200;
-      res.end(`{"done": "true"}`);
+      return sendResponse(res, 200, `{"done": "true"}`);
     } catch (err) {
       console.log(`Error deleting gallery content: ${err}`);
-      res.statusCode = 503;
-      res.end(`Error deleting gallery content: ${err}`);
+      return sendResponse(res, 503, `Error deleting gallery content: ${err}`);
     }
     return;
   }
@@ -206,9 +195,7 @@ async function handleHttpReq(req, res) {
       return fd.createReadStream().pipe(res);
     } catch (err) {
       console.error(`Error streaming gallery content '${pictureId}'`, err);
-      res.statusCode = 503;
-      res.end(`Error streaming gallery content: ${err}`);
-      return;
+      return sendResponse(res, 503, `Error streaming gallery content: ${err}`);
     }
   }
 
@@ -218,9 +205,7 @@ async function handleHttpReq(req, res) {
   }
   if (reqPath.includes("..")) {
     console.log(`Bad path "${reqPath}"`);
-    res.statusCode = 404;
-    res.end("Bad path");
-    return;
+   return sendResponse(res, 404, "Bad path");
   }
   // serve file at basePath/reqPath
   let pageContent;
@@ -228,13 +213,10 @@ async function handleHttpReq(req, res) {
     pageContent = await readFile(`${basePath}/${reqPath}`);
   } catch (err) {
     console.log(`Error reading file: ${err.message}`);
-    res.statusCode = 404;
-    res.end(`Error reading file: ${err.message}`);
-    return;
+    return sendResponse(res, 404, `Error reading file: ${err.message}`);
   }
   res.setHeader("Content-Type", mimetypeByExtension[(reqPath.match(/\.([^.]+)$/) || [])[1]] || "text/plain");
-  res.statusCode = 200;
-  res.end(pageContent);
+  return sendResponse(res, 200, pageContent);
 }
 
 const server = createServer(handleHttpReq);

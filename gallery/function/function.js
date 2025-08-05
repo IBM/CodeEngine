@@ -93,9 +93,9 @@ async function main(args) {
     console.log(`Uploaded updated '${imageId}'`);
 
     return sendJSONResponse(200, `{"success": "true"}`);
-  } catch (reason) {
-    console.error(`Error changing colors of ${imageId}`, reason);
-    return sendJSONResponse(503, `{"error":"Error changing colors: ${reason}"}`);
+  } catch (err) {
+    console.error(`Error changing colors of ${imageId}`, err);
+    return sendJSONResponse(503, `{"error":"Error changing colors: ${err.message}"}`);
   }
 }
 
