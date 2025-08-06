@@ -42,6 +42,16 @@ Temperature: 375 degrees F (190 degrees C)
 Duration: 1 hour
 ```
 
+In another example, the result might look like:
+```
+step1: temperature=medium
+step2: temperature=medium, duration=2 minutes
+step3: temperature=boil
+step4: temperature=simmer, duration=45 minutes
+step7: duration=10 minutes
+```
+
+
 The tutorial consists of 30 recipes which are devided into 3 batches each containing 10 recipes. Defining the tasks as batches of 10 recipes is improving the efficiency by reducing overhead of loading the LLM into the GPU. The Serverless Fleet is launched with 3 tasks to process the 3 batches on a single GPU. However, the 3 tasks could simply distributed across 3 different GPUs in order to accelerate the computation. Of-course the batch size, number of batches and the number of GPUs is only limited by actual available capacity.
 
 Key steps covered in the tutorial:
