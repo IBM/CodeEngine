@@ -1,8 +1,8 @@
 # Tutorial: Batch Inferencing
 
-This tutorial provides a comprehensive guide on using Serverless GPUs to perform batch inferencing. As an example, we choose cookbook recipes (from [recipebook](https://github.com/dpapathanasiou/recipebook)) and using an LLM to extract temperature and duration for each of the steps in the recipe.
+This tutorial provides a comprehensive guide on using Serverless GPUs to perform batch inferencing. The example extracts temperatur and duration of a set of cookbook recipes (from [recipebook](https://github.com/dpapathanasiou/recipebook)) by using a LLM.
 
-For example, the input is a cookbook like:
+Such a cookbook recipe looks like:
 ```
 {
     "directions": [
@@ -30,9 +30,11 @@ For example, the input is a cookbook like:
 ```
 
 We use three different prompts for performing the inferencing task which are formulated as follows (see [src/app.py](./src/app.py))
-1. `extract temperature and duration values for each step of the following recipe. Use the following format for each sentence of the recipe: temperature=..., duration=....`
-2. `from the following recipe, list temperature and time like: temperature=..., duration=...`
-3. `summarize temperature and time values for this recipe, where applicable in the following format: step1: temperature=..., time=...; step2: etc.`
+```
+1. extract temperature and duration values for each step of the following recipe. Use the following format for each sentence of the recipe: temperature=..., duration=....
+2. from the following recipe, list temperature and time like: temperature=..., duration=...
+3. summarize temperature and time values for this recipe, where applicable in the following format: step1: temperature=..., time=...; step2: etc.
+```
 
 As a result we receive an augmented .json file which is including the quantitivate meassures
 ```
@@ -40,7 +42,7 @@ Temperature: 375 degrees F (190 degrees C)
 Duration: 1 hour
 ```
 
-The tutorial consists of 30 cookbooks which are devided into 3 batches each containing 10 cookbooks. Defining the tasks as batches of 10 cookbooks is improving the efficiency by reducing overhead of loading the LLM into the GPU. The Serverless Fleet is launched with 3 tasks to process the 3 batches on a single GPU. However, the 3 tasks could simply distributed across 3 different GPUs in order to accelerate the computation. Of-course the batch size, number of batches and the number of GPUs is only limited by actual available capacity.
+The tutorial consists of 30 recipes which are devided into 3 batches each containing 10 recipes. Defining the tasks as batches of 10 recipes is improving the efficiency by reducing overhead of loading the LLM into the GPU. The Serverless Fleet is launched with 3 tasks to process the 3 batches on a single GPU. However, the 3 tasks could simply distributed across 3 different GPUs in order to accelerate the computation. Of-course the batch size, number of batches and the number of GPUs is only limited by actual available capacity.
 
 Key steps covered in the tutorial:
 1. Upload the recipes and batches to COS
@@ -51,14 +53,14 @@ Key steps covered in the tutorial:
 
 ![](../../images/examples_inferencing_flow.png)
 
-> Note: The tutorial assumes that you have created the fleet sandbox using the fully automated approach which creates the rclone environment as well as the upload/download scripts. If that's not the case, you would need to upload the PDFs and download the results using the COS CLI or other means.
+> Note: The tutorial assumes that you have created the fleet sandbox using the fully automated approach which creates the rclone environment as well as the upload/download scripts. If that's not the case, you would need to upload the recipes and batches, and download the results using the COS CLI or other means.
 
 ## Steps
 
 
 ### Step 1 - Upload
 
-The 30 example cookbooks and 3 batches are located in the `data/tutorials/inferencing/` directory. Run the following commands in the root directory to list and upload the example PDFs to COS.
+The 30 example recipes and 3 batches are located in the `data/tutorials/inferencing/` directory. Run the following commands in the root directory to list and upload the example PDFs to COS.
 ```
 ls data/tutorials/inferencing/recipes
 ls data/tutorials/inferencing/batches
