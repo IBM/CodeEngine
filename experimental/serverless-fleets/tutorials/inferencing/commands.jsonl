@@ -1,0 +1,3 @@
+{"command": "python", "args": ["app.py", "/mnt/ce/data/tutorials/inferencing/batches/0.txt"]}
+{"command": "python", "args": ["app.py", "/mnt/ce/data/tutorials/inferencing/batches/1.txt"]}
+{"command": "python", "args": ["app.py", "/mnt/ce/data/tutorials/inferencing/batches/2.txt"]}
