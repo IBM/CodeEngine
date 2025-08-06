@@ -5,18 +5,15 @@ import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 model_name = 'tiiuae/falcon-7b-instruct'
-cache_dir = '/mnt/ce_shared_data'
 
 tokenizer = AutoTokenizer.from_pretrained(
         model_name,
-        cache_dir=cache_dir,
         )
 
 model = AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map='auto',
         low_cpu_mem_usage=False,
-        cache_dir=cache_dir,
         )
 
 generator = transformers.pipeline(
