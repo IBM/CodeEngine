@@ -393,13 +393,16 @@ ibmcloud ce secret create --name fleet-registry-secret --format registry --serve
 
 # using the common base VSI image "jwe-ubuntu24-gpu" enabled for GPU and including podman and s3fs 
 print_msg "\nCreating a Code Engine configmap 'fleet-vpc-config' to access the new VPC ..."
+# retrieve the best fitting ubuntu vsi base image by selection from available image list 
+vsi-image-id=$(ic is images | grep ubuntu-24 | grep cloud_init | awk ' { print $1 }')
+print_msg "\nSelected the ubuntu-24 vsi image for fleets with the image-id = $vsi-image-id"
 ibmcloud ce configmap create --name fleet-vpc-config \
 --from-literal NETWORK_ZONE="${REGION}-1" \
 --from-literal SSH_SECRET_NAME="fleet-ssh-secret" \
 --from-literal VPC_ID="$(ibmcloud is vpc ${vpc_name} --output json | jq -r '.id')" \
 --from-literal SUBNET_ID="$(ibmcloud is subnet ${vpc_name}-subnet --output json | jq -r '.id')" \
 --from-literal SECURITY_GROUP_ID="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.id')" \
---from-literal VSI_IMAGE_ID="r010-e7b25759-7857-455a-aec0-904b65c3c4cb" \
+--from-literal VSI_IMAGE_ID="$vsi-image-id" \
 --from-literal VSI_PREFERRED_PROFILE="cx2-2x4"
 
 # alternative to fetch the latest stock image:
