@@ -158,7 +158,8 @@ target_resource_group $resource_group_name
 # Check whether Logging should be configured
 print_msg "\nShould IBM Cloud Logs be configured?"
 if [[ "$SETUP_LOGGING" != "true" ]]; then
-    echo "No!"
+    echo "No! Logging cannot be install afterwards to the VPC running your fleets"
+    sleep 2 
 else 
     echo "Yes!"
     print_msg "\nCreating the IBM Cloud Logs instance '$icl_name' ..."
@@ -195,7 +196,8 @@ fi
 # Check whether monitoring should be configured
 print_msg "\nShould IBM Cloud Monitoring be configured?"
 if [[ "$SETUP_MONITORING" != "true" ]]; then
-    echo "No!"
+    echo "No! Monitoring cannot be install afterwards to the VPC running your fleets""
+    sleep 2 
 else
     echo "Yes!"
     print_msg "\nCreating the IBM Cloud Monitoring instance '$sysdig_name' ..."
