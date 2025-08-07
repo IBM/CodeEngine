@@ -1,0 +1,10 @@
+/mnt/ce/data/tutorials/inferencing/recipes/a-firefighters-meatloaf.json;/mnt/ce/data/result/inferencing_a-firefighters-meatloaf.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-fragrant-spicy-rice.json;/mnt/ce/data/result/inferencing_a-fragrant-spicy-rice.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-fruitcake-to-love-240697.json;/mnt/ce/data/result/inferencing_a-fruitcake-to-love-240697.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-fuzzy-thing.json;/mnt/ce/data/result/inferencing_a-fuzzy-thing.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-good-barbeque-sauce.json;/mnt/ce/data/result/inferencing_a-good-barbeque-sauce.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-good-easy-garlic-chicken.json;/mnt/ce/data/result/inferencing_a-good-easy-garlic-chicken.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-gooey-decadent-chocolate-cake-recipe.json;/mnt/ce/data/result/inferencing_a-gooey-decadent-chocolate-cake-recipe.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-green-bean-and-walnut-casserole.json;/mnt/ce/data/result/inferencing_a-green-bean-and-walnut-casserole.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-green-peas-soup-without-meat-394705.json;/mnt/ce/data/result/inferencing_a-green-peas-soup-without-meat-394705.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-healthier-mochaccino.json;/mnt/ce/data/result/inferencing_a-healthier-mochaccino.augmented.json

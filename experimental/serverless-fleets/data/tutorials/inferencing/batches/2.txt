@@ -1,0 +1,10 @@
+/mnt/ce/data/tutorials/inferencing/recipes/a-healthy-egg-salad.json;/mnt/ce/data/result/inferencing_a-healthy-egg-salad.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-hearty-green-bean-and-sausage-casse.json;/mnt/ce/data/result/inferencing_a-hearty-green-bean-and-sausage-casse.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-hearty-porridge.json;/mnt/ce/data/result/inferencing_a-hearty-porridge.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-hollywood-ham-482.json;/mnt/ce/data/result/inferencing_a-hollywood-ham-482.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-homemade-san-francisco-treat-chick.json;/mnt/ce/data/result/inferencing_a-homemade-san-francisco-treat-chick.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-jerky-chicken.json;/mnt/ce/data/result/inferencing_a-jerky-chicken.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-little-different-baked-mac-and-chee.json;/mnt/ce/data/result/inferencing_a-little-different-baked-mac-and-chee.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-lot-more-than-plain-spinach-pie-gr.json;/mnt/ce/data/result/inferencing_a-lot-more-than-plain-spinach-pie-gr.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-maize-ing-corn-chowder.json;/mnt/ce/data/result/inferencing_a-maize-ing-corn-chowder.augmented.json
+/mnt/ce/data/tutorials/inferencing/recipes/a-marinade-to-die-for.json;/mnt/ce/data/result/inferencing_a-marinade-to-die-for.augmented.json
