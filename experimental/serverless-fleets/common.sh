@@ -58,9 +58,10 @@ function target_region {
 }
 
 function target_resource_group {
-    print_msg "\nTargetting resource group '$resource_group_name' ..."
-    current_resource_group=$(ibmcloud target --output JSON |jq -r '.resource_group|.name')
-    if [[ "$current_resource_group" != "$1" ]]; then
+    print_msg "\nTargetting resource group '$1' ..."
+    current_resource_group_guid=$(ibmcloud target --output JSON |jq -r '.resource_group|.guid')
+    new_resource_group_guid=$(ibmcloud resource group $1 -output json|jq -r '.[0].id')
+    if [[ "$current_resource_group_guid" != "$new_resource_group_guid" ]]; then
         ibmcloud target -g $1 --quiet
     fi
 }
