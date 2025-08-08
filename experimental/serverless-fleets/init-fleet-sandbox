@@ -40,13 +40,6 @@ sysdig_key_name="${NAME_PREFIX}--sysdig-key"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source ${SCRIPT_DIR}/common.sh
 
-
-
-
-
-
-
-
 # Clean up previous run
 function clean() {
     (
