@@ -48,24 +48,22 @@ source ${SCRIPT_DIR}/common.sh
 # Clean up previous run
 function clean() {
     (
+        target_region $REGION
+        target_resource_group $resource_group_name
+
         rm -f ${sshkey_name}
         rm -f ${sshkey_name}.pub
 
-
-        ibmcloud resource service-instance-delete $icl_name -f -q 2>/dev/null
-        ibmcloud iam service-id-delete ${icl_name}-svc-id -f -q 2>/dev/null
-        ibmcloud is endpoint-gateway-delete ${icl_name}-vpegw --force 2>/dev/null
-
         if [[ "$SETUP_MONITORING" == "true" ]]; then
             ibmcloud resource service-key-delete ${sysdig_key_name} -f -q 2>/dev/null
-            ibmcloud resource service-instance-delete ${sysdig_name} -f -q 2>/dev/null
+            ibmcloud resource service-instance-delete ${sysdig_name} -g ${resource_group_name} -f -q 2>/dev/null
             ibmcloud is endpoint-gateway-delete ${sysdig_name}-vpegw --force 2>/dev/null
         fi
 
         if [[ "$SETUP_LOGGING" == "true" ]]; then
-            ibmcloud iam service-id-delete ${icl_name}-svc-id 2>/dev/null
+            ibmcloud iam service-id-delete ${icl_name}-svc-id -f 2>/dev/null
             ibmcloud is endpoint-gateway-delete ${icl_name}-vpegw --force 2>/dev/null
-            ibmcloud resource service-instance-delete $icl_name -f -q 2>/dev/null
+            ibmcloud resource service-instance-delete $icl_name -g ${resource_group_name} -f -q 2>/dev/null
         fi
 
         ibmcloud iam api-key-delete ${apikey_name} --force 2>/dev/null
@@ -172,7 +170,6 @@ ensure_plugin_is_up_to_date vpc-infrastructure
 ensure_plugin_is_up_to_date cloud-object-storage
 ensure_plugin_is_up_to_date container-registry
 
-print_msg "\nTargetting IBM Cloud region '$REGION' ..."
 target_region $REGION
 
 #
@@ -361,12 +358,16 @@ ibmcloud cos config region --region $REGION
 print_msg "\nCreating COS bucket '${cos_bucket_name}' ..."
 ibmcloud cos bucket-create --bucket ${cos_bucket_name} --ibm-service-instance-id $COS_ID
 
-
 # Create COS credentials
 print_msg "\nCreating COS service key '${cos_key_name}' ..."
 ibmcloud resource service-key-create ${cos_key_name} --parameters '{"HMAC":true}' --instance-id $COS_ID
 
 print_msg "\nCOS instance '${COS_ID}' and bucket '${cos_bucket_name}' created ..."
+
+ibmcloud cos config crn --force --crn $(ibmcloud resource service-instance $cos_name --crn | grep "crn")
+
+print_msg "\ncreateing bucket lifecycle configuration for objects in the result folder with 1 day retention ..."
+ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/ticker"},"ID": "ticker results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
 
 print_msg "\nCreating local rclone environment .rclone.conf to upload/download to the COS bucket..."
 
