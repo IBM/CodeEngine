@@ -175,7 +175,7 @@ If you don't have a fleet sandbox, choose one of the two methods to create one.
 
 Run the following command, which will create all required cloud resources for you.
 ```
-./init-fleet-sandbox
+NAME_PREFIX=ce-fleet-sandbox REGION=eu-de ./init-fleet-sandbox
 ```
 
 The following resources will be created in the resource group `ce-fleet-sandbox--rg` in `eu-de`.

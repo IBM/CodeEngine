@@ -1,13 +1,5 @@
 #!/bin/bash
 
-#### Global vars 
-# vsi_images hashmap contains the list of valid vsi-images that can be used within fleets
-# The fleet sandbox can be setup on regions with a valid vsi-image, only. 
-declare -A vsi_images
-vsi_images["eu-de"]=r010-e7b25759-7857-455a-aec0-904b65c3c4cb 
-vsi_images["eu-gb"]=r018-31655c46-96e7-4d38-b61a-2ab1b66b9bbd 
-vsi_images["us-east"]=r014-b7f47448-72db-4012-b018-bb120518b078
-
 # Env vars
 CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=false}
 CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
@@ -33,6 +25,19 @@ icl_name="${NAME_PREFIX}--icl"
 sysdig_name="${NAME_PREFIX}--sysdig"
 sysdig_key_name="${NAME_PREFIX}--sysdig-key"
 
+# checking if a there is a valid vsi-image in the region available
+vsi_image_id=""
+if [[ "$REGION" == "eu-de" ]]; then
+    vsi_image_id="r010-e7b25759-7857-455a-aec0-904b65c3c4cb"
+elif [[ "$REGION" == "eu-gb" ]]; then
+    vsi_image_id="r018-31655c46-96e7-4d38-b61a-2ab1b66b9bbd"
+elif [[ "$REGION" == "us-east" ]]; then
+    vsi_image_id="r014-b7f47448-72db-4012-b018-bb120518b078"
+else
+    echo "Fleet sandbox setup is currently not supported in region ($region), exiting setup... "
+    exit -1
+fi
+
 # ==============================
 # COMMON FUNCTIONS
 # ==============================
@@ -43,24 +48,22 @@ source ${SCRIPT_DIR}/common.sh
 # Clean up previous run
 function clean() {
     (
+        target_region $REGION
+        target_resource_group $resource_group_name
+
         rm -f ${sshkey_name}
         rm -f ${sshkey_name}.pub
 
-
-        ibmcloud resource service-instance-delete $icl_name -f -q 2>/dev/null
-        ibmcloud iam service-id-delete ${icl_name}-svc-id -f -q 2>/dev/null
-        ibmcloud is endpoint-gateway-delete ${icl_name}-vpegw --force 2>/dev/null
-
         if [[ "$SETUP_MONITORING" == "true" ]]; then
             ibmcloud resource service-key-delete ${sysdig_key_name} -f -q 2>/dev/null
-            ibmcloud resource service-instance-delete ${sysdig_name} -f -q 2>/dev/null
+            ibmcloud resource service-instance-delete ${sysdig_name} -g ${resource_group_name} -f -q 2>/dev/null
             ibmcloud is endpoint-gateway-delete ${sysdig_name}-vpegw --force 2>/dev/null
         fi
 
         if [[ "$SETUP_LOGGING" == "true" ]]; then
-            ibmcloud iam service-id-delete ${icl_name}-svc-id
+            ibmcloud iam service-id-delete ${icl_name}-svc-id -f 2>/dev/null
             ibmcloud is endpoint-gateway-delete ${icl_name}-vpegw --force 2>/dev/null
-            ibmcloud resource service-instance-delete $icl_name -f -q 2>/dev/null
+            ibmcloud resource service-instance-delete $icl_name -g ${resource_group_name} -f -q 2>/dev/null
         fi
 
         ibmcloud iam api-key-delete ${apikey_name} --force 2>/dev/null
@@ -89,12 +92,12 @@ function clean() {
         if [[ $? == 0 ]]; then
             COUNTER=0
             # some resources (e.g. boot volumes) are deleted with some delay. Hence, the script waits before exiting with an error
-            while (( "$(ibmcloud resource service-instances --type all -g $resource_group_name --output json | jq -r '. | length')" > 0 )); do
+            while (( "$(ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION --output json | jq -r '. | length')" > 0 )); do
                 sleep 5
                 COUNTER=$((COUNTER + 1))
                 if ((COUNTER > 3)); then
                     print_error "Cleanup failed! Please make sure to delete remaining resources manually to avoid unwanted charges."
-                    ibmcloud resource service-instances --type all -g $resource_group_name
+                    ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION
                     exit 1
                 fi
             done
@@ -109,8 +112,8 @@ function abortScript() {
         clean
     else
         print_msg "\nSkipping deletion of the created IBM Cloud resources. Please be aware that the created resources will occur costs in your account."
-        echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
-        ibmcloud resource service-instances --type all -g $resource_group_name
+        echo "$ ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION"
+        ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION
     fi
     exit 1
 }
@@ -154,13 +157,6 @@ echo "Please note: This script will install various IBM Cloud resources within t
 print_msg "\nChecking prerequisites ..."
 check_prerequisites
 
-# checking if a there is a valid vsi-image in the region available  
-vsi_image_id=${vsi_images[${REGION}]}
-
-if [[ $vsi_image_id == "" || $vsi_image_id == null ]]; then 
-   echo " Fleet sandbox setup is currently not supported in region ($region), exiting setup... "
-   exit -1
-fi
 
 # Ensure that latest versions of used IBM Cloud ClI is installed
 print_msg "\nPulling latest IBM Cloud CLI release ..."
@@ -174,7 +170,6 @@ ensure_plugin_is_up_to_date vpc-infrastructure
 ensure_plugin_is_up_to_date cloud-object-storage
 ensure_plugin_is_up_to_date container-registry
 
-print_msg "\nTargetting IBM Cloud region '$REGION' ..."
 target_region $REGION
 
 #
@@ -363,12 +358,16 @@ ibmcloud cos config region --region $REGION
 print_msg "\nCreating COS bucket '${cos_bucket_name}' ..."
 ibmcloud cos bucket-create --bucket ${cos_bucket_name} --ibm-service-instance-id $COS_ID
 
-
 # Create COS credentials
 print_msg "\nCreating COS service key '${cos_key_name}' ..."
 ibmcloud resource service-key-create ${cos_key_name} --parameters '{"HMAC":true}' --instance-id $COS_ID
 
 print_msg "\nCOS instance '${COS_ID}' and bucket '${cos_bucket_name}' created ..."
+
+ibmcloud cos config crn --force --crn $(ibmcloud resource service-instance $cos_name --crn | grep "crn")
+
+print_msg "\ncreateing bucket lifecycle configuration for objects in the result folder with 1 day retention ..."
+ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/ticker"},"ID": "ticker results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "result/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
 
 print_msg "\nCreating local rclone environment .rclone.conf to upload/download to the COS bucket..."
 
@@ -439,6 +438,7 @@ ibmcloud ce configmap create --name fleet-vpc-config \
 # alternative to fetch the latest stock image:
 # --from-literal VSI_IMAGE_ID="$(ibmcloud is image ibm-ubuntu-24-04-6-minimal-amd64-1 --output json | jq -r '.id')"
 
+## crawl+
 print_msg "\nCreating a Code Engine secret 'fleet-cos-config' to access the COS bucket  ..."
 ibmcloud ce secret create --name fleet-cos-config \
 --from-literal access_key_id=$(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .access_key_id') \
@@ -451,13 +451,38 @@ ibmcloud ce secret create --name fleet-cos-config \
 --from-literal prefix="" \
 --from-literal resource_instance_id=$COS_ID  
 
+## walk
+print_msg "\nCreating a Code Engine Persistant Data Store 'fleet-task-store' to access the COS bucket as the task state store ..."
+ibmcloud ce secret create --name fleet-task-store-secret \
+--format hmac \
+--secret-access-key $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .secret_access_key') \
+--access-key-id $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .access_key_id')
+## walk
+ibmcloud ce pds create --name fleet-task-store \
+--cos-bucket-name ${cos_bucket_name} \
+--cos-bucket-location ${REGION} \
+--cos-access-secret fleet-task-store-secret
+
+## walk
+print_msg "\nCreating the Code Engine default secret 'codeengine-fleet-defaults' with observability and VPC subnet configurations ..."
+ibmcloud ce secret create -n codeengine-fleet-defaults \
+--from-literal pool_subnet_crn_1="$(ibmcloud is subnet ${vpc_name}-subnet --output json | jq -r '.crn')" \
+--from-literal pool_security_group_crns_1="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.crn')"
+
 print_msg "\nCreating a Code Engine secret 'fleet-observability-config' to enable logging and monitoring integrations  ..."
 ibmcloud ce secret create --name fleet-observability-config --format generic --from-literal LOGGING_ENABLED=${SETUP_LOGGING}
 if [[ "$SETUP_LOGGING" == "true" ]]; then
     print_msg "\nMake sure logs are sent to '${icl_ingestion_host}' ..."
+    ## crawl+
     ibmcloud ce secret update --name fleet-observability-config \
         --from-literal LOGGING_INGESTION_HOST=${icl_ingestion_host} \
         --from-literal LOGGING_INGESTION_APIKEY=${icl_ingestion_apikey} \
+        --from-literal LOGGING_LEVEL_AGENT=info \
+        --from-literal LOGGING_LEVEL_WORKER=info
+    ## walk
+    ibmcloud ce secret update -n codeengine-fleet-defaults \
+        --from-literal LOGGING_INGRESS_ENDPOINT="${icl_ingestion_host}" \
+        --from-literal LOGGING_SENDER_API_KEY="${icl_ingestion_apikey}" \
         --from-literal LOGGING_LEVEL_AGENT=info \
         --from-literal LOGGING_LEVEL_WORKER=info
 fi
@@ -469,8 +494,8 @@ if [[ "$SETUP_MONITORING" == "true" ]]; then
 fi
 
 print_msg "\nThe Fleet demo sandbox has been configured. Please be aware that the created resources will occur costs in your account."
-echo "$ ibmcloud resource service-instances --type all -g $resource_group_name"
-ibmcloud resource service-instances --type all -g $resource_group_name
+echo "$ ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION"
+ibmcloud resource service-instances --type all -g $resource_group_name --location $REGION
 
 print_msg "\nFollow the tutorial to launch your first Serverless Fleet with './run'"
 
