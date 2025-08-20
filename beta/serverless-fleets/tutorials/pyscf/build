@@ -1,0 +1,11 @@
+#!/bin/sh
+
+REGISTRY=$(ibmcloud ce secret get -n fleet-registry-secret --output json | jq -r '.data.server')
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+ibmcloud ce buildrun submit --source . --strategy dockerfile --image $REGISTRY/ce--fleet-pyscf/pyscf:latest --registry-secret fleet-registry-secret --name ce--fleet-pyscf-build-${uuid} --size medium --timeout 600 
+
+ibmcloud ce buildrun logs -f -n ce--fleet-pyscf-build-${uuid}
+
+# takes about ??s.

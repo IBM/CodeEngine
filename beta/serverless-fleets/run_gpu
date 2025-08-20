@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+echo "not implemented yet"
