@@ -12,16 +12,18 @@ This setup is ideal for automating document conversion workflows in a cost-effec
 
 ![](../../images/examples_docling_flow.png)
 
-> Note: The tutorial assumes that you have created the fleet sandbox using the fully automated approach which creates the rclone environment as well as the upload/download scripts. If that's not the case, you would need to upload the PDFs and download the results using the COS CLI or other means.
+Note: The tutorial assumes that you have created the fleet sandbox using the fully automated approach which creates the rclone environment as well as the upload/download scripts. If that's not the case, you would need to upload the PDFs and download the results using the COS CLI or other means.
+
+The sandbox contains two Persistent Data Stores (PDS) that point to the input and output bucket
 
 ## Steps
 
 
 ### Step 1 - Upload
 
-The 11 example PDFs are located in the `data/tutorials/docling/pdfs` directory. Run the following commands in the root directory to list and upload the example PDFs to COS.
+The 11 example PDFs are located in the `data/input/docling/pdfs` directory. Run the following commands in the root directory to list and upload the example PDFs to COS.
 ```
-ls data/tutorials/docling/pdfs
+ls data/input/docling/pdfs
 ./upload
 ```
 
@@ -39,25 +41,24 @@ cat commands.jsonl
 
 ```
 ➜  cat commands.jsonl
-
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2203.01017v2.pdf", "--output", "/mnt/ce/data/result/docling_2203.01017v2.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2206.01062.pdf", "--output", "/mnt/ce/data/result/docling_2206.01062.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2305.03393v1-pg9.pdf", "--output", "/mnt/ce/data/result/docling_2305.03393v1-pg9.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/2305.03393v1.pdf", "--output", "/mnt/ce/data/result/docling_2305.03393v1.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/amt_handbook_sample.pdf", "--output", "/mnt/ce/data/result/docling_amt_handbook_sample.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/code_and_formula.pdf", "--output", "/mnt/ce/data/result/docling_code_and_formula.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/picture_classification.pdf", "--output", "/mnt/ce/data/result/docling_picture_classification.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/redp5110_sampled.pdf", "--output", "/mnt/ce/data/result/docling_redp5110_sampled.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_01.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_01.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_02.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_02.pdf.md" ]}
-{ "command":"docling", "args": ["--num-threads", "24", "/mnt/ce/data/tutorials/docling/pdfs/right_to_left_03.pdf", "--output", "/mnt/ce/data/result/docling_right_to_left_03.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2203.01017v2.pdf", "--output", "/output/docling_2203.01017v2.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2206.01062.pdf", "--output", "/output/docling_2206.01062.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2305.03393v1-pg9.pdf", "--output", "/output/docling_2305.03393v1-pg9.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2305.03393v1.pdf", "--output", "/output/docling_2305.03393v1.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/amt_handbook_sample.pdf", "--output", "/output/docling_amt_handbook_sample.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/code_and_formula.pdf", "--output", "/output/docling_code_and_formula.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/picture_classification.pdf", "--output", "/output/docling_picture_classification.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/redp5110_sampled.pdf", "--output", "/output/docling_redp5110_sampled.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_01.pdf", "--output", "/output/docling_right_to_left_01.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_02.pdf", "--output", "/output/docling_right_to_left_02.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_03.pdf", "--output", "/output/docling_right_to_left_03.pdf.md" ]}
 ```
 </details>
 <br/>
 
 ### Step 3 - Run the Fleet
 
-Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--tasks-from-file commands.jsonl` to specify the tasks for the 11 pdfs. We give each task 24 vCPU, run docling with `--num-threads 24` and choose a mx3d-24x240 worker profile with 24 vCPU. Therefore we run only 1 docling command per worker at a time and utilize the full worker per pdf processing. We run `--max-scale 4` instances and workers in parallel. 
+Now run the fleet to process the PDFs. In this tutorial we use the static array index with `--tasks-from-file commands.jsonl` to specify the tasks for the 11 pdfs. We give each task 12 vCPU, run docling with `--num-threads 12` and choose a mx3d-24x240 worker profile with 24 vCPU. Therefore we run 2 docling commands per worker at a time and utilize the full worker per pdf processing. We run `--max-scale 8` instances and workers in parallel. 
 
 Launch the fleet with the following command in the `tutorials/docling` directory.
 ```
@@ -70,36 +71,73 @@ Launch the fleet with the following command in the `tutorials/docling` directory
 
 ```
 ➜  docling ./run
-using image: de.icr.io/ce--fleet-docling/docling
-ibmcloud code-engine experimental fleet run --name fleet-0eb02f2f-1
-  --image de.icr.io/ce--fleet-docling/docling
+ibmcloud code-engine beta fleet create --name fleet-3128b1c7-1
+  --image quay.io/docling-project/docling-serve-cpu
   --registry-secret fleet-registry-secret
   --worker-profile mx3d-24x240
-  --max-scale 4
-  --tasks-from-file commands.jsonl
-  --cpu 24
-  --memory 240G
-Preparing your tasks: ⠼ Please wait...took 11.233582 seconds.
-Preparing your tasks: ⠴ Please wait...
-COS Bucket used 'ce-fleet-sandbox-data-fbfdde1d'...
-Launching fleet 'fleet-0eb02f2f-1'...
-Current fleet status 'Launching'...
+  --max-scale 8
+  --tasks-from-local-file commands.jsonl
+  --cpu 12
+  --memory 120G
+  --mount-data-store /input=fleet-input-store:/docling
+  --mount-data-store /output=fleet-output-store:/docling
+Successfully created fleet with name 'fleet-3128b1c7-1' and ID 'bd00d46e-4645-43b0-a892-d153455ac576'
+Run 'ibmcloud ce beta fleet get --id bd00d46e-4645-43b0-a892-d153455ac576' to check the fleet status.
+Run 'ibmcloud ce beta fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576' to retrieve a list of provisioned workers.
 OK
-Getting Fleet 'fleet-0eb02f2f-1'...
+```
+</details>
+<br/>
+
+List the fleet details with the command printed in the output, e.g.
+
+```
+ibmcloud ce beta fleet get --id bd00d46e-4645-43b0-a892-d153455ac576
+```
+
+<a name="Output"></a>
+<details>
+  <summary>Output</summary>
+
+```
+➜  docling ibmcloud ce beta fleet get --id bd00d46e-4645-43b0-a892-d153455ac576
+Getting fleet 'bd00d46e-4645-43b0-a892-d153455ac576'...
 OK
 
-Name:          fleet-0eb02f2f-1
-Status:        provisioning
-Age:           0s
-Created:       2025-04-30T08:56:58+02:00
-Project Name:  ce-fleet-sandbox--ce-project
-ID:            a73a8ed0-fe7d-4335-971d-f9932516b4d3
+Name:            fleet-3128b1c7-1
+ID:              bd00d46e-4645-43b0-a892-d153455ac576
+Status:          pending
+Created:         89s
+Project region:  br-sao
+Project name:    fleetlab-user1--ce-project
 
-Task Summary:
-  Tasks:                 11
-  Instances:             4
-  Workers:               4
-  Instances per Worker:  1
+Tasks status:
+  Failed:     0
+  Cancelled:  0
+  Succeeded:  0
+  Running:    0
+  Pending:    11
+  Total:      11
+
+Code:
+  Container image reference:  quay.io/docling-project/docling-serve-cpu
+  Registry access secret:     fleet-registry-secret
+
+Tasks specification:
+  Task state store:           fleet-task-store
+  Data store JSON reference:  fleet-task-store
+  Data store object path:     /ce/bd499e5b-0d1f-4f0e-92ef-2acd4d01def4/fleet-input/02aa073d-a423-406e-b47a-0ab92641098a.jsonl
+
+Resources and scaling:
+  CPU per instance:          24
+  Memory per instance:       240G
+  Preferred worker profile:  mx3d-24x240
+  Max number of instances:   4
+  Max execution time:
+  Max retries per task:      3
+
+Network placement:
+  Network reference 0:  7d1503cd-8d49-477e-81b8-a4b084b7b680
 ```
 </details>
 <br/>
@@ -107,22 +145,22 @@ Task Summary:
 
 Verify that the machines are starting
 ```
-ibmcloud code-engine experimental fleet worker list
+ibmcloud ce beta fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
 ```
 <a name="Output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet worker list
+➜  docling ibmcloud ce beta fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
 Listing serverless fleet workers...
 OK
 
-Name                           Status   IP            Zone     Age  Profile      Fleet Name
-fleet-0eb02f2f-10000-80223816  running  10.243.0.116  eu-de-1  78s  mx3d-24x240  fleet-0eb02f2f-1
-fleet-0eb02f2f-10001-07b9f1c9  running  10.243.0.117  eu-de-1  78s  mx3d-24x240  fleet-0eb02f2f-1
-fleet-0eb02f2f-10002-33e72f0f  running  10.243.0.115  eu-de-1  78s  mx3d-24x240  fleet-0eb02f2f-1
-fleet-0eb02f2f-10003-1a2cc4c0  running  10.243.0.118  eu-de-1  78s  mx3d-24x240  fleet-0eb02f2f-1
+ID                                    Status   Profile      IP           Zone      Age
+05c5f559-b567-4f81-9cd6-a74c145201d9  running  mx3d-24x240  10.250.0.12  br-sao-1  2m7s
+63636826-3600-41f8-ac9f-78cc17a7a930  running  mx3d-24x240  10.250.0.9   br-sao-1  2m7s
+9c39d1a9-3f25-49c5-ba27-e23dabaac695  running  mx3d-24x240  10.250.0.11  br-sao-1  2m7s
+df27ff63-34dc-45b0-8f87-9c5f64aec388  running  mx3d-24x240  10.250.0.10  br-sao-1  2m7s
 ```
 </details>
 <br/>
@@ -130,54 +168,88 @@ fleet-0eb02f2f-10003-1a2cc4c0  running  10.243.0.118  eu-de-1  78s  mx3d-24x240 
 Observe the tasks:
 
 ```
-ibmcloud code-engine experimental fleet task list --fleet-name <fleet-name>
+ibmcloud ce beta fleet task list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
 ```
 <a name="Output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet task list --fleet-name fleet-0eb02f2f-1
-Getting your tasks: ⠸ Please wait...Duration of list in seconds '0.262680'...
-Project Name:  ce-fleet-sandbox--ce-project
-Project ID:    e1501040-e56e-48b6-b9f0-1695908199bf
-Fleet Name:    fleet-0eb02f2f-1
-ID:            a73a8ed0-fe7d-4335-971d-f9932516b4d3
+➜  docling ibmcloud ce beta fleet task list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
+Listing serverless fleet tasks...
+OK
 
+Index                           ID                                    Status      Result code  Worker ID
+000-00000-00000000000000000005  0d7403eb-060c-5574-95cb-84b3291e6651  pending     -            -
+000-00000-00000000000000000008  118fe7d1-b9cc-5e1c-8540-0d826d5fc388  successful  0            fleet-bd00d46e-4645-43b0-a892-d153455ac576-2
+000-00000-00000000000000000010  1ea768d5-5451-5c89-b03d-6bcc49ce9151  pending     -            -
+000-00000-00000000000000000007  25fbad6f-f5d8-59ed-9c11-ab3b031d33dc  successful  0            fleet-bd00d46e-4645-43b0-a892-d153455ac576-3
+000-00000-00000000000000000006  3d97d377-321f-5183-9704-ba82f77f62e0  pending     -            -
+000-00000-00000000000000000002  8d408a5a-c765-5a86-8633-6d9f5a7c906c  successful  0            fleet-bd00d46e-4645-43b0-a892-d153455ac576-0
+000-00000-00000000000000000004  94a37069-f911-5054-aa5a-c50f35ce9819  successful  0            fleet-bd00d46e-4645-43b0-a892-d153455ac576-2
+000-00000-00000000000000000009  df4a9a37-32bd-554b-8000-cb3da5bbb2ae  running     -            000-00000-00000000000000000009
+000-00000-00000000000000000001  e8e9c81d-3e0e-54a6-a10f-491fb00a2f79  running     -            000-00000-00000000000000000001
+000-00000-00000000000000000003  f4e7e5cc-51dd-56cb-bbc8-149cf3aa4f57  running     -            000-00000-00000000000000000003
+000-00000-00000000000000000000  fcb64a66-f270-55fa-99fa-6695070bee4a  running     -            000-00000-00000000000000000000
 
-
-COS Task Store:
-Bucket Name:  ce-fleet-sandbox-data-fbfdde1d
-Prefix:       e1501040-e56e-48b6-b9f0-1695908199bf/a73a8ed0-fe7d-4335-971d-f9932516b4d3/v1/queue/
-
-Task Summary:
-Pending Tasks:    7
-Running Tasks:    4
-Failed Tasks:     0
-Succeeded Tasks:  0
 ```
 </details>
 <br/>
 
-(optional) If you like you can jump to the machine and see docling processing by running the following command in the root directory:
+Repeat the steps above to observe the fleet and wait until all tasks are successful. 
+
+Finally, observe that the workers are stopped and deleted automatically.
+
 ```
-./jump <IP>
+ibmcloud ce beta fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
 ```
 
-You can use `htop` to see that docling is processing the PDFs
-![](../../images/examples_docling.jpg)
+<a name="Output"></a>
+<details>
+  <summary>Output</summary>
 
+```
+➜  docling ibmcloud ce beta fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576
+Listing serverless fleet tasks...
+OK
 
-#### Playing with more parallism
-
-If you want to modify the tutorial to add some more parallism, e.g. to run 4 docling commands per worker, you could change the arguments and run script as follows: 
-1. the arguments in commands.jsonl to `--num-threads 6`
-2. the cpu per task to `--cpu 6`
-Now, with `--max-scale 4` you would only get a single worker. Modify `--max-scale 8` to get 2 workers, each processing 4 docling commands.
+ID                                    Status   Profile      IP           Zone      Age
+05c5f559-b567-4f81-9cd6-a74c145201d9  stopped  mx3d-24x240  10.250.0.12  br-sao-1  15m
+63636826-3600-41f8-ac9f-78cc17a7a930  stopped  mx3d-24x240  10.250.0.9   br-sao-1  15m
+9c39d1a9-3f25-49c5-ba27-e23dabaac695  stopped  mx3d-24x240  10.250.0.11  br-sao-1  15m
+df27ff63-34dc-45b0-8f87-9c5f64aec388  stopped  mx3d-24x240  10.250.0.10  br-sao-1  15m
+```
+</details>
+<br/>
 
 #### Run with a Serverless GPU
 
 Run `./run_gpu` to launch the docling commands on a GPU. This example, is bringing up a single `gx3-24x120x1l40s` and runs the 11 pdfs sequentially.
+
+
+The GPUs are defined by setting the family and the number of GPUs per task, e.g. `--gpu GPU_FAMILY:NUMBER_OF_GPUS`, where the number of GPUs can be fractional for GPU families that support MIG. In our case we configure `--gpu l40s:1` with a `--max-scale 1` to get exactly one `gx3-24x120x1l40s`.
+
+
+<a name="Output"></a>
+<details>
+  <summary>Output</summary>
+```
+./run_gpu
+ibmcloud code-engine beta fleet create --name fleet-cc1f880d-1
+  --image quay.io/docling-project/docling-serve
+  --registry-secret fleet-registry-secret
+  --max-scale 1
+  --tasks-from-local-file commands.jsonl
+  --gpu l40s:1
+  --mount-data-store /input=fleet-input-store:/docling
+  --mount-data-store /output=fleet-output-store:/docling
+Successfully created fleet with name 'fleet-cc1f880d-1' and ID 'b824738b-3ffd-44cb-9044-db1f11b24076'
+Run 'ibmcloud ce beta fleet get --id b824738b-3ffd-44cb-9044-db1f11b24076' to check the fleet status.
+Run 'ibmcloud ce beta fleet worker list --fleet-id b824738b-3ffd-44cb-9044-db1f11b24076' to retrieve a list of provisioned workers.
+OK
+```
+</details>
+<br/>
 
 
 ### Step 4 - Download results
@@ -189,7 +261,5 @@ Download the results from the COS by running the following command in the root d
 
 You can find the results under
 ```
-ls -l data/result/docling_*
+ls -l data/output/docling/docling_*
 ```
-
-

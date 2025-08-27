@@ -1,9 +1,7 @@
 #!/bin/sh
 
-#ls -l ../../data/tutorials/docling/pdfs/*.pdf | awk '{ printf " { \"command\":\"docling\", \"args\": [\"--num-threads\", \"24\", \""$8"\", \"--output\", \"/mnt/ce/data/result\"$8".md\" ]}\n" }' > commands.jsonl
-
-cd ../../data/tutorials/docling/pdfs
-for file in *.pdf; do echo "{ \"command\":\"docling\", \"args\": [\"--num-threads\", \"24\", \"/mnt/ce/data/tutorials/docling/pdfs/"$file""\", \"--output\", \"/mnt/ce/data/result/docling_""$file".md\" ]}"; done > commands.jsonl
+cd ../../data/input/docling/pdfs
+for file in *.pdf; do echo "{ \"cmds\":[\"docling\"], \"args\": [\"--num-threads\", \"12\", \"/input/pdfs/"$file""\", \"--output\", \"/output/docling_""$file".md\" ]}"; done > commands.jsonl
 cd -
-mv ../../data/tutorials/docling/pdfs/commands.jsonl .
+mv ../../data/input/docling/pdfs/commands.jsonl .
 cat commands.jsonl
