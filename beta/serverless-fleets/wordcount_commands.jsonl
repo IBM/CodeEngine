@@ -1,6 +1,6 @@
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/alice_in_wonderland.txt > /mnt/ce/output/wordcount/wordcount_alice_in_wonderland.txt"]}
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/der_struwwelpeter.txt > /mnt/ce/output/wordcount/wordcount_der_struwwelpeter.txt"]}
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/dracula.txt > /mnt/ce/output/wordcount/wordcount_dracula.txt"]}
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/gullivers_travels.txt > /mnt/ce/output/wordcount/wordcount_gullivers_travels.txt"]}
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/romeo_and_juliet.txt > /mnt/ce/output/wordcount/wordcount_romeo_and_juliet.txt"]}
- { "command":"/bin/bash", "arguments": ["-c", "cd /mnt/ce/input; wc wordcount/the_call_of_the_wild.txt > /mnt/ce/output/wordcount/wordcount_the_call_of_the_wild.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/alice_in_wonderland.txt > /output/wordcount_alice_in_wonderland.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/der_struwwelpeter.txt > /output/wordcount_der_struwwelpeter.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/dracula.txt > /mnt/ce/output/wordcount_dracula.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/gullivers_travels.txt > /output/wordcount_gullivers_travels.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/romeo_and_juliet.txt > /output/wordcount_romeo_and_juliet.txt"]}
+ { "cmds":["/bin/bash"], "args": ["-c", "wc /input/the_call_of_the_wild.txt > /output/wordcount_the_call_of_the_wild.txt"]}

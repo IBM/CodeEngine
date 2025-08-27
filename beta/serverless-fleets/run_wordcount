@@ -29,7 +29,9 @@ echo "  "--tasks-from-local-file $CMDS
 echo "  "--cpu $CPU
 echo "  "--memory $MEMORY
 echo "  "--max-scale $MAX_SCALE 
+echo "  "--mount-data-store /input=fleet-input-store:/wordcount
+echo "  "--mount-data-store /output=fleet-output-store:/wordcount
 
-ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi8/ubi-minimal:latest --registry-secret fleet-registry-secret --max-scale $MAX_SCALE --tasks-from-local-file $CMDS --cpu $CPU --memory $MEMORY --env __CE_INTERNAL_AGENT_URL=https://s3.eu-de.cloud-object-storage.appdomain.cloud/fleet-agent-binarys/agent-6c8f65c 
+ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi8/ubi-minimal:latest --registry-secret fleet-registry-secret --max-scale $MAX_SCALE --tasks-from-local-file $CMDS --cpu $CPU --memory $MEMORY --mount-data-store /input=fleet-input-store:/wordcount --mount-data-store /output=fleet-output-store:/wordcount
 
 
