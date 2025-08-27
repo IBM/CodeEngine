@@ -1,4 +1,0 @@
-#!/bin/sh
-
-cat ../../data/examples/simulation/tickers.txt | awk '{ printf " { \"command\":\"python3\", \"args\": [\"simulate.py\", \""$1"\", \"/mnt/ce/data/result\"]}\n" }' > commands.jsonl
-
