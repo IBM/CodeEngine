@@ -144,7 +144,6 @@ In terms of roles and responsibilities it's important to understand that:
 
 The One-time-setup procedure will help to automatically provision / de-provision all required resources, but NOT manage their life-cycle.
 
-
 ## One Time Setup
 
 The tutorial has been tested on a MacOS and Ubuntu24 client machine with the following tools pre-installed:
@@ -177,13 +176,21 @@ Run the following command, which will create all required cloud resources for yo
 NAME_PREFIX=ce-fleet-sandbox REGION=eu-de ./init-fleet-sandbox
 ```
 
+
+> Note: Your account need wide permissions to create all the resources mentioned above. If you don't have persmission, ask you Administrator or follow the steps for the [custom configuration](#custom-configuration)
+
 The following resources will be created in the resource group `ce-fleet-sandbox--rg` in `eu-de`.
 
 ![](./images/prototype_resources.png)
 
-> Note: Your account need wide permissions to create all the resources mentioned above. If you don't have persmission, ask you Administrator or follow the steps for the [custom configuration](#custom-configuration)
+The tutorial configures three COS buckets and corresponding Code Engine [Persistent Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) for different purposes:
+1. `fleet-task-store` - used by Code Engine to queue and persist tasks and their state
+2. `fleet-input-store` - used to read data for processing like PDFs, or txt files
+3. `fleet-outout-store` - used to write results as the output of processing
 
-> Note: An rclone environment is configured and files can be uploaded with `./upload` from local directory `./data` to the COS bucket, which is then mounted under `/ce/data` in each container instance.
+![](./images/prototype_persistant_data_stores.png)
+
+In addition, the `init-fleet-sandbox` script configures a local rclone environment including the `.rclone-config` as well as the `upload` and `download` script. Use `./upload` to load data from your local `./data/input` directory to the `fleet-input-store` bucket and `./download` to download from the `fleet-output-store` bucket to the `./data/output` directory. This allows you to share files easily with your container instance.
 
 You can later clean-up all resources by running `NAME_PREFIX=ce-fleet-sandbox REGION=eu-de ./init-fleet-sandbox clean`.
 </details>
@@ -486,6 +493,12 @@ The 6 tasks are submitted using the `tasks-from-local-file` option using the [wo
 
 ![](./images/example_wordcount.png)
 
+The example mounts the [Persistant Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) (PDS) to the container using the `--mount-data-store MOUNT_DIRECTORY=STORAGE_NAME:[SUBPATH]`, where 
+- `MOUNT_DIRECTORY` - is the directory within the container
+- `STORAGE_NAME` - is the name of the PDS
+- `SUBPATH` - is the prefix within the COS bucket to mount.
+
+It mounts the `fleet-input-store:/wordcount` to `/input` and `fleet-output-store:/wordcount` to `/output`.
 
 Four steps are required to run the example:
 1. `./upload` - will upload the .txt files from the local data directory to Cloud Object Storage
@@ -530,21 +543,7 @@ Once the push is complete, you can run the fleet by modifying `./run` and replac
 - the arguments, e.g. `--arg "-c" --arg "sleep 120"`
 - the environment variables, e.g. `--env foo=bar`
 
-### How to share data with your container using COS
 
-The tutorial configures three COS buckets and corresponding Code Engine [Persistent Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) for different purposes:
-1. `fleet-task-store` - used by Code Engine to queue and persist tasks and their state
-2. `fleet-input-store` - used to read data for processing like PDFs, or txt files
-3. `fleet-outout-store` - used to write results as the output of processing
-
-Persistant Data Stores (PDS) can be mounted to the container using the `--mount-data-store MOUNT_DIRECTORY=STORAGE_NAME:[SUBPATH]`, where 
-- `MOUNT_DIRECTORY` - is the directory within the container
-- `STORAGE_NAME` - is the name of the PDS
-- `SUBPATH` - is the prefix within the COS bucket to mount.
-
-The wordcount and docling examples use mount options for `/input` and `/output`
-
-In addition, the `init-fleet-sandbox` script configures a local rclone environment including the `.rclone-config` as well as the `upload` and `download` script. Use `./upload` to load data from your local `./data/input` directory to the `fleet-input-store` bucket and `./download` to download from the `fleet-output-store` bucket to the `./data/output` directory. This allows you to share files easily with your container instance.
 
 ### How to access logs
 
