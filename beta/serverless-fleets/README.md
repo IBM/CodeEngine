@@ -1,6 +1,6 @@
-# Serverless Fleets (experimental)
+# Serverless Fleets (beta)
 
-Serverless Fleets is an experimental feature of IBM Cloud Code Engine.
+Serverless Fleets is an new feature of IBM Cloud Code Engine.
 
 **Table of Contents:**
 - [What is a fleets](#what-is-a-fleet)
@@ -135,12 +135,11 @@ Key aspects of the architecture:
 2. Fleet workers are VPC VSIs running in the Code Engine managed accounts
 3. Fleet workers are provisioned based on an VSI image provided and managed by Code Engine
 4. Fleet workers are connected to the VPC subnet owned by the customer
-5. Tasks and data are stored in a COS bucket owned by the customer
+5. Tasks and data are stored in a Task State Store which is a COS bucket owned by the customer
 6. Logs are ingested to an IBM Cloud Logs instances owned by the customer
-7. A jumpbox VSI is being provisioned in the customer account to support debugging and troubleshooting.
 
 In terms of roles and responsibilities it's important to understand that:
-- The user is responsible to manage the VPC, Jumpbox, COS Bucket and ICL instance
+- The user is responsible to manage the VPC, Subnet, COS Bucket, Containers and ICL instance
 - Code Engine is responsible to manage the life-cycle of Fleets, Tasks, Instances and Workers.
 
 The One-time-setup procedure will help to automatically provision / de-provision all required resources, but NOT manage their life-cycle.
@@ -158,7 +157,7 @@ Clone this repository
 git clone https://github.com/IBM/CodeEngine.git 
 ```
 
-Switch to the `experimental/serverless-fleets` directory, which will be the root directory for all steps of this tutorial
+Switch to the `beta/serverless-fleets` directory, which will be the root directory for all steps of this tutorial
 
 To run this end-to-end sample, open a terminal, [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
@@ -182,81 +181,18 @@ The following resources will be created in the resource group `ce-fleet-sandbox-
 
 ![](./images/prototype_resources.png)
 
-> Note: The automated setup will provision in `eu-de` region.
-
-> Note: To protect the environment, the access to the jumpbox is only allowed from the network where your client was located when running the initilization (curl https://ipv4.icanhazip.com/). You can modify the security group to change the IP adress or CIDR. 
-
 > Note: Your account need wide permissions to create all the resources mentioned above. If you don't have persmission, ask you Administrator or follow the steps for the [custom configuration](#custom-configuration)
 
 > Note: An rclone environment is configured and files can be uploaded with `./upload` from local directory `./data` to the COS bucket, which is then mounted under `/ce/data` in each container instance.
 
-You can later clean-up all resources by running `./init-fleet-sandbox clean`.
+You can later clean-up all resources by running `NAME_PREFIX=ce-fleet-sandbox REGION=eu-de ./init-fleet-sandbox clean`.
 </details>
 
 <a name="Bring your own cloud resources"></a>
 <details>
   <summary>Bring your own cloud resources</summary>
 
-If you already have a VPC, subnets, COS bucket and credentials you can just create the code engine project and related artefacts, as follows:
-
-```
-ibmcloud code-engine project create --name ce-fleet-sandbox--ce-project
-ibmcloud code-engine project select --name ce-fleet-sandbox--ce-project
-```
-
-Create a secret for the container registry:
-```
-ibmcloud ce secret create --name fleet-registry-secret --format registry --server '<region>.icr.io' --username iamapikey --password <api-key>
-```
-
-Create a ssh secret with the public key
-```
-ibmcloud ce secret create --name fleet-ssh-secret --format ssh --key-path ~/.ssh/id_rsa.pub
-```
-
-Create a configmap with your VPC details. Make sure, that the subnet has a public gateway attached.
-```
-ibmcloud ce configmap create --name fleet-vpc-config \
---from-literal NETWORK_ZONE="${REGION}-1" \
---from-literal SSH_SECRET_NAME="fleet-ssh-secret" \
---from-literal VPC_ID="<id>" \
---from-literal SUBNET_ID="<id>" \
---from-literal SECURITY_GROUP_ID="<id>" \
---from-literal VSI_IMAGE_ID="<id>" \  // example: r010-e7b25759-7857-455a-aec0-904b65c3c4cb
---from-literal VSI_PREFERRED_PROFILE="cx2-2x4"
-```
-
-Use one of the image IDs below. Only eu-de and us-east region is supported at this point.
-| region | imageid |
-| ------ | ------- |
-| eu-de  | `r010-e7b25759-7857-455a-aec0-904b65c3c4cb` |
-| eu-gb  | `r018-31655c46-96e7-4d38-b61a-2ab1b66b9bbd` |
-| us-east | `r014-b7f47448-72db-4012-b018-bb120518b078` |
-
-
-Create a secret with all COS related credentials
-```
-ibmcloud ce secret create --name fleet-cos-config \
---from-literal access_key_id="" \
---from-literal secret_access_key="" \
---from-literal apikey="" \
---from-literal endpoint="https://s3.direct.${REGION}.cloud-object-storage.appdomain.cloud" \
---from-literal bucket_name="" \
---from-literal bucket_region="" \
---from-literal mountpoint="/ce/data" \
---from-literal prefix="" \
---from-literal resource_instance_id="" 
-```
-
-Optionally, create the observability related configuration. If you do not want LOGGING or MONITORING just don't add the values. 
-```
-ibmcloud ce secret create --name fleet-observability-config \
---from-literal LOGGING_INGESTION_APIKEY="<API KEY>" \
---from-literal LOGGING_INGESTION_HOST="<UUID>.ingress.<REGION>.logs.cloud.ibm.com" \
---from-literal MONITORING_INGESTION_KEY="<API KEY>" \
---from-literal MONITORING_INGESTION_REGION="<REGION>"
-```
-See the following documentation how to obtain the API keys for [logging](https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-iam-ingestion-serviceid-api-key) and [monitoring](https://cloud.ibm.com/docs/monitoring?topic=monitoring-access_key)
+If you already have a VPC, subnets, COS bucket and credentials you can just create the code engine project and related artefacts, follow the instructions in the official documentation
 
 </details>
 </br>
@@ -274,21 +210,21 @@ Run a serverless fleet that runs 1 single task and instance with 2 CPUs and 4 GB
 
 ```
 ➜  serverless-fleets ./run
-ibmcloud code-engine experimental fleet run
-   --name fleet-e8035973-1
+ibmcloud code-engine beta fleet create
+   --name fleet-b4bd2a33-1
+   --tasks-state-store fleet-task-store
    --image registry.access.redhat.com/ubi8/ubi-minimal:latest
    --registry-secret fleet-registry-secret
-   --command=bash
-   --arg -c
-   --arg 'echo Serverless Fleets; sleep 120'
+   --command=sleep
+   --arg 60
    --worker-profile cx2-2x4
    --tasks 1
+   --cpu 2
+   --memory 4G
    --max-scale 1
-Preparing your tasks: ⠹ Please wait...took 0.428629 seconds.
-Preparing your tasks: ⠸ Please wait...
-COS Bucket used 'ce-fleet-sandbox-data-fbfdde1d'...
-Launching fleet 'fleet-e8035973-1'...
-Current fleet status 'Launching'...
+Successfully created fleet with name 'fleet-b4bd2a33-1' and ID 'e3caac88-cfc2-4602-8684-b527a6811716'
+Run 'ibmcloud ce beta fleet get --id e3caac88-cfc2-4602-8684-b527a6811716' to check the fleet status.
+Run 'ibmcloud ce beta fleet worker list --fleet-id e3caac88-cfc2-4602-8684-b527a6811716' to retrieve a list of provisioned workers.
 OK
 ```
 </details>
@@ -299,29 +235,52 @@ To observe the fleet and its progress, run a combination of the following comman
 ### Get the details of the fleet
 
 ```
-ibmcloud ce exp fleet get -n <fleet-name>
+ibmcloud ce beta fleet get --id <id>
 ```
 <a name="output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet get -n fleet-e8035973-1
-Getting Fleet 'fleet-e8035973-1'...
+➜  serverless-fleets ibmcloud ce beta fleet get --id e3caac88-cfc2-4602-8684-b527a6811716
+Getting fleet 'e3caac88-cfc2-4602-8684-b527a6811716'...
 OK
 
-Name:          fleet-e8035973-1
-Status:        provisioning
-Age:           22s
-Created:       2025-04-29T10:51:09+02:00
-Project Name:  ce-fleet-sandbox--ce-project
-ID:            e4a23052-67bd-4d12-aa4f-98e8ad99111c
+Name:            fleet-b4bd2a33-1
+ID:              e3caac88-cfc2-4602-8684-b527a6811716
+Status:          pending
+Created:         44s
+Project region:  br-sao
+Project name:    fleetlab-user1--ce-project
 
-Task Summary:
-  Tasks:                 1
-  Instances:             1
-  Workers:               1
-  Instances per Worker:  1
+Tasks status:
+  Failed:     0
+  Cancelled:  0
+  Succeeded:  0
+  Running:    0
+  Pending:    1
+  Total:      1
+
+Code:
+  Container image reference:  registry.access.redhat.com/ubi8/ubi-minimal:latest
+  Registry access secret:     fleet-registry-secret
+  Command 0:                  sleep
+  Argument 0:                 60
+
+Tasks specification:
+  Task state store:  fleet-task-store
+  Indexes:           0-0
+
+Resources and scaling:
+  CPU per instance:          2
+  Memory per instance:       4G
+  Preferred worker profile:  cx2-2x4
+  Max number of instances:   1
+  Max execution time:
+  Max retries per task:      3
+
+Network placement:
+  Network reference 0:  996b1f58-61d1-401c-9b53-312253de7f2c
 ```
 </details>
 <br>
@@ -329,31 +288,19 @@ Task Summary:
 ### List the tasks of the fleet
 
 ```
-ibmcloud ce exp fleet task list --fleet-name <fleet-name>
+ibmcloud ce beta fleet task list --fleet-id <id>
 ```
 <a name="output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet task list --fleet-name fleet-e8035973-1
-Getting your tasks: ⠦ Please wait...Duration of list in seconds '0.792116'...
-Project Name:  ce-fleet-sandbox--ce-project
-Project ID:    e1501040-e56e-48b6-b9f0-1695908199bf
-Fleet Name:    fleet-e8035973-1
-ID:            e4a23052-67bd-4d12-aa4f-98e8ad99111c
+➜  serverless-fleets ibmcloud ce beta fleet task list --fleet-id e3caac88-cfc2-4602-8684-b527a6811716
+Listing serverless fleet tasks...
+OK
 
-
-
-COS Task Store:
-Bucket Name:  ce-fleet-sandbox-data-fbfdde1d
-Prefix:       e1501040-e56e-48b6-b9f0-1695908199bf/e4a23052-67bd-4d12-aa4f-98e8ad99111c/v1/queue/
-
-Task Summary:
-Pending Tasks:    1
-Running Tasks:    0
-Failed Tasks:     0
-Succeeded Tasks:  0
+Index        ID                                    Status   Result code  Worker ID
+000-00000-0  b3c7c020-5e4c-50fb-ac7d-513b2fb95b5c  running  -            000-00000-0
 ```
 </details>
 <br>
@@ -361,19 +308,19 @@ Succeeded Tasks:  0
 ### List the workers running in the fleet
 
 ```
-ibmcloud ce exp fleet worker list
+ibmcloud ce beta fleet worker list --fleet-id <id>
 ```
 <a name="output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet worker list
+➜  serverless-fleets ibmcloud ce beta fleet worker list --fleet-id e3caac88-cfc2-4602-8684-b527a6811716
 Listing serverless fleet workers...
 OK
 
-Name                           Status   IP           Zone     Age  Profile  Fleet Name
-fleet-e8035973-10000-056abc8e  running  10.243.0.93  eu-de-1  47s  cx2-2x4  fleet-e8035973-1
+ID                                    Status        Profile  IP           Zone      Age
+5b99e38f-f239-4340-a0c6-d70432c21730  initializing  cx2-2x4  10.250.0.15  br-sao-1  71s
 ```
 </details>
 <br>
@@ -387,6 +334,8 @@ Run a fleet that runs a single task on a *Serverless GPU* using a Nvidia L40s fo
 ```
 ./run_gpu
 ```
+
+The GPUs are defined by setting the family and the number of GPUs per task, e.g. `--gpu GPU_FAMILY:NUMBER_OF_GPUS`, where the number of GPUs can be fractional for GPU families that support MIG. In our case we configure `--gpu l40s:1` with a `--max-scale 1` to get exactly one `gx3-24x120x1l40s`.
 
 Observe the progress of the fleet with the same commands as above.
 
@@ -405,24 +354,17 @@ Run a serverless fleet to process 100 tasks where each tasks gets 1 CPU and 2 GB
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ./run_parallel_tasks
-ibmcloud code-engine experimental fleet run
-  --name fleet-ef650482-1
+➜  serverless-fleets ibmcloud code-engine beta fleet create
+  --name fleet-847292b7-1
   --image registry.access.redhat.com/ubi8/ubi-minimal:latest
   --registry-secret fleet-registry-secret
-  --worker-profile cx2-2x4
+  --tasks-state-store fleet-task-store
   --command=sleep
   --arg 2
   --tasks 100
   --cpu 1
   --memory 2G
   --max-scale 10
-Preparing your tasks: ⠋ Please wait...took 6.193297 seconds.
-Preparing your tasks: ⠹ Please wait...
-COS Bucket used 'ce-fleet-sandbox-data-fbfdde1d'...
-Launching fleet 'fleet-ef650482-1'...
-Current fleet status 'Launching'...
-OK
 ```
 </details>
 <br>
@@ -430,7 +372,7 @@ OK
 In the fleet details you will see 5 workers being provisined. The number of workers is determined by the profile, cpu/memory and number of parallel tasks. 
 
 ```
-ibmcloud ce exp fleet get -n <fleet-name>
+ibmcloud ce beta fleet get --id <id>
 ```
 
 <a name="output"></a>
@@ -438,22 +380,44 @@ ibmcloud ce exp fleet get -n <fleet-name>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet get -n fleet-ef650482-1
-Getting Fleet 'fleet-ef650482-1'...
+➜  serverless-fleets ibmcloud ce beta fleet get --id 08a05e59-0a35-4da0-885f-5eb3f6f589d4
+Getting fleet '08a05e59-0a35-4da0-885f-5eb3f6f589d4'...
 OK
 
-Name:          fleet-ef650482-1
-Status:        done
-Age:           65s
-Created:       2025-04-29T17:02:19+02:00
-Project Name:  ce-fleet-sandbox--ce-project
-ID:            8844325f-6bc6-4ec7-a1cb-fc3f0d2f6d1e
+Name:            fleet-847292b7-1
+ID:              08a05e59-0a35-4da0-885f-5eb3f6f589d4
+Status:          pending
+Created:         23s
+Project region:  br-sao
+Project name:    fleetlab-user1--ce-project
 
-Task Summary:
-  Tasks:                 100
-  Instances:             10
-  Workers:               5
-  Instances per Worker:  2
+Tasks status:
+  Failed:     0
+  Cancelled:  0
+  Succeeded:  0
+  Running:    0
+  Pending:    100
+  Total:      100
+
+Code:
+  Container image reference:  registry.access.redhat.com/ubi8/ubi-minimal:latest
+  Registry access secret:     fleet-registry-secret
+  Command 0:                  sleep
+  Argument 0:                 2
+
+Tasks specification:
+  Task state store:  fleet-task-store
+  Indexes:           0-99
+
+Resources and scaling:
+  CPU per instance:         1
+  Memory per instance:      2G
+  Max number of instances:  10
+  Max execution time:
+  Max retries per task:     3
+
+Network placement:
+  Network reference 0:  daf4f3a0-00a6-46c3-b5cf-cbcbdba049fc
 ```
 </details>
 <br>
@@ -464,7 +428,7 @@ In our case, a cx2-2x4 has two CPUs and can run 2 instances on a single worker. 
 Repeat the following command until you see the Fleet worker to appear, which takes about 30s:
 
 ```
-ibmcloud ce exp fleet worker list
+ibmcloud ce beta fleet worker list --fleet-id <id>
 ```
 
 <a name="output"></a>
@@ -472,16 +436,13 @@ ibmcloud ce exp fleet worker list
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet worker list
+➜  serverless-fleets ibmcloud ce beta fleet worker list --fleet-id 08a05e59-0a35-4da0-885f-5eb3f6f589d4
 Listing serverless fleet workers...
 OK
 
-Name                           Status   IP            Zone     Age  Profile  Fleet Name
-fleet-ef650482-10000-f6506e8d  running  10.243.0.108  eu-de-1  57s  cx2-2x4  fleet-ef650482-1
-fleet-ef650482-10001-233f2643  running  10.243.0.106  eu-de-1  57s  cx2-2x4  fleet-ef650482-1
-fleet-ef650482-10002-9eba12ae  running  10.243.0.104  eu-de-1  57s  cx2-2x4  fleet-ef650482-1
-fleet-ef650482-10003-91fd6d78  running  10.243.0.107  eu-de-1  57s  cx2-2x4  fleet-ef650482-1
-fleet-ef650482-10004-954cf4c5  running  10.243.0.105  eu-de-1  57s  cx2-2x4  fleet-ef650482-1
+ID                                    Status        Profile   IP           Zone      Age
+273d3d7c-cdb2-4ed9-ac97-bafe76f4f59f  initializing  cx2-8x16  10.250.0.16  br-sao-1  55s
+99e535e2-acd0-4b9e-97a2-4e245402c13c  initializing  cx2-2x4   10.250.0.17  br-sao-1  55s
 
 ```
 </details>
@@ -490,32 +451,26 @@ fleet-ef650482-10004-954cf4c5  running  10.243.0.105  eu-de-1  57s  cx2-2x4  fle
 Observe the progress of the task execution by repeatingly running the following command:
 
 ```
-ibmcloud ce exp fleet task list --fleet-name <fleet-name>
+ibmcloud ce beta fleet task list --fleet-id <id>
 ```
+
+Altneratively, you can filter by status `--status <pending | running | successful | failed>`
 
 <a name="output"></a>
 <details>
   <summary>Output</summary>
 
 ```
-➜  serverless-fleets ibmcloud ce exp fleet task list --fleet-name fleet-ef650482-1
-Getting your tasks: ⠸ Please wait...Duration of list in seconds '0.283214'...
-Project Name:  ce-fleet-sandbox--ce-project
-Project ID:    e1501040-e56e-48b6-b9f0-1695908199bf
-Fleet Name:    fleet-ef650482-1
-ID:            8844325f-6bc6-4ec7-a1cb-fc3f0d2f6d1e
+➜  serverless-fleets ibmcloud ce beta fleet task list --fleet-id 08a05e59-0a35-4da0-885f-5eb3f6f589d4
+Listing serverless fleet tasks...
+OK
 
-
-
-COS Task Store:
-Bucket Name:  ce-fleet-sandbox-data-fbfdde1d
-Prefix:       e1501040-e56e-48b6-b9f0-1695908199bf/8844325f-6bc6-4ec7-a1cb-fc3f0d2f6d1e/v1/queue/
-
-Task Summary:
-Pending Tasks:    20
-Running Tasks:    10
-Failed Tasks:     0
-Succeeded Tasks:  70
+Index         ID                                    Status   Result code  Worker ID
+000-00000-65  00eef277-6973-56a7-9c7a-1cf1b4d1f945  pending  -            -
+000-00000-80  020fa8bd-d30f-583d-acfa-84253bb2f399  pending  -            -
+000-00000-72  06e4ef8f-1b8f-58b0-95cc-e8191d71403c  pending  -            -
+000-00000-82  08aca6c5-c787-589f-8c9a-4f35483ec1ac  pending  -            -
+000-00000-77  126be911-8238-5bf6-a5c6-a18991c60377  pending  -            -
 ```
 </details>
 <br>
@@ -526,8 +481,8 @@ Repeat the steps to observe the fleet.
 
 ## Launch a fleet to count words of novels
 
-This example will run a simple `wc` (word count) on a list of [novels](./data/tutorials/wordcount) stored as objects in .txt format in Cloud Object Storage.
-The 6 tasks are submitted using the `tasks-from-file` option using the [wordcount_commands.jsonl](./wordcount_commands.jsonl) as input.
+This example will run a simple `wc` (word count) on a list of [novels](./data/input/wordcount) stored as objects in .txt format in Cloud Object Storage.
+The 6 tasks are submitted using the `tasks-from-local-file` option using the [wordcount_commands.jsonl](./wordcount_commands.jsonl) as input.
 
 ![](./images/example_wordcount.png)
 
@@ -544,7 +499,6 @@ Four steps are required to run the example:
 
 ## Tutorials
 
-- [Tutorial: Monte Carlo Simulation](./tutorials/simulation/README.md)
 - [Tutorial: Docling](./tutorials/docling/README.md)
 
 
@@ -576,34 +530,21 @@ Once the push is complete, you can run the fleet by modifying `./run` and replac
 - the arguments, e.g. `--arg "-c" --arg "sleep 120"`
 - the environment variables, e.g. `--env foo=bar`
 
-### How to access the worker
-
-From the output of the `worker list` command you can grep the IP of the worker and jump to the worker via ssh by running:
-```
-./jump 10.243.0.x
-```
-
-On the worker you can see how it's being initilized and the container and command is being executed:
-
-```
-tail -f /var/log/cloud-init-output.log
-```
-
-You can check if the command was successfully running:
-```
-podman ps -a
-```
-
-You can check the logs of the container:
-```
-podman logs <container-id>
-```
-
 ### How to share data with your container using COS
 
-The COS bucket is mounted in the container directory under the *mountpoint* `/mnt/ce/data`.
+The tutorial configures three COS buckets and corresponding Code Engine [Persistent Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) for different purposes:
+1. `fleet-task-store` - used by Code Engine to queue and persist tasks and their state
+2. `fleet-input-store` - used to read data for processing like PDFs, or txt files
+3. `fleet-outout-store` - used to write results as the output of processing
 
-The `init-fleet-sandbox` script configures a local rclone environment including the `.rclone-config` as well as the `upload` and `download` script. Use `./upload` to load data from you local `./data` directory to COS and `./download` vice versa. This allows you to share files easily with your container instance.
+Persistant Data Stores (PDS) can be mounted to the container using the `--mount-data-store MOUNT_DIRECTORY=STORAGE_NAME:[SUBPATH]`, where 
+- `MOUNT_DIRECTORY` - is the directory within the container
+- `STORAGE_NAME` - is the name of the PDS
+- `SUBPATH` - is the prefix within the COS bucket to mount.
+
+The wordcount and docling examples use mount options for `/input` and `/output`
+
+In addition, the `init-fleet-sandbox` script configures a local rclone environment including the `.rclone-config` as well as the `upload` and `download` script. Use `./upload` to load data from your local `./data/input` directory to the `fleet-input-store` bucket and `./download` to download from the `fleet-output-store` bucket to the `./data/output` directory. This allows you to share files easily with your container instance.
 
 ### How to access logs
 
@@ -621,21 +562,6 @@ To clean up all IBM Cloud resources, that have been created as part of the provi
 
 ## Troubleshooting
 
-### How to keep fleet workers alive for troubleshooting?
-
-With CLI v1.53.0, by default, workers get deleted not only if the workload runs to completion, but also if the agent or the user command fail.
-
-To keep workers alive for troubleshooting if the agent or the user command fail, you would need to set the environment variable `CE_FLEET_KEEP_WORKER=true` at submission of the `fleet run` command.
-
-**Note: Keeping workers alive incurs cost in your account!** You need to delete them manually once you are done with troubleshooting.
-
-Run the following command to keep workers alive for troubleshooting:
-```
-CE_FLEET_KEEP_WORKER=true ibmcloud code-engine experimental fleet run ...
-```
-
-Please follow the steps [How to access the worker](#How-to-access-the-worker) to conduct your troubleshooting.
-
 ### How to delete workers manually?
 
 If you need to end your fleet's processing before it ran to completion, or to get rid of workers that are kept alive for troubleshooting (see above), you can delete the workers.
@@ -649,28 +575,4 @@ ibmcloud ce exp fleet worker delete -n <worker-name>
 Run the following command to delete all workers in your project:
 ```
 ibmcloud ce exp fleet worker list | grep "fleet-" | awk '{print $1}' | xargs -L1 -I {} ibmcloud ce exp fleet worker delete --name {} -f
-```
-
-
-
-### Fleet creation fails with duplicate key exception
-
-Sample log output:
-```
-"ERROR: duplicate key value violates unique constraint \"idx_capacity_request_request_id\" (SQLSTATE 23505)"
-```
-
-* Solution:
-    * use a fleet name that is unique and prefixed with a personal identifier; e.g. `reggeenr-fleet-2`
-
-
-### Timeout to ssh/jump to the Fleet worker
-
-Note, that the ssh port `22` is restricted to the IP address of the network you're connected to when setting up the fleet sandbox. The IP is determined by `curl https://ipv4.icanhazip.com/`
-
-If you change the network you are not able to connect via ssh to the jumpbox. In order to allow access you need to add a rule for your current network:
-
-```
-remote_ip=$(curl https://ipv4.icanhazip.com/)
-ibmcloud is security-group-rule-add ce-fleet-sandbox--is-vpc-group inbound tcp --remote ${remote_ip} --port-min 22 --port-max 22 --vpc ce-fleet-sandbox--is-vpc >/dev/null
 ```
