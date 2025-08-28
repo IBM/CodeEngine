@@ -6,7 +6,7 @@ CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
 REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 SETUP_LOGGING="${SETUP_LOGGING:-true}"
-SETUP_MONITORING="${SETUP_MONITORING:-true}"
+SETUP_MONITORING="${SETUP_MONITORING:-false}"
 
 
 # Generate a short uuid for some resources
@@ -126,14 +126,15 @@ print_msg "\n======================================================"
 print_msg " Setting up \"Code Engine Serverless Fleet\" sample"
 print_msg "======================================================\n"
 
-if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then 
+#if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then 
+if [[ "$SETUP_LOGGING" != "true" ]]; then 
    print_msg " ATTENTION: You requested to setup a fleet sandbox without : \n"
    if [[ "$SETUP_LOGGING" != "true" ]]; then 
         print_msg "  - logging support \n"
    fi 
-   if [[ "$SETUP_MONITORING" != "true" ]]; then 
-        print_msg "  - monitoring support \n"
-   fi 
+#    if [[ "$SETUP_MONITORING" != "true" ]]; then 
+#         print_msg "  - monitoring support \n"
+#    fi 
    print_msg "Do you really want to continue setup without these services? They cannot be added later \n"
    read -p "Continue [y|n]? " yn
     case $yn in
