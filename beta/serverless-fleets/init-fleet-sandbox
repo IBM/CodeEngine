@@ -41,8 +41,6 @@ function clean() {
         target_region $REGION
         target_resource_group $resource_group_name
 
-        rm -rf download
-        rm -rf upload
         rm -rf .rclone*
 
         if [[ "$SETUP_MONITORING" == "true" ]]; then
@@ -382,26 +380,6 @@ region = $REGION
 location_constraint = $REGION
 EOF
 
-cat > download << EOF
-#!/bin/sh
-
-resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
-
-rclone --config .rclone_${resource_group_name}.conf sync s3:${cos_bucket_name_output} data/output --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-rclone --config .rclone_${resource_group_name}.conf sync s3:${cos_bucket_name_taskstore} data/taskstore --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-EOF
-chmod +x download
-
-cat > upload << EOF
-#!/bin/sh
-
-resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
-
-rclone --config .rclone_${resource_group_name}.conf sync data/input s3:${cos_bucket_name_input} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-rclone --config .rclone_${resource_group_name}.conf sync data/output s3:${cos_bucket_name_output} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-EOF
-chmod +x upload
-
 #
 # Create the Code Engine project
 print_msg "\nCreating the Code Engine project '$ce_project_name' ..."
@@ -448,10 +426,10 @@ ibmcloud ce secret create -n codeengine-fleet-defaults \
 if [[ "$SETUP_LOGGING" == "true" ]]; then
     print_msg "\nMake sure logs are sent to '${icl_ingestion_host}' ..."
     ibmcloud ce secret update -n codeengine-fleet-defaults \
-        --from-literal LOGGING_INGRESS_ENDPOINT="${icl_ingestion_host}" \
-        --from-literal LOGGING_SENDER_API_KEY="${icl_ingestion_apikey}" \
-        --from-literal LOGGING_LEVEL_AGENT=info \
-        --from-literal LOGGING_LEVEL_WORKER=info
+        --from-literal logging_ingress_endpoint="${icl_ingestion_host}" \
+        --from-literal logging_sender_api_key="${icl_ingestion_apikey}" \
+        --from-literal logging_level_agent=debug \
+        --from-literal logging_level_worker=debug
 fi
 if [[ "$SETUP_MONITORING" == "true" ]]; then
     print_msg "\nMake sure monitoring is enabled to '${sysdig_collector_host}' ..."
