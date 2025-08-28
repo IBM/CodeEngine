@@ -12,7 +12,7 @@ Serverless Fleets is an new feature of IBM Cloud Code Engine.
 - [Launch a Fleet](#launch-a-fleet)
 - [Launch a Fleet with GPUs](#launch-a-fleet-with-gpus)
 - [Launch a fleet with parallel tasks](#launch-a-fleet-with-parallel-tasks)
-- [Launch a fleet to count words of novels](#Launch-a-fleet-to-count-words-of-novels)
+- [Launch a fleet to count words of novels](#launch-a-fleet-to-count-words-of-novels)
 - [Tutorials](#tutorials)
 - [HowTo](#howto)
 - [Troubleshooting](#troubleshooting)
