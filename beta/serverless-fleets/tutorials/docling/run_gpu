@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+# https://github.com/docling-project/docling-serve?tab=readme-ov-file#container-images
+IMAGE="quay.io/docling-project/docling-serve"
+
+echo ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1"
+echo "  "--image $IMAGE
+echo "  "--registry-secret fleet-registry-secret
+echo "  "--max-scale 1
+echo "  "--tasks-from-local-file commands.jsonl
+echo "  "--gpu l40s
+echo "  "--mount-data-store /input=fleet-input-store:/docling
+echo "  "--mount-data-store /output=fleet-output-store:/docling
+
+ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" \
+--image $IMAGE \
+--registry-secret fleet-registry-secret \
+--max-scale 1 \
+--tasks-from-local-file commands.jsonl \
+--gpu l40s \
+--tasks-state-store fleet-task-store \
+--mount-data-store /input=fleet-input-store:/docling \
+--mount-data-store /output=fleet-output-store:/docling

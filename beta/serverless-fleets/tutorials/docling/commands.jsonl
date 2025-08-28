@@ -1,0 +1,11 @@
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2203.01017v2.pdf", "--output", "/output/docling_2203.01017v2.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2206.01062.pdf", "--output", "/output/docling_2206.01062.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2305.03393v1-pg9.pdf", "--output", "/output/docling_2305.03393v1-pg9.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/2305.03393v1.pdf", "--output", "/output/docling_2305.03393v1.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/amt_handbook_sample.pdf", "--output", "/output/docling_amt_handbook_sample.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/code_and_formula.pdf", "--output", "/output/docling_code_and_formula.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/picture_classification.pdf", "--output", "/output/docling_picture_classification.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/redp5110_sampled.pdf", "--output", "/output/docling_redp5110_sampled.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_01.pdf", "--output", "/output/docling_right_to_left_01.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_02.pdf", "--output", "/output/docling_right_to_left_02.pdf.md" ]}
+{ "cmds":["docling"], "args": ["--num-threads", "12", "/input/pdfs/right_to_left_03.pdf", "--output", "/output/docling_right_to_left_03.pdf.md" ]}

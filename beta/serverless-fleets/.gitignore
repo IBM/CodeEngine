@@ -1,0 +1,12 @@
+*sshkey*
+custom_*
+.rclone*
+data/taskstore/*
+!data/taskstore/.keep
+data/output/*
+!data/output/inferencing/.keep
+!data/output/docling/.keep
+!data/output/wordcount/.keep
+!data/output/simulation/.keep
+*/.DS_Store
+.DS_Store

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd ../../data/input/docling/pdfs
+for file in *.pdf; do echo "{ \"cmds\":[\"docling\"], \"args\": [\"--num-threads\", \"12\", \"/input/pdfs/"$file""\", \"--output\", \"/output/docling_""$file".md\" ]}"; done > commands.jsonl
+cd -
+mv ../../data/input/docling/pdfs/commands.jsonl .
+cat commands.jsonl

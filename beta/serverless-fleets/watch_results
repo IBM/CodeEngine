@@ -1,0 +1,7 @@
+#!/bin/sh
+
+crn=$(ibmcloud resource service-instances -o json | jq -r '.[] | select( .name | contains("--cos")) | .crn')
+ibmcloud cos config crn --crn $crn
+bucket=$(ibmcloud cos buckets --json | jq -r '.Buckets[] | select( .Name | contains("output")) | .Name')
+
+watch -n 2 ibmcloud cos list-objects-v2 --bucket "$bucket" --prefix "$1"
