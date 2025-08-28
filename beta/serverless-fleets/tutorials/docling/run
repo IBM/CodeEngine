@@ -10,7 +10,7 @@ echo ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1"
 echo "  "--image $IMAGE
 echo "  "--registry-secret fleet-registry-secret
 echo "  "--worker-profile mx3d-24x240
-echo "  "--max-scale 8
+echo "  "--max-scale 4
 echo "  "--tasks-from-local-file commands.jsonl
 echo "  "--cpu 12
 echo "  "--memory 120G
