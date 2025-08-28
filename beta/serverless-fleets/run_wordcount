@@ -23,7 +23,7 @@ CMDS=wordcount_commands.jsonl
 
 echo ibmcloud code-engine experimental fleet run 
 echo "  "--name "fleet-${uuid}-1"
-echo "  "--image registry.access.redhat.com/ubi8/ubi-minimal:latest
+echo "  "--image registry.access.redhat.com/ubi9/ubi-minimal:latest
 echo "  "--registry-secret fleet-registry-secret
 echo "  "--tasks-from-local-file $CMDS
 echo "  "--cpu $CPU
