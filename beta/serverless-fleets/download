@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# get the current resource group name
+resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
+
+# configure the COS instance
+crn=$(ibmcloud resource service-instances -o json | jq -r '.[] | select( .name | contains("--cos")) | .crn')
+ibmcloud cos config crn --crn $crn
+
+# get the bucket names
+output_bucket=$(ibmcloud cos buckets --json | jq -r '.Buckets[] | select( .Name | contains("output")) | .Name')
+
+rclone --config .rclone_${resource_group_name}.conf sync s3:${output_bucket} data/output --progress --multi-thread-streams=16 --checkers=32 --transfers=8

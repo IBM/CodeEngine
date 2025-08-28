@@ -1,8 +1,6 @@
 *sshkey*
 custom_*
-.rclone.conf
-download
-upload
+.rclone*
 data/taskstore/*
 !data/taskstore/.keep
 data/output/*

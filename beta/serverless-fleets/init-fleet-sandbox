@@ -43,7 +43,7 @@ function clean() {
 
         rm -rf download
         rm -rf upload
-        rm -rf .rclone.conf
+        rm -rf .rclone*
 
         if [[ "$SETUP_MONITORING" == "true" ]]; then
             ibmcloud resource service-key-delete ${sysdig_key_name} -f -q 2>/dev/null
@@ -368,9 +368,9 @@ ibmcloud cos config crn --force --crn $(ibmcloud resource service-instance $cos_
 print_msg "\ncreateing bucket lifecycle configuration for objects in the result folder with 1 day retention ..."
 ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name_output} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "simulation/ticker"},"ID": "simulation results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "inverencing/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "docling/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "wordcount/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
 
-print_msg "\nCreating local rclone environment .rclone.conf to upload/download to the COS bucket..."
+print_msg "\nCreating local rclone environment .rclone_${resource_group_name}.conf to upload/download to the COS bucket..."
 
-cat > .rclone.conf << EOF
+cat > .rclone_${resource_group_name}.conf << EOF
 [s3]
 type = s3
 provider = IBMCOS
@@ -384,15 +384,21 @@ EOF
 
 cat > download << EOF
 #!/bin/sh
-rclone --config .rclone.conf sync s3:${cos_bucket_name_output} data/output --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-rclone --config .rclone.conf sync s3:${cos_bucket_name_taskstore} data/taskstore --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+
+resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
+
+rclone --config .rclone_${resource_group_name}.conf sync s3:${cos_bucket_name_output} data/output --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+rclone --config .rclone_${resource_group_name}.conf sync s3:${cos_bucket_name_taskstore} data/taskstore --progress --multi-thread-streams=16 --checkers=32 --transfers=8
 EOF
 chmod +x download
 
 cat > upload << EOF
 #!/bin/sh
-rclone --config .rclone.conf sync data/input s3:${cos_bucket_name_input} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
-rclone --config .rclone.conf sync data/output s3:${cos_bucket_name_output} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+
+resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
+
+rclone --config .rclone_${resource_group_name}.conf sync data/input s3:${cos_bucket_name_input} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+rclone --config .rclone_${resource_group_name}.conf sync data/output s3:${cos_bucket_name_output} --progress --multi-thread-streams=16 --checkers=32 --transfers=8
 EOF
 chmod +x upload
 
