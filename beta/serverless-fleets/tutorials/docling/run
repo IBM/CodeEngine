@@ -12,7 +12,7 @@ echo "  "--registry-secret fleet-registry-secret
 echo "  "--worker-profile mx3d-24x240
 echo "  "--max-scale 4
 echo "  "--tasks-from-local-file commands.jsonl
-echo "  "--cpu 12
+echo "  "--cpu 24
 echo "  "--memory 120G
 echo "  "--mount-data-store /input=fleet-input-store:/docling
 echo "  "--mount-data-store /output=fleet-output-store:/docling
