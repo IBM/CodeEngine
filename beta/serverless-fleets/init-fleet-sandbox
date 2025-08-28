@@ -41,7 +41,7 @@ function clean() {
         target_region $REGION
         target_resource_group $resource_group_name
 
-        rm -rf .rclone*
+        rm -rf .rclone_${resource_group_name}.conf
 
         if [[ "$SETUP_MONITORING" == "true" ]]; then
             ibmcloud resource service-key-delete ${sysdig_key_name} -f -q 2>/dev/null
