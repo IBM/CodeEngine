@@ -21,7 +21,7 @@ CMDS=wordcount_commands.jsonl
 # construct the wordcount_commands.jsonl
 # ls data/tutorials/wordcount | awk '{ printf " { \"command\":\"/bin/bash\", \"args\": [\"-c\", \"cd /mnt/ce/data; wc tutorials/wordcount/"$1" > result/wordcount_"$1"\"]}\n" }' > wordcount_commands.jsonl
 
-echo ibmcloud code-engine experimental fleet run 
+echo ibmcloud code-engine beta fleet run 
 echo "  "--name "fleet-${uuid}-1"
 echo "  "--image registry.access.redhat.com/ubi9/ubi-minimal:latest
 echo "  "--registry-secret fleet-registry-secret
