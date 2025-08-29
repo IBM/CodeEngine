@@ -1,0 +1,10 @@
+.env
+.DS_Store
+temp/last_modified_time.json
+testFiles/*.txt
+cronjob.yaml
+cos2cos
+downloaded_file.*
+temp.sh
+input-data
+output-data
