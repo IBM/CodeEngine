@@ -221,10 +221,8 @@ ibmcloud code-engine beta fleet create
    --name fleet-b4bd2a33-1
    --tasks-state-store fleet-task-store
    --image registry.access.redhat.com/ubi8/ubi-minimal:latest
-   --registry-secret fleet-registry-secret
    --command=sleep
    --arg 60
-   --worker-profile cx2-2x4
    --tasks 1
    --cpu 2
    --memory 4G
@@ -364,7 +362,6 @@ Run a serverless fleet to process 100 tasks where each tasks gets 1 CPU and 2 GB
 ➜  serverless-fleets ibmcloud code-engine beta fleet create
   --name fleet-847292b7-1
   --image registry.access.redhat.com/ubi8/ubi-minimal:latest
-  --registry-secret fleet-registry-secret
   --tasks-state-store fleet-task-store
   --command=sleep
   --arg 2
@@ -501,15 +498,93 @@ The example mounts the [Persistant Data Stores](https://cloud.ibm.com/docs/codee
 
 It mounts the `fleet-input-store:/wordcount` to `/input` and `fleet-output-store:/wordcount` to `/output`.
 
+> Note, this example assumes that the automated One-Time-Setup has been performed. Otherwise, the upload and download would need to be done manually.
+
+
 Four steps are required to run the example:
-1. `./upload` - will upload the .txt files from the local data directory to Cloud Object Storage
-2. `./run_wordcount` - launch the fleet to perform `wc` on each of the novels.
-3. `./watch_result wordcount` - will watch the COS bucket for the results, press ctrl-c if all 6 results are present
-4. `./download` - will download the results from the COS bucket
+
+#### Step 1 - Upload files
+
+Upload the .txt files from the local data directory to Cloud Object Storage
+```
+./upload
+```
+
+#### Step 2 - Run the fleet
+
+Launch the fleet to perform `wc` on each of the novels which defines the tasks from [wordcount_commands.jsonl](./wordcount_commands.jsonl) and mounts the input and output data stores. 
+```
+./run_wordcount
+``` 
+
+Confirm that you uploaded the files with `#? 1`
+
+<a name="output"></a>
+<details>
+  <summary>Output</summary>
+```
+➜  serverless-fleets ./run_wordcount
+Did you upload the .txt files to COS?
+1) Yes
+2) No
+#? 1
+ibmcloud code-engine beta fleet run
+  --name fleet-7e818989-1
+  --image registry.access.redhat.com/ubi9/ubi-minimal:latest
+  --tasks-from-local-file wordcount_commands.jsonl
+  --cpu 1
+  --memory 2G
+  --max-scale 4
+  --mount-data-store /input=fleet-input-store:/wordcount
+  --mount-data-store /output=fleet-output-store:/wordcount
+Successfully created fleet with name 'fleet-7e818989-1' and ID '3f7a1c2a-6d85-4b27-bc4f-7e519645e23b'
+Run 'ibmcloud ce beta fleet get --id 3f7a1c2a-6d85-4b27-bc4f-7e519645e23b' to check the fleet status.
+Run 'ibmcloud ce beta fleet worker list --fleet-id 3f7a1c2a-6d85-4b27-bc4f-7e519645e23b' to retrieve a list of provisioned workers.
+Run 'ibmcloud ce beta fleet task list --fleet-id 3f7a1c2a-6d85-4b27-bc4f-7e519645e23b' to retrieve a list of tasks.
+OK
+```
+</details>
+<br>
+
+#### Step 3 - Watch results
+
+You can run the following command to watch the COS bucket for the results, press ctrl-c if all 6 results are present
+```
+./watch_result wordcount
+```
+
+<a name="output"></a>
+<details>
+  <summary>Output</summary>
+```
+Every 2.0s: ibmcloud cos list-objects-v2 --bucket fleetlab-dev-output-91b55a45 --prefix wordcount Jeremiass-MacBook-Pro.local: 13:48:47
+
+OK
+Name                                           Last Modified (UTC)        Object Size
+wordcount/.keep                                Aug 29, 2025 at 12:05:04   0 B
+wordcount/wordcount_alice_in_wonderland.txt    Sep 01, 2025 at 11:51:16   52 B
+wordcount/wordcount_der_struwwelpeter.txt      Sep 01, 2025 at 11:51:14   47 B
+wordcount/wordcount_dracula.txt                Sep 01, 2025 at 11:51:16   40 B
+wordcount/wordcount_gullivers_travels.txt      Sep 01, 2025 at 11:51:14   50 B
+wordcount/wordcount_romeo_and_juliet.txt       Sep 01, 2025 at 11:51:30   49 B
+wordcount/wordcount_the_call_of_the_wild.txt   Sep 01, 2025 at 11:51:31   53 B
+
+Found 7 objects in bucket 'fleetlab-dev-output-91b55a45'
+```
+</details>
+<br>
+
+#### Step 4 - Download the results
+
+Download the results from the output COS bucket to `./data/output`
+
+```
+./download
+```` 
+
 
 🚀 The example was successful, if you can tell the number of words of the "Alice in Wonderland" novel 🚀
 
-> Note, this example assumes that the automated One-Time-Setup has been performed. Otherwise, the upload and download would need to be done manually.
 
 ## Tutorials
 
