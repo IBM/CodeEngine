@@ -12,7 +12,6 @@ MEMORY=2G
 echo ibmcloud code-engine beta fleet create 
 echo "  "--name "fleet-${uuid}-1"
 echo "  "--image registry.access.redhat.com/ubi8/ubi-minimal:latest
-echo "  "--registry-secret fleet-registry-secret
 echo "  "--tasks-state-store fleet-task-store
 echo "  "--command="sleep" 
 echo "  "--arg "2"
@@ -21,4 +20,4 @@ echo "  "--cpu $CPU
 echo "  "--memory $MEMORY
 echo "  "--max-scale $MAX_SCALE 
 
-ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi9/ubi-minimal:latest --registry-secret fleet-registry-secret --max-scale ${MAX_SCALE} --command="sleep" --arg "2" --tasks ${TASKS} --cpu ${CPU} --memory ${MEMORY}
+ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi9/ubi-minimal:latest --max-scale ${MAX_SCALE} --command="sleep" --arg "2" --tasks ${TASKS} --cpu ${CPU} --memory ${MEMORY}
