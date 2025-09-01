@@ -522,6 +522,7 @@ Confirm that you uploaded the files with `#? 1`
 <a name="output"></a>
 <details>
   <summary>Output</summary>
+
 ```
 ➜  serverless-fleets ./run_wordcount
 Did you upload the .txt files to COS?
@@ -543,6 +544,7 @@ Run 'ibmcloud ce beta fleet worker list --fleet-id 3f7a1c2a-6d85-4b27-bc4f-7e519
 Run 'ibmcloud ce beta fleet task list --fleet-id 3f7a1c2a-6d85-4b27-bc4f-7e519645e23b' to retrieve a list of tasks.
 OK
 ```
+
 </details>
 <br>
 
@@ -556,6 +558,7 @@ You can run the following command to watch the COS bucket for the results, press
 <a name="output"></a>
 <details>
   <summary>Output</summary>
+
 ```
 Every 2.0s: ibmcloud cos list-objects-v2 --bucket fleetlab-dev-output-91b55a45 --prefix wordcount Jeremiass-MacBook-Pro.local: 13:48:47
 
@@ -571,6 +574,7 @@ wordcount/wordcount_the_call_of_the_wild.txt   Sep 01, 2025 at 11:51:31   53 B
 
 Found 7 objects in bucket 'fleetlab-dev-output-91b55a45'
 ```
+
 </details>
 <br>
 
