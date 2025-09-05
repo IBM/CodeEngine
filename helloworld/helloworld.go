@@ -300,7 +300,33 @@ func main() {
 	// Real work.
 	// If run as part of a Batch Job or Fleet it just prints the message to stdout.
 	// Otherwise run as part of an App and start the HTTP server to processing incoming requests
-	if IsJob() {
+	if IsFleet() {
+		// Fleet tasks run to completion
+
+		fleetName := os.Getenv("CE_FLEET_NAME")
+
+		sleep := os.Getenv("SLEEP")
+		sleepDuration := 0
+		if sleep != "" {
+			sleepDuration, _ = strconv.Atoi(sleep)
+		}
+
+		// Check whether the job should sleep a while before printing the helloworld statement
+		if sleepDuration > 0 {
+			Debug(false, "Sleeping %ds", sleepDuration)
+			time.Sleep(time.Duration(sleepDuration) * time.Second)
+		}
+
+		fmt.Printf("Hello from helloworld! I'm a task of fleet: %s! Task Index: %s, Task ID: %s\n\n", fleetName, os.Getenv("CE_TASK_INDEX"), os.Getenv("CE_TASK_ID"))
+		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
+
+		// If the 'CRASH' or 'FAIL' env vars are set then crash!
+		if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
+			fmt.Printf("Crashing...")
+			os.Exit(1)
+		}
+
+	} else if IsJob() {
 		// Jobs can be either started in 'task' mode and run to completion or in 'daemon' mode which
 		jobMode := os.Getenv("JOB_MODE")
 
@@ -335,32 +361,6 @@ func main() {
 				break
 			}
 		}
-	} else if IsFleet() {
-		// Fleet tasks run to completion
-
-		fleetName := os.Getenv("CE_FLEET_NAME")
-
-		sleep := os.Getenv("SLEEP")
-		sleepDuration := 0
-		if sleep != "" {
-			sleepDuration, _ = strconv.Atoi(sleep)
-		}
-
-		// Check whether the job should sleep a while before printing the helloworld statement
-		if sleepDuration > 0 {
-			Debug(false, "Sleeping %ds", sleepDuration)
-			time.Sleep(time.Duration(sleepDuration) * time.Second)
-		}
-
-		fmt.Printf("Hello from helloworld! I'm a task of fleet: %s! Task Index: %s, Task ID: %s\n\n", fleetName, os.Getenv("CE_TASK_INDEX"), os.Getenv("CE_TASK_ID"))
-		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
-
-		// If the 'CRASH' or 'FAIL' env vars are set then crash!
-		if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
-			fmt.Printf("Crashing...")
-			os.Exit(1)
-		}
-
 	} else {
 		srv := &http.Server{Addr: ":8080"}
 
