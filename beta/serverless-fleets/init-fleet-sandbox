@@ -6,7 +6,7 @@ CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
 REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 SETUP_LOGGING="${SETUP_LOGGING:-true}"
-SETUP_MONITORING="${SETUP_MONITORING:-false}"
+SETUP_MONITORING="${SETUP_MONITORING:-true}"
 
 
 # Generate a short uuid for some resources
@@ -50,9 +50,9 @@ function clean() {
         fi
 
         if [[ "$SETUP_LOGGING" == "true" ]]; then
-            ibmcloud iam service-id-delete ${icl_name}-svc-id -f 2>/dev/null
-            ibmcloud is endpoint-gateway-delete ${icl_name}-vpegw --force 2>/dev/null
-            ibmcloud resource service-instance-delete $icl_name -g ${resource_group_name} -f -q 2>/dev/null
+            ibmcloud iam service-id-delete "${icl_name}-svc-id" -f 2>/dev/null
+            ibmcloud is endpoint-gateway-delete "${icl_name}-vpegw" --force 2>/dev/null
+            ibmcloud resource service-instance-delete "$icl_name" -g ${resource_group_name} -f -q 2>/dev/null
         fi
 
         ibmcloud iam api-key-delete ${apikey_name} --force 2>/dev/null
@@ -126,15 +126,14 @@ print_msg "\n======================================================"
 print_msg " Setting up \"Code Engine Serverless Fleet\" sample"
 print_msg "======================================================\n"
 
-#if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then 
-if [[ "$SETUP_LOGGING" != "true" ]]; then 
+if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then 
    print_msg " ATTENTION: You requested to setup a fleet sandbox without : \n"
    if [[ "$SETUP_LOGGING" != "true" ]]; then 
         print_msg "  - logging support \n"
    fi 
-#    if [[ "$SETUP_MONITORING" != "true" ]]; then 
-#         print_msg "  - monitoring support \n"
-#    fi 
+   if [[ "$SETUP_MONITORING" != "true" ]]; then 
+        print_msg "  - monitoring support \n"
+   fi 
    print_msg "Do you really want to continue setup without these services? They cannot be added later \n"
    read -p "Continue [y|n]? " yn
     case $yn in
@@ -180,35 +179,40 @@ if [[ "$SETUP_LOGGING" != "true" ]]; then
     echo "No! "
 else 
     echo "Yes!"
-    print_msg "\nCreating the IBM Cloud Logs instance '$icl_name' ..."
-    ibmcloud resource service-instance-create $icl_name logs standard $REGION -p '{"private_endpoints_only": true}'
-    if [ $? -ne 0 ]; then
-        print_error "IBM Cloud Logs creation failed!"
-        abortScript
+    if ! does_instance_exist logs "$icl_name"; then 
+        print_msg "\nCreating the IBM Cloud Logs instance '$icl_name' ..."
+        ibmcloud resource service-instance-create "$icl_name" logs standard $REGION -p '{"private_endpoints_only": true}'
+        if [ $? -ne 0 ]; then
+            print_error "IBM Cloud Logs creation failed!"
+            abortScript
+        fi
     fi
-    icl_instance=$(ibmcloud resource service-instance $icl_name -o JSON)
+    icl_instance=$(ibmcloud resource service-instance "$icl_name" -o JSON)
     icl_guid=$(echo "$icl_instance"|jq -r '.[0].guid')
     icl_crn=$(echo "$icl_instance"|jq -r '.[0].crn')
     icl_ingestion_host=$(echo "$icl_instance"|jq -r '.[0].extensions.external_ingress_private')
     icl_dashboard_url=$(echo "$icl_instance"|jq -r '.[0].dashboard_url')
     
-    print_msg "\nCreating the IAM serviceID, policy and APIKey to be able to ingest logs into the IBM Cloud Logs instance '$icl_name' ..."
-    ibmcloud iam service-id-create ${icl_name}-svc-id --description "CE Fleets - ServiceID to ingest into IBM Cloud Logs instance: '${icl_name}/${icl_guid}'"
-    if [ $? -ne 0 ]; then
-        print_error "IAM ServiceID creation failed!"
-        abortScript
-    fi
-    ibmcloud iam service-policy-create ${icl_name}-svc-id --service-name logs --roles Sender --service-name logs --service-instance ${icl_guid}
-    if [ $? -ne 0 ]; then
-        print_error "IAM ServiceID policy creation failed!"
-        abortScript
-    fi
-    icl_ingestion_apikey=$(ibmcloud iam service-api-key-create logs-ingestion-key ${icl_name}-svc-id --description "API key to ingest logs into IBM Cloud Logs instance: '${icl_guid}'" --output JSON|jq -r '.apikey')
-    if [ $? -ne 0 ]; then
-        print_error "IAM ServiceID APIkey creation failed!"
-        abortScript
+    if ! does_serviceid_exist "${icl_name}-svc-id"; then 
+        print_msg "\nCreating the IAM serviceID, policy and APIKey to be able to ingest logs into the IBM Cloud Logs instance '$icl_name' ..."
+        ibmcloud iam service-id-create ${icl_name}-svc-id --description "CE Fleets - ServiceID to ingest into IBM Cloud Logs instance: '${icl_name}/${icl_guid}'"
+        if [ $? -ne 0 ]; then
+            print_error "IAM ServiceID creation failed!"
+            abortScript
+        fi
+        ibmcloud iam service-policy-create "${icl_name}-svc-id" --service-name logs --roles Sender --service-name logs --service-instance ${icl_guid}
+        if [ $? -ne 0 ]; then
+            print_error "IAM ServiceID policy creation failed!"
+            abortScript
+        fi
+        icl_ingestion_apikey=$(ibmcloud iam service-api-key-create logs-ingestion-key "${icl_name}-svc-id" --description "API key to ingest logs into IBM Cloud Logs instance: '${icl_guid}'" --output JSON|jq -r '.apikey')
+        if [ $? -ne 0 ]; then
+            print_error "IAM ServiceID APIkey creation failed!"
+            abortScript
+        fi
     fi
 fi
+
 
 #
 # Check whether monitoring should be configured
@@ -217,18 +221,26 @@ if [[ "$SETUP_MONITORING" != "true" ]]; then
     echo "No!"
 else
     echo "Yes!"
-    print_msg "\nCreating the IBM Cloud Monitoring instance '$sysdig_name' ..."
-    ibmcloud resource service-instance-create $sysdig_name sysdig-monitor graduated-tier $REGION -p '{"default_receiver": false}'
-    if [ $? -ne 0 ]; then
-        print_error "IBM Cloud Monitoring creation failed!"
-        abortScript
+    if ! does_instance_exist sysdig-monitor "$sysdig_name"; then 
+        print_msg "\nCreating the IBM Cloud Monitoring instance '$sysdig_name' ..."
+        ibmcloud resource service-instance-create $sysdig_name sysdig-monitor graduated-tier $REGION -p '{"default_receiver": false}'
+        if [ $? -ne 0 ]; then
+            print_error "IBM Cloud Monitoring creation failed!"
+            abortScript
+        fi
     fi
-    print_msg "\nCreating service key '$sysdig_key_name' for IBM Cloud Monitoring instance for '$sysdig_name' ..."
-    sysdig_key=$(ibmcloud resource service-key-create $sysdig_key_name Manager --instance-name $sysdig_name --output json)
-    if [ $? -ne 0 ]; then
-        print_error "IBM Cloud Monitoring key creation failed!"
-        abortScript
+
+    if ! does_serviceid_exist "$sysdig_key_name"; then 
+        print_msg "\nCreating service key '$sysdig_key_name' for IBM Cloud Monitoring instance for '$sysdig_name' ..."
+        sysdig_key=$(ibmcloud resource service-key-create $sysdig_key_name Manager --instance-name $sysdig_name --output json)
+        if [ $? -ne 0 ]; then
+            print_error "IBM Cloud Monitoring key creation failed!"
+            abortScript
+        fi
+    else 
+        sysdig_key=$(ibmcloud resource service-key $sysdig_key_name --output json| jq -r '.[0]')
     fi
+
     sysdig_access_key=$(echo $sysdig_key | jq '.credentials["Sysdig Access Key"]' -r)
     sysdig_collector_host=$(echo "$sysdig_key" | jq '.credentials["Sysdig Collector Endpoint"]' -r)
     sysdig_instance=$(ibmcloud resource service-instance $sysdig_name -o JSON)
@@ -237,135 +249,177 @@ fi
 
 #
 # Create the VPC
-print_msg "\nCreating the VPC '$vpc_name' ..."
-ibmcloud is vpc-create $vpc_name --resource-group-name $resource_group_name
-if [ $? -ne 0 ]; then
-    print_error "VPC creation failed!"
-    abortScript
+if ! ibmcloud is vpc $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating the VPC '$vpc_name' ..."
+    ibmcloud is vpc-create $vpc_name --resource-group-name $resource_group_name
+    if [ $? -ne 0 ]; then
+        print_error "VPC creation failed!"
+        abortScript
+    fi
+
+    #
+    # Wait for the VPC to become available
+    print_msg "\nWaiting for the VPC $vpc_name to become available ..."
+    COUNTER=0
+    while ! [[ $(ibmcloud is vpc $vpc_name --output json | jq -r '.status') == "available" ]]; do
+        sleep 2
+        COUNTER=$((COUNTER + 1))
+        if ((COUNTER > 10)); then
+            echo $(ibmcloud is vpc $vpc_name)
+            print_error "The VPC does not became ready as expected.\nRun 'ibmcloud is vpc $vpc_name' for further insights"
+            abortScript
+        fi
+    done
+    echo "VPC '$vpc_name' is now available, now!"
 fi
 
 #
-# Wait for the VPC to become available
-print_msg "\nWaiting for the VPC $vpc_name to become available ..."
-COUNTER=0
-while ! [[ $(ibmcloud is vpc $vpc_name --output json | jq -r '.status') == "available" ]]; do
-    sleep 2
-    COUNTER=$((COUNTER + 1))
-    if ((COUNTER > 10)); then
-        echo $(ibmcloud is vpc $vpc_name)
-        print_error "The VPC does not became ready as expected.\nRun 'ibmcloud is vpc $vpc_name' for further insights"
+# Create the Public gateway
+if ! ibmcloud is public-gateway $vpc_name-gateway $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway' ..."
+    ibmcloud is public-gateway-create $vpc_name-gateway $vpc_name $REGION-1 --resource-group-name $resource_group_name
+    if [ $? -ne 0 ]; then
+        print_error "VPC Public gateway creation failed!"
         abortScript
     fi
-done
-echo "VPC '$vpc_name' is now available, now!"
-
-#
-# Create the Public gateway
-print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway' ..."
-ibmcloud is public-gateway-create $vpc_name-gateway $vpc_name $REGION-1 --resource-group-name $resource_group_name
-if [ $? -ne 0 ]; then
-    print_error "VPC Public gateway creation failed!"
-    abortScript
 fi
 
 #
 # Create the Network ACL
-print_msg "\nCreating the VPC Network ACL '$vpc_name-acl' ..."
-ibmcloud is network-acl-create $vpc_name-acl $vpc_name --rules '[{ "name": "egress", "action": "allow", "destination": "0.0.0.0/0", "direction": "outbound", "source": "0.0.0.0/0", "protocol": "all" }, { "name": "ingress", "action": "allow", "destination": "0.0.0.0/0", "direction": "inbound", "source": "0.0.0.0/0", "protocol": "all" }]'
-if [ $? -ne 0 ]; then
-    print_error "VPC Network ACL creation failed!"
-    abortScript
+if ! ibmcloud is network-acl $vpc_name-acl $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating the VPC Network ACL '$vpc_name-acl' ..."
+    ibmcloud is network-acl-create $vpc_name-acl $vpc_name --rules '[{ "name": "egress", "action": "allow", "destination": "0.0.0.0/0", "direction": "outbound", "source": "0.0.0.0/0", "protocol": "all" }, { "name": "ingress", "action": "allow", "destination": "0.0.0.0/0", "direction": "inbound", "source": "0.0.0.0/0", "protocol": "all" }]'
+    if [ $? -ne 0 ]; then
+        print_error "VPC Network ACL creation failed!"
+        abortScript
+    fi
 fi
 
 #
 # Create the VPC subnet
-print_msg "\nCreating the VPC Subnet '$vpc_name-subnet' ..."
-ibmcloud is subnet-create $vpc_name-subnet $vpc_name --zone $REGION-1 --resource-group-name $resource_group_name --ipv4-address-count 256 --pgw $vpc_name-gateway --acl $vpc_name-acl
-if [ $? -ne 0 ]; then
-    print_error "VPC Subnet creation failed!"
-    abortScript
+if ! ibmcloud is subnet $vpc_name-subnet $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating the VPC Subnet '$vpc_name-subnet' ..."
+    ibmcloud is subnet-create $vpc_name-subnet $vpc_name --zone $REGION-1 --resource-group-name $resource_group_name --ipv4-address-count 256 --pgw $vpc_name-gateway --acl $vpc_name-acl
+    if [ $? -ne 0 ]; then
+        print_error "VPC Subnet creation failed!"
+        abortScript
+    fi
 fi
 
 # Create the security group and its rules
-print_msg "\nCreating the VPC Security group '$vpc_name-group' ..."
-ibmcloud is security-group-create $vpc_name-group $vpc_name
-if [ $? -ne 0 ]; then
-    print_error "VPC Security group creation failed!"
-    abortScript
+if ! ibmcloud is security-group $vpc_name-group $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating the VPC Security group '$vpc_name-group' ..."
+    ibmcloud is security-group-create $vpc_name-group $vpc_name
+    if [ $? -ne 0 ]; then
+        print_error "VPC Security group creation failed!"
+        abortScript
+    fi
+
+    print_msg "\nCreating required VPC Security group rules ..."
+    ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 0.0.0.0/0 --vpc $vpc_name >/dev/null
+    ibmcloud is security-group-rule-add $vpc_name-group inbound all --remote $vpc_name-group --vpc $vpc_name >/dev/null
+    echo "Done"
+
+    print_msg "\nPrinting the VPC Security group '$vpc_name-group' ..."
+    ibmcloud is security-group $vpc_name-group
 fi
-
-print_msg "\nCreating required VPC Security group rules ..."
-ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 0.0.0.0/0 --vpc $vpc_name >/dev/null
-ibmcloud is security-group-rule-add $vpc_name-group inbound all --remote $vpc_name-group --vpc $vpc_name >/dev/null
-echo "Done"
-
-print_msg "\nPrinting the VPC Security group '$vpc_name-group' ..."
-ibmcloud is security-group $vpc_name-group
 
 #
 # Creating the VPE Gateway to enable log ingestion
 if [[ "$SETUP_LOGGING" == "true" ]]; then
-    print_msg "\nCreating a VPE Gateway to enable log ingestion ..."
-    subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
-    ibmcloud is endpoint-gateway-create \
-        --vpc $vpc_name \
-        --subnet $vpc_name-subnet \
-        --sg $vpc_name-group \
-        --target ${icl_crn} \
-        --name "${icl_name}-vpegw" \
-        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${icl_name}-vpegw-ip\",\"auto_delete\":false}" \
-        --allow-dns-resolution-binding false
-    if [ $? -ne 0 ]; then
-        print_error "ICL VPE Gateway creation failed!"
-        abortScript
+    if ! ibmcloud is endpoint-gateway "${icl_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+        print_msg "\nCreating a VPE Gateway to enable log ingestion ..."
+        subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
+        ibmcloud is endpoint-gateway-create \
+            --vpc $vpc_name \
+            --subnet $vpc_name-subnet \
+            --sg $vpc_name-group \
+            --target ${icl_crn} \
+            --name "${icl_name}-vpegw" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${icl_name}-vpegw-ip\",\"auto_delete\":false}" \
+            --allow-dns-resolution-binding false
+        if [ $? -ne 0 ]; then
+            print_error "ICL VPE Gateway creation failed!"
+            abortScript
+        fi
     fi
 fi
 
 if [[ "$SETUP_MONITORING" == "true" ]]; then
-    print_msg "\nCreating a VPE Gateway to enable monitoring ingestion ..."
-    subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
-    ibmcloud is endpoint-gateway-create \
-        --vpc $vpc_name \
-        --subnet $vpc_name-subnet \
-        --sg $vpc_name-group \
-        --target ${sysdig_crn} \
-        --name "${sysdig_name}-vpegw" \
-        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${sysdig_name}-vpegw-ip\",\"auto_delete\":false}" \
-        --allow-dns-resolution-binding false
+    if ! ibmcloud is endpoint-gateway "${sysdig_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+        print_msg "\nCreating a VPE Gateway to enable monitoring ingestion ..."
+        subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
+        ibmcloud is endpoint-gateway-create \
+            --vpc $vpc_name \
+            --subnet $vpc_name-subnet \
+            --sg $vpc_name-group \
+            --target ${sysdig_crn} \
+            --name "${sysdig_name}-vpegw" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${sysdig_name}-vpegw-ip\",\"auto_delete\":false}" \
+            --allow-dns-resolution-binding false
+        if [ $? -ne 0 ]; then
+            print_error "Monitoring VPE Gateway creation failed!"
+            abortScript
+        fi
+    fi
+fi
+
+print_msg "\nVPC related components configured..."
+echo "Done"
+
+#
+# Creating COS instance and bucket
+if ! does_instance_exist cloud-object-storage "$cos_name"; then 
+    print_msg "\nCreating COS instance '${cos_name}' ..."
+    ibmcloud resource service-instance-create $cos_name cloud-object-storage standard global -d premium-global-deployment-iam
     if [ $? -ne 0 ]; then
-        print_error "Monitoring VPE Gateway creation failed!"
+        print_error "Cloud Object Storage creation failed!"
         abortScript
     fi
 fi
 
-#
-# Creating COS instance and bucket
-print_msg "\nCreating COS instance '${cos_name}' ..."
-ibmcloud resource service-instance-create $cos_name cloud-object-storage standard global -d premium-global-deployment-iam
-COS_ID=$(ibmcloud resource service-instance $cos_name | awk '/^ID/{ print $2 }')
-ibmcloud cos config auth --method IAM
-ibmcloud cos config region --region $REGION
+COS_ID=$(ibmcloud resource service-instance $cos_name --output json | jq -r '.[0] | .id')
+ibmcloud cos config crn --crn ${COS_ID} --force >/dev/null 2>&1
+ibmcloud cos config auth --method IAM >/dev/null
+ibmcloud cos config region --region $REGION >/dev/null
+ibmcloud cos config endpoint-url --url s3.${REGION}.cloud-object-storage.appdomain.cloud >/dev/null
 
-# Create COS bucket
-print_msg "\nCreating COS bucket '${cos_bucket_name_taskstore}' ..."
-ibmcloud cos bucket-create --bucket ${cos_bucket_name_taskstore} --ibm-service-instance-id $COS_ID
+# Make sure all COS buckets do exist
+res=$(has_bucket_name_with_prefix "${NAME_PREFIX}-taskstore-")
+if [[ "$res" == "" ]]; then
+    print_msg "\nCreating COS bucket '${cos_bucket_name_taskstore}' ..."
+    ibmcloud cos bucket-create --bucket ${cos_bucket_name_taskstore} --ibm-service-instance-id $COS_ID
+else 
+    cos_bucket_name_taskstore=$res
+fi
 
-print_msg "\nCreating COS bucket '${cos_bucket_name_input}' ..."
-ibmcloud cos bucket-create --bucket ${cos_bucket_name_input} --ibm-service-instance-id $COS_ID
+res=$(has_bucket_name_with_prefix "${NAME_PREFIX}-input-")
+if [[ "$res" == "" ]]; then
+    print_msg "\nCreating COS bucket '${cos_bucket_name_input}' ..."
+    ibmcloud cos bucket-create --bucket ${cos_bucket_name_input} --ibm-service-instance-id $COS_ID
+else 
+    cos_bucket_name_input=$res
+fi
 
-print_msg "\nCreating COS bucket '${cos_bucket_name_output}' ..."
-ibmcloud cos bucket-create --bucket ${cos_bucket_name_output} --ibm-service-instance-id $COS_ID
+res=$(has_bucket_name_with_prefix "${NAME_PREFIX}-output-")
+if [[ "$res" == "" ]]; then
+    print_msg "\nCreating COS bucket '${cos_bucket_name_output}' ..."
+    ibmcloud cos bucket-create --bucket ${cos_bucket_name_output} --ibm-service-instance-id $COS_ID
+
+    print_msg "\nCreating bucket lifecycle configuration for objects in the result folder with 1 day retention ..."
+    ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name_output} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "simulation/ticker"},"ID": "simulation results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "inverencing/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "docling/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "wordcount/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
+else 
+    cos_bucket_name_output=$res
+fi
 
 # Create COS credentials
-print_msg "\nCreating COS service key '${cos_key_name}' ..."
-ibmcloud resource service-key-create ${cos_key_name} --parameters '{"HMAC":true}' --instance-id $COS_ID
+if ! does_serviceid_exist "${cos_key_name}"; then 
+    print_msg "\nCreating COS service key '${cos_key_name}' ..."
+    ibmcloud resource service-key-create ${cos_key_name} --parameters '{"HMAC":true}' --instance-id $COS_ID
+fi
 
-print_msg "\nCOS instance '${COS_ID}' and bucket '${cos_bucket_name}' created ..."
-
-ibmcloud cos config crn --force --crn $(ibmcloud resource service-instance $cos_name --crn | grep "crn")
-
-print_msg "\ncreateing bucket lifecycle configuration for objects in the result folder with 1 day retention ..."
-ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name_output} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "simulation/ticker"},"ID": "simulation results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "inverencing/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "docling/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "wordcount/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
+print_msg "\nCOS instance '${COS_ID}' configured..."
+echo "Done"
 
 print_msg "\nCreating local rclone environment .rclone_${resource_group_name}.conf to upload/download to the COS bucket..."
 
@@ -383,48 +437,68 @@ EOF
 
 #
 # Create the Code Engine project
-print_msg "\nCreating the Code Engine project '$ce_project_name' ..."
-ibmcloud ce project create --name $ce_project_name
-if [ $? -ne 0 ]; then
-    print_error "Code Engine project creation failed!"
-    abortScript
+if ! does_instance_exist codeengine "$ce_project_name"; then 
+    print_msg "\nCreating the Code Engine project '$ce_project_name' ..."
+    ibmcloud ce project create --name $ce_project_name
+    if [ $? -ne 0 ]; then
+        print_error "Code Engine project creation failed!"
+        abortScript
+    fi
+else 
+    print_msg "\nSelecting the Code Engine project '$ce_project_name' ..."
+    ibmcloud ce project select --name $ce_project_name
 fi
-project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
+project_guid=$(ibmcloud ce project get --name $ce_project_name --output json | jq -r '.guid')
 
-print_msg "\nCreating an API Key '${apikey_name}' for ICR credentials ..."
-apikey="$(ibmcloud iam api-key-create ${apikey_name} -q -o json|jq -r '.apikey')"
-
-print_msg "\nCreating a Code Engine secret 'fleet-registry-secret' for ICR credentials ..."
-ibmcloud ce secret create --name fleet-registry-secret --format registry --server 'de.icr.io' --username iamapikey --password $apikey
+print_msg "\nInitializing IBM Container Registry integration ..."
+iam_access_token=$(ibmcloud iam oauth-tokens --output JSON|jq -r '.iam_token')
+icr_integration=$(curl --silent -H POST -H "Content-Type: application/json" -H "Authorization: $iam_access_token" -H "X-Transaction-Id: codeengine-init-script" -d '{"ce_component_name":"foo","ce_component_type":"app"}' https://api.${REGION}.codeengine.cloud.ibm.com/v1beta/projects/${project_guid}/icr-images)
+registry_secret_ref=$(echo $icr_integration|jq -r '.secret_ref')
+registry_server=$(echo $icr_integration|jq -r '.server')
+echo "Registry secret '$registry_secret_ref' for images hosted on '$registry_server' has been created"
 
 ## walk
-print_msg "\nCreating a Code Engine Persistant Data Store 'fleet-task-store' to access the COS bucket as the task state store ..."
-ibmcloud ce secret create --name fleet-cos-secret \
---format hmac \
---secret-access-key $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .secret_access_key') \
---access-key-id $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .access_key_id')
+print_msg "\nCreating a Code Engine Persistant Data Store 'fleet-cos-secret' to access the COS bucket as the task state store ..."
+create_or_update=update
+if ! ibmcloud ce secret get --name fleet-cos-secret >/dev/null 2>&1; then
+    create_or_update="create --format hmac"
+fi
+ibmcloud ce secret $create_or_update --name fleet-cos-secret \
+    --secret-access-key $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .secret_access_key') \
+    --access-key-id $(ibmcloud resource service-key ${cos_key_name} --output JSON | jq -r '.[0] | .credentials | .cos_hmac_keys | .access_key_id')
 
-ibmcloud ce pds create --name fleet-task-store \
---cos-bucket-name ${cos_bucket_name_taskstore} \
---cos-bucket-location ${REGION} \
---cos-access-secret fleet-cos-secret
+if ! ibmcloud ce pds get --name fleet-task-store >/dev/null 2>&1; then
+    ibmcloud ce pds create --name fleet-task-store \
+        --cos-bucket-name ${cos_bucket_name_taskstore} \
+        --cos-bucket-location ${REGION} \
+        --cos-access-secret fleet-cos-secret
+fi
 
-ibmcloud ce pds create --name fleet-output-store \
---cos-bucket-name ${cos_bucket_name_output} \
---cos-bucket-location ${REGION} \
---cos-access-secret fleet-cos-secret
 
-ibmcloud ce pds create --name fleet-input-store \
---cos-bucket-name ${cos_bucket_name_input} \
---cos-bucket-location ${REGION} \
---cos-access-secret fleet-cos-secret
+if ! ibmcloud ce pds get --name fleet-output-store >/dev/null 2>&1; then
+    ibmcloud ce pds create --name fleet-output-store \
+        --cos-bucket-name ${cos_bucket_name_output} \
+        --cos-bucket-location ${REGION} \
+        --cos-access-secret fleet-cos-secret
+fi
+
+if ! ibmcloud ce pds get --name fleet-input-store >/dev/null 2>&1; then
+    ibmcloud ce pds create --name fleet-input-store \
+        --cos-bucket-name ${cos_bucket_name_input} \
+        --cos-bucket-location ${REGION} \
+        --cos-access-secret fleet-cos-secret
+fi
 
 print_msg "\nCreating the Code Engine default secret 'codeengine-fleet-defaults' with observability and VPC subnet configurations ..."
-ibmcloud ce secret create -n codeengine-fleet-defaults \
---from-literal pool_subnet_crn_1="$(ibmcloud is subnet ${vpc_name}-subnet --output json | jq -r '.crn')" \
---from-literal pool_security_group_crns_1="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.crn')"
+create_or_update=update
+if ! ibmcloud ce secret get --name codeengine-fleet-defaults >/dev/null 2>&1; then
+    create_or_update=create
+fi
+ibmcloud ce secret $create_or_update -n codeengine-fleet-defaults \
+    --from-literal pool_subnet_crn_1="$(ibmcloud is subnet ${vpc_name}-subnet --output json | jq -r '.crn')" \
+    --from-literal pool_security_group_crns_1="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.crn')"
 
-if [[ "$SETUP_LOGGING" == "true" ]]; then
+if [[ "$SETUP_LOGGING" == "true" && "$icl_ingestion_apikey" != "" ]]; then
     print_msg "\nMake sure logs are sent to '${icl_ingestion_host}' ..."
     ibmcloud ce secret update -n codeengine-fleet-defaults \
         --from-literal logging_ingress_endpoint="${icl_ingestion_host}" \
@@ -434,7 +508,23 @@ if [[ "$SETUP_LOGGING" == "true" ]]; then
 fi
 if [[ "$SETUP_MONITORING" == "true" ]]; then
     print_msg "\nMake sure monitoring is enabled to '${sysdig_collector_host}' ..."
-    #@TODO
+    ibmcloud ce secret update -n codeengine-fleet-defaults \
+        --from-literal monitoring_ingestion_region="${REGION}" \
+        --from-literal monitoring_ingestion_key="${sysdig_access_key}"
+fi
+
+## Cleanup experimental artifacts
+if ibmcloud ce secret get --name fleet-ssh-secret >/dev/null 2>&1; then
+    ibmcloud ce secret delete --name fleet-ssh-secret --force
+fi
+if ibmcloud ce configmap get --name fleet-vpc-config >/dev/null 2>&1; then
+    ibmcloud ce configmap delete --name fleet-vpc-config --force
+fi
+if ibmcloud ce secret get --name fleet-cos-config >/dev/null 2>&1; then
+    ibmcloud ce secret delete --name fleet-cos-config --force
+fi
+if ibmcloud ce secret get --name fleet-observability-config >/dev/null 2>&1; then
+    ibmcloud ce secret delete --name fleet-observability-config --force
 fi
 
 print_msg "\nThe Fleet demo sandbox has been configured. Please be aware that the created resources will occur costs in your account."
