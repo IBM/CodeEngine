@@ -64,4 +64,30 @@ function target_resource_group {
     if [[ "$current_resource_group_guid" != "$new_resource_group_guid" ]]; then
         ibmcloud target -g $1 --quiet
     fi
+     echo "Done"
+}
+
+function does_instance_exist {
+    (( $(ibmcloud resource search "service_name:\"$1\" AND name:\"$2\"" --output JSON|jq -r '.items|length') > 0 ))
+}
+
+function does_serviceid_exist {
+    (( $(ibmcloud resource search "type:serviceid AND name:\"$1\"" --output JSON|jq -r '.items|length') > 0 ))
+}
+
+function has_bucket_name_with_prefix {
+    buckets=$(ibmcloud cos buckets -output json)
+    COS_BUCKET_NAME=""
+    if [[ "$(echo "${buckets}" | jq -r '.Buckets')" != "null" ]]; then
+        for bucket in $(echo "${buckets}" | jq -r '.Buckets|.[] | @base64'); do
+            _jq() {
+                echo ${bucket} | base64 --decode | jq -r ${1}
+            }
+            bucket_name=$(_jq '.Name')
+            if [[ "$bucket_name" =~ ^$1-* ]]; then 
+                COS_BUCKET_NAME=$bucket_name
+            fi
+        done
+    fi
+    echo $COS_BUCKET_NAME
 }

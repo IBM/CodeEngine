@@ -8,7 +8,6 @@ IMAGE="quay.io/docling-project/docling-serve-cpu"
 
 echo ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1"
 echo "  "--image $IMAGE
-echo "  "--registry-secret fleet-registry-secret
 echo "  "--worker-profile mx3d-24x240
 echo "  "--max-scale 8
 echo "  "--tasks-from-local-file commands.jsonl
@@ -19,7 +18,6 @@ echo "  "--mount-data-store /output=fleet-output-store:/docling
 
 ibmcloud code-engine beta fleet create --name "fleet-${uuid}-1" \
 --image $IMAGE \
---registry-secret fleet-registry-secret \
 --worker-profile mx3d-24x240 \
 --max-scale 8 \
 --tasks-from-local-file commands.jsonl \
