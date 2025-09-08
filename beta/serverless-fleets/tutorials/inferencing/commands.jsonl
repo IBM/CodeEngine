@@ -1,0 +1,3 @@
+{"cmds": ["python", "app.py"], "args": ["/input/batches/0.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/1.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/2.txt"]}

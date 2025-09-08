@@ -1,0 +1,10 @@
+/input/recipes/a-healthy-egg-salad.json;/output/inferencing_a-healthy-egg-salad.augmented.json
+/input/recipes/a-hearty-green-bean-and-sausage-casse.json;/output/inferencing_a-hearty-green-bean-and-sausage-casse.augmented.json
+/input/recipes/a-hearty-porridge.json;/output/inferencing_a-hearty-porridge.augmented.json
+/input/recipes/a-hollywood-ham-482.json;/output/inferencing_a-hollywood-ham-482.augmented.json
+/input/recipes/a-homemade-san-francisco-treat-chick.json;/output/inferencing_a-homemade-san-francisco-treat-chick.augmented.json
+/input/recipes/a-jerky-chicken.json;/output/inferencing_a-jerky-chicken.augmented.json
+/input/recipes/a-little-different-baked-mac-and-chee.json;/output/inferencing_a-little-different-baked-mac-and-chee.augmented.json
+/input/recipes/a-lot-more-than-plain-spinach-pie-gr.json;/output/inferencing_a-lot-more-than-plain-spinach-pie-gr.augmented.json
+/input/recipes/a-maize-ing-corn-chowder.json;/output/inferencing_a-maize-ing-corn-chowder.augmented.json
+/input/recipes/a-marinade-to-die-for.json;/output/inferencing_a-marinade-to-die-for.augmented.json

@@ -5,7 +5,9 @@ data/taskstore/*
 !data/taskstore/.keep
 data/output/docling/*
 data/output/wordcount/*
+data/output/inferencing/*
 !data/output/docling/.keep
 !data/output/wordcount/.keep
+!data/output/inferencing/.keep
 */.DS_Store
 .DS_Store

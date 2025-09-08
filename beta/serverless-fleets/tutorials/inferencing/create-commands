@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -eu
+
+truncate -s0 commands.jsonl
+
+batch_size=10
+idx=0
+batch_idx=0
+
+# clean previous batches
+rm -f ../../data/input/inferencing/batches/*.txt
+
+for f in ../../data/input/inferencing/recipes/*.json; do
+  idx=$(( idx + 1 ))
+  if (( idx % batch_size == 0 )); then
+    echo "{\"cmds\": [\"python\", \"app.py\"], \"args\": [\"/input/batches/$batch_idx.txt\"]}" >> commands.jsonl
+    batch_idx=$(( batch_idx + 1 ))
+  fi
+
+  file_in=$(basename "$f")
+  file_out=${file_in%.*}.augmented.json
+
+  # echo "batch=$batch_idx idx=$idx file=$f"
+  echo "/input/recipes/$file_in;/output/inferencing_$file_out" >> "../../data/input/inferencing/batches/$batch_idx.txt"
+
+done
+
+echo "{\"cmds\": [\"python\", \"app.py\"], \"args\": [\"/input/batches/$batch_idx.txt\"]}" >> commands.jsonl

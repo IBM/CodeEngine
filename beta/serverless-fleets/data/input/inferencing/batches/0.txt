@@ -1,0 +1,9 @@
+/input/recipes/a-1-chicken-soup.json;/output/inferencing_a-1-chicken-soup.augmented.json
+/input/recipes/a-20-minute-chicken-parmesan.json;/output/inferencing_a-20-minute-chicken-parmesan.augmented.json
+/input/recipes/a-bakers-secret-for-bread-machines.json;/output/inferencing_a-bakers-secret-for-bread-machines.augmented.json
+/input/recipes/a-big-honkin-margarita.json;/output/inferencing_a-big-honkin-margarita.augmented.json
+/input/recipes/a-catering-companys-marinade.json;/output/inferencing_a-catering-companys-marinade.augmented.json
+/input/recipes/a-cranberry-salad-keepsake.json;/output/inferencing_a-cranberry-salad-keepsake.augmented.json
+/input/recipes/a-different-carrot-raisin-salad.json;/output/inferencing_a-different-carrot-raisin-salad.augmented.json
+/input/recipes/a-drama-queens-pavlova.json;/output/inferencing_a-drama-queens-pavlova.augmented.json
+/input/recipes/a-fantastic-margarita.json;/output/inferencing_a-fantastic-margarita.augmented.json

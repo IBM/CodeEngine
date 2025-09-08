@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo "Cleaning up previous images ..."
+IMAGE=$(ibmcloud cr images | grep "ce--fleet-inferencing" | awk '{print $1}')
+if [[ "$IMAGE" != "" ]]; then 
+  ibmcloud cr image-rm $(ibmcloud cr images | grep "ce--fleet-inferencing" | awk '{print $1}')
+fi
+
+# getting the automatically created registry secret, e.g. ce-auto-icr-private-<region>
+REGION=$(ibmcloud target -o json | jq -r '.region.name')
+REGISTRY_SECRET_NAME="ce-auto-icr-private-$REGION"
+REGISTRY_HOST=$(ibmcloud ce secret get -n $REGISTRY_SECRET_NAME -o json | jq -r ".data.server")
+
+echo "Building new image $REGISTRY_HOST/ce--fleet-inferencing-${uuid}/inferencing:latest from ./src "
+echo "This takes about 5-10 minutes ..."
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+ibmcloud ce buildrun submit --name ce--fleet-inferencing-build-${uuid} --source ./src --strategy dockerfile --image $REGISTRY_HOST/ce--fleet-inferencing-${uuid}/inferencing:latest --registry-secret $REGISTRY_SECRET_NAME --size xxlarge --timeout 2400
+
+ibmcloud ce buildrun logs -f -n ce--fleet-inferencing-build-${uuid}
