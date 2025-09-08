@@ -2,10 +2,14 @@
 
 # get the current resource group name
 resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
+cos_instance=${resource_group_name/--rg/}--cos
+
+echo "switching to COS instance $cos_instance"
 
 # configure the COS instance
-crn=$(ibmcloud resource service-instances -o json | jq -r '.[] | select( .name | contains("--cos")) | .crn')
-ibmcloud cos config crn --crn $crn
+crn=$(ibmcloud resource service-instance "${cos_instance}" -o json | jq -r '.[] | .crn')
+
+ibmcloud cos config crn --crn $crn --force
 
 # get the bucket names
 output_bucket=$(ibmcloud cos buckets --json | jq -r '.Buckets[] | select( .Name | contains("output")) | .Name')
