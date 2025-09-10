@@ -1,128 +1,50 @@
-# Serverless Fleets (beta)
+# Simplify and optimize large-scale parallel computation with Serverless Fleets
 
-Serverless Fleets is an new feature of IBM Cloud Code Engine.
+As artificial intelligence continues to grow and demand for cloud-based solutions increases, the ability to run large-scale, compute-intensive workloads both quickly and efficiently has become critical.
+
+In this hands-on lab, you will deploy your first Serverless Fleet on IBM Code Engine—IBM’s strategic container platform designed to handle large-scale, compute-intensive workloads.
+
+Using both the intuitive graphical user interface and the command line, you will be guided step by step through the process. With just three clicks, you will have a Serverless Fleet up and running on IBM Cloud.
 
 **Table of Contents:**
+
+- [Key differentiators of Fleets](#key-differentiators-of-fleets)
 - [What is a fleets](#what-is-a-fleet)
-- [Why using a fleets](#why-using-a-fleet)
-- [The fleet concept](#the-fleet-concept)
-- [Fleet specification](#fleet-specification)
 - [Architecture](#architecture)
 - [One Time Setup](#one-time-setup)
 - [Launch a Fleet](#launch-a-fleet)
 - [Launch a Fleet with GPUs](#launch-a-fleet-with-gpus)
 - [Launch a fleet with parallel tasks](#launch-a-fleet-with-parallel-tasks)
 - [Launch a fleet to count words of novels](#launch-a-fleet-to-count-words-of-novels)
-- [Tutorials](#tutorials)
+- [Docling tutorial](./tutorials/docling/README.md)
+- [Batch Inferencing tutorial](./tutorials/inferencing/README.md)
+- [Monte Carlo Simulation tutorial](./tutorials/docling/README.md)
 - [HowTo](#howto)
 - [Troubleshooting](#troubleshooting)
 
+
+## Key differentiators of Fleets
+
+Fleets offer the following advantages:
+1.	Support for large-scale parallel computing tasks, with no limits on vCPU, memory, or task duration.
+2.	Automatic, dynamic scaling—from a single task to millions of tasks.
+3.	Consumption-based pricing: pay only for the resources you use, with no idle or fixed costs.
+4.	Fully managed service—no infrastructure administration required.
+5.	Broad machine type support, including GPU-enabled instances.
+6.	Seamless integration with your VPC network.
+
 ## What is a fleet
-
-A fleet, also serverless fleet, is a Code Engine compute component that runs one or more instances of user code in order to complete its tasks. Instances run on workers which are automatically provisioned and de-provisioned based on the number and resource requirements of the instances. Fleets can provision any machine type which connect to Virtual Private Clouds (VPCs) and securely interoperate with user data and services there.
-
-## Why using a fleet
-
-Fleets provide the following main key differentiators:
-1. Any machine type including GPUs
-2. Connected to the customers VPC network
-3. Large scale parallel computing without limits on vCPU, Memory and duration
-4. Dynamic task queuing to millions of tasks
-
-## The fleet concept
-
-Fleets have three principal elements: tasks, instances and workers.
 
 ![](./images/prototype_concept.png)
 
-### Tasks
+A fleet (also referred to as a serverless fleet) is a Code Engine compute resource that runs one or more instances of user code in parallel to process a large set of compute-intensive tasks.
 
-The tasks of a fleet represent the work that the fleet is intended to perform and are specified as part of the fleet specification at creation time.
+Fleets can connect to Virtual Private Clouds (VPCs) to securely access user data and services. They provide dynamic task queuing, single-tenant isolation, and support for GPU workloads.
 
-To perform that work, the fleet starts instances of user code on behalf of the tasks and maintains a representation of the current task statuses as instances are started and ending. Tasks change their initial “pending” status to “running” as soon as an instance is started on their behalf. The task status changes to “succeeded” if its instance process ends with a successful return code. If the instance ends unsuccessfully the associated task changes to status “failed” unless its maximum number of retries is not yet exhausted. In that case the task status is set back to “pending” so that a new instance can be started on behalf of the task. A special task status is “cancelled” which applies if the fleet is cancelled by user action.
+A fleet consists of a collection of worker nodes that automatically scale up or down based on resource requirements. Each instance runs on a worker node to complete a single task. When a task finishes, the worker node immediately starts the next task in the queue. This process continues until all tasks are completed, after which the worker nodes are automatically deprovisioned.
 
-Once all tasks of a fleet have reached a final status, the fleet status also changes to a final status. The final fleet status is “succeeded” if all tasks have finished successfully, “failed” if at least one task failed and “cancelled” if the user has cancelled the fleet. Once a fleet has reached a final status, all instances have ended and all worker nodes are (being) de-provisioned - unless specific configuration settings change this behavior for debugging purposes.
+Like applications, jobs, and functions, fleets run within a Code Engine project. A project is a grouping of Code Engine resources within a specific IBM Cloud region. Projects are used to organize resources and manage access to entities such as configmaps, secrets, and persistent data stores.
 
-Through the tasks specification users can control the number of tasks, the order in which instances are started and which specific command and arguments are used to start an instance for a task.
-
-### Instances
-
-Instances of user code are started for the fleet’s tasks on top of worker nodes. Each instance is started on behalf of exactly one task, its associated task. Different instances always have different associated tasks.
-
-Fleets can work on many tasks in parallel by starting multiple instances concurrently. The maximum number of concurrent instances (max_scale) is part of the fleet’s specification. All instances are created with the same amount of vCPU and memory as per the fleet’s specification.
-
-Instances run user code as per the fleet’s code specification in combination with task parameters that allow for task-specific start commands and arguments.
-
-Instances terminate when the user code exits the instance process. The return code provided at that point signals whether the associated task was successfully completed (exit 0) or failed. The status of the associated task is updated accordingly and retries might be attempted as described in the preceding section on tasks.
-
-Instances might also be stopped if the fleet is cancelled with the “hard stop” option by user action or by exceeding the maximum execution time.
-
-### Workers
-
-Worker nodes are virtual machines automatically provisioned and de-provisioned based on the number and amount of resources required to run the fleet’s instances.
-
-Worker nodes are the basis for charging fleet resource consumption in terms of vCPU consumption, memory consumption and potential GPU uplifts.
-
-Users can influence the selection of worker node machine profiles by defining minimum requirements for eligible machine profiles or even specifying a certain one.
-
-## Fleet specification
-
-Fleets run as soon as they are created so that “running a fleet” is the same operation as “creating a fleet”. Therefore the CLI provides `fleet run` and `fleet create` as synonyms. When creating a fleet the following aspects are specified - either explicitly or by default:
-- name
-- code
-- tasks
-- instance resources and scaling
-- worker nodes
-- connectivity
-- environment variables (opt.)
-- data store mounts (opt.)
-
-The default values are suitable in many cases so that running a fleet can be very easy and quick as shown in the examples section.
-
-### Name specification
-
-The fleet name identifies the fleet entity within the Code Engine project. It has to be a unique within fleets of the same Code Engine project, i.e. it might be the same as an app’s or job’s name in the same Code Engine project. 
-
-### Tasks specification
-
-Fleets require at least one task and are designed to handle large number of tasks. There are two options to specify tasks:
-- number of tasks: N
-- tasks from file: <file>
-
-Each tasks gets an index assigned from 0..N. The tasks index is provided as an environment variable `CE_TASK_INDEX` into the instance.
-
-In order to specify tasks in a file create a text file with line-wise definition of parameters in JSON syntax (according to JSONL standard). The task parameters "command" and "args" can be used to override of the command and arguments when starting an instance of user code on behalf of the task. If one or both of these parameters are specified their values are used instead of the respective definitions in the container image or in the fleet's code specification. For example, see [wordcount_commands.jsonl](./wordcount_commands.jsonl)
-
-### Code specification
-
-The fleet’s code determines what is run in one or more instances in order to work on tasks. The specification has two parts: the base specification defines a container image reference and optional command and arguments overrides. (This is the same for Code Engine apps and jobs.). In addition, fleets can override command and arguments in a task-specific way as described in the “Task specification” section.
-
-### Instance resources and scaling specifications
-
-vCPU and memory required by each instance can be specified and determines how many instances can fit/run on a fleet worker. In addition, the maximum number of concurrent instances (max_scale) can be specified.
-
-For example, if an instance requires 2 vCPU and 8 GB memory and a total of 100 instances should run concurrently, the fleet will provision a total of 200 vCPU and 800 GB memory.
-
-### Worker specifications
-
-Users can influence what machine profiles are used as worker nodes to different degrees.
-
-In the example above, if the user selects a bx2-8x32 worker profile, each worker can run 4 instances. Therefore a total of 25 workers will be provisioned.
-
-### Environment variables
-
-The instance will get the following environment provided by the system:
-```
-CE_FLEET_VERSION=v1
-CE_REQUEST_ID=33af980d-8175-4925-85d0-0f0cf8812cb5
-CE_PROJECT_ID=e1501040-e56e-48b6-b9f0-1695908199bf
-CE_FLEET_CONCURRENCY=1
-CE_TASK_ID=0
-CE_USER_MOUNT_POINT=/mnt/ce/data
-CE_FLEET_KEEP_WORKER=false
-CE_FLEET_ID=33af980d-8175-4925-85d0-0f0cf8812cb5
-CE_FLEET_IS_GPU=false
-```
 
 ## Architecture 
 
@@ -593,6 +515,8 @@ Download the results from the output COS bucket to `./data/output`
 ## Tutorials
 
 - [Tutorial: Docling](./tutorials/docling/README.md)
+- [Tutorial: Inferencing](./tutorials/inferencing/README.md)
+- [Tutorial: Simulation](./tutorials/simulation/README.md)
 
 
 ## HowTo
