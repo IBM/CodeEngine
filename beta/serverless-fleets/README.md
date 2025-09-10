@@ -16,9 +16,9 @@ Using both the intuitive graphical user interface and the command line, you will
 - [Launch a Fleet with GPUs](#launch-a-fleet-with-gpus)
 - [Launch a fleet with parallel tasks](#launch-a-fleet-with-parallel-tasks)
 - [Launch a fleet to count words of novels](#launch-a-fleet-to-count-words-of-novels)
-- [Docling tutorial](./tutorials/docling/README.md)
-- [Batch Inferencing tutorial](./tutorials/inferencing/README.md)
-- [Monte Carlo Simulation tutorial](./tutorials/docling/README.md)
+- [Tutorial: Docling](./tutorials/docling/README.md)
+- [Tutorial: Batch Inferencing](./tutorials/inferencing/README.md)
+- [Tutorial: Monte Carlo Simulation](./tutorials/simulation/README.md)
 - [HowTo](#howto)
 - [Troubleshooting](#troubleshooting)
 
