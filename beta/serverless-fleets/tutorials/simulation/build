@@ -1,0 +1,24 @@
+#!/bin/sh
+
+#!/bin/bash
+
+echo "Cleaning up previous images ..."
+IMAGE=$(ibmcloud cr images | grep "ce--fleet-simulation" | awk '{print $1}')
+if [[ "$IMAGE" != "" ]]; then 
+  ibmcloud cr image-rm $(ibmcloud cr images | grep "ce--fleet-simulation" | awk '{print $1}')
+fi
+
+# getting the automatically created registry secret, e.g. ce-auto-icr-private-<region>
+REGION=$(ibmcloud target -o json | jq -r '.region.name')
+REGISTRY_SECRET_NAME="ce-auto-icr-private-$REGION"
+REGISTRY_HOST=$(ibmcloud ce secret get -n $REGISTRY_SECRET_NAME -o json | jq -r ".data.server")
+
+echo "Building new image $REGISTRY_HOST/ce--fleet-simulation-${uuid}/simulation:latest from ./src "
+echo "This takes about 1-2 minutes ..."
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+ibmcloud ce buildrun submit --source . --strategy dockerfile --image $REGISTRY_HOST/ce--fleet-simulation/simulation:latest --registry-secret $REGISTRY_SECRET_NAME --name ce--fleet-simulation-build-${uuid} --size medium --timeout 300 
+
+ibmcloud ce buildrun logs -f -n ce--fleet-simulation-build-${uuid}
+
