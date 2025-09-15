@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"os/exec"
@@ -28,6 +29,11 @@ import (
 	"strings"
 	"syscall"
 	"time"
+)
+
+const (
+	SLEEP_MIN int = 10
+	SLEEP_MAX int = 30
 )
 
 func Curl(url string) (string, error) {
@@ -186,6 +192,32 @@ func IsBucketMounted() bool {
 	return err == nil && info.IsDir()
 }
 
+func ShouldCrash() bool {
+
+	// If the 'CRASH' or 'FAIL' env vars are set then crash!
+	if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
+		return true
+	}
+
+	// If the env var SUCCESS_RATE is set the decision to succeed or failed is being calculated randomly
+	if os.Getenv("SUCCESS_RATE") != "" {
+		successRate, err := strconv.ParseFloat(os.Getenv("SUCCESS_RATE"), 64)
+		if err != nil || successRate > 1 || successRate < 0 {
+			// non-parsable values lead to a 50% success rate
+			successRate = 0.5
+		}
+
+		// Check whether the successRate is higher than a randomly generated number between 0 and 1
+		random := rand.Float64()
+		if successRate > random {
+			return false
+		}
+
+		return true
+	}
+	return false
+}
+
 func NewBucketRouter() http.Handler {
 	mux := http.NewServeMux()
 
@@ -252,34 +284,6 @@ func main() {
 		os.Setenv("z", "Set env var 'SHOW' to see all variables")
 	}
 
-	// If env var CRASH is set then crash immediately.
-	// If its value is of the form HH:MM then crash at the specified time
-	// time. The time is based on time returned from: http://time.nist.gov:13
-	// This is useful for testing what happens if the app crashes during
-	// startup. And the 'time' aspect of it allows for only certain instances
-	// of the app to crash - for example, we want the app to be created ok
-	// but then after a minute have any new instances crash.
-	if date := os.Getenv("CRASH"); date != "" { // Just crash!
-		// get time: curl http://time.nist.gov:13
-		// result  : 58859 20-01-11 21:28:24 00 0 0 129.3 UTC(NIST) *
-		if len(date) > 3 && date[2] == ':' {
-			if now, err := Curl("http://time.nist.gov:13"); err == nil {
-				parts := strings.SplitN(now, " ", 4)
-				if len(parts) > 3 {
-					now = parts[2] // Just time part
-					now = now[:len(date)]
-					if now > date {
-						os.Exit(1)
-					}
-				}
-			} else {
-				Debug(true, "Curl: %s\n%s", now, err)
-			}
-		} else {
-			os.Exit(1)
-		}
-	}
-
 	// Figure out what message we want to print. You can override this
 	// via the "MSG" environment variable. Or, you can just change who
 	// it says hello to via the "TARGET" environment variable
@@ -307,7 +311,9 @@ func main() {
 
 		sleep := os.Getenv("SLEEP")
 		sleepDuration := 0
-		if sleep != "" {
+		if sleep == "RANDOM" {
+			sleepDuration = rand.IntN(SLEEP_MAX-SLEEP_MIN) + SLEEP_MIN
+		} else {
 			sleepDuration, _ = strconv.Atoi(sleep)
 		}
 
@@ -321,7 +327,7 @@ func main() {
 		PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 		// If the 'CRASH' or 'FAIL' env vars are set then crash!
-		if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
+		if ShouldCrash() {
 			fmt.Printf("Crashing...")
 			os.Exit(1)
 		}
@@ -334,9 +340,11 @@ func main() {
 		for {
 			sleep := os.Getenv("SLEEP")
 			sleepDuration := 0
-			if sleep != "" {
+			if sleep == "RANDOM" {
+				sleepDuration = rand.IntN(SLEEP_MAX-SLEEP_MIN) + SLEEP_MIN
+			} else if sleep != "" {
 				sleepDuration, _ = strconv.Atoi(sleep)
-			} else if jobMode == "daemon" {
+			} else if sleep == "" && jobMode == "daemon" {
 				// Sleep for 60 seconds and then re-do the execution
 				sleepDuration = 60
 			}
@@ -351,7 +359,7 @@ func main() {
 			PrintMessage(os.Stdout, os.Getenv("SHOW") == "")
 
 			// If the 'CRASH' or 'FAIL' env vars are set then crash!
-			if os.Getenv("CRASH") != "" || os.Getenv("FAIL") != "" {
+			if ShouldCrash() {
 				fmt.Printf("Crashing...")
 				os.Exit(1)
 			}
