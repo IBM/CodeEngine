@@ -2,9 +2,13 @@
 
 This tutorial provides a comprehensive guide on using Serverless GPUs to perform batch inferencing which illustrates a generally applicable pattern where AI helps to extract information out of a set of unstructed data. 
 
+![](../../images/inferencing-highlevel-architecture.png)
+
+
 The concrete example extracts temperature and duration of a set of cookbook recipes (from [recipebook](https://github.com/dpapathanasiou/recipebook)) by using a LLM. Such a cookbook recipe looks like:
 ```
 {
+    "title": "A-1 Chicken Soup",
     "directions": [
         "In a large pot over medium heat, cook chicken pieces in oil until browned on both sides.  Stir in onion and cook 2 minutes more.  Pour in water and chicken bouillon and bring to a boil.  Reduce heat and simmer 45 minutes.",
         "Stir in celery, carrots, garlic, salt and pepper.  Simmer until carrots are just tender.  Remove chicken pieces and pull the meat from the bone.  Stir the noodles into the pot and cook until tender, 10 minutes.  Return chicken meat to pot just before serving."
@@ -24,7 +28,6 @@ The concrete example extracts temperature and duration of a set of cookbook reci
     "language": "en-US",
     "source": "allrecipes.com",
     "tags": [],
-    "title": "A-1 Chicken Soup",
     "url": "http://allrecipes.com/recipe/25651/a-1-chicken-soup/"
 }
 ```
