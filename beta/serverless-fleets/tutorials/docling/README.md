@@ -2,7 +2,9 @@
 
 ![](../../images/docling-picture.png)
 
-This tutorial provides a comprehensive guide on using Docling to convert PDFs into Markdown format using serverless fleets. It leverages cloud object storage for managing both the input PDFs and the resulting Markdown files. The process is streamlined using IBM’s Code Engine to build the Docling container, which is then pushed to a container registry. Users can run a serverless fleet, which autonomously spawns workers to run the Docling container for efficient, scalable conversion tasks.
+This tutorial provides a comprehensive guide on using [Docling](https://docling-project.github.io/docling/) to convert PDFs into Markdown format using serverless fleets. It leverages cloud object storage for managing both the input PDFs and the resulting Markdown files. The process is streamlined using IBM’s Code Engine to build the Docling container, which is then pushed to a container registry. Users can run a serverless fleet, which autonomously spawns workers to run the Docling container for efficient, scalable conversion tasks.
+
+![](../../images/docling-highlevel-architecture.png)
 
 Key steps covered in the Tutorial:
 1. Upload the examples PDFs to COS
