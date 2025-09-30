@@ -298,21 +298,14 @@ fi
 
 print_msg "\nInitializing the persistent storage to mount the bucket '$COS_BUCKET_NAME' ..."
 CE_STORAGE_NAME=$COS_BUCKET_NAME
-if kubectl get PersistentStorage $CE_STORAGE_NAME >/dev/null 2>&1; then
+if ibmcloud ce persistentdatastore get --name $CE_STORAGE_NAME >/dev/null 2>&1; then
     echo "Done! Code Engine persistent storage '$CE_STORAGE_NAME' does exist"
 else
     print_msg "\nCreating Code Engine persistent storage '$CE_STORAGE_NAME' ..."
-    kubectl apply -f - <<EOF
-apiVersion: codeengine.cloud.ibm.com/v1beta1
-kind: PersistentStorage
-metadata:
-    name: $CE_STORAGE_NAME
-spec:
-    objectStorage:
-        bucketName: $COS_BUCKET_NAME
-        bucketLocation: $REGION
-        secretRef: $CE_SECRET_NAME
-EOF
+    ibmcloud ce persistentdatastore create \
+        --name $CE_STORAGE_NAME \
+        --cos-bucket-name $COS_BUCKET_NAME \
+        --cos-access-secret $CE_SECRET_NAME
 fi
 
 if [[ "$OPERATION" == "init" ]]; then
@@ -338,40 +331,27 @@ print_msg "\nInitializing the jupyter app '$CE_APP_NOTEBOOK' ..."
 if ! ibmcloud ce app get --name $CE_APP_NOTEBOOK >/dev/null 2>&1; then
     print_msg "\nCreating the jupyter app '$CE_APP_NOTEBOOK' ..."
     ibmcloud ce app create --name $CE_APP_NOTEBOOK \
-        --image "icr.io/codeengine/helloworld" \
-        --cpu 0.125 \
-        --memory 0.25G \
-        --no-wait
-else 
-    echo "Done!"
+        --image "quay.io/jupyter/minimal-notebook:latest" \
+        --max-scale 1 \
+        --scale-down-delay 600 \
+        --cpu 1 \
+        --memory 4G \
+        --mount-data-store /mnt/work=$CE_STORAGE_NAME \
+        --command "jupyter" \
+        --command "lab" \
+        --command "--ip" \
+        --command "*" \
+        --command "--NotebookApp.allow_origin" \
+        --command "*" \
+        --command "--NotebookApp.token" \
+        --command "''" \
+        --command "--NotebookApp.password" \
+        --command "''" \
+        --command "--notebook-dir" \
+        --command "/mnt/work" \
+        --port 8888 \
+        --visibility project
 fi
-
-print_msg "\nConfiguring the volume mounts for the app '$CE_APP_NOTEBOOK' ..."
-./add-volume-mount-to-app.sh $CE_APP_NOTEBOOK $CE_STORAGE_NAME /mnt/work $USERNAME
-sleep 3
-
-print_msg "\nUpdate the app '$CE_APP_NOTEBOOK' ..."
-ibmcloud ce app update --name $CE_APP_NOTEBOOK \
-    --image "quay.io/jupyter/minimal-notebook:latest" \
-    --max-scale 1 \
-    --scale-down-delay 600 \
-    --cpu 1 \
-    --memory 4G \
-    --command "jupyter" \
-    --command "lab" \
-    --command "--ip" \
-    --command "*" \
-    --command "--NotebookApp.allow_origin" \
-    --command "*" \
-    --command "--NotebookApp.token" \
-    --command "''" \
-    --command "--NotebookApp.password" \
-    --command "''" \
-    --command "--notebook-dir" \
-    --command "/mnt/work" \
-    --port 8888 \
-    --visibility project \
-    --no-wait
 
 # ================================================
 # OPTIONAL: Configuring Authn and Authz
@@ -404,7 +384,7 @@ if ! ibmcloud ce secret get --name $CE_SECRET_AUTH >/dev/null 2>&1; then
     echo "Skipping the deployment of the authentication app"
 
     print_msg "\nMake sure the app '$CE_APP_NOTEBOOK' is exposed publicly ..."
-    ibmcloud ce app update --name $CE_APP_NOTEBOOK --no-cluster-local
+    ibmcloud ce app update --name $CE_APP_NOTEBOOK --visibility public
 else
     echo "Yes! Setting up the auth and the proxy app"
 
