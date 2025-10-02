@@ -136,21 +136,21 @@ is demonstrating.
 
 #### Function
 
-- [function-inline-nodejs](helloworld-samples/function-inline-nodejs)
+- [function-inline-nodejs](helloworld-samples/function-inline-nodejs)<br>
   This example shows how to create simple inline Node.js function
-- [function-inline-python](helloworld-samples/function-inline-python)
+- [function-inline-python](helloworld-samples/function-inline-python)<br>
   This example shows how to create simple inline Python function
-- [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)
+- [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)<br>
   This example shows how to create Node.js functions with additional modules
-- [function-typescript-codebundle-nodejs](helloworld-samples/function-typescript-codebundle-nodejs)
+- [function-typescript-codebundle-nodejs](helloworld-samples/function-typescript-codebundle-nodejs)<br>
   This example shows how to create TypeScript functions with additional modules
-- [function-codebundle-python](helloworld-samples/function-codebundle-python)
+- [function-codebundle-python](helloworld-samples/function-codebundle-python)<br>
   This example shows how to create Python functions with additional modules
-- [function-http-nodejs](helloworld-samples/function-http-nodejs)
+- [function-http-nodejs](helloworld-samples/function-http-nodejs)<br>
   This example shows how to create Node.js functions with can perfome a http request without additional modules
-- [function-http-python](helloworld-samples/function-http-python)
+- [function-http-python](helloworld-samples/function-http-python)<br>
   This example shows how to create Python functions which can perfome a http request without additional modules
-- [function-python-go-binary](helloworld-samples/function-python-go-binary/README.md)
+- [function-python-go-binary](helloworld-samples/function-python-go-binary/README.md)<br>
   This example shows how to create a Python function which includes and executes a Go binary
 
 #### Eventing
