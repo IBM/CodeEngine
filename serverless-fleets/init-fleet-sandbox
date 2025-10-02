@@ -502,8 +502,8 @@ if [[ "$SETUP_LOGGING" == "true" && "$icl_ingestion_apikey" != "" ]]; then
     ibmcloud ce secret update -n codeengine-fleet-defaults \
         --from-literal logging_ingress_endpoint="${icl_ingestion_host}" \
         --from-literal logging_sender_api_key="${icl_ingestion_apikey}" \
-        --from-literal logging_level_agent=debug \
-        --from-literal logging_level_worker=debug
+        --from-literal logging_level_agent=info \
+        --from-literal logging_level_worker=info
 fi
 if [[ "$SETUP_MONITORING" == "true" ]]; then
     print_msg "\nMake sure monitoring is enabled to '${sysdig_collector_host}' ..."
