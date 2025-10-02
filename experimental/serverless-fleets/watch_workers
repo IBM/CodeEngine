@@ -1,3 +1,0 @@
-#!/bin/sh
-
-watch -n 2 ibmcloud ce exp fleet worker list 
