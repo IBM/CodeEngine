@@ -1,9 +1,0 @@
-/mnt/ce/data/tutorials/inferencing/recipes/a-1-chicken-soup.json;/mnt/ce/data/result/inferencing_a-1-chicken-soup.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-20-minute-chicken-parmesan.json;/mnt/ce/data/result/inferencing_a-20-minute-chicken-parmesan.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-bakers-secret-for-bread-machines.json;/mnt/ce/data/result/inferencing_a-bakers-secret-for-bread-machines.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-big-honkin-margarita.json;/mnt/ce/data/result/inferencing_a-big-honkin-margarita.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-catering-companys-marinade.json;/mnt/ce/data/result/inferencing_a-catering-companys-marinade.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-cranberry-salad-keepsake.json;/mnt/ce/data/result/inferencing_a-cranberry-salad-keepsake.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-different-carrot-raisin-salad.json;/mnt/ce/data/result/inferencing_a-different-carrot-raisin-salad.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-drama-queens-pavlova.json;/mnt/ce/data/result/inferencing_a-drama-queens-pavlova.augmented.json
-/mnt/ce/data/tutorials/inferencing/recipes/a-fantastic-margarita.json;/mnt/ce/data/result/inferencing_a-fantastic-margarita.augmented.json

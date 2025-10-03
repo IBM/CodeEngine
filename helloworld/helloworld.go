@@ -199,7 +199,7 @@ func ShouldCrash() bool {
 		return true
 	}
 
-	// If the env var SUCCESS_RATE is set the decision to succeed or failed is being calculated randomly
+	// If the env var SUCCESS_RATE is set, the decision to succeed or failed is being calculated randomly
 	if os.Getenv("SUCCESS_RATE") != "" {
 		successRate, err := strconv.ParseFloat(os.Getenv("SUCCESS_RATE"), 64)
 		if err != nil || successRate > 1 || successRate < 0 {
@@ -328,7 +328,7 @@ func main() {
 
 		// If the 'CRASH' or 'FAIL' env vars are set then crash!
 		if ShouldCrash() {
-			fmt.Printf("Crashing...")
+			fmt.Printf("Crashing...\n")
 			os.Exit(1)
 		}
 

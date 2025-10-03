@@ -91,14 +91,18 @@ to get started.
   stage through to production - showcasing how to the various components, 
   like applications, functions and jobs can be work together to implement a solution.
 
-- [Thumbnail Generator](thumbnail)<br>
-  Walks through the complete growth path of an application from the prototype
-  stage through to production - demonstrating how to switch from an in-app
-  processor to one where the data is persisted and processed via an
-  event-driven architecture.
+- [Docling](serverless-fleets/tutorials/docling)<br>
+  This tutorial provides a comprehensive guide on using [Docling](https://docling-project.github.io/docling/) to convert PDFs into Markdown format using serverless fleets. It leverages cloud object storage for managing both the input PDFs and the resulting Markdown files. The process is streamlined using IBM’s Code Engine to build the Docling container, which is then pushed to a container registry. Users can run a serverless fleet, which autonomously spawns workers to run the Docling container for efficient, scalable conversion tasks.
+
+- [Batch inferencing](serverless-fleets/tutorials/inferencing)<br>
+  This tutorial provides a comprehensive guide on using Serverless GPUs to perform batch inferencing which illustrates a generally applicable pattern where AI helps to extract information out of a set of unstructed data. 
 
 - [Metrics Collector](metrics-collector)<br>
   Re-usable asset that helps to gain insights on the CPU and memory consumption of apps, jobs and builds.
+
+- [Fotobox](fotobox)
+  Deploy your own Fotobox straight to the IBM Cloud access it directly from any device with browser and camera. Take pictures and view them all from your device.
+
 
 ## Samples
 
@@ -106,73 +110,47 @@ The samples are grouped by the main category of functionality that it
 is demonstrating.
 
 #### Apps
-- [hello](hello)<br>
-  Very basic "hello world!" type of application written in Node.js. Start here!
 - [helloworld](helloworld)<br>
-  Similar to [hello](hello) except this is written in golang and adds a few
-  bells-n-whistles to allow you to control what it does when invoked.
-- [auth](auth)<br>
-  This shows how to setup an nginx proxy in-front of a private application
-  to ensure that only authorized people can access it.
-- [bind-app](bind-app)<br>
-  This will create an instance of Event Streams in the IBM Cloud and then ask
-  Code Engine to bind it to an Application so we can access it from the App.
-  The credentials, etc. will be injected into the App via environment variables.
-- [cecli](cecli)<br>
-  Show how to invoke the Code Engine CLI from within an App. This can be used
-  to then start additional Code Engine resources (Apps/Jobs) dynamically.
-  Same logic could be used in Batch Jobs.
-- [sessions](sessions)<br>
-  Starts a stateful application that scales based on load. The state is kept
-  in an instance of Redis, also running within Code Engine. Demonstrates the
-  use of non-http components and private networking between components.
-- [websocket](websocket)<nr>
-  Shows how to interact with an Application via WebSockets.
+  Very basic "hello world!" type of application writtin in golang. Start here!
+- [auth-oidc-proxy](auth-oidc-proxy)<br>
+  This sample demonstrates how to configure an authentication/authorization layer that fronts any arbitrary Code Engine application. In principal, this pattern is pretty generic. To demonstrate it, we chose to implement it with OpenID Connect (OIDC), an authentication framework that is built on top of the OAuth 2.0 protocol.
+
+#### Fleets
+- [serverless-fleets](serverless-fleets)<br>
+  To learn how to simplify and optimize large-scale parallel computation with Serverless Fleets, you should start here!
 
 #### Batch Jobs
 - [helloworld](helloworld)<br>
   This is another simple Batch Job sample, similar to the previous one, but
   shows how to use environment variables to modify the behavior of the runtime
   of the job.
+- [Trusted Profiles](trusted-profiles)<br>
+  In the IBM Cloud, when authenticating with other services such as Cloud
+  Object Storage or Secrets Manager, using trusted profiles is a way to
+  authenticate without any API keys being used. This eliminates the risk of
+  those being leaked or stolen by a malicious user who uses them to access your
+  IBM Cloud resources.
 - [cronjob](cronjob)<br>
   This will create a Batch Job that will be invoked based on a cron
   event. Meaning, it'll be executed based on a timer.
-- [app2job](app2job)<br>
-  This will show how to submit a Job from an Application based on an incoming
-  HTTP request to the Application.
-- [function2job](function2job)<br>
-  This will show how to submit a Job from a Function based on an incoming
-  HTTP request to the Function.
-- [bind-job](bind-job)<br>
-  This will create an instance of Event Streams in the IBM Cloud and then ask
-  Code Engine to bind it to a Batch Job so we can access it from the Job. The
-  credentials, etc. will be injected into the Job via environment variables.
-- [job2app](job2app)<br>
-  This will demostrate how to create a simple Batch Job and how to have it
-  communicate with an Application running within the same project.
-- [job2vsi](job2vsi)<br>
-  The sample shows how a job can be used to spawn
-  [Virtual Server Instances (VSIs)]((https://www.ibm.com/cloud/virtual-servers))
-  in your IBM Cloud account and run workload on them.
-
 
 #### Function
 
-- [function-inline-nodejs](helloworld-samples/function-inline-nodejs)
-  This example shows how to create simple inline NodeJS function
-- [function-inline-python](helloworld-samples/function-inline-python)
+- [function-inline-nodejs](helloworld-samples/function-inline-nodejs)<br>
+  This example shows how to create simple inline Node.js function
+- [function-inline-python](helloworld-samples/function-inline-python)<br>
   This example shows how to create simple inline Python function
-- [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)
-  This example shows how to create NodeJS functions with additional modules
-- [function-typescript-codebundle-nodejs](helloworld-samples/function-typescript-codebundle-nodejs)
+- [function-codebundle-nodejs](helloworld-samples/function-codebundle-nodejs)<br>
+  This example shows how to create Node.js functions with additional modules
+- [function-typescript-codebundle-nodejs](helloworld-samples/function-typescript-codebundle-nodejs)<br>
   This example shows how to create TypeScript functions with additional modules
-- [function-codebundle-python](helloworld-samples/function-codebundle-python)
+- [function-codebundle-python](helloworld-samples/function-codebundle-python)<br>
   This example shows how to create Python functions with additional modules
-- [function-http-nodejs](helloworld-samples/function-http-nodejs)
-  This example shows how to create NodeJS functions with can perfome a http request without additional modules
-- [function-http-python](helloworld-samples/function-http-python)
+- [function-http-nodejs](helloworld-samples/function-http-nodejs)<br>
+  This example shows how to create Node.js functions with can perfome a http request without additional modules
+- [function-http-python](helloworld-samples/function-http-python)<br>
   This example shows how to create Python functions which can perfome a http request without additional modules
-- [function-python-go-binary](helloworld-samples/function-python-go-binary/README.md)
+- [function-python-go-binary](helloworld-samples/function-python-go-binary/README.md)<br>
   This example shows how to create a Python function which includes and executes a Go binary
 
 #### Eventing
@@ -188,28 +166,10 @@ is demonstrating.
 - [github](github)<br>
   This sample will show how to get events from Github (via its webhooks)
   delivered to a Code Engine Application.
-- [kafka](kafka)<br>
-  This sample shows how to create a Kafka subscription to automatically have
-  messages in a Kafka instances delivered to an application.
 - [kafka-observer](kafka)<br>
   This provides a sample implementation of the observer pattern, 
   which is a native approach to consume Kafka messages in IBM Cloud Code Engine.
-- [cloudant-change-listener](cloudant-change-listener)<br>
-  This is a sample of a Cloudant Databases changes listener that continously 
-  listen on all changes in a database. For each change a Code Engine function 
-  is invoked 
   
-#### Misc
-- [configmaps-env](configmaps-env)<br>
-  Shows how to define and inject a ConfigMap as environment variables
-  into an Application.
-- [configmaps-vol](configmaps-vol)<br>
-  Shows how to define and inject a ConfigMap as a volume into an Application.
-- [secrets-env](secrets-env)<br>
-  Shows how to define and inject a Secret as environment variables
-  into an Application.
-- [secrets-vol](secrets-vol)<br>
-  Shows how to define and inject a Secret as a volume into an Application.
 
 ## Layout of the repository
 

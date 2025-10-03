@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+IMAGE=$(ibmcloud cr images | grep "ce--fleet-inferencing" | awk '{print $1}')
+
+if [ -z "${IMAGE}" ]; then
+  echo "no image found. pls build a inferencing image with ./build"
+  exit -1
+fi
+
+# getting the automatically created registry secret, e.g. ce-auto-icr-private-<region>
+REGION=$(ibmcloud target -o json | jq -r '.region.name')
+REGISTRY_SECRET_NAME="ce-auto-icr-private-$REGION"
+
+PRIVATE_IMAGE="private.$IMAGE"
+
+echo ibmcloud code-engine fleet create --name "fleet-${uuid}-1"
+echo "  "--image $PRIVATE_IMAGE
+echo "  "--registry-secret $REGISTRY_SECRET_NAME
+echo "  "--max-scale 1
+echo "  "--tasks-from-local-file commands.jsonl
+echo "  "--gpu l40s:1
+echo "  "--cpu 24
+echo "  "--memory 120G
+echo "  "--mount-data-store /input=fleet-input-store:/inferencing
+echo "  "--mount-data-store /output=fleet-output-store:/inferencing
+
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+--image $PRIVATE_IMAGE \
+--registry-secret $REGISTRY_SECRET_NAME \
+--max-scale 1 \
+--tasks-from-local-file commands.jsonl \
+--gpu l40s:1 \
+--cpu 24 \
+--memory 120G \
+--tasks-state-store fleet-task-store \
+--mount-data-store /input=fleet-input-store:/inferencing \
+--mount-data-store /output=fleet-output-store:/inferencing

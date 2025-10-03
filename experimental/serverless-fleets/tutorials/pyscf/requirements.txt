@@ -1,2 +1,0 @@
-pyscf
-mpi4pyscf
