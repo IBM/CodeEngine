@@ -1,1 +1,0 @@
-This is a collection of cooking recipes in [json format](http://json.org/) from the [recipebook](https://github.com/dpapathanasiou/recipebook) application.
