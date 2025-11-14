@@ -1,22 +1,15 @@
-FROM nvcr.io/nvidia/cuda:12.9.0-runtime-ubuntu24.04
+FROM pytorch/pytorch:2.9.0-cuda13.0-cudnn9-devel
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    git \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install vLLM and dependencies
+RUN pip install vllm accelerate
+# Optional: install bitsandbytes if needed
+RUN pip install bitsandbytes
 
-ENV VIRTUAL_ENV=/opt/env
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Set working directory
+WORKDIR /app
 
-RUN python3 -m venv $VIRTUAL_ENV
+# Copy your script and input file
+COPY . /app
 
-RUN pip install --no-cache-dir --upgrade pip
-
-COPY app.py requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# CMD ["python", "app.py"]
+# Entrypoint
+CMD ["python", "app.py"]

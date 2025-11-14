@@ -1,62 +1,62 @@
 import argparse
-import json
 import os
-import transformers
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import json
+import time
+from vllm import LLM, SamplingParams
 
-model_name = 'tiiuae/falcon-7b-instruct'
-
-tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        )
-
-model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        device_map='auto',
-        low_cpu_mem_usage=False,
-        )
-
-generator = transformers.pipeline(
-        'text-generation',
-        model=model,
-        tokenizer=tokenizer,
-        device_map='auto',
-        )
+access_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+task_index = os.getenv("CE_TASK_INDEX")
+#model_name = 'tiiuae/falcon-7b-instruct'
+model_name = os.getenv("MODEL_NAME", "ibm-granite/granite-4.0-h-small")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input')
 args = parser.parse_args()
 
-with open(args.input) as cmdFile:
-    for line in cmdFile:
-        inPath, outPath = line.split(';', 1)
+def run_conversation():
+    start_download_time = time.perf_counter()
 
-        with open(inPath) as inFile:
-            inputData = json.load(inFile)
-            inputData['quantitativeMeasures'] = []
+    llm = LLM(model=model_name, quantization="fp8")  # or "int8" if supported
+    end_download_time = time.perf_counter()
+    print(f"Model initilization completed in {end_download_time - start_download_time:.2f} seconds")
 
-            recipe =' '.join(inputData['directions'])
-            prompts = [
-                    f'User: extract temperature and duration values for each step of the following recipe. Use the following format for each sentence of the recipe: temperature=..., duration=....\nRecipe:\n{recipe}\n\nAssistant:',
-                    f'User: from the following recipe, list temperature and time like: temperature=..., duration=...\n{recipe}\n\nAssistant:',
-                    f'User: summarize temperature and time values for this recipe, where applicable in the following format: step1: temperature=..., time=...; step2: etc.\n{recipe}\n\nAssistant:'
-            ]
+    prompts = []
+    with open(args.input, 'r', encoding='utf-8') as file:
+        for inPath in file:
+            with open(inPath.rstrip()) as inFile:
+                inputData = json.load(inFile)
+                inputData['quantitativeMeasures'] = []
 
+                recipe =' '.join(inputData['directions'])
+                prompt = f'User: extract temperature and duration values for each step of the following recipe. Use the following format for each sentence of the recipe: temperature=..., duration=....\nRecipe:\n{recipe}\n\nAssistant:'
+                prompts.append(prompt)
 
-            for idx, prompt in enumerate(prompts):
-                outputs = generator(
-                        prompt,
-                        do_sample=False,
-                        max_new_tokens=200,
-                        return_full_text=False,
-                        truncation=True
-                        )
-                output_text = outputs[0]['generated_text']
+        sampling_params = SamplingParams(max_tokens=300)
 
-                print(f'output = {output_text}')
+        start_time = time.perf_counter()
+        outputs = llm.generate(prompts, sampling_params)
+        end_time = time.perf_counter()
 
-                inputData['quantitativeMeasures'].append(output_text)
+        print(f"Batch inferencing completed in {end_time - start_time:.2f} seconds")
 
-            os.makedirs(os.path.dirname(outPath), exist_ok=True)
-            with open(outPath, 'w') as outFile:
-                json.dump(inputData, outFile)
+        start_time_output = time.perf_counter()
+        # iterate through the outputs of each prompt
+        results = []
+        for i, output in enumerate(outputs):
+            result = {
+                "input": prompts[i],
+                "output": output.outputs[0].text
+            }
+            results.append(result)
+        
+        # write output to a single file for the whole batch 
+        output_path = "/output/inferencing_vllm_task-%s.jsonl" % task_index
+        with open(output_path, 'w', encoding='utf-8') as out_file:
+            out_file.write(json.dumps(results) + "\n")
+        end_time_output = time.perf_counter()
+
+        print(f"Writing outputs completed in {end_time_output - start_time_output:.2f} seconds")
+
+if __name__ == "__main__":
+    run_conversation()
+

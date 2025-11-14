@@ -1,0 +1,8 @@
+{"cmds": ["python", "app.py"], "args": ["/input/batches/0.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/1.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/2.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/3.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/4.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/5.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/6.txt"]}
+{"cmds": ["python", "app.py"], "args": ["/input/batches/7.txt"]}
