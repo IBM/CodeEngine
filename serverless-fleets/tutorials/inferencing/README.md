@@ -4,6 +4,9 @@ This tutorial provides a comprehensive guide on using Serverless GPUs to perform
 
 ![](../../images/inferencing-highlevel-architecture.png)
 
+
+## Use Case
+
 The concrete example extracts temperature and duration of a set of cookbook recipes (from [recipebook](https://github.com/dpapathanasiou/recipebook)) by using a vLLM. Such a cookbook recipe looks like:
 ```
 {
@@ -63,7 +66,7 @@ Key steps covered in the tutorial:
 
 > Note: The tutorial uses the [IBM Granite-4.0-Micro](https://huggingface.co/ibm-granite/granite-4.0-micro) model which is downloaded from huggingface by vllm during the first run. Since `~/.cache/huggingface` in the container is mounted to the COS bucket, the model is being downloaded from COS for subsequent runs. (Tip: Advanced users might want to create a separate bucket acting as the model cache)
 
-## Duration
+## Durations
 
 The different phases of the use case take some time depending on the GPU family, the size of the container image and the size of the large language model. The following durations are expected.
 
@@ -81,6 +84,15 @@ The different phases of the use case take some time depending on the GPU family,
 | **Inferencing per recipe and worker** | **0.028s** | **0.001s** |
 | | | |
 
+## Observations
+
+In this example, with a single worker that contains 8xH100 it's possible to perform 8000 inferencing calls within 8 seconds. Since the worker as some overhead in terms of initilziation, the use of H100 only pays out when the batches are very large. 
+
+H100 also allow to run larger models, like the [Granite-4.0-H-Small](https://huggingface.co/ibm-granite/granite-4.0-h-small) with 32B parameters or the [Qwen3-Coder-30B-A3B-Instruct](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct) which result in higher quality, but also higher costs and lower throughput.
+
+For development use cases or small models, the L40s is a quite good alternative as it has faster initlization times.
+
+However, for production use cases and if the batches are large enough, the H100 is more cost-efficient and recommended.
 
 ## Steps
 
