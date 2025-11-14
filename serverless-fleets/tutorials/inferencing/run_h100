@@ -20,12 +20,12 @@ PRIVATE_IMAGE="private.$IMAGE"
 echo ibmcloud code-engine fleet create --name "fleet-${uuid}-1"
 echo "  "--image $PRIVATE_IMAGE
 echo "  "--registry-secret $REGISTRY_SECRET_NAME
-echo "  "--max-scale 1
-echo "  "--tasks-from-local-file commands.jsonl
+echo "  "--max-scale 8
+echo "  "--tasks-from-local-file commands_h100.jsonl
 echo "  "--tasks-state-store fleet-task-store
-echo "  "--gpu l40s:1
-echo "  "--cpu 24
-echo "  "--memory 120G
+echo "  "--gpu h100:1
+echo "  "--cpu 20
+echo "  "--memory 200G
 echo "  "--env HUGGINGFACEHUB_API_TOKEN="REDACTED"
 echo "  "--env PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 echo "  "--env MODEL_NAME="ibm-granite/granite-4.0-micro"
@@ -36,11 +36,11 @@ echo "  "--mount-data-store /output=fleet-output-store:/inferencing
 ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
 --image $PRIVATE_IMAGE \
 --registry-secret $REGISTRY_SECRET_NAME \
---max-scale 1 \
---tasks-from-local-file commands.jsonl \
---gpu l40s:1 \
---cpu 24 \
---memory 120G \
+--max-scale 8 \
+--tasks-from-local-file commands_h100.jsonl \
+--gpu h100:1 \
+--cpu 20 \
+--memory 200G \
 --tasks-state-store fleet-task-store \
 --env HUGGINGFACEHUB_API_TOKEN="$HUGGINGFACEHUB_API_TOKEN" \
 --env PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True" \
