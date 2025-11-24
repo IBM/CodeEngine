@@ -5,7 +5,7 @@ set -e
 # Replace all "CE_SUBDOMAIN" in the config file with the Code Engine subdomain (k8s ns)
 # see: https://www.baeldung.com/linux/nginx-config-environment-variables
 echo "Performing environment variable substitutions ..."
-envsubst '\$ORIGIN_APP_FQDN \$ORIGIN_APP_NAME \$AUTH_APP_NAME \$CE_SUBDOMAIN' < /tmp/origin-template.conf > /opt/app-root/etc/nginx.d/origin.conf
+envsubst '\$PROXY_APP_FQDN \$ORIGIN_APP_NAME \$AUTH_APP_NAME \$CE_SUBDOMAIN' < /tmp/origin-template.conf > /opt/app-root/etc/nginx.d/origin.conf
 
 echo "Starting NGINX with the following config file '${NGINX_CONF_PATH}'"
 cat ${NGINX_CONF_PATH}
