@@ -62,7 +62,7 @@ Key steps covered in the tutorial:
 
 ![](../../images/examples_inferencing_flow.png)
 
-> Note: The tutorial assumes that you have created the fleet sandbox using the fully automated method which creates the rclone environment for the upload/download scripts. If that's not the case, you would need to upload the recipes and batches, and download the results using the COS CLI or other means. In addition, the sandbox created a Code Engine managed registry secret for the private IBM Cloud Registry endpoint.
+> Note: The tutorial assumes that you have created the fleet sandbox using the [fully automated one-time setup](../../README.md#one-time-setup) which creates the rclone environment for the upload/download scripts. If that's not the case, you would need to upload the recipes and batches, and download the results using the COS CLI or other means. In addition, the sandbox created a Code Engine managed registry secret for the private IBM Cloud Registry endpoint.
 
 > Note: The tutorial uses the [IBM Granite-4.0-Micro](https://huggingface.co/ibm-granite/granite-4.0-micro) model which is downloaded from huggingface by vllm during the first run. Since `~/.cache/huggingface` in the container is mounted to the COS bucket, the model is being downloaded from COS for subsequent runs. (Tip: Advanced users might want to create a separate bucket acting as the model cache)
 
