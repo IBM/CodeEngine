@@ -36,7 +36,7 @@ GitHub.com provides a publicly available OIDC provider, that can be used to poin
 
 ### IBMers-only: w3Id OIDC SSO
 
-To protect IBM's workforce, the SSO Provisioner provides the ability to configure an w3Id SSO. Note: This SSO provider can only be used by IBMers
+To protect IBM-owned, internal applications, the w3Id SSO Provisioner provides the ability to configure an w3Id SSO. Note: This SSO provider can only be used by IBMers
 
 * Create w3Id OIDC configuration through https://w3.ibm.com/security/sso-provisioner
     ```
