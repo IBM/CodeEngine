@@ -13,7 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # Build the image
-docker build ${NOCACHE} -t ${REGISTRY}/oidc/node . --platform linux/amd64
+docker build ${NOCACHE} -t ${REGISTRY}/auth-oidc/node . --platform linux/amd64
 
 # And push it
-docker push ${REGISTRY}/oidc/node
+docker push ${REGISTRY}/auth-oidc/node
