@@ -1,0 +1,29 @@
+name: Build and Push to ICR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Build and Push to ICR
+      id: build-step
+      uses: ibm/code-engine-github-action@v1
+      with:
+        api-key: ${{ secrets.IBM_IAM_API_KEY }}
+        region: 'eu-de'
+        project: 'MY-PROJECT'
+        component: 'build'
+        name: 'my-ce-app'
+        image: private.de.icr.io/my-namespace/my-image:latest
+        registry-secret: ce-auto-icr-private-eu-de
+        build-source: './my-ce-app'
+    - name: Get image with digest
+      run: | 
+        echo "Image with digest: ${{ steps.build-step.outputs.image-with-digest }}"

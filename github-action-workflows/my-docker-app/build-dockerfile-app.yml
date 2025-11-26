@@ -1,0 +1,30 @@
+name: Deploy App to Code Engine using Dockerfile build-strategy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Deploy App to Code Engine using Dockerfile build-strategy
+      uses: IBM/code-engine-github-action@v1
+      with:
+        api-key: ${{ secrets.IBM_IAM_API_KEY }}
+        resource-group: 'Default'
+        region: 'eu-de'
+        project: 'MY-PROJECT'
+        component: 'app'
+        build-strategy: 'dockerfile'
+        port: 3000
+        name: 'my-docker-app'
+        build-source: './my-docker-app'
+        cpu: 1
+        memory: 4G
