@@ -1,5 +1,5 @@
 import express from "express";
-import crypto from 'crypto';
+import crypto from "crypto";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,7 +30,10 @@ if (missingEnvVars.length > 0) {
 
 const SESSION_COOKIE = process.env.COOKIE_NAME || "session_token";
 const ENCRYPTION_KEY = Buffer.from(process.env.COOKIE_ENCRYPTION_KEY, "base64");
-const ENCRYPTION_IV = crypto.randomBytes(16);
+let ENCRYPTION_IV = crypto.randomBytes(16);
+if (process.env.COOKIE_ENCRYPTION_IV) {
+  ENCRYPTION_IV = Buffer.from(process.env.COOKIE_ENCRYPTION_IV, "base64");
+}
 const ENCRYPTION_ALGORITHM = "aes-256-cbc";
 
 // check whether the KEY has got 32 bytes (256-bit)
@@ -112,11 +115,13 @@ async function checkAuth(req, res, next) {
       Authorization: `Bearer ${sessionToken}`,
     },
   };
-  
+
   // exchange authorization code for access token & id_token
   const response = await fetch(process.env.OIDC_PROVIDER_USERINFO_ENDPOINT, opts);
 
-  console.log(`fetched user data from '${process.env.OIDC_PROVIDER_USERINFO_ENDPOINT}' response.ok: '${response.ok}', response.status: '${response.status}'`);
+  console.log(
+    `fetched user data from '${process.env.OIDC_PROVIDER_USERINFO_ENDPOINT}' response.ok: '${response.ok}', response.status: '${response.status}'`
+  );
   if (!response.ok) {
     const errorResponse = await response.text();
     console.log(`errorResponse: '${errorResponse}'`);
@@ -178,9 +183,7 @@ router.get("/auth/callback", async (req, res) => {
   // encrypt the access token
   const sessionCookieValue = encrypt(accessTokenData.access_token, ENCRYPTION_KEY, ENCRYPTION_IV);
   const maxAge = accessTokenData.expires_in ? 1000 * accessTokenData.expires_in : 600_000; // defaults to 10min
-  console.log(
-    `Setting session cookie '${SESSION_COOKIE}' (max age: '${maxAge}ms')`
-  );
+  console.log(`Setting session cookie '${SESSION_COOKIE}' (max age: '${maxAge}ms')`);
 
   res.cookie(SESSION_COOKIE, sessionCookieValue, {
     maxAge,
