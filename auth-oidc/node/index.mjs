@@ -29,7 +29,9 @@ if (missingEnvVars.length > 0) {
 }
 
 const SESSION_COOKIE = process.env.COOKIE_NAME || "session_token";
-const ENCRYPTION_KEY = Buffer.from(process.env.COOKIE_ENCRYPTION_KEY, "base64");
+let ENCRYPTION_KEY;
+if(process.env.COOKIE_ENCRYPTION_KEY)
+  ENCRYPTION_KEY = Buffer.from(process.env.COOKIE_ENCRYPTION_KEY, "base64");
 let ENCRYPTION_IV = crypto.randomBytes(16);
 if (process.env.COOKIE_ENCRYPTION_IV) {
   ENCRYPTION_IV = Buffer.from(process.env.COOKIE_ENCRYPTION_IV, "base64");
