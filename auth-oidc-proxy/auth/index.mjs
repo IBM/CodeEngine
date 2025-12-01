@@ -10,7 +10,7 @@ const requiredEnvVars = [
   "OIDC_PROVIDER_TOKEN_ENDPOINT",
   "OIDC_PROVIDER_USERINFO_ENDPOINT",
   "OIDC_REDIRECT_URL",
-  "COOKIE_SIGNING_ENCRYPTION_KEY",
+  "COOKIE_ENCRYPTION_KEY",
   "COOKIE_DOMAIN",
   "REDIRECT_URL",
 ];
@@ -23,14 +23,19 @@ requiredEnvVars.forEach((envVarName) => {
 });
 
 const SESSION_COOKIE = process.env.COOKIE_NAME || "session_token";
-const ENCRYPTION_KEY = Buffer.from(process.env.COOKIE_SIGNING_ENCRYPTION_KEY, "base64");
-const ENCRYPTION_IV = crypto.randomBytes(16);
+let ENCRYPTION_KEY;
+if(process.env.COOKIE_ENCRYPTION_KEY)
+  ENCRYPTION_KEY = Buffer.from(process.env.COOKIE_ENCRYPTION_KEY, "base64");
+let ENCRYPTION_IV = crypto.randomBytes(16);
+if (process.env.COOKIE_ENCRYPTION_IV) {
+  ENCRYPTION_IV = Buffer.from(process.env.COOKIE_ENCRYPTION_IV, "base64");
+}
 const ENCRYPTION_ALGORITHM = "aes-256-cbc";
 
 // check whether the KEY has got 32 bytes (256-bit)
-if (ENCRYPTION_KEY.length != 32) {
+if (process.env.COOKIE_ENCRYPTION_KEY && ENCRYPTION_KEY.length != 32) {
   console.log(
-    `Environment variable 'COOKIE_SIGNING_ENCRYPTION_KEY' has wrong length. Current: ${ENCRYPTION_KEY.length}. Expected: 32`
+    `Environment variable 'COOKIE_ENCRYPTION_KEY' has wrong length. Current: ${ENCRYPTION_KEY.length}. Expected: 32`
   );
   process.exit(1);
 }
