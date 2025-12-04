@@ -171,7 +171,7 @@ print_msg "\nPulling latest IBM Cloud CLI release ..."
 ibmcloud update --force
 
 # Ensure that latest versions of used IBM Cloud CLI plugins are installed
-print_msg "\nInstalling required experiemental IBM Cloud CLI plugins ..."
+print_msg "\nInstalling required IBM Cloud CLI plugins ..."
 ensure_plugin_is_up_to_date code-engine
 ensure_plugin_is_up_to_date vpc-infrastructure
 ensure_plugin_is_up_to_date cloud-object-storage
