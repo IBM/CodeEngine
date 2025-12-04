@@ -1,5 +1,11 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source ${SCRIPT_DIR}/common.sh
+
+print_msg "\nChecking prerequisites ..."
+check_prerequisites
+
 # Env vars
 CLEANUP_ON_ERROR=${CLEANUP_ON_ERROR:=false}
 CLEANUP_ON_SUCCESS=${CLEANUP_ON_SUCCESS:=false}
@@ -8,6 +14,7 @@ NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 SETUP_LOGGING="${SETUP_LOGGING:-true}"
 SETUP_MONITORING="${SETUP_MONITORING:-true}"
 
+IPS_PER_SUBNET=${IPS_PER_SUBNET:=1024}
 
 # Generate a short uuid for some resources
 uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
@@ -16,12 +23,16 @@ uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 resource_group_name="${NAME_PREFIX}--rg"
 ce_project_name="${NAME_PREFIX}--ce-project"
 vpc_name="${NAME_PREFIX}--is-vpc"
-apikey_name="${NAME_PREFIX}--apikey"
 sshkey_name="${NAME_PREFIX}--sshkey"
 cos_name="${NAME_PREFIX}--cos"
 cos_bucket_name_taskstore="${NAME_PREFIX}-taskstore-${uuid}"
 cos_bucket_name_input="${NAME_PREFIX}-input-${uuid}"
 cos_bucket_name_output="${NAME_PREFIX}-output-${uuid}"
+
+vpegw_icr=${NAME_PREFIX}--is-vpegw-icr
+vpegw_cos=${NAME_PREFIX}--is-vpegw-cos
+vpegw_icl=${NAME_PREFIX}--is-vpegw-icl
+vpegw_monitoring=${NAME_PREFIX}--is-vpegw-monitoring
 
 cos_key_name="${NAME_PREFIX}--cos-key"
 icl_name="${NAME_PREFIX}--icl"
@@ -32,9 +43,6 @@ sysdig_key_name="${NAME_PREFIX}--sysdig-key"
 # COMMON FUNCTIONS
 # ==============================
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-source ${SCRIPT_DIR}/common.sh
-
 # Clean up previous run
 function clean() {
     (
@@ -44,23 +52,34 @@ function clean() {
         rm -rf .rclone_${resource_group_name}.conf
 
         if [[ "$SETUP_MONITORING" == "true" ]]; then
+            ibmcloud is endpoint-gateway-delete ${sysdig_name}-vpegw --force 2>/dev/null
+            ibmcloud is endpoint-gateway-delete ${vpegw_monitoring} --force 2>/dev/null
             ibmcloud resource service-key-delete ${sysdig_key_name} -f -q 2>/dev/null
             ibmcloud resource service-instance-delete ${sysdig_name} -g ${resource_group_name} -f -q 2>/dev/null
-            ibmcloud is endpoint-gateway-delete ${sysdig_name}-vpegw --force 2>/dev/null
         fi
 
         if [[ "$SETUP_LOGGING" == "true" ]]; then
             ibmcloud iam service-id-delete "${icl_name}-svc-id" -f 2>/dev/null
             ibmcloud is endpoint-gateway-delete "${icl_name}-vpegw" --force 2>/dev/null
+            ibmcloud is endpoint-gateway-delete ${vpegw_icl} --force 2>/dev/null
             ibmcloud resource service-instance-delete "$icl_name" -g ${resource_group_name} -f -q 2>/dev/null
         fi
 
-        ibmcloud iam api-key-delete ${apikey_name} --force 2>/dev/null
+        ibmcloud is endpoint-gateway-delete "${vpegw_icr}" --force 2>/dev/null
+        ibmcloud is endpoint-gateway-delete "${vpegw_cos}" --force 2>/dev/null
 
         ibmcloud is key-delete ${sshkey_name} --force 2>/dev/null
+        
+        # START Remove old legacy components
+        ibmcloud is subnet-public-gateway-detach $vpc_name-subnet --force 2>/dev/null
         ibmcloud is subnet-delete $vpc_name-subnet --force 2>/dev/null
-        ibmcloud is network-acl-delete $vpc_name-acl --force 2>/dev/null
         ibmcloud is public-gateway-delete $vpc_name-gateway --force 2>/dev/null
+        # END Remove old legacy components
+
+        ibmcloud is subnet-delete $vpc_name-subnet-1 --force 2>/dev/null
+        ibmcloud is subnet-delete $vpc_name-subnet-2 --force 2>/dev/null
+        ibmcloud is subnet-delete $vpc_name-subnet-3 --force 2>/dev/null
+        ibmcloud is network-acl-delete $vpc_name-acl --force 2>/dev/null
         ibmcloud is security-group-delete $vpc_name-group --force 2>/dev/null
         ibmcloud is vpc-delete $vpc_name --force 2>/dev/null
         while [ $? == 0 ]; do
@@ -95,6 +114,9 @@ function clean() {
         fi
 
         ibmcloud resource group-delete $resource_group_name --force 2>/dev/null
+
+        # In case this cleanup script hasn't been executed for a while, delete artifacts that are not longer relevant
+        ibmcloud iam api-key-delete "${NAME_PREFIX}--apikey" --force 2>/dev/null
     )
 }
 
@@ -108,8 +130,6 @@ function abortScript() {
     fi
     exit 1
 }
-
-
 
 if [[ "$1" == "clean" ]]; then
     print_msg "\nCleaning up the created IBM Cloud resources ..."
@@ -144,9 +164,6 @@ fi
 
 echo ""
 echo "Please note: This script will install various IBM Cloud resources within the resource group '$resource_group_name'."
-
-print_msg "\nChecking prerequisites ..."
-check_prerequisites
 
 
 # Ensure that latest versions of used IBM Cloud ClI is installed
@@ -190,6 +207,7 @@ else
     icl_guid=$(echo "$icl_instance"|jq -r '.[0].guid')
     icl_crn=$(echo "$icl_instance"|jq -r '.[0].crn')
     icl_ingestion_host=$(echo "$icl_instance"|jq -r '.[0].extensions.external_ingress_private')
+    icl_ingestion_host_public=$(echo "$icl_instance"|jq -r '.[0].extensions.external_ingress')
     icl_dashboard_url=$(echo "$icl_instance"|jq -r '.[0].dashboard_url')
     
     if ! does_serviceid_exist "${icl_name}-svc-id"; then 
@@ -207,6 +225,44 @@ else
         icl_ingestion_apikey=$(ibmcloud iam service-api-key-create logs-ingestion-key "${icl_name}-svc-id" --description "API key to ingest logs into IBM Cloud Logs instance: '${icl_guid}'" --output JSON|jq -r '.apikey')
         if [ $? -ne 0 ]; then
             print_error "IAM ServiceID APIkey creation failed!"
+            abortScript
+        fi
+    fi
+
+    print_msg "\nSetting up S2S policy to allow logs-router to send logs to ICL ..."
+    s2s_authorization=$(ibmcloud iam authorization-policies -o JSON|jq -r '.[]|select((.resources[].attributes[].value=="logs") and (.roles[].display_name=="Sender") and (.subjects[].attributes[].value=="logs-router"))|.id')
+    if [[ "$s2s_authorization" != "" ]]; then
+        echo "Already set!"
+    else
+        ibmcloud iam authorization-policy-create logs-router logs Sender
+        if [ $? -ne 0 ]; then
+            print_error "Creation of IAM S2S policy to enable logs router failed!"
+            abortScript
+        fi
+    fi 
+
+    print_msg "\nSetting up platform logs instance for logs in $REGION ..."
+    IAM_TOKEN=`ibmcloud iam oauth-tokens --output json | jq -r '.iam_token'`
+    tenants=$(curl -H "Content-Type: application/json" --silent -H "Authorization: ${IAM_TOKEN}" -H 'IBM-API-Version: 2025-03-01' -X GET https://management.$REGION.logs-router.cloud.ibm.com:443/v1/tenants)
+    if (( $(echo "$tenants" | jq '.tenants|length') > 0 )); then
+        echo "Platform logging instance is already set!"
+    else
+        uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+        curl -H "Content-Type: application/json" -H "Authorization: ${IAM_TOKEN}" -H 'IBM-API-Version: 2025-03-01' --data "{
+            \"name\": \"${REGION}-tenant-${uuid}\",
+            \"targets\": [
+                {
+                    \"log_sink_crn\": \"${icl_crn}\",
+                    \"name\": \"target-${uuid}\",
+                    \"parameters\": {
+                        \"host\": \"${icl_ingestion_host_public}\",
+                        \"port\": 443
+                    }
+                }
+            ]
+        }" -X POST https://management.$REGION.logs-router.cloud.ibm.com:443/v1/tenants 
+        if [ $? -ne 0 ]; then
+            print_error "Failed to configure logs routing!"
             abortScript
         fi
     fi
@@ -273,17 +329,6 @@ if ! ibmcloud is vpc $vpc_name >/dev/null 2>&1; then
 fi
 
 #
-# Create the Public gateway
-if ! ibmcloud is public-gateway $vpc_name-gateway $vpc_name >/dev/null 2>&1; then
-    print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway' ..."
-    ibmcloud is public-gateway-create $vpc_name-gateway $vpc_name $REGION-1 --resource-group-name $resource_group_name
-    if [ $? -ne 0 ]; then
-        print_error "VPC Public gateway creation failed!"
-        abortScript
-    fi
-fi
-
-#
 # Create the Network ACL
 if ! ibmcloud is network-acl $vpc_name-acl $vpc_name >/dev/null 2>&1; then
     print_msg "\nCreating the VPC Network ACL '$vpc_name-acl' ..."
@@ -295,16 +340,65 @@ if ! ibmcloud is network-acl $vpc_name-acl $vpc_name >/dev/null 2>&1; then
 fi
 
 #
-# Create the VPC subnet
-if ! ibmcloud is subnet $vpc_name-subnet $vpc_name >/dev/null 2>&1; then
-    print_msg "\nCreating the VPC Subnet '$vpc_name-subnet' ..."
-    ibmcloud is subnet-create $vpc_name-subnet $vpc_name --zone $REGION-1 --resource-group-name $resource_group_name --ipv4-address-count 256 --pgw $vpc_name-gateway --acl $vpc_name-acl
-    if [ $? -ne 0 ]; then
-        print_error "VPC Subnet creation failed!"
-        abortScript
-    fi
+# Cleanup the old single-zone subnet and public gateway
+print_msg "\nCleanup old VPC components from previous versions of this script"
+if ibmcloud is subnet-public-gateway $vpc_name-subnet >/dev/null 2>&1; then
+    ibmcloud is subnet-public-gateway-detach $vpc_name-subnet --force 2>/dev/null
+fi
+if ibmcloud is public-gateway $vpc_name-gateway >/dev/null 2>&1; then
+    ibmcloud is public-gateway-delete $vpc_name-gateway --force 2>/dev/null
+fi
+if ibmcloud is endpoint-gateway "${icl_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+    ibmcloud is endpoint-gateway-delete "${icl_name}-vpegw" --force 2>/dev/null
+fi
+if ibmcloud is endpoint-gateway "${sysdig_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+    ibmcloud is endpoint-gateway-delete "${sysdig_name}-vpegw" --force 2>/dev/null
+fi
+if ibmcloud is subnet $vpc_name-subnet $vpc_name >/dev/null 2>&1; then
+    ibmcloud is subnet-delete $vpc_name-subnet --force 2>/dev/null
 fi
 
+#
+# Create the VPC subnet(s)
+for i in {1..3}
+do
+    if ! ibmcloud is subnet $vpc_name-subnet-$i $vpc_name >/dev/null 2>&1; then
+        print_msg "\nCreating the VPC Subnet '$vpc_name-subnet-$i' ..."
+        ibmcloud is subnet-create $vpc_name-subnet-$i $vpc_name --zone $REGION-$i --resource-group-name $resource_group_name --ipv4-address-count $IPS_PER_SUBNET --acl $vpc_name-acl
+        if [ $? -ne 0 ]; then
+            print_error "VPC Subnet creation failed!"
+            abortScript
+        fi
+    fi
+
+    #
+    # Create a public gateway in all three zones
+    if ! ibmcloud is public-gateway $vpc_name-gateway-$i $vpc_name >/dev/null 2>&1; then
+        print_msg "\nCreating the VPC Public gateway '$vpc_name-gateway-$i' ..."
+        ibmcloud is public-gateway-create $vpc_name-gateway-$i $vpc_name $REGION-$i --resource-group-name $resource_group_name
+        if [ $? -ne 0 ]; then
+            print_error "VPC Public gateway in zone $i creation failed!"
+            abortScript
+        fi
+    fi
+
+    # 
+    # Attach a public gateway to all three subnets
+    if ! ibmcloud is subnet-public-gateway $vpc_name-subnet-$i >/dev/null 2>&1; then
+        print_msg "\nAttaching the Public gateway '$vpc_name-gateway-$i' to subnet '$vpc_name-subnet-$i' ..."
+        ibmcloud is subnet-public-gateway-attach $vpc_name-subnet-$i --pgw $vpc_name-gateway-$i
+        if [ $? -ne 0 ]; then
+            print_error "Attaching a public gateway to the subnet $vpc_name-subnet-$i failed!"
+            abortScript
+        fi
+    fi
+done
+
+subnet_id_1=$(ibmcloud is subnet $vpc_name-subnet-1 --vpc $vpc_name --output JSON | jq -r '.id')
+subnet_id_2=$(ibmcloud is subnet $vpc_name-subnet-2 --vpc $vpc_name --output JSON | jq -r '.id')
+subnet_id_3=$(ibmcloud is subnet $vpc_name-subnet-3 --vpc $vpc_name --output JSON | jq -r '.id')
+
+#
 # Create the security group and its rules
 if ! ibmcloud is security-group $vpc_name-group $vpc_name >/dev/null 2>&1; then
     print_msg "\nCreating the VPC Security group '$vpc_name-group' ..."
@@ -316,6 +410,9 @@ if ! ibmcloud is security-group $vpc_name-group $vpc_name >/dev/null 2>&1; then
 
     print_msg "\nCreating required VPC Security group rules ..."
     ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 0.0.0.0/0 --vpc $vpc_name >/dev/null
+    ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 161.26.0.0/16 --vpc $vpc_name >/dev/null
+    ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote 166.8.0.0/14 --vpc $vpc_name >/dev/null
+    ibmcloud is security-group-rule-add $vpc_name-group outbound all --remote $vpc_name-group --vpc $vpc_name >/dev/null
     ibmcloud is security-group-rule-add $vpc_name-group inbound all --remote $vpc_name-group --vpc $vpc_name >/dev/null
     echo "Done"
 
@@ -324,18 +421,58 @@ if ! ibmcloud is security-group $vpc_name-group $vpc_name >/dev/null 2>&1; then
 fi
 
 #
+# Creating the VPE Gateway for ICR
+if ! ibmcloud is endpoint-gateway "$vpegw_icr" --vpc $vpc_name >/dev/null 2>&1; then
+    ibmcloud cr region-set $REGION
+    registry_endpoint=$(ibmcloud cr info|grep -m 1 "Container Registry"|awk '{print $3}')
+    print_msg "\nCreating a VPE Gateway to enable Image pulls from ICR (endpoint: ${registry_endpoint})..."
+    ibmcloud is endpoint-gateway-create \
+        --vpc $vpc_name \
+        --sg $vpc_name-group \
+        --target "crn:v1:bluemix:public:container-registry:$REGION:::endpoint:${registry_endpoint}" \
+        --name "$vpegw_icr" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_icr}-ip-1\",\"auto_delete\":true}" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_icr}-ip-2\",\"auto_delete\":true}" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_icr}-ip-3\",\"auto_delete\":true}" \
+        --allow-dns-resolution-binding false
+    if [ $? -ne 0 ]; then
+        print_error "ICR VPE Gateway creation failed!"
+        abortScript
+    fi
+fi
+
+#
+# Creating the VPE Gateway for COS
+if ! ibmcloud is endpoint-gateway "$vpegw_cos" --vpc $vpc_name >/dev/null 2>&1; then
+    print_msg "\nCreating a VPE Gateway to access COS ..."
+    ibmcloud is endpoint-gateway-create \
+        --vpc $vpc_name \
+        --sg $vpc_name-group \
+        --target "crn:v1:bluemix:public:cloud-object-storage:global:::endpoint:s3.direct.$REGION.cloud-object-storage.appdomain.cloud" \
+        --name "$vpegw_cos" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_cos}-ip-1\",\"auto_delete\":true}" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_cos}-ip-2\",\"auto_delete\":true}" \
+        --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_cos}-ip-3\",\"auto_delete\":true}" \
+        --allow-dns-resolution-binding false
+    if [ $? -ne 0 ]; then
+        print_error "COS VPE Gateway creation failed!"
+        abortScript
+    fi
+fi
+
+#
 # Creating the VPE Gateway to enable log ingestion
 if [[ "$SETUP_LOGGING" == "true" ]]; then
-    if ! ibmcloud is endpoint-gateway "${icl_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+    if ! ibmcloud is endpoint-gateway "${vpegw_icl}" --vpc $vpc_name >/dev/null 2>&1; then
         print_msg "\nCreating a VPE Gateway to enable log ingestion ..."
-        subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
         ibmcloud is endpoint-gateway-create \
             --vpc $vpc_name \
-            --subnet $vpc_name-subnet \
             --sg $vpc_name-group \
             --target ${icl_crn} \
-            --name "${icl_name}-vpegw" \
-            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${icl_name}-vpegw-ip\",\"auto_delete\":false}" \
+            --name "${vpegw_icl}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_icl}-ip-1\",\"auto_delete\":true}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_icl}-ip-2\",\"auto_delete\":true}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_icl}-ip-3\",\"auto_delete\":true}" \
             --allow-dns-resolution-binding false
         if [ $? -ne 0 ]; then
             print_error "ICL VPE Gateway creation failed!"
@@ -345,16 +482,16 @@ if [[ "$SETUP_LOGGING" == "true" ]]; then
 fi
 
 if [[ "$SETUP_MONITORING" == "true" ]]; then
-    if ! ibmcloud is endpoint-gateway "${sysdig_name}-vpegw" --vpc $vpc_name >/dev/null 2>&1; then
+    if ! ibmcloud is endpoint-gateway "${vpegw_monitoring}" --vpc $vpc_name >/dev/null 2>&1; then
         print_msg "\nCreating a VPE Gateway to enable monitoring ingestion ..."
-        subnet_id=$(ibmcloud is subnet $vpc_name-subnet --vpc $vpc_name --output JSON | jq -r '.id')
         ibmcloud is endpoint-gateway-create \
             --vpc $vpc_name \
-            --subnet $vpc_name-subnet \
             --sg $vpc_name-group \
             --target ${sysdig_crn} \
-            --name "${sysdig_name}-vpegw" \
-            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id}\"},\"name\":\"${sysdig_name}-vpegw-ip\",\"auto_delete\":false}" \
+            --name "${vpegw_sysdig}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_monitoring}-ip-1\",\"auto_delete\":true}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_monitoring}-ip-2\",\"auto_delete\":true}" \
+            --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_monitoring}-ip-3\",\"auto_delete\":true}" \
             --allow-dns-resolution-binding false
         if [ $? -ne 0 ]; then
             print_error "Monitoring VPE Gateway creation failed!"
@@ -456,7 +593,6 @@ registry_secret_ref=$(echo $icr_integration|jq -r '.secret_ref')
 registry_server=$(echo $icr_integration|jq -r '.server')
 echo "Registry secret '$registry_secret_ref' for images hosted on '$registry_server' has been created"
 
-## walk
 print_msg "\nCreating a Code Engine Persistant Data Store 'fleet-cos-secret' to access the COS bucket as the task state store ..."
 create_or_update=update
 if ! ibmcloud ce secret get --name fleet-cos-secret >/dev/null 2>&1; then
@@ -493,9 +629,14 @@ create_or_update=update
 if ! ibmcloud ce secret get --name codeengine-fleet-defaults >/dev/null 2>&1; then
     create_or_update=create
 fi
+security_group_crn="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.crn')"
 ibmcloud ce secret $create_or_update -n codeengine-fleet-defaults \
-    --from-literal pool_subnet_crn_1="$(ibmcloud is subnet ${vpc_name}-subnet --output json | jq -r '.crn')" \
-    --from-literal pool_security_group_crns_1="$(ibmcloud is security-group ${vpc_name}-group --output json | jq -r '.crn')"
+    --from-literal pool_subnet_crn_1="$(ibmcloud is subnet ${vpc_name}-subnet-1 --output json | jq -r '.crn')" \
+    --from-literal pool_security_group_crns_1="${security_group_crn}" \
+    --from-literal pool_subnet_crn_2="$(ibmcloud is subnet ${vpc_name}-subnet-2 --output json | jq -r '.crn')" \
+    --from-literal pool_security_group_crns_2="${security_group_crn}" \
+    --from-literal pool_subnet_crn_3="$(ibmcloud is subnet ${vpc_name}-subnet-3 --output json | jq -r '.crn')" \
+    --from-literal pool_security_group_crns_3="${security_group_crn}" 
 
 if [[ "$SETUP_LOGGING" == "true" && "$icl_ingestion_apikey" != "" ]]; then
     print_msg "\nMake sure logs are sent to '${icl_ingestion_host}' ..."
