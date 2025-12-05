@@ -30,6 +30,12 @@ function check_prerequisites {
         print_error "'jq' tool is not installed"
         exit 1
     fi
+
+    # Ensure that uuidgen tool is installed
+    if ! command -v uuidgen &>/dev/null; then
+        print_error "'uuidgen' tool is not installed"
+        exit 1
+    fi
 }
 
 # ==============================

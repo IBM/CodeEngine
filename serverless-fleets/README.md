@@ -82,9 +82,9 @@ Switch to the `serverless-fleets` directory, which will be the root directory fo
 
 To run this end-to-end sample, open a terminal, [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
-Install the Code Engine CLI with the latest version and enable fleets:
+Install the Code Engine CLI with the latest version:
 ```
-CE_EXPERIMENTAL_FLEET=true ibmcloud plugin install code-engine -f --quiet
+ibmcloud plugin install code-engine -f --quiet
 ```
 
 If you don't have a fleet sandbox, choose one of the two methods to create one.
@@ -572,10 +572,10 @@ If you need to end your fleet's processing before it ran to completion, or to ge
 Run the following command to delete a single worker:
 
 ```
-ibmcloud ce exp fleet worker delete -n <worker-name>
+ibmcloud ce fleet worker delete -n <worker-name>
 ```
 
 Run the following command to delete all workers in your project:
 ```
-ibmcloud ce exp fleet worker list | grep "fleet-" | awk '{print $1}' | xargs -L1 -I {} ibmcloud ce exp fleet worker delete --name {} -f
+ibmcloud ce fleet worker list | grep "fleet-" | awk '{print $1}' | xargs -L1 -I {} ibmcloud ce fleet worker delete --name {} -f
 ```
