@@ -46,6 +46,12 @@ function check_prerequisites {
         print_error "'jq' tool is not installed"
         exit 1
     fi
+
+    # Ensure that openssl tool is installed
+    if ! command -v openssl &>/dev/null; then
+        print_error "'openssl' tool is not installed"
+        exit 1
+    fi
 }
 
 # helper function to check whether IBM Cloud CLI plugins should get updated, or not
@@ -381,32 +387,26 @@ fi
 project_guid=$(ibmcloud ce project current --output json | jq -r '.guid')
 
 #
-# Obtain the kube context of the current project
-print_msg "\nObtain the kube context of the Code Engine project '$ce_project_name' ..."
-ibmcloud ce project select --name $ce_project_name --kubecfg
-
-#
 # Create the private path integration
+
 ce_vpegatewayconnection_name=guestbook-integration
-kubectl apply -f - <<EOF
-apiVersion: codeengine.cloud.ibm.com/v1beta1
-kind: VpeGatewayConnection
-metadata:
-  name: $ce_vpegatewayconnection_name
-spec:
-  target:
-    crn: $pps_instance_crn
-    resourceType: private_path_service_gateway
-EOF
+ibmcloud ce connectivity outbound create \
+    --name $ce_vpegatewayconnection_name \
+    --format private_path_service_gateway \
+    --pps-crn $pps_instance_crn
+if [ $? -ne 0 ]; then
+    print_error "Failed to create the private path gateway!"
+    abortScript
+fi
 
 print_msg "\nWaiting for the Private Path integration '$ce_vpegatewayconnection_name' to become ready ..."
 COUNTER=0
-while ! [[ $(kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o JSON|jq -r '.status|.conditions|.[]|select(.type=="Ready")|.status') == "True" ]]; do
+while ! [[ $(ibmcloud ce connectivity outbound get -n $ce_vpegatewayconnection_name -o json|jq -r '.status') == "ready" ]]; do
     sleep 5
     COUNTER=$((COUNTER + 1))
     if ((COUNTER > 30)); then
-        kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o YAML
-        print_error "The Private Path integration does not became ready as expected. Perform 'kubectl get vpegatewayconnection $ce_vpegatewayconnection_name -o yaml' for further details."
+        ibmcloud ce connectivity outbound get -n $ce_vpegatewayconnection_name -o json
+        print_error "The Private Path integration does not became ready as expected. Perform 'ibmcloud ce connectivity outbound get -n $ce_vpegatewayconnection_name -o json' for further details."
         abortScript
     fi
 done
