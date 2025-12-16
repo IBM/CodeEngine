@@ -1,7 +1,7 @@
 accelerate==1.6.0
 certifi==2025.4.26
 charset-normalizer==3.4.2
-filelock==3.18.0
+filelock==3.20.1
 fsspec==2025.3.2
 hf-xet==1.1.0
 huggingface-hub==0.31.1
