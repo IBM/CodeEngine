@@ -245,7 +245,7 @@ ibmcloud is security-group $vpc_name-group
 # Create the origin server VSI
 print_msg "\nCreating the VPC VSI '$vsi_originserver_name', which acts as the origin server ..."
 ibmcloud is instance-create $vsi_originserver_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
-    --image ibm-centos-stream-9-amd64-6 \
+    --image ibm-centos-stream-10-amd64-5 \
     --boot-volume "{\"name\": \"boot-vol-attachment-name\", \"volume\": {\"name\": \"$vsi_originserver_name-boot-vol\", \"capacity\": 100, \"profile\": {\"name\": \"general-purpose\"}}, \"delete_volume_on_instance_delete\": true}" \
     --resource-group-name $resource_group_name \
     --host-failure-policy restart \
@@ -321,7 +321,7 @@ fi
 
 # Create a LB pool 
 print_msg "\nCreating the VPC Network load balancer pool '$vpc_name-ppnlb-pg-pool' ..."
-ibmcloud is load-balancer-pool-create $vpc_name-ppnlb-pg-pool $vpc_name-ppnlb weighted_round_robin tcp 10 2 5 tcp
+ibmcloud is load-balancer-pool-create $vpc_name-ppnlb-pg-pool $vpc_name-ppnlb weighted_round_robin tcp 10 2 5 tcp --health-monitor-port 80
 if [ $? -ne 0 ]; then
     print_error "VPC Network load balancer pool creation failed!"
     abortScript
@@ -329,7 +329,7 @@ fi
 
 # Create a LB member
 print_msg "\nAdd the VSI '$vsi_originserver_name' as a member to the load balancer pool '$vpc_name-ppnlb-pg-pool' ..."
-ibmcloud is load-balancer-pool-member-create $vpc_name-ppnlb $vpc_name-ppnlb-pg-pool 5432 $vsi_originserver_name --weight 70
+ibmcloud is load-balancer-pool-member-create $vpc_name-ppnlb $vpc_name-ppnlb-pg-pool 5432 $vsi_originserver_name
 if [ $? -ne 0 ]; then
     print_error "Adding the VSI '$vsi_originserver_name' as a member to the load balancer pool failed!"
     abortScript
