@@ -23,4 +23,4 @@ torch==2.8.0
 tqdm==4.67.1
 transformers @ git+https://www.github.com/huggingface/transformers@a5c6172c81d69a6fa2c3b1340d72fc669b941dcd
 typing_extensions==4.13.2
-urllib3==2.5.0
+urllib3==2.6.0
