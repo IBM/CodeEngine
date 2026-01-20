@@ -20,12 +20,13 @@ const logger = getCodeEngineLogger("your-logger").child({ correlationId: process
 process.stdout.write('1.This is a unstructured log message without a severity identifier\n');
 process.stdout.write('2.This is a unstructured log message with a severity identifier INFO \n');
 process.stdout.write('3.This is a unstructured log message with a severity identifier ERROR \n');
+process.stderr.write('4.This is a unstructured log message with a severity identifier ERROR \n');
 
 
-logger.info("4.This is a structured log message");
-logger.debug("5.This is a structured log message");
-logger.warn("6.This is a structured log message");
-logger.error("7.This is a structured log message");
+logger.info("5.This is a structured log message");
+logger.debug("6.This is a structured log message");
+logger.warn("7.This is a structured log message");
+logger.error("8.This is a structured log message");
 
 logger.debug("A structured log entry", {
   extra_key: "extra_value",
