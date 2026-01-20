@@ -16,10 +16,16 @@ function getCodeEngineLogger(componentName) {
 
 const logger = getCodeEngineLogger("your-logger").child({ correlationId: process.env.CE_JOBRUN });
 
-logger.info("This is a structured log message");
-logger.debug("This is a structured log message");
-logger.warn("This is a structured log message");
-logger.error("This is a structured log message");
+//write example unstructured log 
+process.stdout.write('1.This is a unstructured log message without a severity identifier\n');
+process.stdout.write('2.This is a unstructured log message with a severity identifier INFO \n');
+process.stdout.write('3.This is a unstructured log message with a severity identifier ERROR \n');
+
+
+logger.info("4.This is a structured log message");
+logger.debug("5.This is a structured log message");
+logger.warn("6.This is a structured log message");
+logger.error("7.This is a structured log message");
 
 logger.debug("A structured log entry", {
   extra_key: "extra_value",
