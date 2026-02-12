@@ -1,0 +1,97 @@
+global:
+  scrape_interval: 30s
+  external_labels:
+    code_engine_project_name: 'my-project-name'
+
+scrape_configs:
+  - job_name: 'codeengine-metrics-collector'
+    static_configs:
+      - targets: ['localhost:9100']
+    relabel_configs:
+      # Add project name label
+      - source_labels: [job]
+        action: replace
+        regex: (.+)
+        replacement: 'my-project-name'
+        target_label: code_engine_project_name
+
+  - job_name: 'kubernetes-pods'
+    fallback_scrape_protocol: PrometheusText0.0.4
+    kubernetes_sd_configs:
+    - api_server: 'https://172.21.0.1'
+      role: pod
+      namespaces:
+        names:
+          - ${CE_SUBDOMAIN}
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+    # only scrape when annotation prometheus.io/scrape: 'true' is set
+    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+      action: keep
+      regex: true
+    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+      action: replace
+      target_label: __metrics_path__
+      regex: (.+)
+    - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+      action: replace
+      regex: (.+):(?:\d+);(\d+)
+      replacement: ${1}:${2}
+      target_label: __address__
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    # rename importan meta data labels
+    - source_labels: [__meta_kubernetes_namespace]
+      action: replace
+      target_label: code_engine_project_namespace
+    - source_labels: [job]
+      action: replace
+      regex: (.+)
+      replacement: 'my-project-name'
+      target_label: code_engine_project_name
+    - source_labels: [__meta_kubernetes_pod_name]
+      action: replace
+      target_label: code_engine_instance_name
+    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_service]
+      action: replace
+      target_label: code_engine_component_name
+    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_configuration]
+      action: replace
+      regex: (.+)
+      replacement: app
+      target_label: code_engine_component_type
+    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revision]
+      action: replace
+      target_label: code_engine_subcomponent_name
+    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revisionUID]
+      action: replace
+      regex: (.+)
+      replacement: app_revision
+      target_label: code_engine_subcomponent_type
+    # drop codeengine, istio, and knative labels
+    - action: labeldrop
+      regex: "codeengine_cloud_ibm_com_(.+)"
+    - action: labeldrop
+      regex: "security_istio_io_(.+)"
+    - action: labeldrop
+      regex: "service_istio_io_(.+)"
+    - action: labeldrop
+      regex: "serving_knative_dev_(.+)"
+    # drop default prometheus labels
+    - action: labeldrop
+      regex: "instance"
+    - action: labeldrop
+      regex: "job"
+    - action: labeldrop
+      regex: "pod_template_hash"
+    - action: labeldrop
+      regex: "app"
+#
+# Define IBM Cloud monitoring as the remote write target 
+#
+remote_write:
+- url: https://${METRICS_REMOTE_WRITE_FQDN}/prometheus/remote/write
+  authorization:
+    credentials_file: "/etc/secrets/monitoring-apikey"

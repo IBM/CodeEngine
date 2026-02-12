@@ -1,0 +1,645 @@
+{
+  "name": "IBM Code Engine - Container Resource Overview",
+  "description": "Overview of Code Engine container resource usage: CPU/memory current vs limits, with filtering by component_type and component_name",
+  "public": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "name": "Dashboard Overview",
+      "description": "",
+      "markdownSource": "## Code Engine Container Resources\n\nMonitor CPU, memory, and ephemeral storage usage across Code Engine containers.\n\n**Use the scope filters above to narrow by:**\n- `component_type` (app, job, function)\n- `component_name` (specific app/job name)\n- `namespace`\n- `pod_name`",
+      "transparentBackground": false,
+      "panelTitleVisible": true,
+      "textAutosized": false
+    },
+    {
+      "id": 2,
+      "type": "advancedTimechart",
+      "name": "CPU Usage vs Limit (per Pod)",
+      "description": "Current CPU usage compared to configured limits",
+      "advancedQueries": [
+        {
+          "query": "ibm_codeengine_instance_cpu_usage_millicores",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "CPU Usage",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} usage",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        },
+        {
+          "query": "ibm_codeengine_instance_cpu_limit_millicores",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "CPU Limit",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} limit",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "advancedTimechart",
+      "name": "Memory Usage vs Limit (per Pod)",
+      "description": "Current memory usage compared to configured limits",
+      "advancedQueries": [
+        {
+          "query": "ibm_codeengine_instance_memory_usage_bytes",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Memory Usage",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} usage",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "byte",
+            "inputFormat": "B",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        },
+        {
+          "query": "ibm_codeengine_instance_memory_limit_bytes",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Memory Limit",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} limit",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "byte",
+            "inputFormat": "B",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "advancedTimechart",
+      "name": "Ephemeral Storage Usage vs Limit (per Pod)",
+      "description": "Current ephemeral storage usage compared to configured limits",
+      "advancedQueries": [
+        {
+          "query": "ibm_codeengine_instance_ephemeral_storage_usage_bytes",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Storage Usage",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} usage",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "byte",
+            "inputFormat": "B",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        },
+        {
+          "query": "ibm_codeengine_instance_ephemeral_storage_limit_bytes",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Storage Limit",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{pod_name}} limit",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "byte",
+            "inputFormat": "B",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "advancedTimechart",
+      "name": "CPU Utilization % (by Component)",
+      "description": "CPU usage as percentage of limit, grouped by component_name",
+      "advancedQueries": [
+        {
+          "query": "(sum by (component_name) (ibm_codeengine_instance_cpu_usage_millicores) / sum by (component_name) (ibm_codeengine_instance_cpu_limit_millicores)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "CPU %",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "%",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "%",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "advancedTimechart",
+      "name": "Memory Utilization % (by Component)",
+      "description": "Memory usage as percentage of limit, grouped by component_name",
+      "advancedQueries": [
+        {
+          "query": "(sum by (component_name) (ibm_codeengine_instance_memory_usage_bytes) / sum by (component_name) (ibm_codeengine_instance_memory_limit_bytes)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Memory %",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "advancedTimechart",
+      "name": "Ephemeral Storage Utilization % (by Component)",
+      "description": "Storage usage as percentage of limit, grouped by component_name",
+      "advancedQueries": [
+        {
+          "query": "(sum by (component_name) (ibm_codeengine_instance_ephemeral_storage_usage_bytes) / sum by (component_name) (ibm_codeengine_instance_ephemeral_storage_limit_bytes)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Storage %",
+            "timeSeriesDisplayNameTemplate": "{{component_name}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "bottom",
+        "layout": "table",
+        "showCurrent": true
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "advancedNumber",
+      "name": "Total CPU Utilization %",
+      "description": "Overall CPU utilization across all containers",
+      "advancedQueries": [
+        {
+          "query": "(sum(ibm_codeengine_instance_cpu_usage_millicores) / sum(ibm_codeengine_instance_cpu_limit_millicores)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "CPU %",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "values": [
+          {
+            "severity": "info",
+            "value": "80",
+            "inputFormat": "0-100",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "%",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "0-100",
+          "maxInputFormat": "0-100",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0.0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "advancedNumber",
+      "name": "Total Memory Utilization %",
+      "description": "Overall memory utilization across all containers",
+      "advancedQueries": [
+        {
+          "query": "(sum(ibm_codeengine_instance_memory_usage_bytes) / sum(ibm_codeengine_instance_memory_limit_bytes)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Memory %",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "values": [
+          {
+            "severity": "info",
+            "value": "80",
+            "inputFormat": "0-100",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "advancedNumber",
+      "name": "Total Storage Utilization %",
+      "description": "Overall ephemeral storage utilization across all containers",
+      "advancedQueries": [
+        {
+          "query": "(sum(ibm_codeengine_instance_ephemeral_storage_usage_bytes) / sum(ibm_codeengine_instance_ephemeral_storage_limit_bytes)) * 100",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Storage %",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "%",
+            "inputFormat": "0-100",
+            "displayFormat": "auto",
+            "decimals": 1,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "values": [
+          {
+            "severity": "info",
+            "value": "80",
+            "inputFormat": "0-100",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    }
+  ],
+  "scopeExpressionList": [],
+  "layout": [
+    {
+      "panelId": 1,
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 3
+    },
+    {
+      "panelId": 2,
+      "x": 0,
+      "y": 3,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 3,
+      "x": 12,
+      "y": 3,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 4,
+      "x": 0,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 5,
+      "x": 12,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 6,
+      "x": 0,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 7,
+      "x": 12,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 8,
+      "x": 0,
+      "y": 21,
+      "w": 8,
+      "h": 4
+    },
+    {
+      "panelId": 9,
+      "x": 8,
+      "y": 21,
+      "w": 8,
+      "h": 4
+    },
+    {
+      "panelId": 10,
+      "x": 16,
+      "y": 21,
+      "w": 8,
+      "h": 4
+    }
+  ],
+  "schema": 3
+}

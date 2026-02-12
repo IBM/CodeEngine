@@ -49,11 +49,147 @@ $ ibmcloud ce subscription cron create \
     --schedule '*/1 * * * *'
 ```
 
+## Send metrics to IBM Cloud Monitoring
+
+When `METRICS_ENABLED=true`, the metrics collector runs an embedded Prometheus agent that scrapes metrics from the local `/metrics` endpoint and forwards them to IBM Cloud Monitoring.
+
+### Prerequisites
+
+1. **IBM Cloud Monitoring Instance**: You need an IBM Cloud Monitoring instance with an API key
+2. **Code Engine Project**: The collector must run in a Code Engine project
+
+### Setup Instructions
+
+**Step 1: Create a secret with your IBM Cloud Monitoring API key**
+```bash
+ibmcloud ce secret create --name monitoring-apikey --from-literal monitoring-apikey=<YOUR_IBM_CLOUD_MONITORING_API_KEY>
+```
+
+**Step 2: Determine your IBM Cloud Monitoring ingestion endpoint**
+
+The `METRICS_REMOTE_WRITE_FQDN` depends on your IBM Cloud Monitoring instance region:
+- **US South (Dallas)**: `ingest.prws.us-south.monitoring.cloud.ibm.com`
+- **US East (Washington DC)**: `ingest.prws.us-east.monitoring.cloud.ibm.com`
+- **EU Central (Frankfurt)**: `ingest.prws.eu-de.monitoring.cloud.ibm.com`
+- **EU GB (London)**: `ingest.prws.eu-gb.monitoring.cloud.ibm.com`
+- **JP Tokyo**: `ingest.prws.jp-tok.monitoring.cloud.ibm.com`
+- **AU Sydney**: `ingest.prws.au-syd.monitoring.cloud.ibm.com`
+
+**Step 3: Update your job with the required configuration**
+```bash
+ibmcloud ce job create \
+    --name metrics-collector \
+    --src "." \
+    --mode daemon \
+    --cpu 0.25 \
+    --memory 0.5G \
+    --build-size xlarge \
+    --env INTERVAL=30 \
+    --env METRICS_ENABLED=true \
+    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.eu-es.monitoring.cloud.ibm.com \
+    --mount-secret /etc/secrets=monitoring-apikey
+```
+
+**Step 4: Submit a job run**
+```bash
+ibmcloud ce jobrun submit \
+    --job metrics-collector \
+    --env INTERVAL=30
+```
+
+### How It Works
+
+1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
+2. The embedded Prometheus agent scrapes these metrics every 15 seconds
+3. The agent also discovers and scrapes pods with the `prometheus.io/scrape: 'true'` annotation
+4. All metrics are forwarded to IBM Cloud Monitoring via remote write
+5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
+
+### Required Environment Variables for Prometheus Integration
+
+- **`METRICS_ENABLED=true`**: Enables the Prometheus agent
+- **`CE_SUBDOMAIN`**: Your Code Engine project's Kubernetes namespace (required when `METRICS_ENABLED=true`)
+- **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
+- **Secret Mount**: `/etc/secrets/monitoring-apikey` must contain your IBM Cloud Monitoring API key
+
+### Troubleshooting
+
+If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
+- Missing `/etc/secrets/monitoring-apikey` file
+- Missing `CE_SUBDOMAIN` environment variable
+- Missing `METRICS_REMOTE_WRITE_FQDN` environment variable
+
 ## Configuration
 
-Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`. 
+Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`.
 
-One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect the amount of disk space that is used. Please note, the metrics collector can only calculate the overall file size stored in the pods filesystem which includes files that are part of the container image, the epheremal storage as well as mounted COS buckets. Hence, this metric cannot be used to calculate the ephemeral storage usage. 
+### Environment Variables
+
+- **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected in daemon mode.
+- **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
+- **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
+- **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
+- **`JOB_MODE`** (default: daemon): Set to `task` for one-time collection or leave unset/daemon for continuous collection.
+
+## Prometheus Metrics Endpoint
+
+When running in **daemon mode** with **`METRICS_ENABLED=true`**, the metrics collector exposes an HTTP server on port 9100 (configurable via `METRICS_PORT`) with a `/metrics` endpoint that provides Prometheus-compatible metrics.
+
+**Note**: The HTTP server is only started when `METRICS_ENABLED=true`. When disabled, the collector continues to run and log metrics to stdout in JSON format, but does not expose the HTTP endpoint.
+
+### Accessing the Metrics Endpoint
+
+The metrics endpoint is available at `http://<pod-ip>:9100/metrics` and can be scraped by Prometheus or accessed directly.
+
+### Exposed Metrics
+
+The following Prometheus metrics are exposed as gauges:
+
+#### Container Metrics
+- **`ibm_codeengine_instance_cpu_usage_millicores`**: Current CPU usage in millicores
+- **`ibm_codeengine_instance_cpu_limit_millicores`**: Configured CPU limit in millicores
+- **`ibm_codeengine_instance_memory_usage_bytes`**: Current memory usage in bytes
+- **`ibm_codeengine_instance_memory_limit_bytes`**: Configured memory limit in bytes
+- **`ibm_codeengine_instance_ephemeral_storage_usage_bytes`**: Current ephemeral storage usage in bytes (if `COLLECT_DISKUSAGE=true`)
+
+#### Collector Self-Monitoring Metrics
+- **`ibm_codeengine_collector_collection_duration_seconds`**: Time taken to collect metrics in seconds
+- **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection
+- **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter)
+
+### Metric Labels
+
+All container metrics include the following labels:
+- `pod_name`: Name of the pod instance
+- `component_type`: Type of component (`app`, `job`, or `build`)
+- `component_name`: Name of the Code Engine component
+- `parent`: Parent resource (revision for apps, job-run for jobs, buildrun for builds)
+- `namespace`: Kubernetes namespace
+
+### Example Metrics Output
+
+```prometheus
+# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
+# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge
+ibm_codeengine_instance_cpu_usage_millicores{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp",parent="myapp-00001",namespace="default"} 250
+
+# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes
+# TYPE ibm_codeengine_instance_memory_usage_bytes gauge
+ibm_codeengine_instance_memory_usage_bytes{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp",parent="myapp-00001",namespace="default"} 134217728
+```
+
+### Prometheus Scrape Configuration
+
+To scrape metrics from the collector, add a scrape configuration to your Prometheus setup:
+
+```yaml
+scrape_configs:
+  - job_name: 'codeengine-metrics-collector'
+    static_configs:
+      - targets: ['<metrics-collector-pod-ip>:9100']
+```
+
+**Note**: The HTTP server is only started when `METRICS_ENABLED=true` and running in daemon mode (`JOB_MODE != "task"`). In task mode, metrics are collected once and logged to stdout without starting the HTTP server. When `METRICS_ENABLED` is not set to `true`, the collector runs in daemon mode but only logs metrics to stdout without exposing the HTTP endpoint.
 
 ## IBM Cloud Logs setup
 
@@ -71,7 +207,7 @@ Follow the steps below to create a custom dashboard in your IBM Cloud Logs insta
 
 ![New dashboard](./images/icl-dashboard-new.png)
 
-* In the "Import" modal, select the file [./setup/dashboard-code_engine_resource_consumption_metrics.json](./setup/dashboard-code_engine_resource_consumption_metrics.json) located in this repository, and click "Import"
+* In the "Import" modal, select the file [./setup/ibm-cloud-logs/dashboard-code_engine_resource_consumption_metrics.json](./setup/ibm-cloud-logs/dashboard-code_engine_resource_consumption_metrics.json) located in this repository, and click "Import"
 
 ![Import modal](./images/icl-dashboard-import.png)
 
