@@ -93,12 +93,10 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\",parent=\"%s\",namespace=\"%s\"",
+		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
 			escapeLabelValue(m.Name),
 			escapeLabelValue(m.ComponentType),
-			escapeLabelValue(m.ComponentName),
-			escapeLabelValue(m.Parent),
-			escapeLabelValue(namespace))
+			escapeLabelValue(m.ComponentName))
 		sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_cpu_usage_millicores{%s} %d\n", labels, m.Cpu.Current))
 	}
 	sb.WriteString("\n")
@@ -108,12 +106,10 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_limit_millicores gauge\n")
 	for _, m := range metrics {
 		if m.Cpu.Configured > 0 {
-			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\",parent=\"%s\",namespace=\"%s\"",
+			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
 				escapeLabelValue(m.Name),
 				escapeLabelValue(m.ComponentType),
-				escapeLabelValue(m.ComponentName),
-				escapeLabelValue(m.Parent),
-				escapeLabelValue(namespace))
+				escapeLabelValue(m.ComponentName))
 			sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_cpu_limit_millicores{%s} %d\n", labels, m.Cpu.Configured))
 		}
 	}
@@ -123,12 +119,10 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_usage_bytes gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\",parent=\"%s\",namespace=\"%s\"",
+		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
 			escapeLabelValue(m.Name),
 			escapeLabelValue(m.ComponentType),
-			escapeLabelValue(m.ComponentName),
-			escapeLabelValue(m.Parent),
-			escapeLabelValue(namespace))
+			escapeLabelValue(m.ComponentName))
 		// Convert MB to bytes
 		sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_memory_usage_bytes{%s} %d\n", labels, m.Memory.Current*1000*1000))
 	}
@@ -139,12 +133,10 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_limit_bytes gauge\n")
 	for _, m := range metrics {
 		if m.Memory.Configured > 0 {
-			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\",parent=\"%s\",namespace=\"%s\"",
+			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
 				escapeLabelValue(m.Name),
 				escapeLabelValue(m.ComponentType),
-				escapeLabelValue(m.ComponentName),
-				escapeLabelValue(m.Parent),
-				escapeLabelValue(namespace))
+				escapeLabelValue(m.ComponentName))
 			// Convert MB to bytes
 			sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_memory_limit_bytes{%s} %d\n", labels, m.Memory.Configured*1000*1000))
 		}
@@ -165,12 +157,10 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 		sb.WriteString("# TYPE ibm_codeengine_instance_ephemeral_storage_usage_bytes gauge\n")
 		for _, m := range metrics {
 			if m.DiskUsage.Current > 0 {
-				labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\",parent=\"%s\",namespace=\"%s\"",
+				labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
 					escapeLabelValue(m.Name),
 					escapeLabelValue(m.ComponentType),
-					escapeLabelValue(m.ComponentName),
-					escapeLabelValue(m.Parent),
-					escapeLabelValue(namespace))
+					escapeLabelValue(m.ComponentName))
 				// Convert MB to bytes
 				sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_ephemeral_storage_usage_bytes{%s} %d\n", labels, m.DiskUsage.Current*1000*1000))
 			}
@@ -178,24 +168,26 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 		sb.WriteString("\n")
 	}
 
-	// Write collector self-monitoring metrics
-	sb.WriteString("# HELP codeengine_collector_collection_duration_seconds Time taken to collect metrics in seconds\n")
-	sb.WriteString("# TYPE codeengine_collector_collection_duration_seconds gauge\n")
-	durationMs := collectorStats.lastCollectionDuration.Load()
-	sb.WriteString(fmt.Sprintf("codeengine_collector_collection_duration_seconds %.3f\n", float64(durationMs)/1000.0))
-	sb.WriteString("\n")
+	if os.Getenv("METRICS_INTERNAL_STATS") == "true" {
+		// Write collector self-monitoring metrics
+		sb.WriteString("# HELP codeengine_collector_collection_duration_seconds Time taken to collect metrics in seconds\n")
+		sb.WriteString("# TYPE codeengine_collector_collection_duration_seconds gauge\n")
+		durationMs := collectorStats.lastCollectionDuration.Load()
+		sb.WriteString(fmt.Sprintf("codeengine_collector_collection_duration_seconds %.3f\n", float64(durationMs)/1000.0))
+		sb.WriteString("\n")
 
-	sb.WriteString("# HELP codeengine_collector_last_collection_timestamp_seconds Unix timestamp of last successful collection\n")
-	sb.WriteString("# TYPE codeengine_collector_last_collection_timestamp_seconds gauge\n")
-	lastCollectionTime := collectorStats.lastCollectionTime.Load()
-	sb.WriteString(fmt.Sprintf("codeengine_collector_last_collection_timestamp_seconds %d\n", lastCollectionTime))
-	sb.WriteString("\n")
+		sb.WriteString("# HELP codeengine_collector_last_collection_timestamp_seconds Unix timestamp of last successful collection\n")
+		sb.WriteString("# TYPE codeengine_collector_last_collection_timestamp_seconds gauge\n")
+		lastCollectionTime := collectorStats.lastCollectionTime.Load()
+		sb.WriteString(fmt.Sprintf("codeengine_collector_last_collection_timestamp_seconds %d\n", lastCollectionTime))
+		sb.WriteString("\n")
 
-	sb.WriteString("# HELP codeengine_collector_collection_errors_total Total number of collection errors\n")
-	sb.WriteString("# TYPE codeengine_collector_collection_errors_total counter\n")
-	totalErrors := collectorStats.totalErrors.Load()
-	sb.WriteString(fmt.Sprintf("codeengine_collector_collection_errors_total %d\n", totalErrors))
-	sb.WriteString("\n")
+		sb.WriteString("# HELP codeengine_collector_collection_errors_total Total number of collection errors\n")
+		sb.WriteString("# TYPE codeengine_collector_collection_errors_total counter\n")
+		totalErrors := collectorStats.totalErrors.Load()
+		sb.WriteString(fmt.Sprintf("codeengine_collector_collection_errors_total %d\n", totalErrors))
+		sb.WriteString("\n")
+	}
 
 	return sb.String()
 }
@@ -746,5 +738,3 @@ func ToJSONString(obj interface{}) string {
 
 	return string(bytes)
 }
-
-// Made with Bob

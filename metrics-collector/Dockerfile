@@ -1,5 +1,5 @@
 # Stage 1: Build Go binary
-FROM quay.io/projectquay/golang:1.21 AS go-builder
+FROM quay.io/projectquay/golang:1.25 AS go-builder
 WORKDIR /go/src/app
 COPY go.mod go.sum ./
 RUN go mod download

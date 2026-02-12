@@ -6,7 +6,7 @@ Code Engine job that demonstrates how to collect resource metrics (CPU, memory a
 
 ## Installation
 
-### Capture metrics every n seconds
+## Capture metrics every n seconds
 
 * Create Code Engine job template
 ```
@@ -26,28 +26,6 @@ $ ibmcloud ce jobrun submit \
     --env INTERVAL=30 
 ```
 
-
-### Capture metrics every n minutes
-
-* Create Code Engine job template
-```
-$ ibmcloud ce job create \
-    --name metrics-collector \
-    --src . \
-    --mode task \
-    --cpu 0.25 \
-    --memory 0.5G \
-    --wait
-```
-
-* Submit a Code Engine cron subscription that triggers the metrics collector every minute to query the Metrics API
-```
-$ ibmcloud ce subscription cron create \
-    --name collect-metrics-every-minute \
-    --destination-type job \
-    --destination metrics-collector \
-    --schedule '*/1 * * * *'
-```
 
 ## Send metrics to IBM Cloud Monitoring
 
@@ -93,8 +71,7 @@ ibmcloud ce job create \
 **Step 4: Submit a job run**
 ```bash
 ibmcloud ce jobrun submit \
-    --job metrics-collector \
-    --env INTERVAL=30
+    --job metrics-collector
 ```
 
 ### How It Works
@@ -108,7 +85,6 @@ ibmcloud ce jobrun submit \
 ### Required Environment Variables for Prometheus Integration
 
 - **`METRICS_ENABLED=true`**: Enables the Prometheus agent
-- **`CE_SUBDOMAIN`**: Your Code Engine project's Kubernetes namespace (required when `METRICS_ENABLED=true`)
 - **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
 - **Secret Mount**: `/etc/secrets/monitoring-apikey` must contain your IBM Cloud Monitoring API key
 
@@ -116,7 +92,6 @@ ibmcloud ce jobrun submit \
 
 If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
 - Missing `/etc/secrets/monitoring-apikey` file
-- Missing `CE_SUBDOMAIN` environment variable
 - Missing `METRICS_REMOTE_WRITE_FQDN` environment variable
 
 ## Configuration
@@ -129,7 +104,6 @@ Per default the metrics collector collects memory and CPU statistics, like `usag
 - **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
 - **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
 - **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
-- **`JOB_MODE`** (default: daemon): Set to `task` for one-time collection or leave unset/daemon for continuous collection.
 
 ## Prometheus Metrics Endpoint
 
@@ -153,29 +127,28 @@ The following Prometheus metrics are exposed as gauges:
 - **`ibm_codeengine_instance_ephemeral_storage_usage_bytes`**: Current ephemeral storage usage in bytes (if `COLLECT_DISKUSAGE=true`)
 
 #### Collector Self-Monitoring Metrics
-- **`ibm_codeengine_collector_collection_duration_seconds`**: Time taken to collect metrics in seconds
-- **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection
-- **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter)
+The following 3 metrics are used to monitor the collector itself:
+- **`ibm_codeengine_collector_collection_duration_seconds`**: Time taken to collect metrics in seconds (if `METRICS_INTERNAL_STATS=true`)
+- **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection (if `METRICS_INTERNAL_STATS=true`)
+- **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter) (if `METRICS_INTERNAL_STATS=true`)
 
 ### Metric Labels
 
 All container metrics include the following labels:
-- `pod_name`: Name of the pod instance
+- `instance_name`: Name of the pod instance
 - `component_type`: Type of component (`app`, `job`, or `build`)
 - `component_name`: Name of the Code Engine component
-- `parent`: Parent resource (revision for apps, job-run for jobs, buildrun for builds)
-- `namespace`: Kubernetes namespace
 
 ### Example Metrics Output
 
 ```prometheus
 # HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
 # TYPE ibm_codeengine_instance_cpu_usage_millicores gauge
-ibm_codeengine_instance_cpu_usage_millicores{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp",parent="myapp-00001",namespace="default"} 250
+ibm_codeengine_instance_cpu_usage_millicores{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp"} 250
 
 # HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes
 # TYPE ibm_codeengine_instance_memory_usage_bytes gauge
-ibm_codeengine_instance_memory_usage_bytes{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp",parent="myapp-00001",namespace="default"} 134217728
+ibm_codeengine_instance_memory_usage_bytes{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp"} 134217728
 ```
 
 ### Prometheus Scrape Configuration

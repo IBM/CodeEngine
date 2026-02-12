@@ -15,7 +15,7 @@ scrape_configs:
         replacement: 'my-project-name'
         target_label: code_engine_project_name
 
-  - job_name: 'kubernetes-pods'
+  - job_name: 'codeengine-metrics-usermetrics'
     fallback_scrape_protocol: PrometheusText0.0.4
     kubernetes_sd_configs:
     - api_server: 'https://172.21.0.1'
@@ -27,22 +27,22 @@ scrape_configs:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
     relabel_configs:
-    # only scrape when annotation prometheus.io/scrape: 'true' is set
-    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+    # only scrape when annotation codeengine.cloud.ibm.com/userMetricsScrape: 'true' is set
+    - source_labels: [__meta_kubernetes_pod_annotation_codeengine_cloud_ibm_com_userMetricsScrape]
       action: keep
       regex: true
-    - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+    - source_labels: [__meta_kubernetes_pod_annotation_codeengine_cloud_ibm_com_userMetricsPath]
       action: replace
       target_label: __metrics_path__
       regex: (.+)
-    - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+    - source_labels: [__address__, __meta_kubernetes_pod_annotation_codeengine_cloud_ibm_com_userMetricsPort]
       action: replace
       regex: (.+):(?:\d+);(\d+)
       replacement: ${1}:${2}
       target_label: __address__
     - action: labelmap
       regex: __meta_kubernetes_pod_label_(.+)
-    # rename importan meta data labels
+    # rename important meta data labels
     - source_labels: [__meta_kubernetes_namespace]
       action: replace
       target_label: code_engine_project_namespace
@@ -89,7 +89,7 @@ scrape_configs:
     - action: labeldrop
       regex: "app"
 #
-# Define IBM Cloud monitoring as the remote write target 
+# Define IBM Cloud Monitoring as the remote write target 
 #
 remote_write:
 - url: https://${METRICS_REMOTE_WRITE_FQDN}/prometheus/remote/write

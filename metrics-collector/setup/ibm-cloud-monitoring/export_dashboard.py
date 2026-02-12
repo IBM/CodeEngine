@@ -376,5 +376,3 @@ How to get your Instance ID:
 
 if __name__ == "__main__":
     main()
-
-# Made with Bob

@@ -34,9 +34,6 @@ if [ "$METRICS_ENABLED" = "true" ]; then
         -e "s/\${METRICS_REMOTE_WRITE_FQDN}/$METRICS_REMOTE_WRITE_FQDN/g" \
         /etc/prometheus/prometheus.yml.template > /tmp/prometheus.yml
 
-    echo "Printing Prometheus config..."
-    cat /tmp/prometheus.yml
-    
     echo "Starting Prometheus agent..."
     /bin/prometheus --config.file=/tmp/prometheus.yml --agent --storage.agent.path=/tmp/agent-data --log.level info --log.format json 2>&1 &
     PROMETHEUS_PID=$!
@@ -94,5 +91,3 @@ while true; do
     
     sleep 5
 done
-
-# Made with Bob
