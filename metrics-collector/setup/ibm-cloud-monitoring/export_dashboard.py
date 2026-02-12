@@ -18,7 +18,7 @@ Example:
         --iam-api-key YOUR_IAM_API_KEY \\
         --instance-id YOUR_INSTANCE_ID \\
         --region us-south \\
-        --name "IBM Code Engine - Container Resource Overview"
+        --name "IBM Cloud Code Engine - Component Resource Overview"
 """
 
 import argparse
@@ -176,6 +176,7 @@ class SysdigDashboardManager:
         """
         dashboards = self.list_dashboards()
         for dashboard in dashboards:
+            print(f"dashboard: {dashboard.get("name")}, id: '{dashboard.get("id")}'")
             if dashboard.get("name") == name:
                 return dashboard
         return None

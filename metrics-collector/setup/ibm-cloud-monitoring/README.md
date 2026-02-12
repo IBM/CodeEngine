@@ -5,7 +5,7 @@ This directory contains tools and dashboards for IBM Cloud Monitoring (Sysdig) i
 ## Files
 
 - **`import_dashboard.py`**: Python script to create or update Sysdig dashboards
-- **`code-engine-overview.json`**: Dashboard configuration for Code Engine resource monitoring
+- **`code-engine-component-resource-overview.json`**: Dashboard configuration for Code Engine resource monitoring
 
 ## Prerequisites
 
@@ -84,7 +84,7 @@ python import_dashboard.py \
     --iam-api-key YOUR_IBM_CLOUD_IAM_API_KEY \
     --instance-id YOUR_MONITORING_INSTANCE_ID \
     --region us-south \
-    --dashboard code-engine-overview.json
+    --dashboard code-engine-component-resource-overview.json
 ```
 
 ### Using Environment Variables
@@ -93,7 +93,7 @@ python import_dashboard.py \
 export IBM_CLOUD_IAM_API_KEY=YOUR_IBM_CLOUD_IAM_API_KEY
 export SYSDIG_INSTANCE_ID=YOUR_MONITORING_INSTANCE_ID
 export SYSDIG_REGION=us-south
-python import_dashboard.py --dashboard code-engine-overview.json
+python import_dashboard.py --dashboard code-engine-component-resource-overview.json
 ```
 
 ### Supported Regions
@@ -110,7 +110,7 @@ python import_dashboard.py --dashboard code-engine-overview.json
 
 ## Dashboard: Code Engine Container Resource Overview
 
-The `code-engine-overview.json` dashboard provides comprehensive monitoring of Code Engine resources:
+The `code-engine-component-resource-overview.json` dashboard provides comprehensive monitoring of Code Engine resources:
 
 ### Panels
 
@@ -192,10 +192,10 @@ export SYSDIG_INSTANCE_ID=your-instance-id-here
 export SYSDIG_REGION=us-south
 
 # 5. Import the dashboard
-python import_dashboard.py --dashboard code-engine-overview.json
+python import_dashboard.py --dashboard code-engine-component-resource-overview.json
 
 # Output:
-# Loading dashboard configuration from 'code-engine-overview.json'...
+# Loading dashboard configuration from 'code-engine-component-resource-overview.json'...
 # Obtaining IBM Cloud IAM access token...
 # ✓ IAM access token obtained successfully
 # Checking if dashboard 'IBM Code Engine - Container Resource Overview' exists...
@@ -222,14 +222,14 @@ python3 import_dashboard.py \
     --iam-api-key your-iam-api-key-here \
     --instance-id your-instance-id-here \
     --region us-south \
-    --dashboard code-engine-overview.json
+    --dashboard code-engine-component-resource-overview.json
 ```
 
 ## Customizing Dashboards
 
 To customize the dashboard:
 
-1. Edit `code-engine-overview.json`
+1. Edit `code-engine-component-resource-overview.json`
 2. Modify panel queries, layouts, or add new panels
 3. Run the import script to update the dashboard
 

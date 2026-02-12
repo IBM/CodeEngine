@@ -18,7 +18,7 @@ Example:
         --iam-api-key YOUR_IAM_API_KEY \\
         --instance-id YOUR_INSTANCE_ID \\
         --region us-south \\
-        --dashboard code-engine-overview.json
+        --dashboard code-engine-component-resource-overview.json
 """
 
 import argparse
@@ -300,13 +300,13 @@ Examples:
       --iam-api-key YOUR_IAM_KEY \\
       --instance-id YOUR_INSTANCE_ID \\
       --region us-south \\
-      --dashboard code-engine-overview.json
+      --dashboard code-engine-component-resource-overview.json
   
   # Using environment variables
   export IBM_CLOUD_IAM_API_KEY=YOUR_IAM_KEY
   export SYSDIG_INSTANCE_ID=YOUR_INSTANCE_ID
   export SYSDIG_REGION=us-south
-  python import_dashboard.py --dashboard code-engine-overview.json
+  python import_dashboard.py --dashboard code-engine-component-resource-overview.json
 
 Supported Regions:
   us-south, us-east, eu-de, eu-gb, jp-tok, au-syd, jp-osa, ca-tor, br-sao
