@@ -1,6 +1,6 @@
 module cosapp
 
-go 1.24.0
+go 1.25
 
 require github.com/gin-contrib/cors v1.7.5
 
