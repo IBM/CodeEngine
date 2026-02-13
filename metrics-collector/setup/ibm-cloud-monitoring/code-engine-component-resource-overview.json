@@ -1130,10 +1130,7 @@
     }
   },
   "shared": true,
-  "public": true,
-  "version": 113,
-  "createdOn": 1770891228265,
-  "modifiedOn": 1770937444381,
+  "public": false,
   "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by component_type and component_name",
   "layout": [
     {
