@@ -31,6 +31,8 @@ $ ibmcloud ce jobrun submit \
 
 When `METRICS_ENABLED=true`, the metrics collector runs an embedded Prometheus agent that scrapes metrics from the local `/metrics` endpoint and forwards them to IBM Cloud Monitoring.
 
+![](./images/monitoring-dashboard-ce-component-resources.png)
+
 ### Prerequisites
 
 1. **IBM Cloud Monitoring Instance**: You need an IBM Cloud Monitoring instance with an API key
@@ -74,6 +76,8 @@ ibmcloud ce jobrun submit \
     --job metrics-collector
 ```
 
+**Step 5: Setup the Cloud Monitoring dashboard as decribed [here](setup/ibm-cloud-monitoring/README.md)**
+
 ### How It Works
 
 1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
@@ -94,52 +98,51 @@ If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
 - Missing `/etc/secrets/monitoring-apikey` file
 - Missing `METRICS_REMOTE_WRITE_FQDN` environment variable
 
-## Configuration
+### Configuration
 
 Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`.
 
-### Environment Variables
+#### Environment Variables
 
 - **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected in daemon mode.
 - **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
 - **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
 - **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
 
-## Prometheus Metrics Endpoint
+### Prometheus Metrics Endpoint
 
 When running in **daemon mode** with **`METRICS_ENABLED=true`**, the metrics collector exposes an HTTP server on port 9100 (configurable via `METRICS_PORT`) with a `/metrics` endpoint that provides Prometheus-compatible metrics.
 
 **Note**: The HTTP server is only started when `METRICS_ENABLED=true`. When disabled, the collector continues to run and log metrics to stdout in JSON format, but does not expose the HTTP endpoint.
 
-### Accessing the Metrics Endpoint
+#### Accessing the Metrics Endpoint
 
 The metrics endpoint is available at `http://<pod-ip>:9100/metrics` and can be scraped by Prometheus or accessed directly.
 
-### Exposed Metrics
+#### Exposed Metrics
 
 The following Prometheus metrics are exposed as gauges:
 
-#### Container Metrics
+Container Metrics:
 - **`ibm_codeengine_instance_cpu_usage_millicores`**: Current CPU usage in millicores
 - **`ibm_codeengine_instance_cpu_limit_millicores`**: Configured CPU limit in millicores
 - **`ibm_codeengine_instance_memory_usage_bytes`**: Current memory usage in bytes
 - **`ibm_codeengine_instance_memory_limit_bytes`**: Configured memory limit in bytes
 - **`ibm_codeengine_instance_ephemeral_storage_usage_bytes`**: Current ephemeral storage usage in bytes (if `COLLECT_DISKUSAGE=true`)
 
-#### Collector Self-Monitoring Metrics
 The following 3 metrics are used to monitor the collector itself:
 - **`ibm_codeengine_collector_collection_duration_seconds`**: Time taken to collect metrics in seconds (if `METRICS_INTERNAL_STATS=true`)
 - **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection (if `METRICS_INTERNAL_STATS=true`)
 - **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter) (if `METRICS_INTERNAL_STATS=true`)
 
-### Metric Labels
+#### Metric Labels
 
 All container metrics include the following labels:
 - `instance_name`: Name of the pod instance
 - `component_type`: Type of component (`app`, `job`, or `build`)
 - `component_name`: Name of the Code Engine component
 
-### Example Metrics Output
+#### Example Metrics Output
 
 ```prometheus
 # HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
@@ -151,7 +154,7 @@ ibm_codeengine_instance_cpu_usage_millicores{pod_name="myapp-00001-deployment-ab
 ibm_codeengine_instance_memory_usage_bytes{pod_name="myapp-00001-deployment-abc123",component_type="app",component_name="myapp"} 134217728
 ```
 
-### Prometheus Scrape Configuration
+#### Prometheus Scrape Configuration
 
 **Note**: The HTTP server is only started when `METRICS_ENABLED=true` and running in daemon mode (`JOB_MODE != "task"`). In task mode, metrics are collected once and logged to stdout without starting the HTTP server. When `METRICS_ENABLED` is not set to `true`, the collector runs in daemon mode but only logs metrics to stdout without exposing the HTTP endpoint.
 
