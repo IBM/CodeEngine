@@ -34,7 +34,7 @@ When `METRICS_ENABLED=true`, the metrics collector runs an embedded Prometheus a
 ### Prerequisites
 
 1. **IBM Cloud Monitoring Instance**: You need an IBM Cloud Monitoring instance with an API key
-2. **Code Engine Project**: The collector must run in a Code Engine project
+2. **Code Engine project**: The collector must run in a Code Engine project
 
 ### Setup Instructions
 
@@ -78,7 +78,7 @@ ibmcloud ce jobrun submit \
 
 1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
 2. The embedded Prometheus agent scrapes these metrics every 15 seconds
-3. The agent also discovers and scrapes pods with the `prometheus.io/scrape: 'true'` annotation
+3. The agent also discovers and scrapes pods with the `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` annotation
 4. All metrics are forwarded to IBM Cloud Monitoring via remote write
 5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
 
@@ -152,15 +152,6 @@ ibm_codeengine_instance_memory_usage_bytes{pod_name="myapp-00001-deployment-abc1
 ```
 
 ### Prometheus Scrape Configuration
-
-To scrape metrics from the collector, add a scrape configuration to your Prometheus setup:
-
-```yaml
-scrape_configs:
-  - job_name: 'codeengine-metrics-collector'
-    static_configs:
-      - targets: ['<metrics-collector-pod-ip>:9100']
-```
 
 **Note**: The HTTP server is only started when `METRICS_ENABLED=true` and running in daemon mode (`JOB_MODE != "task"`). In task mode, metrics are collected once and logged to stdout without starting the HTTP server. When `METRICS_ENABLED` is not set to `true`, the collector runs in daemon mode but only logs metrics to stdout without exposing the HTTP endpoint.
 
@@ -240,22 +231,6 @@ app:"codeengine" AND message.metric:"instance-resources"
 
 ![Logs overview](./images/icl-logs-view-overview.png)
 
-
-## IBM Log Analysis setup (deprecated)
-
-### Log lines
-
-Along with a human readable message, like `Captured metrics of app instance 'load-generator-00001-deployment-677d5b7754-ktcf6': 3m vCPU, 109 MB memory, 50 MB ephemeral storage`, each log line passes specific resource utilization details in a structured way allowing to apply advanced filters on them.
-
-E.g.
-- `cpu.usage:>80`: Filter for all log lines that noticed a CPU utilization of 80% or higher
-- `memory.current:>1000`: Filter for all log lines that noticed an instance that used 1GB or higher of memory
-- `component_type:app`: Filter only for app instances. Possible values are `app`, `job`, and `build`
-- `component_name:<app-name>`: Filter for all instances of a specific app, job, or build
-- `name:<instance-name>`: Filter for a specific instance
-
-![IBM Cloud Logs](./images/ibm-cloud-logs--loglines.png)
-
 ### Log graphs
 
 Best is to create IBM Cloud Logs Board, in order to visualize the CPU and Memory usage per Code Engine component.
@@ -279,13 +254,10 @@ Best is to create IBM Cloud Logs Board, in order to visualize the CPU and Memory
 - The resulting graph will render the actual CPU usage compared to the configured limit. The the unit is milli vCPUs (1000 -> 1 vCPU).
 ![](./images/cpu-utilization.png)
 
-
 #### Add memory utilization
 1. Duplicate the graph, change its name to Memory and replace its plots with `memory.configured` and `memory.current`.
 1. The resulting graph will render the actual memory usage compared to the configured limit. The the unit is MB (1000 -> 1 GB).
 ![](./images/memory-utilization.png)
-
-
 
 #### Add disk utilization
 1. Duplicate the graph or create a new one, change its name to "Disk usage" and replace its plots with `disk_usage.current`.
