@@ -5,7 +5,8 @@ PREFIX="${PREFIX:=logging-sample}"
 LANGUAGE="${1:=all}"
 
 languages=(
-    node
+    node-unstructured
+    node-structured
     python
     go
     java
