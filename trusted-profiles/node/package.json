@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/IBM/CodeEngine/blob/main/trusted-profiles/README.md",
   "dependencies": {
-    "fast-xml-parser": "^5.0.8",
+    "fast-xml-parser": "^5.3.8",
     "ibm-cloud-sdk-core": "^5.4.2"
   }
 }
