@@ -7,7 +7,6 @@
                 <logger>[ignore]</logger>
                 <version>[ignore]</version>
                 <levelValue>[ignore]</levelValue>
-                <threadName>[ignore]</threadName>
             </fieldNames>
         </encoder>
     </appender>
