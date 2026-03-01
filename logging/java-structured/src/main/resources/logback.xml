@@ -1,0 +1,18 @@
+<configuration>
+    <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>UTC</timeZone>
+            <fieldNames>
+                <timestamp>[ignore]</timestamp>
+                <logger>[ignore]</logger>
+                <version>[ignore]</version>
+                <levelValue>[ignore]</levelValue>
+                <threadName>[ignore]</threadName>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="jsonConsoleAppender" />
+    </root>
+</configuration>

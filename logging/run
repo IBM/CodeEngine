@@ -7,9 +7,12 @@ LANGUAGE="${1:=all}"
 languages=(
     node-unstructured
     node-structured
-    python
-    go
-    java
+    python-unstructured
+    python-structured
+    go-unstructured
+    go-structured
+    java-unstructured
+    java-structured
 )
 
 for i in "${languages[@]}"; do
@@ -26,7 +29,7 @@ for i in "${languages[@]}"; do
             echo -e "\nUpdating the job '$job_name' ..."
         fi
         
-        ibmcloud ce job $create_or_update --n "$job_name" --src . --context-dir "$i/" --memory 0.5G --cpu 0.25 --wait
+        ibmcloud ce job $create_or_update --n "$job_name" --src . --context-dir "$i/" --memory 0.5G --cpu 0.25 --wait --retrylimit 0
 
         echo "Submit a job run for $i ..."
         jobrun_name="$job_name-$(openssl rand -hex 6)"

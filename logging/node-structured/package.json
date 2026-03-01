@@ -11,6 +11,6 @@
     "license": "MIT",
     "homepage": "https://cloud.ibm.com/containers/serverless",
     "dependencies": {
-      "winston": "^3.17.0"
+      "winston": "^3.19.0"
     }
   }
