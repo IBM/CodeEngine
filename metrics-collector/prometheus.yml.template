@@ -14,11 +14,6 @@ scrape_configs:
         regex: (.+)
         replacement: '${CE_PROJECT_NAME}'
         target_label: ibm_codeengine_project_name
-    metric_relabel_configs:
-      # Droping scrape metrics (e.g. scrape_duration_seconds)
-      - source_labels: [__name__]
-        regex: 'scrape_duration_seconds|scrape_samples_scraped|scrape_series_added|scrape_samples_post_metric_relabeling'
-        action: drop
 
   - job_name: 'codeengine-metrics-user'
     fallback_scrape_protocol: PrometheusText0.0.4
@@ -100,3 +95,8 @@ remote_write:
 - url: https://${METRICS_REMOTE_WRITE_FQDN}/prometheus/remote/write
   authorization:
     credentials_file: "/etc/secrets/monitoring-apikey"
+  write_relabel_configs:
+    # Dropping scrape metrics (e.g. scrape_duration_seconds)
+    - source_labels: [__name__]
+      regex: 'scrape_duration_seconds|scrape_samples_scraped|scrape_series_added|scrape_samples_post_metric_relabeling'
+      action: drop

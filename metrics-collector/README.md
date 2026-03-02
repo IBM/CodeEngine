@@ -61,6 +61,7 @@ ibmcloud ce job create \
     --mode daemon \
     --cpu 0.25 \
     --memory 0.5G \
+    --service-account reader \
     --build-size xlarge \
     --env INTERVAL=30 \
     --env METRICS_ENABLED=true \

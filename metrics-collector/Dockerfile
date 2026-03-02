@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app main.go
 
 # Stage 2: Download and extract Prometheus
 FROM busybox:1.36-glibc AS prometheus-downloader
-ARG PROMETHEUS_VERSION=3.9.1
+ARG PROMETHEUS_VERSION=3.10.0
 ARG TARGETARCH=amd64
 
 WORKDIR /tmp

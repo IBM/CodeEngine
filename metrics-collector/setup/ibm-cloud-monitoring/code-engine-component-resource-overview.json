@@ -22,7 +22,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores)) * 100",
+          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})) * 100",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
