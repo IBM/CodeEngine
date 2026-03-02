@@ -1,6 +1,6 @@
 module github.com/qu1queee/CodeEngine/grpc
 
-go 1.23.0
+go 1.25
 
 require (
 	github.com/gorilla/mux v1.8.1

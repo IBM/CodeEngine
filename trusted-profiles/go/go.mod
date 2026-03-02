@@ -1,6 +1,6 @@
 module github.com/IBM/CodeEngine/trusted-profiles/go
 
-go 1.24.0
+go 1.25
 
 require github.com/IBM/go-sdk-core/v5 v5.19.0
 
