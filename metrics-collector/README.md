@@ -1,8 +1,6 @@
 # IBM Cloud Code Engine - Metrics Collector
 
-Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds.
-
-Those metrics can either be render 
+Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds. Those metrics can either be render 
 
 in **IBM Cloud Monitoring** (see [instructions](#Send-metrics-to-IBM-Cloud-Monitoring))
 
@@ -12,7 +10,18 @@ or in **IBM Cloud Logs** (see [instructions](#ibm-cloud-logs-setup))
 
 ![Dashboard overview](./images/icl-dashboard-overview.png)
 
+
 ## Send metrics to IBM Cloud Monitoring
+
+### How It Works
+
+![](./images/metrics-collector.overview.png)
+
+1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
+2. The embedded Prometheus agent scrapes these metrics every 30 seconds
+3. The agent also discovers and scrapes pods with the `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` annotation
+4. All metrics are forwarded to IBM Cloud Monitoring via remote write
+5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
 
 ### Setup Instructions
 
@@ -82,46 +91,6 @@ curl -X POST https://$REGION.monitoring.cloud.ibm.com/api/v3/dashboards \
 
 **Note:** A more elaborated approach to manage custom Cloud Monitoring dashboards can be found [here](setup/ibm-cloud-monitoring/README.md)
 
-### How It Works
-
-1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
-2. The embedded Prometheus agent scrapes these metrics every 30 seconds
-3. The agent also discovers and scrapes pods with the `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` annotation
-4. All metrics are forwarded to IBM Cloud Monitoring via remote write
-5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
-
-### Required Environment Variables for Prometheus Integration
-
-- **`METRICS_ENABLED=true`**: Enables the Prometheus agent
-- **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
-- **Secret Mount**: `/etc/secrets/monitoring-apikey` must contain your IBM Cloud Monitoring API key
-
-### Troubleshooting
-
-If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
-- Missing `/etc/secrets/monitoring-apikey` file
-- Missing or wrong `METRICS_REMOTE_WRITE_FQDN` environment variable
-
-### Configuration
-
-Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`.
-
-#### Environment Variables
-
-- **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected in daemon mode.
-- **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
-- **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
-- **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
-
-### Prometheus Metrics Endpoint
-
-When running in **daemon mode** with **`METRICS_ENABLED=true`**, the metrics collector exposes an HTTP server on port 9100 (configurable via `METRICS_PORT`) with a `/metrics` endpoint that provides Prometheus-compatible metrics.
-
-**Note**: The HTTP server is only started when `METRICS_ENABLED=true`. When disabled, the collector continues to run and log metrics to stdout in JSON format, but does not expose the HTTP endpoint.
-
-#### Accessing the Metrics Endpoint
-
-The metrics endpoint is available at `http://<pod-ip>:9100/metrics` and can be scraped by Prometheus or accessed directly.
 
 #### Exposed Metrics
 
@@ -232,3 +201,17 @@ app:"codeengine" AND message.metric:"instance-resources"
 
 ![Logs overview](./images/icl-logs-view-overview.png)
 
+
+### Troubleshooting & Configuration
+
+If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
+- Missing `/etc/secrets/monitoring-apikey` file
+- Missing or wrong `METRICS_REMOTE_WRITE_FQDN` environment variable
+
+#### Environment Variables
+
+- **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected from the Kubernetes API endpoint in daemon mode.
+- **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
+- **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
+- **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
+- **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
