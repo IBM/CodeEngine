@@ -1,0 +1,29 @@
+{{ define "authFailed" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <title>{{.Title}}</title>
+</head>
+<body>
+    <h2>Authentication failed!</h2>
+    <div>OIDC configuration properties:</div>
+    <div style="padding: 0.75rem 0;">
+        <code>
+            ClientId={{.ClientId}}
+            <br>
+            AuthorizationEndpoint={{.ProviderAuthorizationEndpoint}}
+            <br>
+            TokenEndpoint={{.ProviderTokenEndpoint}}
+            <br>
+            UserInfoEndpoint={{.ProviderUserInfoEndpoint}}
+        </code>
+    </div>
+    <br>
+    <a href="/auth/login">Login</a>
+</body>
+</html>
+{{ end }}
