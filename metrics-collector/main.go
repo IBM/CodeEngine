@@ -93,7 +93,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
+		labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
 			escapeLabelValue(m.Name),
 			escapeLabelValue(m.ComponentType),
 			escapeLabelValue(m.ComponentName))
@@ -106,7 +106,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_limit_millicores gauge\n")
 	for _, m := range metrics {
 		if m.Cpu.Configured > 0 {
-			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
+			labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
 				escapeLabelValue(m.Name),
 				escapeLabelValue(m.ComponentType),
 				escapeLabelValue(m.ComponentName))
@@ -119,7 +119,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_usage_bytes gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
+		labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
 			escapeLabelValue(m.Name),
 			escapeLabelValue(m.ComponentType),
 			escapeLabelValue(m.ComponentName))
@@ -133,7 +133,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_limit_bytes gauge\n")
 	for _, m := range metrics {
 		if m.Memory.Configured > 0 {
-			labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
+			labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
 				escapeLabelValue(m.Name),
 				escapeLabelValue(m.ComponentType),
 				escapeLabelValue(m.ComponentName))
@@ -157,7 +157,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 		sb.WriteString("# TYPE ibm_codeengine_instance_ephemeral_storage_usage_bytes gauge\n")
 		for _, m := range metrics {
 			if m.DiskUsage.Current > 0 {
-				labels := fmt.Sprintf("instance_name=\"%s\",component_type=\"%s\",component_name=\"%s\"",
+				labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
 					escapeLabelValue(m.Name),
 					escapeLabelValue(m.ComponentType),
 					escapeLabelValue(m.ComponentName))
@@ -687,8 +687,15 @@ func getUserContainerName(componentType ComponentType, pod *v1.Pod) string {
 		return "user-container"
 	}
 
-	if componentType == Job || componentType == Build {
+	if componentType == Job {
 		return pod.Spec.Containers[0].Name
+	}
+
+	// builds are using two containers:
+	// a quite small 'step-source-default'
+	// and the 'step-build-and-push' which does the heavy lifting
+	if componentType == Build && len(pod.Spec.Containers) > 1 {
+		return pod.Spec.Containers[1].Name
 	}
 
 	// for kube-native deployments, we pick the first container

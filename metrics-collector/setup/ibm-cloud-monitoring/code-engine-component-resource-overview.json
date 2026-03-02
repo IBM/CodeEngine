@@ -8,7 +8,7 @@
       "description": "",
       "nullValueDisplayText": null,
       "links": null,
-      "markdownSource": "Monitor CPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `component_type` (app, job, build)\n- `component_name` (specific app/job/build name)",
+      "markdownSource": "Monitor CPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `ibm_codeengine_component_type` (app, job, build)\n- `ibm_codeengine_component_name` (specific app/job/build name)",
       "transparentBackground": false,
       "panelTitleVisible": true,
       "textAutosized": false
@@ -17,16 +17,16 @@
       "id": 5,
       "type": "advancedTimechart",
       "name": "CPU Utilization % (by Component)",
-      "description": "CPU usage as percentage of limit, grouped by component_name",
+      "description": "CPU usage as percentage of limit, grouped by ibm_codeengine_component_name",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (component_name) (ibm_codeengine_instance_cpu_limit_millicores)) * 100",
+          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores)) * 100",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
             "type": "lines"
           },
           "format": {
@@ -110,16 +110,16 @@
       "id": 6,
       "type": "advancedTimechart",
       "name": "Memory Utilization % (by Component)",
-      "description": "Memory usage as percentage of limit, grouped by component_name",
+      "description": "Memory usage as percentage of limit, grouped by ibm_codeengine_component_name",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (component_name) (ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum by (component_name) (ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
+          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
           "enabled": true,
           "displayInfo": {
             "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
             "type": "lines"
           },
           "format": {
@@ -510,7 +510,7 @@
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU Usage",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{instance_name}} usage",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
             "type": "lines"
           },
           "format": {
@@ -590,7 +590,7 @@
           "enabled": true,
           "displayInfo": {
             "displayName": "Memory Usage",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{instance_name}} usage",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
             "type": "lines"
           },
           "format": {
@@ -666,7 +666,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "count(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (component_name))",
+          "query": "count(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_component_name))",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
@@ -707,7 +707,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "count by (code_engine_instance_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})",
+          "query": "count by (ibm_codeengine_instance_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
@@ -749,18 +749,18 @@
   ],
   "scopeExpressionList": [
     {
-      "operand": "code_engine_project_name",
+      "operand": "ibm_codeengine_project_name",
       "operator": "in",
       "displayName": "",
       "value": [],
       "descriptor": {
-        "documentId": "code_engine_project_name",
-        "id": "code_engine_project_name",
+        "documentId": "ibm_codeengine_project_name",
+        "id": "ibm_codeengine_project_name",
         "metricType": "tag",
         "type": "string",
         "scale": 0.0,
-        "name": "code_engine_project_name",
-        "description": "code_engine_project_name",
+        "name": "ibm_codeengine_project_name",
+        "description": "ibm_codeengine_project_name",
         "namespaces": [
           "cloudProvider",
           "host.container",
@@ -809,7 +809,7 @@
         "canGroupBy": false,
         "canFilter": true,
         "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "code_engine_project_name",
+        "publicId": "ibm_codeengine_project_name",
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
@@ -819,18 +819,18 @@
       "isVariable": true
     },
     {
-      "operand": "component_type",
+      "operand": "ibm_codeengine_component_type",
       "operator": "in",
       "displayName": "",
       "value": [],
       "descriptor": {
-        "documentId": "component_type",
-        "id": "component_type",
+        "documentId": "ibm_codeengine_component_type",
+        "id": "ibm_codeengine_component_type",
         "metricType": "tag",
         "type": "string",
         "scale": 0.0,
-        "name": "component_type",
-        "description": "component_type",
+        "name": "ibm_codeengine_component_type",
+        "description": "ibm_codeengine_component_type",
         "namespaces": [
           "cloudProvider",
           "host.container",
@@ -879,7 +879,7 @@
         "canGroupBy": false,
         "canFilter": true,
         "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "component_type",
+        "publicId": "ibm_codeengine_component_type",
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
@@ -889,18 +889,18 @@
       "isVariable": true
     },
     {
-      "operand": "component_name",
+      "operand": "ibm_codeengine_component_name",
       "operator": "in",
       "displayName": "",
       "value": [],
       "descriptor": {
-        "documentId": "component_name",
-        "id": "component_name",
+        "documentId": "ibm_codeengine_component_name",
+        "id": "ibm_codeengine_component_name",
         "metricType": "tag",
         "type": "string",
         "scale": 0.0,
-        "name": "component_name",
-        "description": "component_name",
+        "name": "ibm_codeengine_component_name",
+        "description": "ibm_codeengine_component_name",
         "namespaces": [
           "cloudProvider",
           "host.container",
@@ -949,7 +949,7 @@
         "canGroupBy": false,
         "canFilter": true,
         "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "component_name",
+        "publicId": "ibm_codeengine_component_name",
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
@@ -971,7 +971,7 @@
   },
   "shared": true,
   "public": false,
-  "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by component_type and component_name",
+  "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by ibm_codeengine_component_type and ibm_codeengine_component_name",
   "layout": [
     {
       "panelId": 1,

@@ -1,7 +1,7 @@
 global:
   scrape_interval: 30s
   external_labels:
-    code_engine_project_name: '${CE_PROJECT_NAME}'
+    ibm_codeengine_project_name: '${CE_PROJECT_NAME}'
 
 scrape_configs:
   - job_name: 'codeengine-metrics-project'
@@ -13,7 +13,7 @@ scrape_configs:
         action: replace
         regex: (.+)
         replacement: '${CE_PROJECT_NAME}'
-        target_label: code_engine_project_name
+        target_label: ibm_codeengine_project_name
     metric_relabel_configs:
       # Droping scrape metrics (e.g. scrape_duration_seconds)
       - source_labels: [__name__]
@@ -50,31 +50,31 @@ scrape_configs:
     # rename important meta data labels
     - source_labels: [__meta_kubernetes_namespace]
       action: replace
-      target_label: code_engine_project_namespace
+      target_label: ibm_codeengine_namespace
     - source_labels: [job]
       action: replace
       regex: (.+)
       replacement: '${CE_PROJECT_NAME}'
-      target_label: code_engine_project_name
+      target_label: ibm_codeengine_project_name
     - source_labels: [__meta_kubernetes_pod_name]
       action: replace
-      target_label: code_engine_instance_name
+      target_label: ibm_codeengine_instance_name
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_service]
       action: replace
-      target_label: code_engine_component_name
+      target_label: ibm_codeengine_component_name
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_configuration]
       action: replace
       regex: (.+)
       replacement: app
-      target_label: code_engine_component_type
+      target_label: ibm_codeengine_component_type
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revision]
       action: replace
-      target_label: code_engine_subcomponent_name
+      target_label: ibm_codeengine_subcomponent_name
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revisionUID]
       action: replace
       regex: (.+)
       replacement: app_revision
-      target_label: code_engine_subcomponent_type
+      target_label: ibm_codeengine_subcomponent_type
     # drop codeengine, istio, and knative labels
     - action: labeldrop
       regex: "codeengine_cloud_ibm_com_(.+)"
