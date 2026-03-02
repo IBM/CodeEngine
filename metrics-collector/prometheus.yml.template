@@ -4,7 +4,7 @@ global:
     code_engine_project_name: 'my-project-name'
 
 scrape_configs:
-  - job_name: 'codeengine-metrics-collector'
+  - job_name: 'codeengine-metrics-project'
     static_configs:
       - targets: ['localhost:9100']
     relabel_configs:
@@ -14,8 +14,13 @@ scrape_configs:
         regex: (.+)
         replacement: 'my-project-name'
         target_label: code_engine_project_name
+    metric_relabel_configs:
+      # Droping scrape metrics (e.g. scrape_duration_seconds)
+      - source_labels: [__name__]
+        regex: "scrape_(.+)"
+        action: drop
 
-  - job_name: 'codeengine-metrics-usermetrics'
+  - job_name: 'codeengine-metrics-user'
     fallback_scrape_protocol: PrometheusText0.0.4
     kubernetes_sd_configs:
     - api_server: 'https://172.21.0.1'

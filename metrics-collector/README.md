@@ -47,13 +47,6 @@ ibmcloud ce secret create --name monitoring-apikey --from-literal monitoring-api
 
 **Step 2: Determine your IBM Cloud Monitoring ingestion endpoint**
 
-The `METRICS_REMOTE_WRITE_FQDN` depends on your IBM Cloud Monitoring instance region:
-- **US South (Dallas)**: `ingest.prws.us-south.monitoring.cloud.ibm.com`
-- **US East (Washington DC)**: `ingest.prws.us-east.monitoring.cloud.ibm.com`
-- **EU Central (Frankfurt)**: `ingest.prws.eu-de.monitoring.cloud.ibm.com`
-- **EU GB (London)**: `ingest.prws.eu-gb.monitoring.cloud.ibm.com`
-- **JP Tokyo**: `ingest.prws.jp-tok.monitoring.cloud.ibm.com`
-- **AU Sydney**: `ingest.prws.au-syd.monitoring.cloud.ibm.com`
 
 **Step 3: Update your job with the required configuration**
 ```bash
@@ -66,7 +59,7 @@ ibmcloud ce job create \
     --build-size xlarge \
     --env INTERVAL=30 \
     --env METRICS_ENABLED=true \
-    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.eu-es.monitoring.cloud.ibm.com \
+    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.private.${REGION}.monitoring.cloud.ibm.com \
     --mount-secret /etc/secrets=monitoring-apikey
 ```
 

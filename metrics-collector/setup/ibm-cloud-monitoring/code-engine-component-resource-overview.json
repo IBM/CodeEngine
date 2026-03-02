@@ -8,7 +8,7 @@
       "description": "",
       "nullValueDisplayText": null,
       "links": null,
-      "markdownSource": "Monitor CPU, Memory, and Disk storage usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `component_type` (app, job, build)\n- `component_name` (specific app/job/build name)",
+      "markdownSource": "Monitor CPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `component_type` (app, job, build)\n- `component_name` (specific app/job/build name)",
       "transparentBackground": false,
       "panelTitleVisible": true,
       "textAutosized": false
@@ -313,166 +313,6 @@
             "displayText": ""
           }
         ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 7,
-      "type": "advancedTimechart",
-      "name": "Disk Storage Usage\u00a0(by Component)",
-      "description": "Storage usage grouped by component_name",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum by (component_name) (ibm_codeengine_instance_ephemeral_storage_usage_bytes{$__scope})",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Disk storage in use ",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}",
-            "type": "lines"
-          },
-          "format": {
-            "unit": "byte",
-            "inputFormat": "B",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "connectSolid",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": false,
-            "delta": 1,
-            "timeFormat": "day"
-          }
-        }
-      ],
-      "legendConfiguration": {
-        "enabled": true,
-        "position": "right",
-        "layout": "table",
-        "showCurrent": true,
-        "showMax": true,
-        "showMin": true,
-        "width": null,
-        "height": null
-      },
-      "axesConfiguration": {
-        "bottom": {
-          "enabled": true
-        },
-        "left": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "B",
-          "maxInputFormat": "B",
-          "scale": "linear"
-        },
-        "right": {
-          "enabled": false,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "1",
-          "maxInputFormat": "1",
-          "scale": "linear"
-        }
-      },
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 4,
-      "type": "advancedTimechart",
-      "name": "Disk Storage Usage (per Instance)",
-      "description": "Current ephemeral storage usage",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "ibm_codeengine_instance_ephemeral_storage_usage_bytes{$__scope}",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Disk Storage Usage",
-            "timeSeriesDisplayNameTemplate": "{{component_name}}/{{instance_name}} usage",
-            "type": "lines"
-          },
-          "format": {
-            "unit": "byte",
-            "inputFormat": "B",
-            "displayFormat": "auto",
-            "decimals": 0,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "connectSolid",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": false,
-            "delta": 1,
-            "timeFormat": "day"
-          }
-        }
-      ],
-      "legendConfiguration": {
-        "enabled": true,
-        "position": "right",
-        "layout": "table",
-        "showCurrent": true,
-        "showMax": true,
-        "showMin": true,
-        "width": null,
-        "height": null
-      },
-      "axesConfiguration": {
-        "bottom": {
-          "enabled": true
-        },
-        "left": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "B",
-          "maxInputFormat": "B",
-          "scale": "linear"
-        },
-        "right": {
-          "enabled": false,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "1",
-          "maxInputFormat": "1",
-          "scale": "linear"
-        }
-      },
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [],
         "base": {
           "severity": "none",
           "displayText": ""
@@ -973,7 +813,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1770938413029
+        "documentTimestamp": 1772465428162
       },
       "variable": true,
       "isVariable": true
@@ -1043,7 +883,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1770938413029
+        "documentTimestamp": 1772465428162
       },
       "variable": true,
       "isVariable": true
@@ -1113,7 +953,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1770938413029
+        "documentTimestamp": 1772465428162
       },
       "variable": true,
       "isVariable": true
@@ -1152,7 +992,7 @@
       "x": 0,
       "y": 10,
       "w": 12,
-      "h": 6
+      "h": 5
     },
     {
       "panelId": 8,
@@ -1167,20 +1007,6 @@
       "y": 2,
       "w": 3,
       "h": 2
-    },
-    {
-      "panelId": 7,
-      "x": 0,
-      "y": 16,
-      "w": 12,
-      "h": 6
-    },
-    {
-      "panelId": 4,
-      "x": 12,
-      "y": 16,
-      "w": 12,
-      "h": 6
     },
     {
       "panelId": 11,
@@ -1222,7 +1048,7 @@
       "x": 12,
       "y": 10,
       "w": 12,
-      "h": 6
+      "h": 5
     },
     {
       "panelId": 15,
