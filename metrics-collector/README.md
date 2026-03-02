@@ -60,6 +60,7 @@ ibmcloud ce job create \
     --env INTERVAL=30 \
     --env METRICS_ENABLED=true \
     --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.private.${REGION}.monitoring.cloud.ibm.com \
+    --env CE_PROJECT_NAME="$(ibmcloud ce proj current --output json|jq -r '.name')" \
     --mount-secret /etc/secrets=monitoring-apikey
 ```
 

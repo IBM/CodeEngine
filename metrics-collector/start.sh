@@ -27,10 +27,15 @@ if [ "$METRICS_ENABLED" = "true" ]; then
         echo "ERROR: METRICS_REMOTE_WRITE_FQDN environment variable is required when METRICS_ENABLED=true"
         exit 1
     fi
+
+    if [ -z "$CE_PROJECT_NAME" ]; then
+        CE_PROJECT_NAME="default"
+    fi
     
     # Generate prometheus.yml from template with environment variable substitution
     echo "Generating Prometheus configuration..."
     sed -e "s/\${CE_SUBDOMAIN}/$CE_SUBDOMAIN/g" \
+        -e "s/\${CE_PROJECT_NAME}/$CE_PROJECT_NAME/g" \
         -e "s/\${METRICS_REMOTE_WRITE_FQDN}/$METRICS_REMOTE_WRITE_FQDN/g" \
         /etc/prometheus/prometheus.yml.template > /tmp/prometheus.yml
 

@@ -368,8 +368,10 @@ func extractComponentMetadata(podMetric *v1beta1.PodMetrics) (componentType Comp
 
 	switch componentType {
 	case Job:
-		if val, ok := podMetric.ObjectMeta.Labels["codeengine.cloud.ibm.com/job-definition-name"]; ok {
-			componentName = val
+		if jobName, ok := podMetric.ObjectMeta.Labels["codeengine.cloud.ibm.com/job-definition-name"]; ok {
+			componentName = jobName
+		} else if jobRunName, ok := podMetric.ObjectMeta.Labels["codeengine.cloud.ibm.com/job-run"]; ok {
+			componentName = jobRunName
 		} else {
 			componentName = "standalone"
 		}
@@ -378,8 +380,10 @@ func extractComponentMetadata(podMetric *v1beta1.PodMetrics) (componentType Comp
 		componentName = podMetric.ObjectMeta.Labels["serving.knative.dev/service"]
 		parent = podMetric.ObjectMeta.Labels["serving.knative.dev/revision"]
 	case Build:
-		if val, ok := podMetric.ObjectMeta.Labels["build.shipwright.io/name"]; ok {
-			componentName = val
+		if buildName, ok := podMetric.ObjectMeta.Labels["build.shipwright.io/name"]; ok {
+			componentName = buildName
+		} else if buildRunName, ok := podMetric.ObjectMeta.Labels["buildrun.shipwright.io/name"]; ok {
+			componentName = buildRunName
 		} else {
 			componentName = "standalone"
 		}
@@ -541,16 +545,6 @@ func determineComponentType(podMetric *v1beta1.PodMetrics) ComponentType {
 		return Job
 	}
 	return Unknown
-}
-
-// Helper function to obtain a pod by its name from a slice of pods
-func getPod(name string, pods *[]v1.Pod) *v1.Pod {
-	for _, pod := range *pods {
-		if pod.Name == name {
-			return &pod
-		}
-	}
-	return nil
 }
 
 // Helper function to retrieve all pods from the Kube API
