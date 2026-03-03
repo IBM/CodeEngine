@@ -8,7 +8,7 @@
       "description": "",
       "nullValueDisplayText": null,
       "links": null,
-      "markdownSource": "Monitor CPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `ibm_codeengine_component_type` (app, job, build)\n- `ibm_codeengine_component_name` (specific app/job/build name)",
+      "markdownSource": "Monitor vCPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `ibm_codeengine_component_type` (app, job, build)\n- `ibm_codeengine_component_name` (specific app/job/build name)",
       "transparentBackground": false,
       "panelTitleVisible": true,
       "textAutosized": false
@@ -16,8 +16,8 @@
     {
       "id": 5,
       "type": "advancedTimechart",
-      "name": "CPU Utilization % (by Component)",
-      "description": "CPU usage as percentage of limit, grouped by ibm_codeengine_component_name",
+      "name": "vCPU Utilization % (by Component)",
+      "description": "vCPU usage as percentage of limit, grouped by ibm_codeengine_component_name",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -202,8 +202,8 @@
     {
       "id": 8,
       "type": "advancedNumber",
-      "name": "Total CPU Utilization %",
-      "description": "Overall CPU utilization across all containers",
+      "name": "Total vCPU Utilization in %",
+      "description": "Overall vCPU utilization across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -262,8 +262,8 @@
     {
       "id": 9,
       "type": "advancedNumber",
-      "name": "Total Memory Utilization %",
-      "description": "Overall memory utilization across all containers",
+      "name": "Total Memory Utilization in %",
+      "description": "Overall memory utilization across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -322,8 +322,8 @@
     {
       "id": 11,
       "type": "advancedNumber",
-      "name": "Total Available CPUs",
-      "description": "Overall CPU usage across all components",
+      "name": "Total Available vCPUs",
+      "description": "Overall number of available vCPUs across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -371,7 +371,7 @@
       "id": 12,
       "type": "advancedNumber",
       "name": "Total Available Memory",
-      "description": "Overall memory utilization across all containers",
+      "description": "Overall amount of available memory across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -411,8 +411,8 @@
     {
       "id": 13,
       "type": "advancedNumber",
-      "name": "Total Used CPUs",
-      "description": "Overall CPU usage across all components",
+      "name": "Total Used vCPUs",
+      "description": "Actual number of vCPUs that are used across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -460,7 +460,7 @@
       "id": 14,
       "type": "advancedNumber",
       "name": "Total Used Memory",
-      "description": "Overall memory utilization across all containers",
+      "description": "Actual amount of memory used across all instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -500,8 +500,8 @@
     {
       "id": 2,
       "type": "advancedTimechart",
-      "name": "CPU Usage (per Instance)",
-      "description": "Current CPU usage compared to configured limits",
+      "name": "vCPU Usage (per Instance)",
+      "description": "Current vCPU usage per instance",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -581,7 +581,7 @@
       "id": 3,
       "type": "advancedTimechart",
       "name": "Memory Usage (per Instance)",
-      "description": "Current memory usage compared to configured limits",
+      "description": "Current memory usage per instance",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
@@ -702,7 +702,7 @@
       "id": 16,
       "type": "advancedNumber",
       "name": "Running Instances",
-      "description": "Overall CPU usage across all components",
+      "description": "Number of running Code Engine instances",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
