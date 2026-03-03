@@ -707,7 +707,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "count by (ibm_codeengine_instance_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})",
+          "query": "sum(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_component_name))",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
