@@ -98,15 +98,16 @@ python import_dashboard.py --dashboard code-engine-component-resource-overview.j
 
 ### Supported Regions
 
-- `us-south` - US South (Dallas)
-- `us-east` - US East (Washington DC)
-- `eu-de` - EU Central (Frankfurt)
-- `eu-gb` - EU GB (London)
-- `jp-tok` - Japan (Tokyo)
 - `au-syd` - Australia (Sydney)
-- `jp-osa` - Japan (Osaka)
-- `ca-tor` - Canada (Toronto)
 - `br-sao` - Brazil (São Paulo)
+- `ca-tor` - Canada (Toronto)
+- `eu-de` - EU Central (Frankfurt)
+- `eu-es` - EU Spain (Madrid)
+- `eu-gb` - EU GB (London)
+- `jp-osa` - Japan (Osaka)
+- `jp-tok` - Japan (Tokyo)
+- `us-east` - US East (Washington DC)
+- `us-south` - US South (Dallas)
 
 ## Dashboard: Code Engine Container Resource Overview
 
