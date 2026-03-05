@@ -46,9 +46,7 @@ scrape_configs:
     - source_labels: [__meta_kubernetes_namespace]
       action: replace
       target_label: ibm_codeengine_namespace
-    - source_labels: [job]
-      action: replace
-      regex: (.+)
+    - action: replace
       replacement: '${CE_PROJECT_NAME}'
       target_label: ibm_codeengine_project_name
     - source_labels: [__meta_kubernetes_pod_name]
