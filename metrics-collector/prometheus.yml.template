@@ -80,6 +80,7 @@ scrape_configs:
     - action: labeldrop
       regex: "serving_knative_dev_(.+)"
     # drop default prometheus labels
+    metric_relabel_configs:
     - action: labeldrop
       regex: "instance"
     - action: labeldrop
