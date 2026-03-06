@@ -130,13 +130,15 @@ tests:
 promptfoo eval
 ```
 
-5. View results in the web UI:
+5. Share results in the deployed application:
 
 ```bash
-promptfoo view
+promptfoo share
 ```
 
 This will open the local viewer, but you can also access the shared results through your deployed Code Engine URL.
+
+![](./images/promptfoo_ui.png)
 
 ### Sharing results
 
