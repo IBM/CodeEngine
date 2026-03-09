@@ -1,0 +1,792 @@
+{
+  "name": "My custom Code Engine Metrics",
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "name": "Dashboard Overview",
+      "description": "",
+      "nullValueDisplayText": null,
+      "links": null,
+      "markdownSource": "Monitor custom application metrics for Code Engine applications.\n\n**Metrics included:**\n- Request rates by method and path\n- Outbound HTTP request performance\n- Database connection monitoring\n- Compute operation duration",
+      "transparentBackground": false,
+      "panelTitleVisible": true,
+      "textAutosized": false
+    },
+    {
+      "id": 2,
+      "type": "advancedTimechart",
+      "name": "Request Rate (by Path)",
+      "description": "Rate of incoming requests grouped by path",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_node_requests_total{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Request Rate",
+            "timeSeriesDisplayNameTemplate": "{{method}} {{path}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 2,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "advancedNumber",
+      "name": "Total Requests",
+      "description": "Total number of requests received",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "sum(mymetrics_node_requests_total{$__scope})",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Total Requests",
+            "timeSeriesDisplayNameTemplate": null,
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": true,
+            "delta": 1,
+            "timeFormat": "hour"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Duration (P95)",
+      "description": "95th percentile of outbound HTTP request duration",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "histogram_quantile(0.95, rate(mymetrics_node_outbound_request_duration_seconds_bucket{$__scope}[5m]))",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "P95 Duration",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 2.0,
+            "inputFormat": "s",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 1.0,
+            "inputFormat": "s",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Duration (Average)",
+      "description": "Average duration of outbound HTTP requests",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_node_outbound_request_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_node_outbound_request_duration_seconds_count{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Avg Duration",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Rate",
+      "description": "Rate of outbound HTTP requests by target and status",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_node_outbound_requests_total{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Request Rate",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}} ({{status_code}})",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 2,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "advancedNumber",
+      "name": "Active DB Connections",
+      "description": "Current number of active database connections",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "mymetrics_node_db_connections_active{$__scope}",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Active Connections",
+            "timeSeriesDisplayNameTemplate": null,
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": true,
+            "delta": 1,
+            "timeFormat": "hour"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 80,
+            "inputFormat": "1",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 50,
+            "inputFormat": "1",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "advancedTimechart",
+      "name": "Database Connections Over Time",
+      "description": "Active database connections timeline",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "mymetrics_node_db_connections_active{$__scope}",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Active Connections",
+            "timeSeriesDisplayNameTemplate": "DB Connections",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 80,
+            "inputFormat": "1",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "advancedTimechart",
+      "name": "Compute Operation Duration (P95)",
+      "description": "95th percentile of compute operation duration",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "histogram_quantile(0.95, rate(mymetrics_node_compute_duration_seconds_bucket{$__scope}[5m]))",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "P95 Duration",
+            "timeSeriesDisplayNameTemplate": "{{operation}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 5.0,
+            "inputFormat": "s",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 3.0,
+            "inputFormat": "s",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "advancedTimechart",
+      "name": "Compute Operation Duration (Average)",
+      "description": "Average duration of compute operations",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_node_compute_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_node_compute_duration_seconds_count{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Avg Duration",
+            "timeSeriesDisplayNameTemplate": "{{operation}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "s",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    }
+  ],
+  "scopeExpressionList": [],
+  "eventDisplaySettings": {
+    "enabled": true,
+    "queryParams": {
+      "severities": [],
+      "alertStatuses": [],
+      "categories": [],
+      "filter": "",
+      "teamScope": false
+    }
+  },
+  "shared": true,
+  "public": false,
+  "description": "Custom dashboard for monitoring application metrics including request rates, outbound HTTP performance, database connections, and compute operations",
+  "layout": [
+    {
+      "panelId": 1,
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 3
+    },
+    {
+      "panelId": 3,
+      "x": 12,
+      "y": 0,
+      "w": 6,
+      "h": 3
+    },
+    {
+      "panelId": 7,
+      "x": 18,
+      "y": 0,
+      "w": 6,
+      "h": 3
+    },
+    {
+      "panelId": 2,
+      "x": 0,
+      "y": 3,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 6,
+      "x": 12,
+      "y": 3,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 4,
+      "x": 0,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 5,
+      "x": 12,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 8,
+      "x": 0,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 9,
+      "x": 0,
+      "y": 21,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 10,
+      "x": 12,
+      "y": 21,
+      "w": 12,
+      "h": 6
+    }
+  ],
+  "schema": 3
+}
