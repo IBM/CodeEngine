@@ -11,7 +11,7 @@ const HTTPBIN_BASE_URL = process.env.HTTPBIN_BASE_URL || "https://httpbin.org";
 // Initialize Prometheus metrics
 // ====================================
 const METRICS_NAME_PREFIX = process.env.METRICS_NAME_PREFIX || "mymetrics_node_";
-// Create a Registry to register the metrics
+// Create a registry to register the metrics
 const register = new promClient.Registry();
 
 // Create a custom counter metric with path label
@@ -28,6 +28,7 @@ const counter = new promClient.Counter({
   help: "Total number of requests",
   labelNames: ["method", "path"],
 });
+register.registerMetric(counter);
 
 // Outbound HTTP call metrics
 const outboundCallDuration = new promClient.Histogram({
@@ -36,12 +37,14 @@ const outboundCallDuration = new promClient.Histogram({
   labelNames: ["target", "method", "status_code"],
   buckets: [0.1, 0.5, 1, 2, 5, 10],
 });
+register.registerMetric(outboundCallDuration);
 
 const outboundCallTotal = new promClient.Counter({
   name: `${METRICS_NAME_PREFIX}outbound_requests_total`,
   help: "Total number of outbound HTTP requests",
   labelNames: ["target", "method", "status_code"],
 });
+register.registerMetric(outboundCallTotal);
 
 // Database operation metrics
 const dbQueryDuration = new promClient.Histogram({
@@ -50,17 +53,20 @@ const dbQueryDuration = new promClient.Histogram({
   labelNames: ["operation", "table", "status"],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
 });
+register.registerMetric(dbQueryDuration);
 
 const dbQueryTotal = new promClient.Counter({
   name: `${METRICS_NAME_PREFIX}db_queries_total`,
   help: "Total number of database queries",
   labelNames: ["operation", "table", "status"],
 });
+register.registerMetric(dbQueryTotal);
 
 const dbConnectionsActive = new promClient.Gauge({
   name: `${METRICS_NAME_PREFIX}db_connections_active`,
   help: "Number of active database connections",
 });
+register.registerMetric(dbConnectionsActive);
 
 // Compute operation metrics
 const computeDuration = new promClient.Histogram({
@@ -69,14 +75,6 @@ const computeDuration = new promClient.Histogram({
   labelNames: ["operation"],
   buckets: [0.5, 1, 2, 3, 5],
 });
-
-// Register all metrics
-register.registerMetric(counter);
-register.registerMetric(outboundCallDuration);
-register.registerMetric(outboundCallTotal);
-register.registerMetric(dbQueryDuration);
-register.registerMetric(dbQueryTotal);
-register.registerMetric(dbConnectionsActive);
 register.registerMetric(computeDuration);
 
 if (process.env.METRICS_COLLECT_NODE_METRICS_ENABLED === "true") {
@@ -341,7 +339,7 @@ const server = app.listen(port, async () => {
 });
 
 // ======================================
-// Start the metrics server
+// Metrics server
 // ======================================
 const metricsApp = express();
 const metricsPort = 2112;

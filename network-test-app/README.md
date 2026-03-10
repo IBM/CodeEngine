@@ -34,7 +34,6 @@ ibmcloud ce application create \
   --src "." \
   --memory 0.5G \
   --cpu 0.25 \
-  --concurrency 5 \
   --env HTTPBIN_BASE_URL=https://httpbin.org \
   --env METRICS_COLLECT_NODE_METRICS_ENABLED=true
 ```
