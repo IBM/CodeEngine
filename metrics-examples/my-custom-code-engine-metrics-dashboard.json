@@ -22,7 +22,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "rate(mymetrics_node_requests_total{$__scope}[5m])",
+          "query": "rate(mymetrics_requests_total{$__scope}[5m])",
           "enabled": true,
           "displayInfo": {
             "displayName": "Request Rate",
@@ -102,7 +102,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "sum(mymetrics_node_requests_total{$__scope})",
+          "query": "sum(mymetrics_requests_total{$__scope})",
           "enabled": true,
           "displayInfo": {
             "displayName": "Total Requests",
@@ -143,7 +143,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "histogram_quantile(0.95, rate(mymetrics_node_outbound_request_duration_seconds_bucket{$__scope}[5m]))",
+          "query": "histogram_quantile(0.95, rate(mymetrics_outbound_request_duration_seconds_bucket{$__scope}[5m]))",
           "enabled": true,
           "displayInfo": {
             "displayName": "P95 Duration",
@@ -236,7 +236,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "rate(mymetrics_node_outbound_request_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_node_outbound_request_duration_seconds_count{$__scope}[5m])",
+          "query": "rate(mymetrics_outbound_request_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_outbound_request_duration_seconds_count{$__scope}[5m])",
           "enabled": true,
           "displayInfo": {
             "displayName": "Avg Duration",
@@ -316,7 +316,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "rate(mymetrics_node_outbound_requests_total{$__scope}[5m])",
+          "query": "rate(mymetrics_outbound_requests_total{$__scope}[5m])",
           "enabled": true,
           "displayInfo": {
             "displayName": "Request Rate",
@@ -396,7 +396,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "mymetrics_node_db_connections_active{$__scope}",
+          "query": "mymetrics_db_connections_active{$__scope}",
           "enabled": true,
           "displayInfo": {
             "displayName": "Active Connections",
@@ -450,7 +450,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "mymetrics_node_db_connections_active{$__scope}",
+          "query": "mymetrics_db_connections_active{$__scope}",
           "enabled": true,
           "displayInfo": {
             "displayName": "Active Connections",
@@ -537,7 +537,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "histogram_quantile(0.95, rate(mymetrics_node_compute_duration_seconds_bucket{$__scope}[5m]))",
+          "query": "histogram_quantile(0.95, rate(mymetrics_compute_duration_seconds_bucket{$__scope}[5m]))",
           "enabled": true,
           "displayInfo": {
             "displayName": "P95 Duration",
@@ -630,7 +630,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "rate(mymetrics_node_compute_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_node_compute_duration_seconds_count{$__scope}[5m])",
+          "query": "rate(mymetrics_compute_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_compute_duration_seconds_count{$__scope}[5m])",
           "enabled": true,
           "displayInfo": {
             "displayName": "Avg Duration",

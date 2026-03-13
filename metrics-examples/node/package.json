@@ -1,5 +1,5 @@
 {
-  "name": "network-test-app",
+  "name": "metrics-example",
   "version": "1.0.0",
   "description": "App to test connectivity to IBM Cloud Services",
   "main": "app.mjs",

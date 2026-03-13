@@ -10,7 +10,7 @@ const HTTPBIN_BASE_URL = process.env.HTTPBIN_BASE_URL || "https://httpbin.org";
 // ====================================
 // Initialize Prometheus metrics
 // ====================================
-const METRICS_NAME_PREFIX = process.env.METRICS_NAME_PREFIX || "mymetrics_node_";
+const METRICS_NAME_PREFIX = process.env.METRICS_NAME_PREFIX || "mymetrics_";
 // Create a registry to register the metrics
 const register = new promClient.Registry();
 

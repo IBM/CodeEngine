@@ -1,0 +1,53 @@
+#!/bin/bash
+set -eo pipefail
+
+PREFIX="${PREFIX:=metrics-example}"
+LANGUAGE="${1:=all}"
+
+# Create the Code Engine project if it does not exist, yet
+if ! ibmcloud ce project get --name "$PREFIX";then 
+    ibmcloud ce project create --name "$PREFIX"
+fi
+
+# Select the Code Engine project
+ibmcloud ce project select --name "$PREFIX" --kubecfg
+
+languages=(
+    node
+)
+
+for i in "${languages[@]}"; do
+
+    if [[ "$LANGUAGE" == "all" || "$LANGUAGE" == "$i" ]];then 
+        echo "Deploying Code Engine app for $i ..."
+        app_name="${PREFIX}-app-$i"
+
+        create_or_update=update
+        if ! ibmcloud ce app get --name $app_name >/dev/null 2>&1; then
+            echo -e "\nCreating the app '$app_name' ..."
+            create_or_update=create
+        else
+            echo -e "\nUpdating the app '$app_name' ..."
+        fi
+
+        # Create or update the app
+        ibmcloud ce application $create_or_update \
+            --name $app_name \
+            --context-dir "$i/" \
+            --src "." \
+            --memory 0.5G \
+            --cpu 0.25 \
+            --env HTTPBIN_BASE_URL=https://httpbin.org
+        
+        # Annotate the app
+        kubectl patch kservice "$app_name" --type=json -p='[
+            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
+            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+        ]'
+    else 
+        continue;
+    fi
+done
+
+echo "Done"

@@ -13,5 +13,7 @@ set -ex
 export REGISTRY=${REGISTRY:-icr.io/codeengine}
 
 # First build the app's image and push it
-docker build ${NOCACHE} -t ${REGISTRY}/network-test-app -f Dockerfile . --platform linux/amd64
-docker push ${REGISTRY}/network-test-app
+cd node
+docker build ${NOCACHE} -t ${REGISTRY}/metrics-example-app-node -f Dockerfile . --platform linux/amd64
+docker push ${REGISTRY}/metrics-example-app-node
+cd ..
