@@ -20,6 +20,8 @@ source "${SCRIPT_DIR}/../common.sh"
 # Clean up previous run
 function clean() {
     (
+        target_resource_group $resource_group_name
+
         ibmcloud ce project select --name ${ce_project_name} --quiet 2>/dev/null
         if [ $? == 0 ]; then
             ibmcloud ce project delete --name ${ce_project_name} --force --hard --no-wait 2>/dev/null
