@@ -1,1 +1,0 @@
-{"agent_name": "City_Expert", "input": [{"role": "User", "parts": [{"content": "{\"city\": \"Stuttgart\", \"country\": \"Germany\", \"currency\": \"EUR\"}"}]}]}
