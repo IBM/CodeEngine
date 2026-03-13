@@ -1,8 +1,8 @@
 {
-  "name": "network-test-app",
+  "name": "metrics-example",
   "version": "1.0.0",
   "description": "App to test connectivity to IBM Cloud Services",
-  "main": "app.js",
+  "main": "app.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,7 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.22.1",
-    "pg": "^8.13.0"
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "prom-client": "^15.1.3"
   }
 }
