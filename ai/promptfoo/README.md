@@ -16,7 +16,7 @@
 
 ## Why Code Engine is a great fit
 
-Using **[IBM Cloud Code Engine](https://www.ibm.com/products/code-engine)** you can host promptfoo's web UI and create a centralized hub for your team's LLM testing and evaluation workflows.
+Using **[IBM Cloud Code Engine](https://www.ibm.com/products/code-engine)** you can run promptfoo evaluations in parallel & scale and host promptfoo's web UI to create a centralized hub for your team's LLM testing and evaluation workflows.
 
 - **Managed runtime:** Code Engine runs containers without managing servers, lowering operational overhead.
 - **Public endpoints:** Apps get a reachable URL out of the box, making it easy to share test results, red-team findings, and evaluation reports with your team.
@@ -24,6 +24,8 @@ Using **[IBM Cloud Code Engine](https://www.ibm.com/products/code-engine)** you 
 - **Integrates with COS:** Object storage (IBM Cloud Object Storage) can be mounted as a persistent data store for test results, configurations, datasets, and historical comparisons.
 - **Secure secrets & PDS:** Use Code Engine secrets and Persistent Data Stores (PDS) to store credentials and mount COS buckets securely.
 - **Team collaboration:** Centralized deployment enables teams to share test suites, compare results, and maintain a single source of truth for LLM quality metrics.
+- **Batch Jobs:** Use Code Engine jobs to run evaluations and tests asynchronously and in parallel
+- **Cron Trigger:** Schedule jobs based on a timer to run tests, collect data, and generate reports
 
 ## Deploy 
 
@@ -77,6 +79,7 @@ You can run promptfoo evaluations locally and share the results with your deploy
 - Run evaluations on your local machine with your preferred configuration
 - View and share results through the hosted web UI
 - Collaborate with team members by pointing them to the shared URL
+
 
 ### Setup
 
@@ -136,13 +139,67 @@ promptfoo eval
 promptfoo share
 ```
 
-This will open the local viewer, but you can also access the shared results through your deployed Code Engine URL.
+### Running evaluations asynchronously
 
-![](./images/promptfoo_ui.png)
+If you need to run many evaluations you can run them as [Code Engine jobs](https://cloud.ibm.com/docs/codeengine?topic=codeengine-cebatchjobs) asynchronously and in parallel within the same project. 
+
+```bash
+# create a config map from the promptfooconfig.yaml file
+ibmcloud ce configmap create -n promptfooconfig --from-file promptfooconfig.yaml
+
+# submit the job
+ibmcloud ce jobrun submit -n promptfoo-eval-1 --mount-configmap /app/config=promptfooconfig --image ghcr.io/promptfoo/promptfoo:latest --command promptfoo --arg eval --arg "-c" --arg "/app/config/promptfooconfig.yaml" 
+
+# view logs of the job run
+ibmcloud ce jobrun logs -n promptfoo-eval-1
+```
+
+The results will look as follows:
+
+```
+promptfoo-eval-1-0-0/promptfoo-eval-1:
+Starting evaluation eval-LcA-2026-03-18T16:09:03
+Running 4 test cases (up to 4 at a time)...
+Creating cache folder at /home/promptfoo/.promptfoo/cache.
+
+┌────────────────────────────────────────┬────────────────────────────────────────┬────────────────────────────────────────┐
+│ topic                                  │ [sonar-pro] Write a tweet about        │ [sonar-pro] Write a concise, funny     │
+│                                        │ {{topic}}                              │ tweet about {{topic}}                  │
+├────────────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────┤
+│ bananas                                │ [PASS] Bananas are booming! 🌍 Global  │ [PASS] "Why did the banana go to       │
+│                                        │ market hitting $147.82B in 2026, up    │ therapy? It had too many emotional     │
+│                                        │ 3.1% YoY, fueled by health perks like  │ **peelings** and couldn't find its     │
+│                                        │ potassium & fiber. Rwanda leads per    │ a-peel!"[1][2]                         │
+│                                        │ capita at 116kg/year—who's stocking    │                                        │
+│                                        │ up? 🍌📈[1][4]                         │                                        │
+├────────────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────┤
+│ avocado toast                          │ [PASS] Gordon Ramsay loves **avocado   │ [PASS] Here are some tweet-ready       │
+│                                        │ toast** done right—with black sesame   │ avocado toast jokes you can use:       │
+│                                        │ seeds, lemon zest, chili flakes,       │ **"Toast got real. That's avo toast to │
+│                                        │ chorizo & tomatoes—but he's ready to   │ perfection."**[1]                      │
+│                                        │ scream over lazy "smashed avocado"     │ **"I came for toast but stayed for the │
+│                                        │ everywhere in 2026! Elevate it, chefs! │ avo vibes."**[1]                       │
+│                                        │ 🍞🥑🔥[1]                              │ **"Brunch without avocado is toast     │
+│                                        │                                        │ without purpose."**[1]                 │
+│                                        │                                        │ **"You're the...                       │
+└────────────────────────────────────────┴────────────────────────────────────────┴────────────────────────────────────────┘
+✓ Eval complete
+
+Total Tokens: 334
+  Eval: 334 (32 prompt, 302 completion)
+
+Results: ✓ 4 passed, 0 failed, 0 errors (100%)
+Duration: 5s (concurrency: 4)
+
+Progress: 4/4 results shared (100%)
+» ✓ https://promptfoo.app/eval/eval-gsm-2026-03-18T16:09:03
+```
 
 ### Sharing results
 
 When you run `promptfoo eval` with the `sharing.apiBaseUrl` configured, your evaluation results are automatically uploaded to the deployed application. Team members can then access these results by visiting the Code Engine URL.
+
+![](./images/promptfoo_ui.png)
 
 **Benefits:**
 - **Centralized results:** All team members can view evaluation results in one place
