@@ -7,9 +7,6 @@ mcp_server_url = os.getenv("MCP_SERVER_URL", default="http://localhost:8080/mcp"
 # HTTP server
 client = Client(mcp_server_url)
 
-# Local Python script
-#client = Client("../src/main.py")
-
 async def main():
     async with client:
         # Basic server interaction
@@ -24,7 +21,7 @@ async def main():
         print("Available prompts:", prompts)
 
         # Execute operations
-        result = await client.call_tool("process_data", {"input": "Hello, FastMCP!"})
-        print(result)
+        result = await client.call_tool("ascii_art", {"input": "Code Engine"})
+        print(result.content[0].text)
 
 asyncio.run(main())
