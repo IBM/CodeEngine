@@ -24,7 +24,7 @@ This repository includes a convenience script `deploy.sh` that automates the com
 
 **Prerequisites**
 
-Create an IBM Cloud account on the target Code Engine provider (e.g., IBM Cloud Code Engine) and [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
+Create an IBM Cloud account and [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
 
 **Deploy** 
