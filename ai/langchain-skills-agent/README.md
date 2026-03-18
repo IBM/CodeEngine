@@ -97,39 +97,6 @@ langchain-skills-agent/
    curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
    ```
 
-### Local Development
-
-1. **Clone and setup**:
-   ```bash
-   cd langchain-skills-agent
-   cp .env.sample .env
-   # Edit .env with your API credentials
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   cd src
-   pip install -e .
-   # or with uv:
-   uv sync
-   ```
-
-3. **Run locally**:
-   ```bash
-   python main.py
-   ```
-
-4. **Test the agent**:
-   ```bash
-   # Visit the landing page
-   open http://localhost:8080
-
-   # Or use the API
-   curl -X POST http://localhost:8080/runs \
-     -H "Content-Type: application/json" \
-     -d @payload/payload.json
-   ```
-
 ## ☁️ Deploy to IBM Cloud Code Engine
 
 ### Configuration
@@ -173,6 +140,39 @@ Remove all created resources:
 ```bash
 ./deploy.sh clean
 ```
+
+### Local Development
+
+1. **Clone and setup**:
+   ```bash
+   cd langchain-skills-agent
+   cp .env.sample .env
+   # Edit .env with your API credentials
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   cd src
+   pip install -e .
+   # or with uv:
+   uv sync
+   ```
+
+3. **Run locally**:
+   ```bash
+   python main.py
+   ```
+
+4. **Test the agent**:
+   ```bash
+   # Visit the landing page
+   open http://localhost:8080
+
+   # Or use the API
+   curl -X POST http://localhost:8080/runs \
+     -H "Content-Type: application/json" \
+     -d @payload/payload.json
+   ```
 
 ## 🔌 API Endpoints
 
@@ -301,40 +301,11 @@ The `skill_loader.py` module:
 
 ## 📚 Learn More
 
-- [LangChain Documentation](https://python.langchain.com/)
 - [IBM Cloud Code Engine](https://cloud.ibm.com/docs/codeengine)
+- [LangChain Documentation](https://python.langchain.com/)
 - [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai)
 - [Agent Communication Protocol](https://github.com/IBM/agent-communication-protocol)
 
-## 🤝 Contributing
-
-To extend this agent:
-
-1. Add new skills in `src/skills/`
-2. Follow the skill structure (metadata + implementation)
-3. Skills are automatically discovered
-4. Test locally before deploying
-
-## 📝 License
-
-This is a sample implementation for educational purposes.
-
-## 🆘 Troubleshooting
-
-### Skills not loading
-- Check that `skill.md` has valid YAML frontmatter
-- Ensure `__init__.py` exports the tool function
-- Verify the tool function name matches the directory name
-
-### API errors
-- Verify your `.env` configuration
-- Check API key validity
-- Ensure the model name is correct for your provider
-
-### Deployment issues
-- Confirm IBM Cloud CLI is installed and logged in
-- Check that Code Engine plugin is up to date
-- Verify resource group and region settings
 
 ---
 
