@@ -2,7 +2,16 @@ from typing import Any
 from fastmcp import FastMCP
 import weather_api
 
-mcp = FastMCP("Weather MCP Server on Code Engine")
+mcp = FastMCP(name="Weather MCP Server on Code Engine", instructions="""
+OpenWeatherMap MCP Server
+        
+        This server provides comprehensive and live weather data from OpenWeatherMap API.
+        
+        Available tools:
+        - get_current_weather: Current weather for any location
+        - get_forecast: 5-day weather forecast
+        - search_location: Find locations by name
+""")
 
 
 @mcp.tool
