@@ -189,6 +189,12 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 		sb.WriteString("\n")
 	}
 
+	// Add indicator metric for Sysdig dashboard discovery
+	sb.WriteString("# HELP ibm_codeengine_instance_resources Indicator metric for IBM Cloud Code Engine resource monitoring\n")
+	sb.WriteString("# TYPE ibm_codeengine_instance_resources gauge\n")
+	sb.WriteString("ibm_codeengine_instance_resources{status=\"ready\"} 1\n")
+	sb.WriteString("\n")
+
 	return sb.String()
 }
 
