@@ -75,8 +75,16 @@ curl -s -X POST  $url/mcp \
     "params": {}
   }' | grep "data" | sed s/"data: "//g | jq . 
 
-print_msg "\nCall tool 'ascii_art' with input 'Code Engine'"
-text=$(curl -s -X POST  $url/mcp \
+# Stuttgart coordinates
+STUTTGART_LAT=48.7758
+STUTTGART_LON=9.1829
+
+print_msg "\n=========================================="
+print_msg "WEATHER TOOLS DEMONSTRATION FOR STUTTGART"
+print_msg "==========================================\n"
+
+print_msg "\n1. Search for 'Stuttgart' location"
+curl -s -X POST  $url/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Accept: text/event-stream" \
@@ -86,14 +94,51 @@ text=$(curl -s -X POST  $url/mcp \
     "id": 1,
     "method": "tools/call",
     "params": {
-      "name": "ascii_art",
+      "name": "search_location",
       "arguments": {
-        "input": "Code Engine"
+        "query": "Stuttgart"
       }
     }
-  }' | grep "data" | sed s/"data: "//g | jq ".result.content[0].text")
+  }' | grep "data" | sed s/"data: "//g | jq -r ".result.content[0].text"
 
-echo -e $text
+print_msg "\n2. Get current weather for Stuttgart"
+curl -s -X POST  $url/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "Accept: text/event-stream" \
+  -H "Mcp-Session-Id: $session" \
+  -d "{
+    \"jsonrpc\": \"2.0\",
+    \"id\": 1,
+    \"method\": \"tools/call\",
+    \"params\": {
+      \"name\": \"get_current_weather\",
+      \"arguments\": {
+        \"latitude\": $STUTTGART_LAT,
+        \"longitude\": $STUTTGART_LON
+      }
+    }
+  }" | grep "data" | sed s/"data: "//g | jq -r ".result.content[0].text"
+
+print_msg "\n3. Get 7-day weather forecast for Stuttgart"
+curl -s -X POST  $url/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "Accept: text/event-stream" \
+  -H "Mcp-Session-Id: $session" \
+  -d "{
+    \"jsonrpc\": \"2.0\",
+    \"id\": 1,
+    \"method\": \"tools/call\",
+    \"params\": {
+      \"name\": \"get_weather_forecast\",
+      \"arguments\": {
+        \"latitude\": $STUTTGART_LAT,
+        \"longitude\": $STUTTGART_LON,
+        \"days\": 7
+      }
+    }
+  }" | grep "data" | sed s/"data: "//g | jq -r ".result.content[0].text"
 
 
 

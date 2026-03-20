@@ -1,9 +1,9 @@
-FastMCP — Fast, tiny MCP server example
-======================================
+FastMCP — Weather MCP Server
+============================
 
 Overview
 --------
-This directory contains a minimal FastMCP server example and a companion client. FastMCP demonstrates a tiny, runnable implementation of an MCP-compatible service (Model Context Protocol) intended for local testing and quick deployment to cloud platforms.
+This directory contains a FastMCP weather server example and a companion client. The server provides real-time weather information and forecasts using the free Open-Meteo API. It demonstrates a practical implementation of an MCP-compatible service (Model Context Protocol) for weather data, intended for local testing and quick deployment to [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine).
 
 ![](./images/architecture.png)
 
@@ -32,39 +32,83 @@ Why Code Engine?
 - **Simple deployment**: Integrates with container registries and CI/CD pipelines.
 - **Managed endpoint**: Provides a secure http endpoint with a managed certificate.
 
-A very tiny MCP Server
-----------------------
+Weather MCP Server Features
+---------------------------
+
+The server provides three weather-related tools:
+
+1. **search_location**: Search for locations by name to get coordinates
+2. **get_current_weather**: Get current weather conditions for specific coordinates
+3. **get_weather_forecast**: Get weather forecast for 1-16 days
 
 The Python source code for the MCP server is located in [./server/main.py](./server/main.py):
 
 ```python
 from typing import Any
 from fastmcp import FastMCP
-from art import text2art
+import weather_api
 
-mcp = FastMCP("My FastMCP Server on Code Engine")
+mcp = FastMCP("Weather MCP Server on Code Engine")
 
 @mcp.tool
-def ascii_art(input: str) -> str:
-    """Take an arbitraty input and return it as an ASCII art banner"""
+async def search_location(query: str) -> str:
+    """
+    Search for a location by name to get coordinates for weather queries.
+    
+    Args:
+        query: The location name to search for (e.g., "London", "New York", "Tokyo")
+        
+    Returns:
+        A formatted string with matching locations and their coordinates
+    """
+    try:
+        data = await weather_api.search_location(query)
+        return weather_api.format_location_results(data)
+    except Exception as e:
+        return f"Error searching for location: {str(e)}"
 
-    if input == "Code Engine":
-        response = ". ___  __  ____  ____\n"
-        response += "./ __)/  \\(    \\(  __)\n"
-        response += "( (__(  O )) D ( ) _)\n"
-        response += ".\\___)\\__/(____/(____)\n"
-        response += ".____  __ _   ___  __  __ _  ____\n"
-        response += "(  __)(  ( \\ / __)(  )(  ( \\(  __)\n"
-        response += ".) _) /    /( (_ \\ )( /    / ) _)\n"
-        response += "(____)\\_)__) \\___/(__)\\_)__)(____)\n"
-    else:
-        response: str = text2art(input)
+@mcp.tool
+async def get_current_weather(latitude: float, longitude: float) -> str:
+    """
+    Get the current weather conditions for a specific location.
+    
+    Args:
+        latitude: The latitude of the location (e.g., 51.5074 for London)
+        longitude: The longitude of the location (e.g., -0.1278 for London)
+        
+    Returns:
+        A formatted string with current weather information
+    """
+    try:
+        data = await weather_api.get_current_weather(latitude, longitude)
+        return weather_api.format_current_weather(data)
+    except Exception as e:
+        return f"Error getting current weather: {str(e)}"
 
-    return response
+@mcp.tool
+async def get_weather_forecast(latitude: float, longitude: float, days: int = 7) -> str:
+    """
+    Get the weather forecast for a specific location.
+    
+    Args:
+        latitude: The latitude of the location
+        longitude: The longitude of the location
+        days: Number of days to forecast (1-16, default: 7)
+        
+    Returns:
+        A formatted string with daily weather forecast
+    """
+    try:
+        data = await weather_api.get_weather_forecast(latitude, longitude, days)
+        return weather_api.format_weather_forecast(data)
+    except Exception as e:
+        return f"Error getting weather forecast: {str(e)}"
 
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8080)
 ```
+
+The weather API functions are separated in [./server/weather_api.py](./server/weather_api.py) and use the free Open-Meteo API (no API key required).
 
 Deploying the server to Code Engine
 ----------------------------------
@@ -99,12 +143,13 @@ https://fastmcp.26n4g2nfyw7s.eu-de.codeengine.appdomain.cloud/mcp
 
 Testing the deployed server with call_tool.sh
 ---------------------------------------------
-The `call_tool.sh` script provides a quick way to test your deployed MCP server directly from the command line. It demonstrates the complete MCP protocol flow:
+The `call_tool.sh` script provides a quick way to test your deployed MCP server directly from the command line. It demonstrates the complete MCP protocol flow with weather data for Stuttgart:
 
 1. Initializes an MCP session with the server
 2. Lists all available tools
-3. Calls the `ascii_art` tool with "Code Engine" as input
-4. Displays the ASCII art output
+3. Searches for Stuttgart location
+4. Gets current weather for Stuttgart (coordinates: 48.7758, 9.1829)
+5. Gets 7-day weather forecast for Stuttgart
 
 Run the script from the `mcp_server_fastmcp` directory:
 
@@ -112,7 +157,7 @@ Run the script from the `mcp_server_fastmcp` directory:
 ./call_tool.sh
 ```
 
-The script will automatically connect to your deployed FastMCP application and execute a test call. You should see output similar to:
+The script will automatically connect to your deployed FastMCP application and execute weather queries for Stuttgart. You should see output similar to:
 
 ```
 FastMCP application is reachable under the following url:
@@ -122,16 +167,32 @@ initialize session
 Session initialized: <session-id>
 
 List tools
-Call tool 'ascii_art' with input 'Code Engine'
 
-. ___  __  ____  ____
-./ __)/  \(    \(  __)
-.( (__(  O )) D ( ) _)
-.\___)\\__/(____/(____)
-.____  __ _   ___  __  __ _  ____
-.(  __)(  ( \ / __)(  )(  ( \(  __)
-..) _) /    /( (_ \ )( /    / ) _)
-.(____)\\_)__) \\___/(__)\\_)__)(____)
+==========================================
+WEATHER TOOLS DEMONSTRATION FOR STUTTGART
+==========================================
+
+1. Search for 'Stuttgart' location
+Stuttgart, Baden-Württemberg, Germany (lat: 48.7758, lon: 9.1829)
+
+2. Get current weather for Stuttgart
+Current Weather:
+Condition: Partly cloudy
+Temperature: 15.2°C
+Feels like: 14.8°C
+Humidity: 65%
+Wind Speed: 12.5 km/h
+Precipitation: 0.0 mm
+
+3. Get 7-day weather forecast for Stuttgart
+Weather Forecast:
+
+2026-03-20:
+  Condition: Partly cloudy
+  Temperature: 8.5°C - 16.2°C
+  Precipitation: 0.2 mm (probability: 20%)
+  Max Wind Speed: 18.5 km/h
+...
 
 SUCCESS
 ```
@@ -147,7 +208,7 @@ Example `claude_desktop_config.json` entry that point to your deployed applicati
 ```json
 {
   "mcpServer": {
-    "ASCII Art FastMCP (Code Engine)": {
+    "Weather FastMCP (Code Engine)": {
       "command": "npx",
       "args": [
         "mcp-remote",
@@ -164,21 +225,24 @@ Save settings and restart Claude Desktop; the remote MCP server should appear as
 
 You can now chat with the MCP Server, e.g.
 
-**_"Create ASCII art for: Hello, World!"_**
+**_"What's the weather like in Stuttgart?"_**
 
-Claude will detect the tool and call the `ascii_art` function, responding with ASCII art output for your input text.
+or
+
+**_"Give me a 5-day weather forecast for Berlin"_**
+
+Claude will detect the appropriate weather tools and call them to provide current weather conditions or forecasts for the requested locations.
 
 ![](./images/claude_chat.png)
 
-Note, the LLM even detected the simplicity of our MCP Server.
-
 Building and using the Python client
 -----------------------------
-The `client` directory contains a small Python client to exercise the server.
+The `client` directory contains a small Python client to exercise the weather server.
 
 1. Create a virtual environment and install dependencies:
 
 ```bash
+cd client
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -192,8 +256,13 @@ Start the client by replacing the application URL from above as the `MCP_SERVER_
 MCP_SERVER_URL="https://fastmcp.26n4g2nfyw7s.eu-de.codeengine.appdomain.cloud/mcp" python client.py
 ```
 
+The client will demonstrate all three weather tools using Stuttgart as an example location:
+- Search for Stuttgart location
+- Get current weather for Stuttgart
+- Get 7-day weather forecast for Stuttgart
+
 3. Inspect and adapt
-- Open `client.py` to find example calls. The client is intentionally minimal so you can adapt it to your tooling or CI.
+- Open `client.py` to find example calls. The client demonstrates how to use all weather tools and can be adapted to query different locations or forecast periods.
 
 
 What's next?
