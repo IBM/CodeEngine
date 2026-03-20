@@ -225,11 +225,7 @@ Save settings and restart Claude Desktop; the remote MCP server should appear as
 
 You can now chat with the MCP Server, e.g.
 
-**_"What's the weather like in Stuttgart?"_**
-
-or
-
-**_"Give me a 5-day weather forecast for Berlin"_**
+**_"Get the current weather and forecast of New York using the tool deployed in Code Engine :-)"_**
 
 Claude will detect the appropriate weather tools and call them to provide current weather conditions or forecasts for the requested locations.
 
