@@ -2,10 +2,10 @@
 set -eo pipefail
 
 PREFIX="${PREFIX:=metrics-example}"
-LANGUAGE="${1:=all}"
+LANGUAGE="${LANGUAGE:=all}"
 
 # Create the Code Engine project if it does not exist, yet
-if ! ibmcloud ce project get --name "$PREFIX";then 
+if ! ibmcloud ce project get --name "$PREFIX" >/dev/null 2>&1;then 
     ibmcloud ce project create --name "$PREFIX"
 fi
 
@@ -13,7 +13,10 @@ fi
 ibmcloud ce project select --name "$PREFIX" --kubecfg
 
 languages=(
+    go
+    java
     node
+    python
 )
 
 for i in "${languages[@]}"; do
@@ -37,7 +40,7 @@ for i in "${languages[@]}"; do
             --src "." \
             --memory 0.5G \
             --cpu 0.25 \
-            --env HTTPBIN_BASE_URL=https://httpbin.org
+            --env HTTPBIN_BASE_URL=https://httpbin.2690nz3tkq6c.eu-es.codeengine.appdomain.cloud
         
         # Annotate the app
         kubectl patch kservice "$app_name" --type=json -p='[

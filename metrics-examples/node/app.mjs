@@ -78,7 +78,7 @@ const computeDuration = new promClient.Histogram({
 register.registerMetric(computeDuration);
 
 if (process.env.METRICS_COLLECT_NODE_METRICS_ENABLED === "true") {
-  promClient.collectDefaultMetrics({ register, prefix: METRICS_NAME_PREFIX });
+  promClient.collectDefaultMetrics({ register });
 }
 
 // ====================================

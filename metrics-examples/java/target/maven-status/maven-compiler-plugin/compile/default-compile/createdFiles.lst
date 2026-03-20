@@ -1,0 +1,4 @@
+com/ibm/codeengine/metrics/service/ComputeService.class
+com/ibm/codeengine/metrics/config/MetricsConfig.class
+com/ibm/codeengine/metrics/model/OutboundCallResult.class
+com/ibm/codeengine/metrics/MetricsApplication.class
