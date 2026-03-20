@@ -25,6 +25,13 @@ or in **IBM Cloud Logs** (see [instructions](#ibm-cloud-logs-setup))
 
 ### Setup Instructions
 
+The metrics collector supports two authentication methods for accessing IBM Cloud Monitoring:
+
+- **Option 1: Trusted Profile Authentication (Recommended)** - Automatically obtains monitoring API keys using IBM Cloud Trusted Profiles
+- **Option 2: Explicit API Key Secret** - Manually create and mount a monitoring API key as a secret
+
+#### Prerequisites (Both Options)
+
 **Step 1:** You need an IBM Cloud Monitoring instance
 ```bash
 REGION=<yourMonitoringInstanceRegion>
@@ -32,16 +39,81 @@ MONITORING_INSTANCE_NAME="<yourMonitoringInstanceName>"
 MONITORING_INSTANCE_GUID=$(ibmcloud resource service-instance "$MONITORING_INSTANCE_NAME" -o JSON|jq -r '.[0].guid')
 echo "MONITORING_INSTANCE_GUID: '$MONITORING_INSTANCE_GUID'"
 ```
+
 **Step 2:** The collector must run in a Code Engine project
 ```bash
-# Create new Code Engine project 
+# Create new Code Engine project
 ibmcloud ce project create --name <yourCodeEngineProjectName>
 
 # Select an existing Code Engine project
 ibmcloud ce project select --name <yourProjectName>
 ```
 
-**Step 3:** Create a secret with your IBM Cloud Monitoring API token
+#### Option 1: Trusted Profile Authentication (Recommended)
+
+This method automatically obtains the monitoring API key using IBM Cloud Trusted Profiles. No manual secret creation or rotation is required.
+
+**Step 3a:** Create an IBM Cloud Trusted Profile
+
+Create a Trusted Profile that allows Code Engine compute resources to authenticate:
+
+```bash
+# Create the Trusted Profile
+ibmcloud iam trusted-profile-create metrics-collector-profile \
+    --description "Trusted profile for Code Engine metrics collector"
+
+# Get the Trusted Profile ID
+TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profiles --output json | jq -r '.[] | select(.name=="metrics-collector-profile") | .id')
+
+# Add Code Engine compute resources as trusted entities
+ibmcloud iam trusted-profile-rule-create metrics-collector-profile \
+    --name code-engine-rule \
+    --type Profile-CR \
+    --cr-type CE \
+    --conditions claim:project_name,operator:EQUALS,value:"$(ibmcloud ce proj current --output json|jq -r '.name')" \
+    --conditions claim:component_type,operator:EQUALS,value:"job" \
+    --conditions claim:component_name,operator:EQUALS,value:"metrics-collector"
+
+# Grant the profile access to the Monitoring instance
+ibmcloud iam trusted-profile-policy-create metrics-collector-profile \
+    --roles Viewer,Writer \
+    --service-name sysdig-monitor \
+    --service-instance $MONITORING_INSTANCE_GUID
+```
+
+**Note:** Replace `<your-ce-project-namespace>` with your Code Engine project's Kubernetes namespace (typically in the format `<project-guid>`).
+
+**Step 4a:** Create your metrics-collector job with Trusted Profile configuration
+```bash
+ibmcloud ce job create \
+    --name metrics-collector \
+    --src "." \
+    --mode daemon \
+    --cpu 0.25 \
+    --memory 0.5G \
+    --service-account reader \
+    --build-size xlarge \
+    --trusted-profiles-enabled \
+    --env INTERVAL=30 \
+    --env METRICS_ENABLED=true \
+    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.private.${REGION}.monitoring.cloud.ibm.com \
+    --env CE_PROJECT_NAME="$(ibmcloud ce proj current --output json|jq -r '.name')" \
+    --env MONITORING_INSTANCE_GUID="$MONITORING_INSTANCE_GUID" \
+    --env MONITORING_REGION="$REGION" \
+    --env TRUSTED_PROFILE_NAME="metrics-collector-profile"
+```
+
+**Step 5a:** Submit a daemon job run
+```bash
+ibmcloud ce jobrun submit \
+    --job metrics-collector
+```
+
+#### Option 2: Explicit API Key Secret
+
+This method requires manually creating and mounting a monitoring API key. Use this option for local development, testing, or when Trusted Profiles are not available.
+
+**Step 3b:** Create a secret with your IBM Cloud Monitoring API token
 ```bash
 # Obtain the Monitoring API token of the IBM Cloud Monitoring instance
 # using the IAM access token of the current IBM CLI Session
@@ -53,7 +125,7 @@ ibmcloud ce secret create \
     --from-literal monitoring-apikey=$MONITORING_INSTANCE_MONITORING_API_KEY
 ```
 
-**Step 4:** Create your metrics-collector job with the required configuration
+**Step 4b:** Create your metrics-collector job with the required configuration
 ```bash
 ibmcloud ce job create \
     --name metrics-collector \
@@ -70,13 +142,16 @@ ibmcloud ce job create \
     --mount-secret /etc/secrets=monitoring-apikey
 ```
 
-**Step 5:** Submit a daemon job run**
+**Step 5b:** Submit a daemon job run
 ```bash
 ibmcloud ce jobrun submit \
     --job metrics-collector
 ```
 
-**Step 6:** Import the "IBM Cloud Code Engine - Component Resource Overview" dashboard
+#### Import Dashboard
+
+After setting up the metrics collector with either authentication method, import the dashboard:
+
 ```bash
 # Load the most recent dashboard configuration
 CE_MONITORING_DASHBOARD=$(curl -sL https://raw.githubusercontent.com/IBM/CodeEngine/main/metrics-collector/setup/ibm-cloud-monitoring/code-engine-component-resource-overview.json)
@@ -205,14 +280,36 @@ app:"codeengine" AND message.metric:"instance-resources"
 
 ### Troubleshooting & Configuration
 
-If the container fails to start with `METRICS_ENABLED=true`, check the logs for:
-- Missing `/etc/secrets/monitoring-apikey` file
-- Missing or wrong `METRICS_REMOTE_WRITE_FQDN` environment variable
+#### Common Issues
+
+**Trusted Profile Authentication Failures:**
+- **Missing environment variables**: Ensure `MONITORING_INSTANCE_GUID`, `MONITORING_REGION`, and `TRUSTED_PROFILE_NAME` are all set
+- **Container resource token not found**: Verify the job is running in Code Engine with proper service account permissions
+- **IAM token request failed**: Check that the Trusted Profile exists and has the correct trust relationship configured
+- **Monitoring API key retrieval failed**: Verify the Trusted Profile has appropriate permissions (Viewer, Writer) for the Monitoring instance
+- **Invalid region**: Ensure `MONITORING_REGION` matches your Monitoring instance region (e.g., `us-south`, `eu-de`, `eu-gb`)
+
+**Explicit Secret Authentication Failures:**
+- **Missing `/etc/secrets/monitoring-apikey` file**: Ensure the secret is created and properly mounted
+- **Invalid API key**: Regenerate the monitoring API key and update the secret
+
+**General Issues:**
+- **Missing or wrong `METRICS_REMOTE_WRITE_FQDN`**: Verify the endpoint matches your region's ingestion endpoint
+- **Prometheus agent fails to start**: Check the logs for configuration errors or network connectivity issues
 
 #### Environment Variables
 
+**Core Configuration:**
 - **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected from the Kubernetes API endpoint in daemon mode.
 - **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
 - **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
 - **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
 - **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
+
+**Trusted Profile Authentication (Option 1):**
+- **`MONITORING_INSTANCE_GUID`**: The GUID of your IBM Cloud Monitoring instance (required for Trusted Profile authentication)
+- **`MONITORING_REGION`**: The region where your Monitoring instance is deployed, e.g., `us-south`, `eu-de`, `eu-gb` (required for Trusted Profile authentication)
+- **`TRUSTED_PROFILE_NAME`**: The name of the IBM Cloud Trusted Profile to use for authentication (required for Trusted Profile authentication)
+- **`CR_TOKEN_FILENAME`** (optional): Override the default container resource token file path (default: `/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token`)
+
+**Note:** When all three Trusted Profile environment variables are set, the collector will attempt Trusted Profile authentication first. If it fails or the variables are not set, it will fall back to using a mounted secret at `/etc/secrets/monitoring-apikey`.
