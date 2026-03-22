@@ -94,7 +94,7 @@ fi
 project_guid=$(ibmcloud ce project get --name $ce_project_name --output json | jq -r '.guid')
 
 print_msg "\nCreating the MCP Server as a code engine application"
-ibmcloud ce app create --name fastmcp --build-source ./server --build-strategy buildpacks  --cpu 1 --memory 4G -p 8080  --wait-timeout 600 --min-scale 0 --scale-down-delay 120 --visibility public
+ibmcloud ce app create --name fastmcp --build-source ./server --build-strategy buildpacks  --cpu 1 --memory 4G -p 8080  --wait-timeout 600 --min-scale 1 --scale-down-delay 120 --visibility public
 
 while true; do
     ibmcloud ce app list
