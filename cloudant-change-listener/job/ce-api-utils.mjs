@@ -1,25 +1,20 @@
-import log4js from "log4js";
 import { IamAuthenticator } from "ibm-cloud-sdk-core";
 import CodeEngineV2 from "@ibm-cloud/ibm-code-engine-sdk/dist/code-engine/v2.js";
+import winston from "winston";
+const { combine, json } = winston.format;
 
-//
-// use a formatted logger to have timestamps in the log output 
-log4js.configure({
-  appenders: {
-    out: { type: "stdout" },
-  },
-  categories: {
-    default: { appenders: ["out"], level: process.env.LOGLEVEL || "debug" },
-  },
+const logger = winston.createLogger({
+  level: "debug",
+  transports: [new winston.transports.Console()],
+  format: combine(json()),
 });
-const logger = log4js.getLogger();
 
 let codeEngineApi;
 function getCodeEngineApi() {
   if (!codeEngineApi) {
     // Extracting the region from the CE_DOMAIN (us-south.codeengine.appdomain.cloud)
     const region = process.env.CE_DOMAIN.substring(0, process.env.CE_DOMAIN.indexOf("."));
-    logger.trace(`CE_DOMAIN: '${process.env.CE_DOMAIN}', region: '${region}'`);
+    logger.debug(`CE_DOMAIN: '${process.env.CE_DOMAIN}', region: '${region}'`);
   
     // Construct the Code Engine client using the IAM authenticator.
     // see: https://cloud.ibm.com/apidocs/codeengine/v2?code=node#authentication
@@ -36,17 +31,17 @@ function getCodeEngineApi() {
 
 export async function getJobConfig(projectId, configMapName) {
   const fn = "getJobConfig ";
-  logger.trace(`${fn}> configMapName: '${configMapName}'`);
+  logger.debug(`${fn}> configMapName: '${configMapName}'`);
   const configMap = await getConfigMap(projectId, configMapName);
-  logger.trace(`${fn}< configmap '${configMapName}' exists `);
+  logger.debug(`${fn}< configmap '${configMapName}' exists `);
   return configMap;
 }
 
 export async function updateJobConfig(projectId, configMapName, configDataToUpdate) {
   const fn = "updateJobConfig ";
-  logger.trace(`${fn}> configMapName: '${configMapName}', configDataToUpdate: '${JSON.stringify(configDataToUpdate)}'`);
+  logger.debug(`${fn}> configMapName: '${configMapName}', configDataToUpdate: '${JSON.stringify(configDataToUpdate)}'`);
   const updatedConfigMap = await updateConfigMap(projectId, configMapName, configDataToUpdate);
-  logger.trace(`${fn}< updated configmap '${JSON.stringify(updatedConfigMap)}'`);
+  logger.debug(`${fn}< updated configmap '${JSON.stringify(updatedConfigMap)}'`);
 }
 
 export async function isJobAlreadyRunning(projectId, jobName) {
@@ -55,7 +50,7 @@ export async function isJobAlreadyRunning(projectId, jobName) {
 
   try {
     const jobRunList = await listJobRuns(projectId, jobName);
-    logger.trace(`${fn}- jobRunList: '${JSON.stringify(jobRunList)}'`);
+    logger.debug(`${fn}- jobRunList: '${JSON.stringify(jobRunList)}'`);
 
     if (!jobRunList || !Array.isArray(jobRunList)) {
       logger.debug(`${fn}< false - unexpected response`);
@@ -115,7 +110,7 @@ async function listJobRuns(projectId, jobName) {
     logger.debug(`Successfully listed all runs of job '${jobName}' - duration: ${Date.now() - startTime}ms`);
     return allResults;
   } catch (err) {
-    logger.error(`Failed to list runs of job '${jobName}', err =`, err);
+    logger.error(`Failed to list runs of job '${jobName}'`, err);
     throw err;
   }
 }
@@ -142,7 +137,7 @@ async function updateConfigMap(projectId, name, configData) {
     logger.debug(`Successfully updated ConfigMap '${name}' - duration: ${Date.now() - startTime}ms`);
     return res.result;
   } catch (err) {
-    logger.error(`Failed to update ConfigMap '${JSON.stringify(params)}', err =`, err);
+    logger.error(`Failed to update ConfigMap '${JSON.stringify(params)}'`, err);
     throw err;
   }
 }
@@ -166,7 +161,7 @@ async function getConfigMap(projectId, name) {
     logger.debug(`Successfully read ConfigMap '${name}' - duration: ${Date.now() - startTime}ms`);
     return res.result;
   } catch (err) {
-    logger.error(`Failed to read ConfigMap '${JSON.stringify(params)}', err =`, err);
+    logger.error(`Failed to read ConfigMap '${JSON.stringify(params)}'`, err);
     throw err;
   }
 }
