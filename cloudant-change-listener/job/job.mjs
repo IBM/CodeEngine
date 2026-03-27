@@ -62,7 +62,7 @@
  *   - CLOUDANTNOSQLDB_PORT      (optional) DB port number (default: 443)
  *   - CLOUDANTNOSQLDB_APIKEY    The IBM Cloud IAM APIkey if using IAMAuthentication on DB connection
  *   - DB_NAME                   The name of the DB to listen on.  e.g "MyTestDB"
- *   - DB_LAST_SEQ               (optional) last_seq value to use as start identifier for db changes feed.
+ *   - DB_LAST_SEQ               (optional) lastSeq value to use as start identifier for db changes feed.
  *   - CE_TARGET                 Full URL of the target Code Engine function or application that should receive events
  *   - DB_POST_CHANGES_TIMEOUT   Max wait-time in milliseconds on each long-polling call to the DB (default: 8000)
  *                               The poll timeout can be used to adapt the listening timeout to the settings defined on the cloudant DB 
@@ -73,21 +73,17 @@
  *************************************************************************************/
 import { CloudantV1 } from "@ibm-cloud/cloudant";
 import { BasicAuthenticator, IamAuthenticator } from "ibm-cloud-sdk-core";
-import log4js from "log4js";
 import { LRUCache } from "lru-cache";
 import { isJobAlreadyRunning, updateJobConfig, getJobConfig } from "./ce-api-utils.mjs";
+import winston from "winston";
+const { combine, json } = winston.format;
 
-//
-// use a formatted logger to have timestamps in the log output 
-log4js.configure({
-  appenders: {
-    out: { type: "stdout" },
-  },
-  categories: {
-    default: { appenders: ["out"], level: process.env.LOGLEVEL || "info" },
-  },
+const logger = winston.createLogger({
+  level: "debug",
+  transports: [new winston.transports.Console()],
+  format: combine(json()),
 });
-const logger = log4js.getLogger();
+
 
 logger.info('Starting Cloudant DB change listener ...');
 
@@ -358,7 +354,7 @@ function dbChangeHandler(change) {
       logger.info(`Successfully called CE URL of app or function with response: '${httpRes.status}' - duration: ${Date.now() - startTime}ms`);
     })
     .catch((err) => {
-      logger.error(`Failed to call CE URL of app or function'${targetCEUrl}', err =`, err);
+      logger.error(`Failed to call CE URL of app or function '${targetCEUrl}'`, err);
     });
 }
 
@@ -433,7 +429,7 @@ async function doListen() {
   //* change from which the listening starts. This since option is controlled in
   //* this loop by following rules:
   //*   - use DB_LAST_SEQ value on first cycle of loop
-  //*   - if waitForDbChanges() call provides a valid last_seq value in response, then
+  //*   - if waitForDbChanges() call provides a valid lastSeq value in response, then
   //*     use this value for the next run of the loop
   //*   - if waitForDbChanges() call fails with timeout or retryalbe error,
   //*     then re-run with same seq value as in the previous loop cycle
@@ -454,7 +450,7 @@ async function doListen() {
 
       //
       // Response exist when waitForDbChanges returns OK
-      // If response.result.results == 0 = {  "results": [] , "last_seq" : value }  means  timeout occur
+      // If response.result.results == 0 = {  "results": [] , "lastSeq" : value }  means  timeout occur
       // If response = <value>  Doc change received  ( feed.on(data,..))
       if (Object.keys(response).length === 0) {
         logger.info("Cloudant-SDK provided an unexpected empty response object on postChanges() call. Continue listening");
@@ -464,15 +460,15 @@ async function doListen() {
 
       if (!response || !response.result) {
         sinceToken = "now";
-        logger.info(`Got Ok postChanges result, but not a valid last_seq value. Start fresh by pulling only new changes.`);
+        logger.info(`Got Ok postChanges result, but not a valid lastSeq value. Start fresh by pulling only new changes.`);
         continue; // run waitForDbChanges with new since token
       }
 
-      if (Array.isArray(response.result.results) && response.result.results.length === 0 && response.result.last_seq) {
+      if (Array.isArray(response.result.results) && response.result.results.length === 0 && response.result.lastSeq) {
         //
         // Wait timed out and delivered the lastSeq value as start point for the next loop
-        sinceToken = response.result.last_seq;
-        lastHandledSeq = response.result.last_seq;
+        sinceToken = response.result.lastSeq;
+        lastHandledSeq = response.result.lastSeq;
         logger.info(`No changes detected in the given wait period. Assigned new since token from result.`);
         continue; // run waitForDbChanges with updated since token
       }
@@ -486,9 +482,9 @@ async function doListen() {
         });
 
         //
-        // Get the last_seq value to use in the next postChanges() query
-        sinceToken = response.result.last_seq;
-        lastHandledSeq = response.result.last_seq;
+        // Get the lastSeq value to use in the next postChanges() query
+        sinceToken = response.result.lastSeq;
+        lastHandledSeq = response.result.lastSeq;
         continue; // run waitForDbChanges with updated since token
       }
 
@@ -497,7 +493,7 @@ async function doListen() {
       // valid lastSeq number then continue the wrapper loop with
       // since = now
       sinceToken = "now";
-      logger.info(`Got Ok postChanges result, but not a valid last_seq value. Start fresh by pulling only new changes.`);
+      logger.info(`Got Ok postChanges result, but not a valid lastSeq value. Start fresh by pulling only new changes.`);
       continue;
     } catch (err) {
       // Handle how to proceed loop in case of WRAPPER_TIMEOUT
@@ -512,7 +508,7 @@ async function doListen() {
         continue;
       }
 
-      logger.error("Error in waitForDbChanges loop, err = ", err);
+      logger.error("Error in waitForDbChanges loop", err);
 
       // In case of unexpected error occur, then continue
       // with wrapper loop and since = 'now'
