@@ -1,5 +1,8 @@
 {
-  "name": "IBM Cloud Code Engine - Component Resource Overview",
+  "id": 172643,
+  "teamId": 24906,
+  "userId": 6863,
+  "name": "My custom Code Engine Metrics",
   "panels": [
     {
       "id": 1,
@@ -8,32 +11,32 @@
       "description": "",
       "nullValueDisplayText": null,
       "links": null,
-      "markdownSource": "Monitor vCPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `ibm_codeengine_component_type` (app, job, build)\n- `ibm_codeengine_component_name` (specific app/job/build name)",
+      "markdownSource": "Monitor custom application metrics for Code Engine applications.\n\n**Metrics included:**\n- Request rates by method and path\n- Outbound HTTP request performance\n- Database connection monitoring\n- Compute operation duration",
       "transparentBackground": false,
       "panelTitleVisible": true,
       "textAutosized": false
     },
     {
-      "id": 5,
+      "id": 2,
       "type": "advancedTimechart",
-      "name": "vCPU Utilization % (by Component)",
-      "description": "vCPU usage as percentage of limit, grouped by ibm_codeengine_component_name",
+      "name": "Request Rate (by Path)",
+      "description": "Rate of incoming requests grouped by path",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})) * 100",
+          "query": "rate(mymetrics_requests_total{$__scope}[5m])",
           "enabled": true,
           "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
+            "displayName": "Request Rate",
+            "timeSeriesDisplayNameTemplate": "{{method}} {{path}}",
             "type": "lines"
           },
           "format": {
-            "unit": "%",
-            "inputFormat": "0-100",
+            "unit": "number",
+            "inputFormat": "1",
             "displayFormat": "auto",
-            "decimals": 1,
+            "decimals": 2,
             "yAxis": "auto",
             "nullValueDisplayMode": "connectSolid",
             "minInterval": null
@@ -62,506 +65,22 @@
         "left": {
           "enabled": true,
           "displayName": null,
-          "unit": "%",
+          "unit": "number",
           "displayFormat": "auto",
           "decimals": null,
-          "minValue": 0.0,
+          "minValue": 0,
           "maxValue": null,
-          "minInputFormat": "0-100",
-          "maxInputFormat": "0-100",
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
           "scale": "linear"
         },
         "right": {
           "enabled": false,
           "displayName": null,
-          "unit": "%",
+          "unit": "number",
           "displayFormat": "auto",
           "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "0-100",
-          "maxInputFormat": "0-100",
-          "scale": "linear"
-        }
-      },
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "high",
-            "value": 80.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "ok",
-            "value": 0.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 6,
-      "type": "advancedTimechart",
-      "name": "Memory Utilization % (by Component)",
-      "description": "Memory usage as percentage of limit, grouped by ibm_codeengine_component_name",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
-            "type": "lines"
-          },
-          "format": {
-            "unit": "%",
-            "inputFormat": "0-100",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "connectSolid",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": false,
-            "delta": 1,
-            "timeFormat": "day"
-          }
-        }
-      ],
-      "legendConfiguration": {
-        "enabled": true,
-        "position": "right",
-        "layout": "table",
-        "showCurrent": true,
-        "showMax": true,
-        "showMin": true,
-        "width": null,
-        "height": null
-      },
-      "axesConfiguration": {
-        "bottom": {
-          "enabled": true
-        },
-        "left": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "0-100",
-          "maxInputFormat": "0-100",
-          "scale": "linear"
-        },
-        "right": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "1",
-          "maxInputFormat": "1",
-          "scale": "linear"
-        }
-      },
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "high",
-            "value": 80.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "ok",
-            "value": 30.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 8,
-      "type": "advancedNumber",
-      "name": "Total vCPU Utilization in %",
-      "description": "Overall vCPU utilization across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "(sum(ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum(ibm_codeengine_instance_cpu_limit_millicores{$__scope})) * 100",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "%",
-            "inputFormat": "0-100",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "medium",
-            "value": 90.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "ok",
-            "value": 30.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "none",
-            "value": 1.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 9,
-      "type": "advancedNumber",
-      "name": "Total Memory Utilization in %",
-      "description": "Overall memory utilization across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "(sum(ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum(ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "%",
-            "inputFormat": "0-100",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "medium",
-            "value": 80.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "ok",
-            "value": 30.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          },
-          {
-            "severity": "none",
-            "value": 1.0,
-            "inputFormat": "0-100",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 11,
-      "type": "advancedNumber",
-      "name": "Total Available vCPUs",
-      "description": "Overall number of available vCPUs across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum(ibm_codeengine_instance_cpu_limit_millicores{$__scope}) / 1000",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "number",
-            "inputFormat": "1",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "info",
-            "value": 80.0,
-            "inputFormat": "1",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 12,
-      "type": "advancedNumber",
-      "name": "Total Available Memory",
-      "description": "Overall amount of available memory across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum(ibm_codeengine_instance_memory_limit_bytes{$__scope})",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "byte",
-            "inputFormat": "B",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 13,
-      "type": "advancedNumber",
-      "name": "Total Used vCPUs",
-      "description": "Actual number of vCPUs that are used across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum(ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / 1000",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "number",
-            "inputFormat": "1",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [
-          {
-            "severity": "info",
-            "value": 80.0,
-            "inputFormat": "1",
-            "displayText": ""
-          }
-        ],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 14,
-      "type": "advancedNumber",
-      "name": "Total Used Memory",
-      "description": "Actual amount of memory used across all instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum(ibm_codeengine_instance_memory_usage_bytes{$__scope})",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "byte",
-            "inputFormat": "B",
-            "displayFormat": "auto",
-            "decimals": 1,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": true,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 2,
-      "type": "advancedTimechart",
-      "name": "vCPU Usage (per Instance)",
-      "description": "Current vCPU usage per instance",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "ibm_codeengine_instance_cpu_usage_millicores{$__scope}",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "CPU Usage",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
-            "type": "lines"
-          },
-          "format": {
-            "unit": "number",
-            "inputFormat": "1",
-            "displayFormat": "auto",
-            "decimals": 0,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "connectSolid",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": false,
-            "delta": 1,
-            "timeFormat": "day"
-          }
-        }
-      ],
-      "legendConfiguration": {
-        "enabled": true,
-        "position": "right",
-        "layout": "table",
-        "showCurrent": true,
-        "showMax": true,
-        "showMin": true,
-        "width": null,
-        "height": null
-      },
-      "axesConfiguration": {
-        "bottom": {
-          "enabled": true
-        },
-        "left": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
-          "maxValue": null,
-          "minInputFormat": "0-100",
-          "maxInputFormat": "0-100",
-          "scale": "linear"
-        },
-        "right": {
-          "enabled": true,
-          "displayName": null,
-          "unit": "auto",
-          "displayFormat": "auto",
-          "decimals": null,
-          "minValue": 0.0,
+          "minValue": 0,
           "maxValue": null,
           "minInputFormat": "1",
           "maxInputFormat": "1",
@@ -579,25 +98,66 @@
     },
     {
       "id": 3,
-      "type": "advancedTimechart",
-      "name": "Memory Usage (per Instance)",
-      "description": "Current memory usage per instance",
+      "type": "advancedNumber",
+      "name": "Total Requests",
+      "description": "Total number of requests received",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
         {
-          "query": "ibm_codeengine_instance_memory_usage_bytes{$__scope}",
+          "query": "sum(mymetrics_requests_total{$__scope})",
           "enabled": true,
           "displayInfo": {
-            "displayName": "Memory Usage",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
+            "displayName": "Total Requests",
+            "timeSeriesDisplayNameTemplate": null,
             "type": "lines"
           },
           "format": {
-            "unit": "byte",
-            "inputFormat": "B",
+            "unit": "number",
+            "inputFormat": "1",
             "displayFormat": "auto",
             "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "nullGap",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": true,
+            "delta": 1,
+            "timeFormat": "hour"
+          }
+        }
+      ],
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Duration (P95)",
+      "description": "95th percentile of outbound HTTP request duration",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "histogram_quantile(0.95, rate(mymetrics_outbound_request_duration_seconds_bucket{$__scope}[5m]))",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "P95 Duration",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
             "yAxis": "auto",
             "nullValueDisplayMode": "connectSolid",
             "minInterval": null
@@ -629,10 +189,10 @@
           "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
-          "minValue": 0.0,
+          "minValue": 0,
           "maxValue": null,
-          "minInputFormat": "B",
-          "maxInputFormat": "B",
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
           "scale": "linear"
         },
         "right": {
@@ -641,7 +201,180 @@
           "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
-          "minValue": 0.0,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 2,
+            "inputFormat": "s",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 1,
+            "inputFormat": "s",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Duration (Average)",
+      "description": "Average duration of outbound HTTP requests",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_outbound_request_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_outbound_request_duration_seconds_count{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Avg Duration",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "advancedTimechart",
+      "name": "Outbound Request Rate",
+      "description": "Rate of outbound HTTP requests by target and status",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_outbound_requests_total{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Request Rate",
+            "timeSeriesDisplayNameTemplate": "{{target}} {{method}} ({{status_code}})",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 2,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
           "maxValue": null,
           "minInputFormat": "1",
           "maxInputFormat": "1",
@@ -658,59 +391,18 @@
       }
     },
     {
-      "id": 15,
+      "id": 7,
       "type": "advancedNumber",
-      "name": "Components with Running Instances",
-      "description": "Number of Code Engine components that do have running instances",
+      "name": "Active DB Connections",
+      "description": "Current number of active database connections",
       "nullValueDisplayText": null,
       "links": null,
       "advancedQueries": [
         {
-          "query": "count(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_component_name))",
+          "query": "mymetrics_db_connections_active{$__scope}",
           "enabled": true,
           "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": null,
-            "type": "lines"
-          },
-          "format": {
-            "unit": "number",
-            "inputFormat": "1",
-            "displayFormat": "auto",
-            "decimals": 0,
-            "yAxis": "auto",
-            "nullValueDisplayMode": "nullGap",
-            "minInterval": null
-          },
-          "compareTo": {
-            "enabled": false,
-            "delta": 1,
-            "timeFormat": "hour"
-          }
-        }
-      ],
-      "numberThresholds": {
-        "useDefaults": null,
-        "values": [],
-        "base": {
-          "severity": "none",
-          "displayText": ""
-        }
-      }
-    },
-    {
-      "id": 16,
-      "type": "advancedNumber",
-      "name": "Running Instances",
-      "description": "Number of running Code Engine instances",
-      "nullValueDisplayText": null,
-      "links": null,
-      "advancedQueries": [
-        {
-          "query": "sum(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_component_name))",
-          "enabled": true,
-          "displayInfo": {
-            "displayName": "CPU %",
+            "displayName": "Active Connections",
             "timeSeriesDisplayNameTemplate": null,
             "type": "lines"
           },
@@ -734,8 +426,14 @@
         "useDefaults": null,
         "values": [
           {
-            "severity": "info",
-            "value": 80.0,
+            "severity": "high",
+            "value": 80,
+            "inputFormat": "1",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 50,
             "inputFormat": "1",
             "displayText": ""
           }
@@ -745,220 +443,269 @@
           "displayText": ""
         }
       }
-    }
-  ],
-  "scopeExpressionList": [
-    {
-      "operand": "ibm_codeengine_project_name",
-      "operator": "in",
-      "displayName": "",
-      "value": [],
-      "descriptor": {
-        "documentId": "ibm_codeengine_project_name",
-        "id": "ibm_codeengine_project_name",
-        "metricType": "tag",
-        "type": "string",
-        "scale": 0.0,
-        "name": "ibm_codeengine_project_name",
-        "description": "ibm_codeengine_project_name",
-        "namespaces": [
-          "cloudProvider",
-          "host.container",
-          "ecs",
-          "host.fs",
-          "host.file",
-          "host",
-          "kubernetes",
-          "kubernetes.cluster",
-          "kubernetes.daemonSet",
-          "kubernetes.deployment",
-          "kubernetes.job",
-          "kubernetes.namespace",
-          "kubernetes.node",
-          "kubernetes.pod",
-          "kubernetes.replicaSet",
-          "kubernetes.service",
-          "kubernetes.statefulSet",
-          "kubernetes.resourcequota",
-          "kubernetes.hpa",
-          "link",
-          "mesos",
-          "host.net",
-          "host.process",
-          "prometheus",
-          "swarm",
-          "prombeacon"
-        ],
-        "scopes": [],
-        "timeAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "groupAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "aggregationForGroup": "none",
-        "hidden": false,
-        "experimental": false,
-        "deferred": false,
-        "identity": false,
-        "canMonitor": false,
-        "canGroupBy": false,
-        "canFilter": true,
-        "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "ibm_codeengine_project_name",
-        "heuristic": false,
-        "documentType": "metric",
-        "segment": false,
-        "documentTimestamp": 1772465428162
-      },
-      "variable": true,
-      "isVariable": true
     },
     {
-      "operand": "ibm_codeengine_component_type",
-      "operator": "in",
-      "displayName": "",
-      "value": [],
-      "descriptor": {
-        "documentId": "ibm_codeengine_component_type",
-        "id": "ibm_codeengine_component_type",
-        "metricType": "tag",
-        "type": "string",
-        "scale": 0.0,
-        "name": "ibm_codeengine_component_type",
-        "description": "ibm_codeengine_component_type",
-        "namespaces": [
-          "cloudProvider",
-          "host.container",
-          "ecs",
-          "host.fs",
-          "host.file",
-          "host",
-          "kubernetes",
-          "kubernetes.cluster",
-          "kubernetes.daemonSet",
-          "kubernetes.deployment",
-          "kubernetes.job",
-          "kubernetes.namespace",
-          "kubernetes.node",
-          "kubernetes.pod",
-          "kubernetes.replicaSet",
-          "kubernetes.service",
-          "kubernetes.statefulSet",
-          "kubernetes.resourcequota",
-          "kubernetes.hpa",
-          "link",
-          "mesos",
-          "host.net",
-          "host.process",
-          "prometheus",
-          "swarm",
-          "prombeacon"
-        ],
-        "scopes": [],
-        "timeAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "groupAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "aggregationForGroup": "none",
-        "hidden": false,
-        "experimental": false,
-        "deferred": false,
-        "identity": false,
-        "canMonitor": false,
-        "canGroupBy": false,
-        "canFilter": true,
-        "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "ibm_codeengine_component_type",
-        "heuristic": false,
-        "documentType": "metric",
-        "segment": false,
-        "documentTimestamp": 1772465428162
+      "id": 8,
+      "type": "advancedTimechart",
+      "name": "Database Connections Over Time",
+      "description": "Active database connections timeline",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "mymetrics_db_connections_active{$__scope}",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Active Connections",
+            "timeSeriesDisplayNameTemplate": "DB Connections",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "number",
+            "inputFormat": "1",
+            "displayFormat": "auto",
+            "decimals": 0,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
       },
-      "variable": true,
-      "isVariable": true
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "number",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "1",
+          "maxInputFormat": "1",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 80,
+            "inputFormat": "1",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
     },
     {
-      "operand": "ibm_codeengine_component_name",
-      "operator": "in",
-      "displayName": "",
-      "value": [],
-      "descriptor": {
-        "documentId": "ibm_codeengine_component_name",
-        "id": "ibm_codeengine_component_name",
-        "metricType": "tag",
-        "type": "string",
-        "scale": 0.0,
-        "name": "ibm_codeengine_component_name",
-        "description": "ibm_codeengine_component_name",
-        "namespaces": [
-          "cloudProvider",
-          "host.container",
-          "ecs",
-          "host.fs",
-          "host.file",
-          "host",
-          "kubernetes",
-          "kubernetes.cluster",
-          "kubernetes.daemonSet",
-          "kubernetes.deployment",
-          "kubernetes.job",
-          "kubernetes.namespace",
-          "kubernetes.node",
-          "kubernetes.pod",
-          "kubernetes.replicaSet",
-          "kubernetes.service",
-          "kubernetes.statefulSet",
-          "kubernetes.resourcequota",
-          "kubernetes.hpa",
-          "link",
-          "mesos",
-          "host.net",
-          "host.process",
-          "prometheus",
-          "swarm",
-          "prombeacon"
-        ],
-        "scopes": [],
-        "timeAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "groupAggregations": [
-          "concat",
-          "distinct",
-          "count"
-        ],
-        "aggregationForGroup": "none",
-        "hidden": false,
-        "experimental": false,
-        "deferred": false,
-        "identity": false,
-        "canMonitor": false,
-        "canGroupBy": false,
-        "canFilter": true,
-        "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
-        "publicId": "ibm_codeengine_component_name",
-        "heuristic": false,
-        "documentType": "metric",
-        "segment": false,
-        "documentTimestamp": 1772465428162
+      "id": 9,
+      "type": "advancedTimechart",
+      "name": "Compute Operation Duration (P95)",
+      "description": "95th percentile of compute operation duration",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "histogram_quantile(0.95, rate(mymetrics_compute_duration_seconds_bucket{$__scope}[5m]))",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "P95 Duration",
+            "timeSeriesDisplayNameTemplate": "{{operation}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
       },
-      "variable": true,
-      "isVariable": true
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [
+          {
+            "severity": "high",
+            "value": 5,
+            "inputFormat": "s",
+            "displayText": ""
+          },
+          {
+            "severity": "medium",
+            "value": 3,
+            "inputFormat": "s",
+            "displayText": ""
+          }
+        ],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "advancedTimechart",
+      "name": "Compute Operation Duration (Average)",
+      "description": "Average duration of compute operations",
+      "nullValueDisplayText": null,
+      "links": null,
+      "advancedQueries": [
+        {
+          "query": "rate(mymetrics_compute_duration_seconds_sum{$__scope}[5m]) / rate(mymetrics_compute_duration_seconds_count{$__scope}[5m])",
+          "enabled": true,
+          "displayInfo": {
+            "displayName": "Avg Duration",
+            "timeSeriesDisplayNameTemplate": "{{operation}}",
+            "type": "lines"
+          },
+          "format": {
+            "unit": "relativeTime",
+            "inputFormat": "s",
+            "displayFormat": "auto",
+            "decimals": 3,
+            "yAxis": "auto",
+            "nullValueDisplayMode": "connectSolid",
+            "minInterval": null
+          },
+          "compareTo": {
+            "enabled": false,
+            "delta": 1,
+            "timeFormat": "day"
+          }
+        }
+      ],
+      "legendConfiguration": {
+        "enabled": true,
+        "position": "right",
+        "layout": "table",
+        "showCurrent": true,
+        "showMax": true,
+        "showMin": true,
+        "width": null,
+        "height": null
+      },
+      "axesConfiguration": {
+        "bottom": {
+          "enabled": true
+        },
+        "left": {
+          "enabled": true,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        },
+        "right": {
+          "enabled": false,
+          "displayName": null,
+          "unit": "auto",
+          "displayFormat": "auto",
+          "decimals": null,
+          "minValue": 0,
+          "maxValue": null,
+          "minInputFormat": "s",
+          "maxInputFormat": "s",
+          "scale": "linear"
+        }
+      },
+      "numberThresholds": {
+        "useDefaults": null,
+        "values": [],
+        "base": {
+          "severity": "none",
+          "displayText": ""
+        }
+      }
     }
   ],
+  "scopeExpressionList": [],
   "eventDisplaySettings": {
     "enabled": true,
     "queryParams": {
@@ -969,101 +716,96 @@
       "teamScope": false
     }
   },
-  "shared": true,
+  "shared": false,
   "public": false,
-  "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by ibm_codeengine_component_type and ibm_codeengine_component_name",
+  "version": 1,
+  "createdOn": 1773393216663,
+  "modifiedOn": 1773393216663,
+  "description": "Custom dashboard for monitoring application metrics including request rates, outbound HTTP performance, database connections, and compute operations",
   "layout": [
     {
       "panelId": 1,
       "x": 0,
       "y": 0,
-      "w": 7,
-      "h": 4
+      "w": 12,
+      "h": 3
     },
     {
-      "panelId": 5,
+      "panelId": 3,
+      "x": 12,
+      "y": 0,
+      "w": 6,
+      "h": 3
+    },
+    {
+      "panelId": 7,
+      "x": 18,
+      "y": 0,
+      "w": 6,
+      "h": 3
+    },
+    {
+      "panelId": 2,
       "x": 0,
-      "y": 4,
+      "y": 3,
       "w": 12,
       "h": 6
     },
     {
       "panelId": 6,
-      "x": 0,
-      "y": 10,
-      "w": 12,
-      "h": 5
-    },
-    {
-      "panelId": 8,
-      "x": 21,
-      "y": 0,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "panelId": 9,
-      "x": 21,
-      "y": 2,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "panelId": 11,
-      "x": 14,
-      "y": 0,
-      "w": 4,
-      "h": 2
-    },
-    {
-      "panelId": 12,
-      "x": 14,
-      "y": 2,
-      "w": 4,
-      "h": 2
-    },
-    {
-      "panelId": 13,
-      "x": 18,
-      "y": 0,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "panelId": 14,
-      "x": 18,
-      "y": 2,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "panelId": 2,
       "x": 12,
-      "y": 4,
+      "y": 3,
       "w": 12,
       "h": 6
     },
     {
-      "panelId": 3,
-      "x": 12,
-      "y": 10,
+      "panelId": 4,
+      "x": 0,
+      "y": 9,
       "w": 12,
-      "h": 5
+      "h": 6
     },
     {
-      "panelId": 15,
-      "x": 7,
-      "y": 0,
-      "w": 4,
-      "h": 4
+      "panelId": 5,
+      "x": 12,
+      "y": 9,
+      "w": 12,
+      "h": 6
     },
     {
-      "panelId": 16,
-      "x": 11,
-      "y": 0,
-      "w": 3,
-      "h": 4
+      "panelId": 8,
+      "x": 0,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 9,
+      "x": 0,
+      "y": 21,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 10,
+      "x": 12,
+      "y": 21,
+      "w": 12,
+      "h": 6
     }
   ],
-  "schema": 3
+  "sharingSettings": [],
+  "lastAccessedOnByCurrentUser": 1773393432664,
+  "publicNotation": false,
+  "publicToken": "a684571cfbef4f6faf46d268a3537a03",
+  "favorite": false,
+  "schema": 3,
+  "username": "Enrico Regge (reggeenr@de.ibm.com)",
+  "permissions": [
+    "dashboards.delete",
+    "dashboards.edit",
+    "dashboards.read",
+    "dashboards.transfer",
+    "dashboards.sharing"
+  ]
 }
