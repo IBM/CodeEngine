@@ -183,7 +183,7 @@
         "left": {
           "enabled": true,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -195,7 +195,7 @@
         "right": {
           "enabled": false,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -210,13 +210,13 @@
         "values": [
           {
             "severity": "high",
-            "value": 2.0,
+            "value": 2,
             "inputFormat": "s",
             "displayText": ""
           },
           {
             "severity": "medium",
-            "value": 1.0,
+            "value": 1,
             "inputFormat": "s",
             "displayText": ""
           }
@@ -276,7 +276,7 @@
         "left": {
           "enabled": true,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -288,7 +288,7 @@
         "right": {
           "enabled": false,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -577,7 +577,7 @@
         "left": {
           "enabled": true,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -589,7 +589,7 @@
         "right": {
           "enabled": false,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -604,13 +604,13 @@
         "values": [
           {
             "severity": "high",
-            "value": 5.0,
+            "value": 5,
             "inputFormat": "s",
             "displayText": ""
           },
           {
             "severity": "medium",
-            "value": 3.0,
+            "value": 3,
             "inputFormat": "s",
             "displayText": ""
           }
@@ -670,7 +670,7 @@
         "left": {
           "enabled": true,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -682,7 +682,7 @@
         "right": {
           "enabled": false,
           "displayName": null,
-          "unit": "s",
+          "unit": "auto",
           "displayFormat": "auto",
           "decimals": null,
           "minValue": 0,
@@ -788,5 +788,25 @@
       "h": 6
     }
   ],
-  "schema": 3
+  "sharingSettings": [
+    {
+      "role": "ROLE_RESOURCE_EDIT",
+      "member": {
+        "type": "USER_TEAMS",
+        "id": null,
+        "name": null,
+        "teamTheme": null
+      }
+    }
+  ],
+  "publicNotation": false,
+  "favorite": false,
+  "schema": 3,
+  "permissions": [
+    "dashboards.delete",
+    "dashboards.edit",
+    "dashboards.read",
+    "dashboards.transfer",
+    "dashboards.sharing"
+  ]
 }
