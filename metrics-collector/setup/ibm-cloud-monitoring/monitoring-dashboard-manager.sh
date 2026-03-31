@@ -397,6 +397,16 @@ export_dashboard() {
     if [[ "$dashboard" == "null" ]]; then
         error "Dashboard not found or invalid response"
     fi
+
+    # Cleanse the dashboard 
+    dashboard=$(echo "$dashboard" | jq 'del(.id)')
+    dashboard=$(echo "$dashboard" | jq 'del(.teamId)')
+    dashboard=$(echo "$dashboard" | jq 'del(.userId)')
+    dashboard=$(echo "$dashboard" | jq 'del(.createdOn)')
+    dashboard=$(echo "$dashboard" | jq 'del(.modifiedOn)')
+    dashboard=$(echo "$dashboard" | jq 'del(.lastAccessedOnByCurrentUser)')
+    dashboard=$(echo "$dashboard" | jq 'del(.username)')
+    dashboard=$(echo "$dashboard" | jq 'del(.publicToken)')
     
     # Generate output filename if not provided
     if [[ -z "$output_file" ]]; then

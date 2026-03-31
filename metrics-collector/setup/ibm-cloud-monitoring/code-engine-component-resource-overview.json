@@ -1,7 +1,4 @@
 {
-  "id": 172643,
-  "teamId": 24906,
-  "userId": 6863,
   "name": "My custom Code Engine Metrics",
   "panels": [
     {
@@ -719,8 +716,6 @@
   "shared": false,
   "public": false,
   "version": 1,
-  "createdOn": 1773393216663,
-  "modifiedOn": 1773393216663,
   "description": "Custom dashboard for monitoring application metrics including request rates, outbound HTTP performance, database connections, and compute operations",
   "layout": [
     {
@@ -795,12 +790,9 @@
     }
   ],
   "sharingSettings": [],
-  "lastAccessedOnByCurrentUser": 1773393432664,
   "publicNotation": false,
-  "publicToken": "a684571cfbef4f6faf46d268a3537a03",
   "favorite": false,
   "schema": 3,
-  "username": "Enrico Regge (reggeenr@de.ibm.com)",
   "permissions": [
     "dashboards.delete",
     "dashboards.edit",
