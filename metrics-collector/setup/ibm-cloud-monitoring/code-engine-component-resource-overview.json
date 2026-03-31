@@ -8,7 +8,7 @@
       "description": "",
       "nullValueDisplayText": null,
       "links": null,
-      "markdownSource": "Monitor vCPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `ibm_codeengine_component_type` (app, job, build)\n- `ibm_codeengine_component_name` (specific app/job/build name)",
+      "markdownSource": "Monitor vCPU, and Memory usage across Code Engine components.\n\n**Use the scope filters above to narrow by:**\n- `component_type` (app, job, build)\n- `component_name` (specific app/job/build name)",
       "transparentBackground": false,
       "panelTitleVisible": true,
       "textAutosized": false
@@ -22,11 +22,11 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})) * 100",
+          "query": "(sum by (ibm_codeengine_project_name, ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_usage_millicores{$__scope}) / sum by (ibm_codeengine_project_name, ibm_codeengine_component_name) (ibm_codeengine_instance_cpu_limit_millicores{$__scope})) * 100",
           "enabled": true,
           "displayInfo": {
-            "displayName": "CPU %",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
+            "displayName": "project > component name",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_project_name}} > {{ibm_codeengine_component_name}}",
             "type": "lines"
           },
           "format": {
@@ -47,7 +47,7 @@
       ],
       "legendConfiguration": {
         "enabled": true,
-        "position": "right",
+        "position": "bottom",
         "layout": "table",
         "showCurrent": true,
         "showMax": true,
@@ -115,11 +115,11 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "(sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum by (ibm_codeengine_component_name) (ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
+          "query": "(sum by (ibm_codeengine_project_name, ibm_codeengine_component_name) (ibm_codeengine_instance_memory_usage_bytes{$__scope}) / sum by (ibm_codeengine_project_name, ibm_codeengine_component_name) (ibm_codeengine_instance_memory_limit_bytes{$__scope})) * 100",
           "enabled": true,
           "displayInfo": {
-            "displayName": "Memory %",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}",
+            "displayName": "project > component",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_project_name}} > {{ibm_codeengine_component_name}}",
             "type": "lines"
           },
           "format": {
@@ -140,7 +140,7 @@
       ],
       "legendConfiguration": {
         "enabled": true,
-        "position": "right",
+        "position": "bottom",
         "layout": "table",
         "showCurrent": true,
         "showMax": true,
@@ -509,8 +509,8 @@
           "query": "ibm_codeengine_instance_cpu_usage_millicores{$__scope}",
           "enabled": true,
           "displayInfo": {
-            "displayName": "CPU Usage",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
+            "displayName": "project > component name > instance ",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_project_name}} > {{ibm_codeengine_component_name}} > {{ibm_codeengine_instance_name}} usage",
             "type": "lines"
           },
           "format": {
@@ -531,7 +531,7 @@
       ],
       "legendConfiguration": {
         "enabled": true,
-        "position": "right",
+        "position": "bottom",
         "layout": "table",
         "showCurrent": true,
         "showMax": true,
@@ -589,8 +589,8 @@
           "query": "ibm_codeengine_instance_memory_usage_bytes{$__scope}",
           "enabled": true,
           "displayInfo": {
-            "displayName": "Memory Usage",
-            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_component_name}}/{{ibm_codeengine_instance_name}} usage",
+            "displayName": "project > component name > instance",
+            "timeSeriesDisplayNameTemplate": "{{ibm_codeengine_project_name}} > {{ibm_codeengine_component_name}} > {{ibm_codeengine_instance_name}} usage",
             "type": "lines"
           },
           "format": {
@@ -611,7 +611,7 @@
       ],
       "legendConfiguration": {
         "enabled": true,
-        "position": "right",
+        "position": "bottom",
         "layout": "table",
         "showCurrent": true,
         "showMax": true,
@@ -666,7 +666,7 @@
       "links": null,
       "advancedQueries": [
         {
-          "query": "count(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_component_name))",
+          "query": "count(count(\n  ibm_codeengine_instance_cpu_limit_millicores{$__scope}\n)by (ibm_codeengine_project_name, ibm_codeengine_component_name))",
           "enabled": true,
           "displayInfo": {
             "displayName": "CPU %",
@@ -745,13 +745,62 @@
           "displayText": ""
         }
       }
+    },
+    {
+      "id": 17,
+      "type": "section",
+      "name": "GENERAL OVERVIEW",
+      "description": null,
+      "nullValueDisplayText": null,
+      "links": null,
+      "panelIds": [
+        16,
+        1,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "basicQueries": [],
+      "advancedQueries": []
+    },
+    {
+      "id": 19,
+      "type": "section",
+      "name": "MEMORY USAGE",
+      "description": null,
+      "nullValueDisplayText": null,
+      "links": null,
+      "panelIds": [
+        3,
+        6
+      ],
+      "basicQueries": [],
+      "advancedQueries": []
+    },
+    {
+      "id": 18,
+      "type": "section",
+      "name": "CPU USAGE",
+      "description": null,
+      "nullValueDisplayText": null,
+      "links": null,
+      "panelIds": [
+        2,
+        5
+      ],
+      "basicQueries": [],
+      "advancedQueries": []
     }
   ],
   "scopeExpressionList": [
     {
       "operand": "ibm_codeengine_project_name",
       "operator": "in",
-      "displayName": "",
+      "displayName": "project_name",
       "value": [],
       "descriptor": {
         "documentId": "ibm_codeengine_project_name",
@@ -813,7 +862,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774956839301
+        "documentTimestamp": 1774958018539
       },
       "operandPublicId": "ibm_codeengine_project_name",
       "variable": true,
@@ -822,7 +871,7 @@
     {
       "operand": "ibm_codeengine_component_type",
       "operator": "in",
-      "displayName": "",
+      "displayName": "component_type",
       "value": [],
       "descriptor": {
         "documentId": "ibm_codeengine_component_type",
@@ -884,7 +933,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774956839301
+        "documentTimestamp": 1774958018539
       },
       "operandPublicId": "ibm_codeengine_component_type",
       "variable": true,
@@ -893,7 +942,7 @@
     {
       "operand": "ibm_codeengine_component_name",
       "operator": "in",
-      "displayName": "",
+      "displayName": "component_name",
       "value": [],
       "descriptor": {
         "documentId": "ibm_codeengine_component_name",
@@ -955,9 +1004,80 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774956839301
+        "documentTimestamp": 1774958018539
       },
       "operandPublicId": "ibm_codeengine_component_name",
+      "variable": true,
+      "isVariable": true
+    },
+    {
+      "operand": "ibm_codeengine_instance_name",
+      "operator": "in",
+      "displayName": "instance",
+      "value": [],
+      "descriptor": {
+        "documentId": "ibm_codeengine_instance_name",
+        "id": "ibm_codeengine_instance_name",
+        "metricType": "tag",
+        "type": "string",
+        "scale": 0,
+        "name": "ibm_codeengine_instance_name",
+        "description": "ibm_codeengine_instance_name",
+        "namespaces": [
+          "cloudProvider",
+          "host.container",
+          "ecs",
+          "host.fs",
+          "host.file",
+          "host",
+          "kubernetes",
+          "kubernetes.cluster",
+          "kubernetes.daemonSet",
+          "kubernetes.deployment",
+          "kubernetes.job",
+          "kubernetes.namespace",
+          "kubernetes.node",
+          "kubernetes.pod",
+          "kubernetes.replicaSet",
+          "kubernetes.service",
+          "kubernetes.statefulSet",
+          "kubernetes.resourcequota",
+          "kubernetes.hpa",
+          "link",
+          "mesos",
+          "host.net",
+          "host.process",
+          "prometheus",
+          "swarm",
+          "prombeacon"
+        ],
+        "scopes": [],
+        "timeAggregations": [
+          "concat",
+          "distinct",
+          "count"
+        ],
+        "groupAggregations": [
+          "concat",
+          "distinct",
+          "count"
+        ],
+        "aggregationForGroup": "none",
+        "hidden": false,
+        "experimental": false,
+        "deferred": false,
+        "identity": false,
+        "canMonitor": false,
+        "canGroupBy": false,
+        "canFilter": true,
+        "generatedFrom": "com.draios.model.metrics.custom.CustomMetric$Tag",
+        "publicId": "ibm_codeengine_instance_name",
+        "heuristic": false,
+        "documentType": "metric",
+        "segment": false,
+        "documentTimestamp": 1774958018539
+      },
+      "operandPublicId": "ibm_codeengine_instance_name",
       "variable": true,
       "isVariable": true
     }
@@ -977,100 +1097,121 @@
   "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by ibm_codeengine_component_type and ibm_codeengine_component_name",
   "layout": [
     {
-      "panelId": 1,
+      "panelId": 17,
       "x": 0,
       "y": 0,
+      "w": 24,
+      "h": 1
+    },
+    {
+      "panelId": 1,
+      "x": 0,
+      "y": 1,
       "w": 7,
       "h": 4
     },
     {
-      "panelId": 5,
-      "x": 0,
-      "y": 4,
-      "w": 12,
-      "h": 6
-    },
-    {
-      "panelId": 6,
-      "x": 0,
-      "y": 10,
-      "w": 12,
-      "h": 5
-    },
-    {
       "panelId": 8,
       "x": 21,
-      "y": 0,
+      "y": 1,
       "w": 3,
       "h": 2
     },
     {
       "panelId": 9,
       "x": 21,
-      "y": 2,
+      "y": 3,
       "w": 3,
       "h": 2
     },
     {
       "panelId": 11,
       "x": 14,
-      "y": 0,
+      "y": 1,
       "w": 4,
       "h": 2
     },
     {
       "panelId": 12,
       "x": 14,
-      "y": 2,
+      "y": 3,
       "w": 4,
       "h": 2
     },
     {
       "panelId": 13,
       "x": 18,
-      "y": 0,
+      "y": 1,
       "w": 3,
       "h": 2
     },
     {
       "panelId": 14,
       "x": 18,
-      "y": 2,
+      "y": 3,
       "w": 3,
       "h": 2
     },
     {
-      "panelId": 2,
-      "x": 12,
-      "y": 4,
-      "w": 12,
-      "h": 6
-    },
-    {
-      "panelId": 3,
-      "x": 12,
-      "y": 10,
-      "w": 12,
-      "h": 5
-    },
-    {
       "panelId": 15,
       "x": 7,
-      "y": 0,
+      "y": 1,
       "w": 4,
       "h": 4
     },
     {
       "panelId": 16,
       "x": 11,
-      "y": 0,
+      "y": 1,
       "w": 3,
       "h": 4
+    },
+    {
+      "panelId": 18,
+      "x": 0,
+      "y": 5,
+      "w": 24,
+      "h": 1
+    },
+    {
+      "panelId": 5,
+      "x": 0,
+      "y": 6,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 2,
+      "x": 12,
+      "y": 6,
+      "w": 12,
+      "h": 6
+    },
+    {
+      "panelId": 19,
+      "x": 0,
+      "y": 12,
+      "w": 24,
+      "h": 1
+    },
+    {
+      "panelId": 6,
+      "x": 0,
+      "y": 13,
+      "w": 12,
+      "h": 5
+    },
+    {
+      "panelId": 3,
+      "x": 12,
+      "y": 13,
+      "w": 12,
+      "h": 5
     }
   ],
   "sharingSettings": [
     {
-      "role": "ROLE_RESOURCE_EDIT",
+      "role": "ROLE_RESOURCE_READ",
       "member": {
         "type": "USER_TEAMS",
         "id": null,
