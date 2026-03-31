@@ -407,6 +407,7 @@ export_dashboard() {
     dashboard=$(echo "$dashboard" | jq 'del(.lastAccessedOnByCurrentUser)')
     dashboard=$(echo "$dashboard" | jq 'del(.username)')
     dashboard=$(echo "$dashboard" | jq 'del(.publicToken)')
+    dashboard=$(echo "$dashboard" | jq 'del(.version)')
     
     # Generate output filename if not provided
     if [[ -z "$output_file" ]]; then
