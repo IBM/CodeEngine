@@ -715,7 +715,6 @@
   },
   "shared": false,
   "public": false,
-  "version": 1,
   "description": "Custom dashboard for monitoring application metrics including request rates, outbound HTTP performance, database connections, and compute operations",
   "layout": [
     {
