@@ -862,7 +862,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774958018539
+        "documentTimestamp": 1774964935843
       },
       "operandPublicId": "ibm_codeengine_project_name",
       "variable": true,
@@ -933,7 +933,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774958018539
+        "documentTimestamp": 1774964935843
       },
       "operandPublicId": "ibm_codeengine_component_type",
       "variable": true,
@@ -1004,7 +1004,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774958018539
+        "documentTimestamp": 1774964935843
       },
       "operandPublicId": "ibm_codeengine_component_name",
       "variable": true,
@@ -1075,7 +1075,7 @@
         "heuristic": false,
         "documentType": "metric",
         "segment": false,
-        "documentTimestamp": 1774958018539
+        "documentTimestamp": 1774964935843
       },
       "operandPublicId": "ibm_codeengine_instance_name",
       "variable": true,
@@ -1094,7 +1094,7 @@
   },
   "shared": true,
   "public": false,
-  "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by ibm_codeengine_component_type and ibm_codeengine_component_name",
+  "description": "Overview of Code Engine instance resource usage: CPU/memory current vs limits, with filtering by component_type and component_name",
   "layout": [
     {
       "panelId": 17,
@@ -1211,7 +1211,7 @@
   ],
   "sharingSettings": [
     {
-      "role": "ROLE_RESOURCE_READ",
+      "role": "ROLE_RESOURCE_EDIT",
       "member": {
         "type": "USER_TEAMS",
         "id": null,
@@ -1224,10 +1224,10 @@
   "favorite": false,
   "schema": 3,
   "permissions": [
-    "dashboards.read",
+    "dashboards.edit",
     "dashboards.sharing",
+    "dashboards.read",
     "dashboards.transfer",
-    "dashboards.delete",
-    "dashboards.edit"
+    "dashboards.delete"
   ]
 }
