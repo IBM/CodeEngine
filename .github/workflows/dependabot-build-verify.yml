@@ -1,0 +1,202 @@
+name: 'Dependabot Build and Verify'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build-and-verify:
+    # Only run for Dependabot PRs
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
+
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v6
+
+      - name: 'Extract Module Path from PR Title'
+        id: extract-path
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+
+          # Extract path from PR title (e.g., "Bump svelte from 4.2.20 to 5.53.6 in /fotobox/frontend-app")
+          # Look for " in /" pattern and extract everything after it
+          if [[ "$PR_TITLE" =~ \ in\ (/[^[:space:]]+) ]]; then
+            MODULE_PATH="${BASH_REMATCH[1]}"
+            echo "Extracted module path: $MODULE_PATH"
+            echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "::error::Could not extract module path from PR title: $PR_TITLE"
+            exit 1
+          fi
+
+      - name: 'Check for go.mod'
+        id: check-gomod
+        run: |
+          MODULE_PATH="${{ steps.extract-path.outputs.module_path }}"
+          GOMOD_PATH="${MODULE_PATH#/}/go.mod"
+
+          if [ -f "$GOMOD_PATH" ]; then
+            echo "Found go.mod at $GOMOD_PATH"
+            # Extract Go version from go.mod (e.g., "go 1.25" -> "1.25")
+            GO_VERSION=$(grep -E '^go [0-9]+\.[0-9]+' "$GOMOD_PATH" | awk '{print $2}')
+            echo "Extracted Go version: $GO_VERSION"
+            echo "has_gomod=true" >> $GITHUB_OUTPUT
+            echo "go_version=$GO_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No go.mod found at $GOMOD_PATH"
+            echo "has_gomod=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 'Setup Go'
+        if: steps.check-gomod.outputs.has_gomod == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ steps.check-gomod.outputs.go_version }}
+          cache: true
+          check-latest: true
+
+      - name: 'Setup ko'
+        if: steps.check-gomod.outputs.has_gomod == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo ko-build/ko --pattern "ko_*_${OS}_${ARCH}.tar.gz" --output - | sudo tar -xzf - -C /usr/local/bin ko
+          ko version
+
+      - name: 'Check for Build Script'
+        id: check-build
+        run: |
+          MODULE_PATH="${{ steps.extract-path.outputs.module_path }}"
+          BUILD_SCRIPT="${MODULE_PATH#/}/build"
+
+          if [ -f "$BUILD_SCRIPT" ]; then
+            echo "Build script found at $BUILD_SCRIPT"
+            echo "has_build=true" >> $GITHUB_OUTPUT
+            echo "build_script=$BUILD_SCRIPT" >> $GITHUB_OUTPUT
+          else
+            echo "No build script found at $BUILD_SCRIPT"
+            echo "has_build=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 'Run Build Script'
+        if: steps.check-build.outputs.has_build == 'true'
+        id: run-build
+        continue-on-error: true
+        env:
+          REGISTRY: localhost:5000
+        run: |
+          BUILD_SCRIPT="${{ steps.check-build.outputs.build_script }}"
+          echo "Running build script: $BUILD_SCRIPT"
+          echo "REGISTRY is set to: $REGISTRY"
+          chmod +x "$BUILD_SCRIPT"
+          "$BUILD_SCRIPT"
+
+      - name: 'Record Build Result'
+        if: steps.check-build.outputs.has_build == 'true'
+        run: |
+          if [ "${{ steps.run-build.outcome }}" == "success" ]; then
+            echo "build_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_success=false" >> $GITHUB_OUTPUT
+          fi
+        id: build-result
+
+      - name: 'Check for Verify Script'
+        id: check-verify
+        run: |
+          MODULE_PATH="${{ steps.extract-path.outputs.module_path }}"
+          VERIFY_SCRIPT="${MODULE_PATH#/}/verify"
+
+          if [ -f "$VERIFY_SCRIPT" ]; then
+            echo "Verify script found at $VERIFY_SCRIPT"
+            echo "has_verify=true" >> $GITHUB_OUTPUT
+            echo "verify_script=$VERIFY_SCRIPT" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Verify script is required but not found at $VERIFY_SCRIPT"
+            echo "has_verify=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 'Run Verify Script'
+        if: steps.check-verify.outputs.has_verify == 'true'
+        id: run-verify
+        continue-on-error: true
+        env:
+          REGISTRY: localhost:5000
+        run: |
+          VERIFY_SCRIPT="${{ steps.check-verify.outputs.verify_script }}"
+          echo "Running verify script: $VERIFY_SCRIPT"
+          echo "REGISTRY is set to: $REGISTRY"
+          chmod +x "$VERIFY_SCRIPT"
+          "$VERIFY_SCRIPT"
+
+      - name: 'Record Verify Result'
+        if: steps.check-verify.outputs.has_verify == 'true'
+        run: |
+          if [ "${{ steps.run-verify.outcome }}" == "success" ]; then
+            echo "verify_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "verify_success=false" >> $GITHUB_OUTPUT
+          fi
+        id: verify-result
+
+      - name: 'Check Final Status'
+        if: always()
+        run: |
+          # Fail the workflow if verify script failed or doesn't exist
+          if [ "${{ steps.check-verify.outputs.has_verify }}" != "true" ] || [ "${{ steps.verify-result.outputs.verify_success }}" == "false" ]; then
+            echo "::error::Workflow failed: verify script missing or failed"
+            exit 1
+          fi
+          # Fail if build script exists but failed
+          if [ "${{ steps.check-build.outputs.has_build }}" == "true" ] && [ "${{ steps.build-result.outputs.build_success }}" == "false" ]; then
+            echo "::error::Workflow failed: build script failed"
+            exit 1
+          fi
+
+      - name: 'Summary'
+        if: always()
+        run: |
+          echo "## Dependabot Build and Verify Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Module Path:** \`${{ steps.extract-path.outputs.module_path }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # Build script status
+          if [ "${{ steps.check-build.outputs.has_build }}" == "true" ]; then
+            if [ "${{ steps.build-result.outputs.build_success }}" == "true" ]; then
+              echo "| Build script found | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+              echo "| Build execution | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Build script found | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+              echo "| Build execution | :x: |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "| Build script found | :x: |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Verify script status
+          if [ "${{ steps.check-verify.outputs.has_verify }}" == "true" ]; then
+            if [ "${{ steps.verify-result.outputs.verify_success }}" == "true" ]; then
+              echo "| Verify script found | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+              echo "| Verify execution | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Verify script found | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+              echo "| Verify execution | :x: |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "| Verify script found | :x: |" >> $GITHUB_STEP_SUMMARY
+          fi
