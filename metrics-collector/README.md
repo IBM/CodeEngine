@@ -62,9 +62,6 @@ Create a Trusted Profile that allows Code Engine compute resources to authentica
 ibmcloud iam trusted-profile-create metrics-collector-profile \
     --description "Trusted profile for Code Engine metrics collector"
 
-# Get the Trusted Profile ID
-TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profiles --output json | jq -r '.[] | select(.name=="metrics-collector-profile") | .id')
-
 # Add Code Engine compute resources as trusted entities
 ibmcloud iam trusted-profile-rule-create metrics-collector-profile \
     --name code-engine-rule \
