@@ -149,7 +149,7 @@ echo ""
 echo "Creating the Code Engine function 'cloudant-change-listener-function' ..."
 ibmcloud ce fn create \
   --name cloudant-change-listener-function \
-  --runtime nodejs-20 \
+  --runtime nodejs-22 \
   --inline-code ./function/function.js
 
 echo ""
