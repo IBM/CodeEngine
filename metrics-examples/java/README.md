@@ -67,7 +67,7 @@ java -jar target/metrics-example-1.0.0.jar
 
 The application exposes two servers:
 - Main application: `http://localhost:8080`
-- Metrics endpoint: `http://localhost:2112/prometheus` (or `/metrics`)
+- Metrics endpoint: `http://localhost:2112/metrics` (Prometheus format)
 - Health check: `http://localhost:2112/health`
 
 ## Configuration
@@ -94,15 +94,54 @@ For database connectivity, create a Code Engine service binding between your pro
 - `GET /outbound/status/{code}` - Request specific HTTP status code
 
 Management endpoints (port 2112):
-- `GET /prometheus` - Prometheus metrics endpoint
-- `GET /metrics` - Alternative metrics endpoint
+- `GET /metrics` - Prometheus metrics endpoint (Prometheus text format)
 - `GET /health` - Health check endpoint
 
 All outbound endpoints include simulated compute-intensive data processing (0-3s duration, 40-80% CPU intensity).
 
 ## Metrics
 
-The application exposes Prometheus metrics at `/prometheus` (port 2112). All metric names are prefixed with a configurable value set via the `METRICS_NAME_PREFIX` environment variable (default: `mymetrics_`).
+The application exposes Prometheus metrics at `/metrics` (port 2112) in Prometheus text format. All metric names are prefixed with a configurable value set via the `METRICS_NAME_PREFIX` environment variable (default: `mymetrics_`).
+
+### Filtering Metrics
+
+By default, Spring Boot exports many JVM, system, and application metrics. You can control which metrics are exported using the following approaches:
+
+**Option 1: Disable entire metric categories**
+
+Set these properties to `false` to exclude entire categories of metrics:
+
+```properties
+management.metrics.enable.jvm=false          # Disable all JVM metrics
+management.metrics.enable.process=false      # Disable process metrics
+management.metrics.enable.system=false       # Disable system metrics
+management.metrics.enable.tomcat=false       # Disable Tomcat metrics
+management.metrics.enable.logback=false      # Disable logback metrics
+management.metrics.enable.executor=false     # Disable executor metrics
+management.metrics.enable.disk=false         # Disable disk metrics
+management.metrics.enable.application=false  # Disable application startup metrics
+```
+
+**Option 2: Keep only custom metrics**
+
+To export only your custom metrics (those with the `mymetrics_` prefix), disable all default categories:
+
+```bash
+ibmcloud ce application update \
+  --name metrics-example-app-java \
+  --env management.metrics.enable.jvm=false \
+  --env management.metrics.enable.process=false \
+  --env management.metrics.enable.system=false \
+  --env management.metrics.enable.tomcat=false \
+  --env management.metrics.enable.logback=false \
+  --env management.metrics.enable.executor=false \
+  --env management.metrics.enable.disk=false \
+  --env management.metrics.enable.application=false
+```
+
+**Option 3: Use a MeterFilter for fine-grained control**
+
+For more advanced filtering, you can create a custom `MeterFilter` bean in your configuration. See the [Micrometer documentation](https://micrometer.io/docs/concepts#_meter_filters){: external} for details.
 
 **Request Metrics**
 - `mymetrics_requests_total`: Total requests by method and path

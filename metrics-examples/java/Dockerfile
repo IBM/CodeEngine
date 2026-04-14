@@ -6,7 +6,7 @@ WORKDIR /src
 RUN mvn package -Dmaven.test.skip=true
 
 # Runtime stage using distroless
-FROM gcr.io/distroless/java21-debian12:nonroot
+FROM gcr.io/distroless/java21-debian13:nonroot
 
 # Copy the JAR from builder
 COPY --chown=1001:0 --from=builder /src/target/*.jar /app/app.jar

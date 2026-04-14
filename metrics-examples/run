@@ -48,15 +48,32 @@ for i in "${languages[@]}"; do
             --cpu 0.25 \
             --env HTTPBIN_BASE_URL=https://httpbin.284uby30ujzw.ca-tor.codeengine.appdomain.cloud
         
-        # Give the Code Engine app some time to reconcile and move the traffic target to the latest revision
-        sleep 10
+        # Wait for the Kubernetes service resource to be ready before patching
+        echo "Waiting for ksvc '$app_name' to be ready..."
+        kubectl wait --for=condition=Ready ksvc/"$app_name" --timeout=300s
 
-        # Annotate the app
-        kubectl patch kservice "$app_name" --type=json -p='[
-            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
-            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
-            {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
-        ]'
+        # Remove the pause-build label if it exists to allow the build to proceed
+        if kubectl get ksvc "$app_name" -o jsonpath='{.spec.template.metadata.labels.codeengine\.cloud\.ibm\.com/pause-build}' 2>/dev/null | grep -q .; then
+            echo "Removing pause-build label from '$app_name'..."
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"remove","path":"/spec/template/metadata/labels/codeengine.cloud.ibm.com~1pause-build"}
+            ]'
+        fi
+
+        # Annotate the app with metrics configuration
+        if [[ "$LANGUAGE" == "java" ]];then
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/prometheus"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+            ]'
+        else
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+            ]'
+        fi
     else 
         continue;
     fi
