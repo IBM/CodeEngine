@@ -12,6 +12,12 @@ fi
 # Select the Code Engine project
 ibmcloud ce project select --name "$PREFIX" --kubecfg
 
+httbin_url=https://httpbin.org
+if ibmcloud ce app get --name httpbin >/dev/null 2>&1; then
+    httbin_url=`ibmcloud ce app get --name httpbin --output url`
+fi
+echo "Using HTTPBin backend URL: '$httbin_url'"
+
 languages=(
     go
     java
@@ -40,8 +46,11 @@ for i in "${languages[@]}"; do
             --src "." \
             --memory 0.5G \
             --cpu 0.25 \
-            --env HTTPBIN_BASE_URL=https://httpbin.2690nz3tkq6c.eu-es.codeengine.appdomain.cloud
+            --env HTTPBIN_BASE_URL=https://httpbin.284uby30ujzw.ca-tor.codeengine.appdomain.cloud
         
+        # Give the Code Engine app some time to reconcile and move the traffic target to the latest revision
+        sleep 10
+
         # Annotate the app
         kubectl patch kservice "$app_name" --type=json -p='[
             {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},

@@ -4,12 +4,16 @@ import os
 import time
 import random
 import logging
+import signal
+import threading
+import asyncio
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import PlainTextResponse
 import httpx
+import uvicorn
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from utils.db import get_db_pool, close_db_pool
@@ -19,25 +23,38 @@ from utils import metrics
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(levelname)s %(name)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 # Configuration
 HTTPBIN_BASE_URL = os.getenv("HTTPBIN_BASE_URL", "https://httpbin.org")
 PORT = int(os.getenv("PORT", "8080"))
+METRICS_PORT = 2112
+
+# Global server references for shutdown
+app_server = None
+metrics_server = None
+shutdown_event = threading.Event()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle application startup and shutdown."""
-    logger.info(f"Application server starting on port {PORT}")
+    logger.info(f"Application server is running at http://localhost:{PORT}")
     logger.info(f"Configured httpbin backend: {HTTPBIN_BASE_URL}")
-    logger.info("Metrics server running on port 2112")
-    yield
-    # Cleanup
-    await close_db_pool()
-    logger.info("Application shutdown complete")
+    try:
+        yield
+    except asyncio.CancelledError:
+        # Expected during shutdown, suppress the error
+        logger.debug("Lifespan context cancelled during shutdown")
+    finally:
+        # Cleanup
+        try:
+            await close_db_pool()
+            logger.info("Application shutdown complete")
+        except Exception as e:
+            logger.error(f"Error during cleanup: {e}")
 
 
 # Create FastAPI app
@@ -300,7 +317,13 @@ async def outbound_status(code: int):
     }
 
 
-@app.get("/metrics")
+# ======================================
+# Metrics server
+# ======================================
+metrics_app = FastAPI(title="Metrics Server")
+
+
+@metrics_app.get("/metrics")
 async def get_metrics():
     """Prometheus metrics endpoint."""
     return Response(
@@ -309,16 +332,68 @@ async def get_metrics():
     )
 
 
-if __name__ == "__main__":
-    import uvicorn
-    
-    # Run both app server and metrics server
-    # In production, use separate processes or the Dockerfile approach
-    uvicorn.run(
+# ======================================
+# Server management functions
+# ======================================
+def run_app_server():
+    """Run the main application server."""
+    global app_server
+    config = uvicorn.Config(
         app,
         host="0.0.0.0",
         port=PORT,
-        log_level="info"
+        log_level="info",
+        log_config="log_conf.yaml"
     )
+    app_server = uvicorn.Server(config)
+    app_server.run()
 
-# Made with Bob
+
+def run_metrics_server():
+    """Run the metrics server."""
+    global metrics_server
+    config = uvicorn.Config(
+        metrics_app,
+        host="0.0.0.0",
+        port=METRICS_PORT,
+        log_level="info",
+        log_config="log_conf.yaml"
+    )
+    metrics_server = uvicorn.Server(config)
+    logger.info(f"Metrics server is running at http://localhost:{METRICS_PORT}")
+    metrics_server.run()
+
+
+def handle_shutdown(signum, frame):
+    """Handle shutdown signals gracefully."""
+    logger.info(f"Received signal {signum}. Shutting down...")
+    shutdown_event.set()
+    
+    # Gracefully shutdown servers
+    if metrics_server:
+        metrics_server.should_exit = True
+    
+    if app_server:
+        app_server.should_exit = True
+
+
+if __name__ == "__main__":
+    # Register signal handlers
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGINT, handle_shutdown)
+    
+    # Start metrics server in a separate thread
+    metrics_thread = threading.Thread(target=run_metrics_server, daemon=True)
+    metrics_thread.start()
+    
+    # Run the main application server in the main thread
+    try:
+        run_app_server()
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Application interrupted")
+    finally:
+        # Wait for graceful shutdown
+        if shutdown_event.is_set():
+            logger.info("Metrics server closed.")
+            logger.info("Http server closed.")
+        logger.info("Shutdown complete")

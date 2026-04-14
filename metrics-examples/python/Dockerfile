@@ -1,24 +1,22 @@
-# Use Python slim image
-FROM python:3.12-slim
 
-WORKDIR /app
+# Download dependencies in builder stage
+FROM registry.access.redhat.com/ubi9/python-312 AS builder
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install -r requirements.txt
 
-# Copy application code
-COPY . .
+# Build final stage
+FROM registry.access.redhat.com/ubi10/python-312-minimal
 
-# Set environment
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/opt/app-root/lib/${PYTHON_VERSION}/site-packages
 
-# Create non-root user
-RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
-USER appuser
+COPY --chown=1001:0 --from=builder /opt/app-root/lib/python3.12/site-packages ${PYTHONPATH}
+COPY --chown=1001:0 app.py /opt/app-root/src/
+COPY --chown=1001:0 utils/ /opt/app-root/src/utils
+COPY --chown=1001:0 log_conf.yaml /opt/app-root/src/
 
-# Expose ports
-EXPOSE 8080 2112
+USER 1001:0
+WORKDIR /opt/app-root/src
 
-# Run the application with uvicorn
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD python app.py

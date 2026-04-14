@@ -2,6 +2,29 @@
 
 This application helps debug connectivity issues for IBM Cloud Services and provides comprehensive monitoring through Prometheus metrics. It includes outbound HTTP call simulation, database connectivity testing, and compute-intensive workload simulation.
 
+## Architecture
+
+```
+┌─────────────────────────────────────┐
+│         Container                   │
+│                                     │
+│  ┌────────────────────────────┐     │
+│  │  Main Application Server   │     │
+│  │  Port: 8080                │     │
+│  │  - /                       │     │
+│  │  - /test-db                │     │
+│  │  - /outbound/*             │     │
+│  └────────────────────────────┘     │
+│                                     │
+│  ┌────────────────────────────┐     │
+│  │  Metrics Server (Thread)   │     │
+│  │  Port: 2112                │     │
+│  │  - /metrics                │     │
+│  └────────────────────────────┘     │
+│                                     │
+└─────────────────────────────────────┘
+```
+
 ## Features
 
 - **Outbound HTTP Calls**: Configurable endpoints that simulate delays and error responses to httpbin.org-compatible backends
@@ -46,32 +69,6 @@ ibmcloud ce application update \
   --env HTTPBIN_BASE_URL=https://custom-backend.example.com
 ```
 
-### Run Locally
-
-Pull and run with Docker:
-```bash
-docker pull icr.io/codeengine/metrics-example-app-python
-docker run -p 8080:8080 -p 2112:2112 icr.io/codeengine/metrics-example-app-python
-```
-
-Or run from source:
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Or with uvicorn directly:
-```bash
-pip install -r requirements.txt
-uvicorn app:app --host 0.0.0.0 --port 8080
-```
-
-The application exposes:
-- Main application: `http://localhost:8080`
-- Metrics endpoint: `http://localhost:8080/metrics`
-- Interactive API docs: `http://localhost:8080/docs`
-- Alternative API docs: `http://localhost:8080/redoc`
-
 ## Configuration
 
 ### Environment Variables
@@ -93,7 +90,6 @@ For database connectivity, create a Code Engine service binding between your pro
 - `GET /outbound/get` - Simple outbound GET request
 - `POST /outbound/post` - Outbound POST request
 - `GET /outbound/status/{code}` - Request specific HTTP status code
-- `GET /metrics` - Prometheus metrics endpoint
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /redoc` - Alternative API documentation (ReDoc)
 
@@ -101,7 +97,7 @@ All outbound endpoints include simulated compute-intensive data processing (0-3s
 
 ## Metrics
 
-The application exposes Prometheus metrics at `/metrics`. All metric names are prefixed with a configurable value set via the `METRICS_NAME_PREFIX` environment variable (default: `mymetrics_`).
+The application exposes Prometheus metrics on a **separate metrics server** at `http://localhost:2112/metrics`. This separation provides better security and performance isolation. All metric names are prefixed with a configurable value set via the `METRICS_NAME_PREFIX` environment variable (default: `mymetrics_`).
 
 **Request Metrics**
 - `mymetrics_requests_total`: Total requests by method and path
@@ -123,31 +119,6 @@ The application exposes Prometheus metrics at `/metrics`. All metric names are p
 
 ## Development
 
-### Prerequisites
-
-- Python 3.12 or later
-- pip or poetry for package management
-- Docker (for containerized builds)
-
-### Building
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the application
-python app.py
-
-# Or with uvicorn for development (with auto-reload)
-uvicorn app:app --reload --host 0.0.0.0 --port 8080
-
-# Build Docker image
-docker build -t metrics-example-app-python .
-
-# Run tests (if you add them)
-pytest
-```
-
 ### Project Structure
 
 ```
@@ -161,6 +132,52 @@ python/
     ├── metrics.py          # Prometheus metrics definitions
     ├── db.py               # PostgreSQL connection handling
     └── compute.py          # Compute simulation utilities
+```
+
+### Prerequisites
+
+- Python 3.12 or later
+- pip or poetry for package management
+- Docker or Podman (for containerized builds)
+
+### Run Locally
+
+Pull and run with Docker:
+```bash
+docker pull icr.io/codeengine/metrics-example-app-python
+docker run -p 8080:8080 -p 2112:2112 icr.io/codeengine/metrics-example-app-python
+```
+
+Or run from source:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+
+python -m pip install -r requirements.txt
+python app.py
+
+
+# Test main application (in another terminal)
+curl http://localhost:8080/
+
+# Test metrics endpoint
+curl http://localhost:2112/metrics
+
+# Test graceful shutdown
+# Send SIGTERM or press Ctrl+C
+```
+
+The application exposes:
+- Main application: `http://localhost:8080`
+- Metrics endpoint: `http://localhost:2112/metrics`
+- Interactive API docs: `http://localhost:8080/docs`
+- Alternative API docs: `http://localhost:8080/redoc`
+
+### Building
+
+```bash
+# Build Docker image
+podman build -t metrics-example-app-python .
 ```
 
 ## Performance Characteristics
@@ -202,20 +219,33 @@ pip install --upgrade asyncpg
 
 ### Performance Issues
 
-For better performance in production:
+For better performance in production, you need to run both the main application and metrics server separately:
 
 ```bash
-# Use gunicorn with uvicorn workers
+# Install gunicorn
 pip install gunicorn
+
+# Option 1: Run both servers using the default app.py (recommended for simplicity)
+python3 app.py
+
+# Option 2: For production with multiple workers, run servers separately:
+
+# Terminal 1: Run main application with gunicorn (multiple workers)
 gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8080
+
+# Terminal 2: Run metrics server separately (single worker is sufficient)
+gunicorn app:metrics_app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:2112
+
+# Option 3: Use a process manager like supervisord or systemd to manage both processes
 ```
+
+**Note**: When using gunicorn with multiple workers for the main app, the metrics server should run as a separate process. The default `python3 app.py` approach handles both servers automatically in a single process, which is simpler for most use cases.
 
 ## FastAPI Features
 
 This implementation uses FastAPI, which provides:
 
 - **Automatic API Documentation**: Visit `/docs` for Swagger UI or `/redoc` for ReDoc
-- **Type Validation**: Automatic request/response validation using Pydantic
 - **Async Support**: Native async/await for non-blocking I/O
 - **High Performance**: One of the fastest Python frameworks available
 - **Standards-based**: Based on OpenAPI and JSON Schema

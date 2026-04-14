@@ -45,18 +45,6 @@ ibmcloud ce application create \
 ./run all
 ```
 
-## Language Comparison
-
-| Feature | Node.js | Go | Java | Python |
-|---------|---------|-----|------|--------|
-| **Framework** | Express | Gorilla Mux | Spring Boot | FastAPI |
-| **Metrics Library** | prom-client | prometheus/client_golang | Micrometer | prometheus-client |
-| **Startup Time** | ~1s | <1s | ~5-10s | ~2-3s |
-| **Memory Footprint** | ~150-200 MB | ~20-30 MB | ~200-250 MB | ~100-150 MB |
-| **Image Size** | ~150-200 MB | ~20-30 MB | ~200-250 MB | ~100-150 MB |
-| **Concurrency Model** | Event loop | Goroutines | Threads | Async/await |
-| **Best For** | Rapid development | Performance & efficiency | Enterprise apps | Modern APIs |
-
 ## Metrics
 
 All applications expose Prometheus metrics at `/metrics` (port 2112). All metric names are prefixed with a configurable value set via the `METRICS_NAME_PREFIX` environment variable (default: `mymetrics_`).
@@ -209,17 +197,3 @@ metrics-examples/
 ├── load-test.sh    # Load testing script
 └── README.md       # This file
 ```
-
-## Contributing
-
-When adding new features or metrics:
-
-1. Implement the feature in all four languages
-2. Use identical metric names across all implementations
-3. Maintain consistent API endpoints
-4. Update all language-specific README files
-5. Test with the load-test.sh script
-
-## License
-
-See individual language directories for specific dependencies and licenses.
