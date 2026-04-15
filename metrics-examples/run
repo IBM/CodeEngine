@@ -46,7 +46,7 @@ for i in "${languages[@]}"; do
             --src "." \
             --memory 0.5G \
             --cpu 0.25 \
-            --env HTTPBIN_BASE_URL=https://httpbin.284uby30ujzw.ca-tor.codeengine.appdomain.cloud
+            --env "HTTPBIN_BASE_URL=$httbin_url"
         
         # Wait for the Kubernetes service resource to be ready before patching
         echo "Waiting for ksvc '$app_name' to be ready..."

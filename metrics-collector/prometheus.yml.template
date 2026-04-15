@@ -49,9 +49,12 @@ scrape_configs:
     - action: replace
       replacement: '${CE_PROJECT_NAME}'
       target_label: ibm_codeengine_project_name
-    - source_labels: [__meta_kubernetes_pod_name]
+    # only set ibm_codeengine_instance_name if annotation codeengine.cloud.ibm.com/userMetricsInstance is set to 'true'
+    - source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_pod_annotation_codeengine_cloud_ibm_com_userMetricsInstance]
       action: replace
       target_label: ibm_codeengine_instance_name
+      regex: ([^;]+);true
+      replacement: ${1}
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_service]
       action: replace
       target_label: ibm_codeengine_component_name
@@ -60,9 +63,12 @@ scrape_configs:
       regex: (.+)
       replacement: app
       target_label: ibm_codeengine_component_type
-    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revision]
+    # only set ibm_codeengine_subcomponent_name if annotation codeengine.cloud.ibm.com/userMetricsSubcomponent is set to 'true'
+    - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revision, __meta_kubernetes_pod_annotation_codeengine_cloud_ibm_com_userMetricsSubcomponent]
       action: replace
       target_label: ibm_codeengine_subcomponent_name
+      regex: ([^;]+);true
+      replacement: ${1}
     - source_labels: [__meta_kubernetes_pod_label_serving_knative_dev_revisionUID]
       action: replace
       regex: (.+)

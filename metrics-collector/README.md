@@ -184,9 +184,88 @@ The following 3 metrics are used to monitor the collector itself:
 #### Metric Labels
 
 All container metrics include the following labels:
-- `ibm_codeengine_instance_name`: Name of the pod instance
 - `ibm_codeengine_component_type`: Type of component (`app`, `job`, or `build`)
 - `ibm_codeengine_component_name`: Name of the Code Engine component
+- `ibm_codeengine_instance_name`: Name of the pod instance (optional, see cardinality control below)
+- `ibm_codeengine_subcomponent_name`: Name of the app revision (optional, see cardinality control below)
+
+#### User Metrics Scraping
+
+The metrics collector can automatically discover and scrape custom Prometheus metrics from your Code Engine applications. To enable this feature, add the following annotations to your application:
+
+**Required annotation:**
+- `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` - Enables metrics scraping for this application
+
+**Optional annotations:**
+- `codeengine.cloud.ibm.com/userMetricsPath: '/metrics'` - Custom metrics endpoint path (default: `/metrics`)
+- `codeengine.cloud.ibm.com/userMetricsPort: '2112'` - Custom metrics port
+
+**Example:**
+```bash
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsPath": "/metrics",
+          "codeengine.cloud.ibm.com/userMetricsPort": "2112"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Cardinality Control for User Metrics
+
+To manage metric cardinality and reduce costs, you can control which labels are included in scraped user metrics using the following annotations:
+
+**Cardinality control annotations:**
+- `codeengine.cloud.ibm.com/userMetricsInstance: 'true'` - Include the `ibm_codeengine_instance_name` label (pod name)
+- `codeengine.cloud.ibm.com/userMetricsSubcomponent: 'true'` - Include the `ibm_codeengine_subcomponent_name` label (app revision name)
+
+**Default behavior:** By default, both `ibm_codeengine_instance_name` and `ibm_codeengine_subcomponent_name` labels are **excluded** from user metrics to minimize cardinality. These labels can create high cardinality because:
+- Instance names change with each pod restart or scale event
+- Revision names change with each application update
+
+**When to enable these labels:**
+- Enable `userMetricsInstance` when you need to track metrics per individual pod instance
+- Enable `userMetricsSubcomponent` when you need to compare metrics across different application revisions
+
+**Example with cardinality control:**
+```bash
+# Enable user metrics scraping with instance-level granularity
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsInstance": "true"
+        }
+      }
+    }
+  }
+}'
+
+# Enable user metrics scraping with both instance and revision granularity
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsInstance": "true",
+          "codeengine.cloud.ibm.com/userMetricsSubcomponent": "true"
+        }
+      }
+    }
+  }
+}'
+```
+
+**Note:** Only set these annotations to `'true'` when you specifically need the additional label granularity. Keeping them disabled (default) helps reduce metric cardinality and associated monitoring costs.
 
 #### Example Metrics Output
 

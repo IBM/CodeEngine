@@ -1,0 +1,64 @@
+#!/bin/bash
+set -eo pipefail
+
+PREFIX="${PREFIX:=metrics-example}"
+LANGUAGE="${LANGUAGE:=all}"
+
+# Create the Code Engine project if it does not exist, yet
+if ! ibmcloud ce project get --name "$PREFIX" >/dev/null 2>&1;then 
+    ibmcloud ce project create --name "$PREFIX"
+fi
+
+# Select the Code Engine project
+ibmcloud ce project select --name "$PREFIX" --kubecfg
+
+httbin_url=https://httpbin.org
+if ibmcloud ce app get --name httpbin >/dev/null 2>&1; then
+    httbin_url=`ibmcloud ce app get --name httpbin --output url`
+fi
+echo "Using HTTPBin backend URL: '$httbin_url'"
+
+languages=(
+    python
+)
+
+for i in "${languages[@]}"; do
+
+    if [[ "$LANGUAGE" == "all" || "$LANGUAGE" == "$i" ]];then 
+
+        # Create or update the job
+        echo "Deploying Code Engine job for $i ..."
+        job_name="${PREFIX}-job-$i"
+
+        create_or_update=update
+        if ! ibmcloud ce job get --name $job_name >/dev/null 2>&1; then
+            echo -e "\nCreating the job '$job_name' ..."
+            create_or_update=create
+        else
+            echo -e "\nUpdating the job '$job_name' ..."
+        fi
+
+        # Create or update the job
+        ibmcloud ce job $create_or_update \
+            --name $job_name \
+            --context-dir "$i/" \
+            --src "." \
+            --memory 0.5G \
+            --cpu 0.25 \
+            --env "HTTPBIN_BASE_URL=$httbin_url" \
+            --wait
+        
+        
+        kubectl patch jobdefinition "$job_name" --type=json -p='[
+             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
+             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+        ]'
+
+        # Submit a jobrun
+    else 
+        continue;
+    fi
+done
+
+echo "Done"
