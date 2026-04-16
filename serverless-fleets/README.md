@@ -570,7 +570,7 @@ See `run_hook_ollama` for a complete example that demonstrates:
 - Running Ollama (local LLM runtime) on fleet workers
 - Automatic GPU detection and configuration
 - Preloading AI models during worker startup
-- Using `__CE_INTERNAL_HOOK_AFTER_STARTUP` to execute setup scripts
+- Using the environment variable `__CE_INTERNAL_HOOK_AFTER_STARTUP` to execute setup scripts
 
 Key environment variables used:
 - `__CE_INTERNAL_HOOK_AFTER_STARTUP`: Script to run after worker startup
