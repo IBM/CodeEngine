@@ -562,7 +562,7 @@ An IBM Cloud Logs instance is being setup and enabled by default during the auto
 
 > **Note:** This is an experimental feature to unlock specific use cases and might change or will be deprecated.
 
-Fleet workers can be customized using startup hooks to prepare the environment before tasks are executed. This allows you to install additional software, pull container images, or configure services that your tasks will use.
+Fleet workers can be customized using startup hooks to prepare the environment before tasks are executed. These hooks are configured through special environment variables that you set when creating the fleet. This customization capability allows you to install additional software, pull container images, or configure services that your tasks will use—all automatically before your workload begins processing.
 
 #### Example 1: Running Ollama on Fleet Workers
 
