@@ -26,7 +26,7 @@ echo "  "--subnetpool-name fleet-subnetpool
 echo "  "--image registry.access.redhat.com/ubi10/ubi-minimal 
 echo "  "--max-scale 1 
 echo "  "--command="curl" 
-echo "  "--arg "http://host.containers.internal:8080" 
+echo "  "--arg "http://host.containers.internal:11434/api/tags" 
 echo "  "--tasks 1 
 echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
 echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
