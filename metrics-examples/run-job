@@ -48,14 +48,12 @@ for i in "${languages[@]}"; do
             --env "HTTPBIN_BASE_URL=$httbin_url" \
             --wait
         
-        
-        kubectl patch jobdefinition "$job_name" --type=json -p='[
-             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
-             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
-             {"op":"add","path":"/metadata/labels/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
-        ]'
+        kubectl annotate jobdefinition "$job_name" codeengine.cloud.ibm.com/userMetricsScrape=true
+        kubectl annotate jobdefinition "$job_name" codeengine.cloud.ibm.com/userMetricsPath='/metrics'
+        kubectl annotate jobdefinition "$job_name" codeengine.cloud.ibm.com/userMetricsPort=2112
 
         # Submit a jobrun
+        ibmcloud ce jobrun submit --job "$job_name"
     else 
         continue;
     fi
