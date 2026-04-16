@@ -2,7 +2,6 @@
 
 set -e
 
-ibmcloud login --sso -a cloud.ibm.com -r eu-de -c 1260a3541bb44fefb9c58d5cc92aaddb  -g luke-new-ce-fleet-sandbox--rg
 
 uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 
