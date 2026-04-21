@@ -558,6 +558,43 @@ An IBM Cloud Logs instance is being setup and enabled by default during the auto
 
 ![](./images/prototype_logs.png)
 
+### How to customize fleet workers
+
+> **Note:** This is an experimental feature to unlock specific use cases and might change or will be deprecated.
+
+Fleet workers can be customized using startup hooks to prepare the environment before tasks are executed. These hooks are configured through special environment variables that you set when creating the fleet. This customization capability allows you to install additional software, pull container images, or configure services that your tasks will use—all automatically before your workload begins processing.
+
+#### Example 1: Running Ollama on Fleet Workers
+
+See `run_hook_ollama` for a complete example that demonstrates:
+- Running Ollama (local LLM runtime) on fleet workers
+- Automatic GPU detection and configuration
+- Preloading AI models during worker startup
+- Using the environment variable `__CE_INTERNAL_HOOK_AFTER_STARTUP` to execute setup scripts
+
+Key environment variables used:
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP`: Script to run after worker startup
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3`: Retry attempts if hook fails
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=30m`: Maximum hook execution time
+
+#### Example 2: Running Podman-in-Podman
+
+See `run_hook_podman_in_podman` for a complete example that demonstrates:
+- Running Podman inside fleet workers for nested containerization
+- Preloading container images during startup
+- Using privileged containers and host path mounts
+
+Additional environment variables used:
+- `__CE_INTERNAL_PRIVILEGED_CONTAINER=true`: Enable privileged mode (required for nested containers)
+- `__CE_INTERNAL_HOSTPATH_MOUNTS=/var/lib/containers:/var/lib/containers`: Mount host paths
+
+**Available Hook Environment Variables:**
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP`: The script to execute after worker startup
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT`: Number of retry attempts if the hook fails
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME`: Maximum time allowed for hook execution
+- `__CE_INTERNAL_PRIVILEGED_CONTAINER`: Enable privileged mode
+- `__CE_INTERNAL_HOSTPATH_MOUNTS`: Mount host paths into the container
+
 ### Cleanup the Environment
 
 To clean up all IBM Cloud resources, that have been created as part of the provided script, run:
