@@ -300,5 +300,3 @@ func writeJSON(w http.ResponseWriter, statusCode int, payload apiResponse) {
 func writeError(w http.ResponseWriter, statusCode int, message string) {
 	writeJSON(w, statusCode, apiResponse{Message: message})
 }
-
-// Made with Bob
