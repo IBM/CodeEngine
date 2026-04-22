@@ -19,7 +19,7 @@ COPY main.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o fleet-register .
 
 # Stage 2: Runtime stage
-FROM gcr.io/distroless/static-debian13
+FROM registry.access.redhat.com/ubi10/ubi-minimal
 
 # Copy binary from builder
 COPY --from=builder /build/fleet-register /app/fleet-register
@@ -29,6 +29,8 @@ WORKDIR /app
 
 # Expose port
 EXPOSE 8080
+
+RUN mkdir /fleet-workers
 
 # Set environment variable for the workbook path
 ENV WORKBOOK_PATH=/fleet-workers/fleet-register.xlsx
