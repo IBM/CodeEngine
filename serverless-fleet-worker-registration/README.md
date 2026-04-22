@@ -1,10 +1,10 @@
 # Fleet Register
 
-A lightweight Go HTTP server that monitors IBM Cloud Code Engine fleet workers by tracking their lifecycle events in an Excel file.
+A lightweight Go HTTP server that monitors IBM Cloud Code Engine fleet workers by tracking their lifecycle events in a CSV file.
 
 ## Use Case
 
-This application is deployed as a Code Engine application to monitor fleet workers. Fleet workers call the `/register` endpoint when they start and the `/deregister` endpoint before they shut down. The application maintains a persistent Excel file tracking all worker activity, including registration and completion timestamps.
+This application is deployed as a Code Engine application to monitor fleet workers. Fleet workers call the `/register` endpoint when they start and the `/deregister` endpoint before they shut down. The application maintains a persistent CSV file tracking all worker activity, including registration and completion timestamps.
 
 **Deployment Flow:**
 1. Deploy this app as a Code Engine application with persistent storage
@@ -14,14 +14,14 @@ This application is deployed as a Code Engine application to monitor fleet worke
 ## Endpoints
 
 - `POST /register`
-  Creates a row in `fleet-register.xlsx` with status `running` and records the registration timestamp.
+  Creates a row in `fleet-register.csv` with status `running` and records the registration timestamp.
 
 - `POST /deregister`
   Updates the matching row by `worker_name` and `worker_ip` to `completed` and records the completion timestamp.
   If no row exists, it creates a new row with status `completed`.
 
 - `GET /download`
-  Downloads the Excel file.
+  Downloads the CSV file.
 
 ## Request body
 
@@ -93,7 +93,7 @@ docker build -t fleet-register .
 docker run -p 8080:8080 -v fleet-data:/fleet-workers fleet-register
 ```
 
-The Excel file is saved to `/fleet-workers/fleet-register.xlsx` and persisted in the volume.
+The CSV file is saved to `/fleet-workers/fleet-register.csv` and persisted in the volume.
 
 ## Examples
 
@@ -119,17 +119,17 @@ curl -X POST http://localhost:8080/deregister \
   }'
 ```
 
-Download the workbook:
+Download the CSV file:
 
 ```bash
 curl -O -J http://localhost:8080/download
 ```
 
-## Excel file
+## CSV file
 
-The server automatically creates `fleet-register.xlsx` in the project root (or `/fleet-workers/` in Docker) if it does not exist.
+The server automatically creates `fleet-register.csv` in the project root (or `/fleet-workers/` in Docker) if it does not exist.
 
-The workbook contains one sheet named `Workers` with these columns:
+The CSV file contains the following columns:
 
 - `worker_name` - Name of the worker
 - `worker_ip` - IP address of the worker

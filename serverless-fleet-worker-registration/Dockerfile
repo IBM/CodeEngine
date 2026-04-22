@@ -32,8 +32,8 @@ EXPOSE 8080
 
 RUN mkdir /fleet-workers
 
-# Set environment variable for the workbook path
-ENV WORKBOOK_PATH=/fleet-workers/fleet-register.xlsx
+# Set environment variable for the CSV path
+ENV CSV_PATH=/fleet-workers/fleet-register.csv
 
 # Run the application
 CMD ["/app/fleet-register"]

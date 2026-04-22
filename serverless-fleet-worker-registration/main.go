@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,25 +11,22 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/xuri/excelize/v2"
 )
 
 const (
 	serverAddr = ":8080"
-	sheetName  = "Workers"
 )
 
-var workbookPath = getWorkbookPath()
+var csvPath = getCSVPath()
 
-func getWorkbookPath() string {
-	if path := os.Getenv("WORKBOOK_PATH"); path != "" {
+func getCSVPath() string {
+	if path := os.Getenv("CSV_PATH"); path != "" {
 		return path
 	}
-	return "fleet-register.xlsx"
+	return "fleet-register.csv"
 }
 
-var workbookMu sync.Mutex
+var csvMu sync.Mutex
 
 type workerRequest struct {
 	WorkerName string `json:"worker_name"`
@@ -64,8 +62,8 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	workbookMu.Lock()
-	defer workbookMu.Unlock()
+	csvMu.Lock()
+	defer csvMu.Unlock()
 
 	if err := appendWorkerRow(req, "running"); err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to register worker: %v", err))
@@ -77,7 +75,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		WorkerName: req.WorkerName,
 		WorkerIP:   req.WorkerIP,
 		Status:     "running",
-		File:       workbookPath,
+		File:       csvPath,
 	})
 }
 
@@ -88,8 +86,8 @@ func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	workbookMu.Lock()
-	defer workbookMu.Unlock()
+	csvMu.Lock()
+	defer csvMu.Unlock()
 
 	updated, err := completeWorker(req)
 	if err != nil {
@@ -107,27 +105,27 @@ func deregisterHandler(w http.ResponseWriter, r *http.Request) {
 		WorkerName: req.WorkerName,
 		WorkerIP:   req.WorkerIP,
 		Status:     "completed",
-		File:       workbookPath,
+		File:       csvPath,
 	})
 }
 
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
-	workbookMu.Lock()
-	defer workbookMu.Unlock()
+	csvMu.Lock()
+	defer csvMu.Unlock()
 
-	if err := ensureWorkbook(); err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to prepare workbook: %v", err))
+	if err := ensureCSV(); err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to prepare CSV: %v", err))
 		return
 	}
 
-	content, err := os.ReadFile(workbookPath)
+	content, err := os.ReadFile(csvPath)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to read workbook: %v", err))
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("failed to read CSV: %v", err))
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, workbookPath))
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, csvPath))
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(content)))
 	w.WriteHeader(http.StatusOK)
 
@@ -159,133 +157,98 @@ func decodeWorkerRequest(r *http.Request) (workerRequest, error) {
 }
 
 func appendWorkerRow(req workerRequest, status string) error {
-	file, err := openWorkbook()
-	if err != nil {
-		return err
-	}
-	defer closeWorkbook(file)
-
-	rows, err := file.GetRows(sheetName)
-	if err != nil {
+	if err := ensureCSV(); err != nil {
 		return err
 	}
 
-	nextRow := len(rows) + 1
+	file, err := os.OpenFile(csvPath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
 	registeredAt := time.Now().Format(time.RFC3339)
-	values := []interface{}{req.WorkerName, req.WorkerIP, status, registeredAt, ""}
+	record := []string{req.WorkerName, req.WorkerIP, status, registeredAt, ""}
 
-	cell, err := excelize.CoordinatesToCellName(1, nextRow)
-	if err != nil {
-		return err
-	}
-
-	if err := file.SetSheetRow(sheetName, cell, &values); err != nil {
-		return err
-	}
-
-	return file.SaveAs(workbookPath)
+	return writer.Write(record)
 }
 
 func completeWorker(req workerRequest) (bool, error) {
-	file, err := openWorkbook()
+	if err := ensureCSV(); err != nil {
+		return false, err
+	}
+
+	// Read all records
+	file, err := os.Open(csvPath)
 	if err != nil {
 		return false, err
 	}
-	defer closeWorkbook(file)
 
-	rows, err := file.GetRows(sheetName)
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	file.Close()
 	if err != nil {
 		return false, err
 	}
 
 	completedAt := time.Now().Format(time.RFC3339)
+	updated := false
 
-	for index := 1; index < len(rows); index++ {
-		row := rows[index]
-		if len(row) < 2 {
-			continue
-		}
-
-		if row[0] == req.WorkerName && row[1] == req.WorkerIP {
-			// Update status to completed (column 3)
-			statusCell, err := excelize.CoordinatesToCellName(3, index+1)
-			if err != nil {
-				return false, err
-			}
-
-			if err := file.SetCellValue(sheetName, statusCell, "completed"); err != nil {
-				return false, err
-			}
-
-			// Update completed_at timestamp (column 5)
-			completedCell, err := excelize.CoordinatesToCellName(5, index+1)
-			if err != nil {
-				return false, err
-			}
-
-			if err := file.SetCellValue(sheetName, completedCell, completedAt); err != nil {
-				return false, err
-			}
-
-			return true, file.SaveAs(workbookPath)
+	// Update matching record
+	for i := 1; i < len(records); i++ {
+		if len(records[i]) >= 2 && records[i][0] == req.WorkerName && records[i][1] == req.WorkerIP {
+			records[i][2] = "completed"
+			records[i][4] = completedAt
+			updated = true
+			break
 		}
 	}
 
-	// If worker not found, add new row with completed status
-	values := []interface{}{req.WorkerName, req.WorkerIP, "completed", "", completedAt}
-	nextRow := len(rows) + 1
+	// If not found, add new record
+	if !updated {
+		records = append(records, []string{req.WorkerName, req.WorkerIP, "completed", "", completedAt})
+	}
 
-	cell, err := excelize.CoordinatesToCellName(1, nextRow)
+	// Write all records back
+	file, err = os.Create(csvPath)
 	if err != nil {
 		return false, err
 	}
+	defer file.Close()
 
-	if err := file.SetSheetRow(sheetName, cell, &values); err != nil {
-		return false, err
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	for _, record := range records {
+		if err := writer.Write(record); err != nil {
+			return false, err
+		}
 	}
 
-	return false, file.SaveAs(workbookPath)
+	return updated, nil
 }
 
-func ensureWorkbook() error {
-	if _, err := os.Stat(workbookPath); err == nil {
+func ensureCSV() error {
+	if _, err := os.Stat(csvPath); err == nil {
 		return nil
 	} else if !os.IsNotExist(err) {
 		return err
 	}
 
-	file := excelize.NewFile()
-	defaultSheet := file.GetSheetName(file.GetActiveSheetIndex())
-
-	if defaultSheet != sheetName {
-		file.SetSheetName(defaultSheet, sheetName)
-	}
-
-	headers := []interface{}{"worker_name", "worker_ip", "status", "registered_at", "completed_at"}
-	if err := file.SetSheetRow(sheetName, "A1", &headers); err != nil {
+	file, err := os.Create(csvPath)
+	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	return file.SaveAs(workbookPath)
-}
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
 
-func openWorkbook() (*excelize.File, error) {
-	if err := ensureWorkbook(); err != nil {
-		return nil, err
-	}
-
-	file, err := excelize.OpenFile(workbookPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
-}
-
-func closeWorkbook(file *excelize.File) {
-	if err := file.Close(); err != nil {
-		log.Printf("failed to close workbook: %v", err)
-	}
+	headers := []string{"worker_name", "worker_ip", "status", "registered_at", "completed_at"}
+	return writer.Write(headers)
 }
 
 func writeJSON(w http.ResponseWriter, statusCode int, payload apiResponse) {

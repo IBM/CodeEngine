@@ -10,8 +10,7 @@ fleet-register
 *_test.go
 
 # Output files
-*.xlsx
-*.xls
+*.csv
 
 # Git
 .git
