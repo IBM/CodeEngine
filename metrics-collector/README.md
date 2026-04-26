@@ -1,59 +1,283 @@
 # IBM Cloud Code Engine - Metrics Collector
 
-Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds
+Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds. Those metrics can either be render 
+
+in **IBM Cloud Monitoring** (see [instructions](#Send-metrics-to-IBM-Cloud-Monitoring))
+
+![](./images/monitoring-dashboard-ce-component-resources.png)
+
+or in **IBM Cloud Logs** (see [instructions](#ibm-cloud-logs-setup))
 
 ![Dashboard overview](./images/icl-dashboard-overview.png)
 
-## Installation
 
-### Capture metrics every n seconds
+## Send metrics to IBM Cloud Monitoring
 
-* Create Code Engine job template
+### How It Works
+
+![](./images/metrics-collector.overview.png)
+
+1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
+2. The embedded Prometheus agent scrapes these metrics every 30 seconds
+3. The agent also discovers and scrapes pods with the `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` annotation
+4. All metrics are forwarded to IBM Cloud Monitoring via remote write
+5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
+
+### Setup Instructions
+
+The metrics collector supports two authentication methods for accessing IBM Cloud Monitoring:
+
+- **Option 1: Trusted Profile Authentication (Recommended)** - Automatically obtains monitoring API keys using IBM Cloud Trusted Profiles
+- **Option 2: Explicit API Key Secret** - Manually create and mount a monitoring API key as a secret
+
+#### Prerequisites (Both Options)
+
+**Step 1:** You need an IBM Cloud Monitoring instance
+```bash
+REGION=<yourMonitoringInstanceRegion>
+MONITORING_INSTANCE_NAME="<yourMonitoringInstanceName>"
+MONITORING_INSTANCE_GUID=$(ibmcloud resource service-instance "$MONITORING_INSTANCE_NAME" -o JSON|jq -r '.[0].guid')
+echo "MONITORING_INSTANCE_GUID: '$MONITORING_INSTANCE_GUID'"
 ```
-$ ibmcloud ce job create \
+
+**Step 2:** The collector must run in a Code Engine project
+```bash
+# Create new Code Engine project
+ibmcloud ce project create --name <yourCodeEngineProjectName>
+
+# Select an existing Code Engine project
+ibmcloud ce project select --name <yourProjectName>
+```
+
+#### Option 1: Trusted Profile Authentication (Recommended)
+
+This method automatically obtains the monitoring API key using IBM Cloud Trusted Profiles. No manual secret creation or rotation is required.
+
+**Step 3a:** Create an IBM Cloud Trusted Profile
+
+Create a Trusted Profile that allows Code Engine compute resources to authenticate:
+
+```bash
+# Create the Trusted Profile
+ibmcloud iam trusted-profile-create metrics-collector-profile \
+    --description "Trusted profile for Code Engine metrics collector"
+
+# Add Code Engine compute resources as trusted entities
+ibmcloud iam trusted-profile-rule-create metrics-collector-profile \
+    --name code-engine-rule \
+    --type Profile-CR \
+    --cr-type CE \
+    --conditions claim:project_name,operator:EQUALS,value:"$(ibmcloud ce proj current --output json|jq -r '.name')" \
+    --conditions claim:component_type,operator:EQUALS,value:"job" \
+    --conditions claim:component_name,operator:EQUALS,value:"metrics-collector"
+
+# Grant the profile access to the Monitoring instance
+ibmcloud iam trusted-profile-policy-create metrics-collector-profile \
+    --roles Viewer,Writer \
+    --service-name sysdig-monitor \
+    --service-instance $MONITORING_INSTANCE_GUID
+```
+
+**Note:** Replace `<your-ce-project-namespace>` with your Code Engine project's Kubernetes namespace (typically in the format `<project-guid>`).
+
+**Step 4a:** Create your metrics-collector job with Trusted Profile configuration
+```bash
+ibmcloud ce job create \
     --name metrics-collector \
-    --src . \
+    --src "." \
     --mode daemon \
     --cpu 0.25 \
     --memory 0.5G \
-    --wait
+    --service-account reader \
+    --build-size xlarge \
+    --trusted-profiles-enabled \
+    --env INTERVAL=30 \
+    --env METRICS_ENABLED=true \
+    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.private.${REGION}.monitoring.cloud.ibm.com \
+    --env CE_PROJECT_NAME="$(ibmcloud ce proj current --output json|jq -r '.name')" \
+    --env MONITORING_INSTANCE_GUID="$MONITORING_INSTANCE_GUID" \
+    --env MONITORING_REGION="$REGION" \
+    --env TRUSTED_PROFILE_NAME="metrics-collector-profile"
 ```
 
-* Submit a daemon job that collects metrics in an endless loop. The daemon job queries the Metrics API every 30 seconds
-```
-$ ibmcloud ce jobrun submit \
-    --job metrics-collector \
-    --env INTERVAL=30 
+**Step 5a:** Submit a daemon job run
+```bash
+ibmcloud ce jobrun submit \
+    --job metrics-collector
 ```
 
+#### Option 2: Explicit API Key Secret
 
-### Capture metrics every n minutes
+This method requires manually creating and mounting a monitoring API key. Use this option for local development, testing, or when Trusted Profiles are not available.
 
-* Create Code Engine job template
+**Step 3b:** Create a secret with your IBM Cloud Monitoring API token
+```bash
+# Obtain the Monitoring API token of the IBM Cloud Monitoring instance
+# using the IAM access token of the current IBM CLI Session
+MONITORING_INSTANCE_MONITORING_API_KEY=$(curl --silent -X GET https://$REGION.monitoring.cloud.ibm.com/api/token -H "Authorization: $(ibmcloud iam oauth-tokens --output JSON|jq -r '.iam_token')" -H "IBMInstanceID: $MONITORING_INSTANCE_GUID" -H "content-type: application/json"|jq -r '.token.key')
+
+# Create a Code Engine secret that stores the Monitoring API Key
+ibmcloud ce secret create \
+    --name monitoring-apikey \
+    --from-literal monitoring-apikey=$MONITORING_INSTANCE_MONITORING_API_KEY
 ```
-$ ibmcloud ce job create \
+
+**Step 4b:** Create your metrics-collector job with the required configuration
+```bash
+ibmcloud ce job create \
     --name metrics-collector \
-    --src . \
-    --mode task \
+    --src "." \
+    --mode daemon \
     --cpu 0.25 \
     --memory 0.5G \
-    --wait
+    --service-account reader \
+    --build-size xlarge \
+    --env INTERVAL=30 \
+    --env METRICS_ENABLED=true \
+    --env METRICS_REMOTE_WRITE_FQDN=ingest.prws.private.${REGION}.monitoring.cloud.ibm.com \
+    --env CE_PROJECT_NAME="$(ibmcloud ce proj current --output json|jq -r '.name')" \
+    --mount-secret /etc/secrets=monitoring-apikey
 ```
 
-* Submit a Code Engine cron subscription that triggers the metrics collector every minute to query the Metrics API
-```
-$ ibmcloud ce subscription cron create \
-    --name collect-metrics-every-minute \
-    --destination-type job \
-    --destination metrics-collector \
-    --schedule '*/1 * * * *'
+**Step 5b:** Submit a daemon job run
+```bash
+ibmcloud ce jobrun submit \
+    --job metrics-collector
 ```
 
-## Configuration
+#### Import Dashboard
 
-Per default the metrics collector collects memory and CPU statistics, like `usage`, `current` and `configured`. 
+After setting up the metrics collector with either authentication method, import the dashboard:
 
-One can use the environment variable `COLLECT_DISKUSAGE=true` to also collect the amount of disk space that is used. Please note, the metrics collector can only calculate the overall file size stored in the pods filesystem which includes files that are part of the container image, the epheremal storage as well as mounted COS buckets. Hence, this metric cannot be used to calculate the ephemeral storage usage. 
+```bash
+# Load the most recent dashboard configuration
+CE_MONITORING_DASHBOARD=$(curl -sL https://raw.githubusercontent.com/IBM/CodeEngine/main/metrics-collector/setup/ibm-cloud-monitoring/code-engine-component-resource-overview.json)
+
+# Import the dashboard
+curl -X POST https://$REGION.monitoring.cloud.ibm.com/api/v3/dashboards \
+      -H "Authorization: $(ibmcloud iam oauth-tokens --output JSON|jq -r '.iam_token')" \
+      -H "IBMInstanceID: $MONITORING_INSTANCE_GUID" \
+      -H "Content-Type: application/json" \
+      -d "{\"dashboard\": $CE_MONITORING_DASHBOARD}"
+
+```
+
+**Note:** A more elaborated approach to manage custom Cloud Monitoring dashboards can be found [here](setup/ibm-cloud-monitoring/README.md)
+
+
+#### Exposed Metrics
+
+The following Prometheus metrics are exposed as gauges:
+
+Container Metrics:
+- **`ibm_codeengine_instance_cpu_usage_millicores`**: Current CPU usage in millicores
+- **`ibm_codeengine_instance_cpu_limit_millicores`**: Configured CPU limit in millicores
+- **`ibm_codeengine_instance_memory_usage_bytes`**: Current memory usage in bytes
+- **`ibm_codeengine_instance_memory_limit_bytes`**: Configured memory limit in bytes
+- **`ibm_codeengine_instance_ephemeral_storage_usage_bytes`**: Current ephemeral storage usage in bytes (if `COLLECT_DISKUSAGE=true`)
+
+The following 3 metrics are used to monitor the collector itself:
+- **`ibm_codeengine_collector_collection_duration_seconds`**: Time taken to collect metrics in seconds (if `METRICS_INTERNAL_STATS=true`)
+- **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection (if `METRICS_INTERNAL_STATS=true`)
+- **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter) (if `METRICS_INTERNAL_STATS=true`)
+
+#### Metric Labels
+
+All container metrics include the following labels:
+- `ibm_codeengine_component_type`: Type of component (`app`, `job`, or `build`)
+- `ibm_codeengine_component_name`: Name of the Code Engine component
+- `ibm_codeengine_instance_name`: Name of the pod instance (optional, see cardinality control below)
+- `ibm_codeengine_subcomponent_name`: Name of the app revision (optional, see cardinality control below)
+
+#### User Metrics Scraping
+
+The metrics collector can automatically discover and scrape custom Prometheus metrics from your Code Engine applications. To enable this feature, add the following annotations to your application:
+
+**Required annotation:**
+- `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` - Enables metrics scraping for this application
+
+**Optional annotations:**
+- `codeengine.cloud.ibm.com/userMetricsPath: '/metrics'` - Custom metrics endpoint path (default: `/metrics`)
+- `codeengine.cloud.ibm.com/userMetricsPort: '2112'` - Custom metrics port
+
+**Example:**
+```bash
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsPath": "/metrics",
+          "codeengine.cloud.ibm.com/userMetricsPort": "2112"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Cardinality Control for User Metrics
+
+To manage metric cardinality and reduce costs, you can control which labels are included in scraped user metrics using the following annotations:
+
+**Cardinality control annotations:**
+- `codeengine.cloud.ibm.com/userMetricsInstance: 'true'` - Include the `ibm_codeengine_instance_name` label (pod name)
+- `codeengine.cloud.ibm.com/userMetricsSubcomponent: 'true'` - Include the `ibm_codeengine_subcomponent_name` label (app revision name)
+
+**Default behavior:** By default, both `ibm_codeengine_instance_name` and `ibm_codeengine_subcomponent_name` labels are **excluded** from user metrics to minimize cardinality. These labels can create high cardinality because:
+- Instance names change with each pod restart or scale event
+- Revision names change with each application update
+
+**When to enable these labels:**
+- Enable `userMetricsInstance` when you need to track metrics per individual pod instance
+- Enable `userMetricsSubcomponent` when you need to compare metrics across different application revisions
+
+**Example with cardinality control:**
+```bash
+# Enable user metrics scraping with instance-level granularity
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsInstance": "true"
+        }
+      }
+    }
+  }
+}'
+
+# Enable user metrics scraping with both instance and revision granularity
+kubectl patch ksvc myapp --type merge -p '{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "codeengine.cloud.ibm.com/userMetricsScrape": "true",
+          "codeengine.cloud.ibm.com/userMetricsInstance": "true",
+          "codeengine.cloud.ibm.com/userMetricsSubcomponent": "true"
+        }
+      }
+    }
+  }
+}'
+```
+
+**Note:** Only set these annotations to `'true'` when you specifically need the additional label granularity. Keeping them disabled (default) helps reduce metric cardinality and associated monitoring costs.
+
+#### Example Metrics Output
+
+```prometheus
+# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
+# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge
+ibm_codeengine_instance_cpu_usage_millicores{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 250
+
+# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes
+# TYPE ibm_codeengine_instance_memory_usage_bytes gauge
+ibm_codeengine_instance_memory_usage_bytes{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 134217728
+```
 
 ## IBM Cloud Logs setup
 
@@ -71,7 +295,7 @@ Follow the steps below to create a custom dashboard in your IBM Cloud Logs insta
 
 ![New dashboard](./images/icl-dashboard-new.png)
 
-* In the "Import" modal, select the file [./setup/dashboard-code_engine_resource_consumption_metrics.json](./setup/dashboard-code_engine_resource_consumption_metrics.json) located in this repository, and click "Import"
+* In the "Import" modal, select the file [./setup/ibm-cloud-logs/dashboard-code_engine_resource_consumption_metrics.json](./setup/ibm-cloud-logs/dashboard-code_engine_resource_consumption_metrics.json) located in this repository, and click "Import"
 
 ![Import modal](./images/icl-dashboard-import.png)
 
@@ -117,8 +341,6 @@ app:"codeengine" AND message.metric:"instance-resources"
 
 * In the top-right corner, select `1-line` as view mode
 
-![View](./images/icl-logs-view-mode.png)
-
 * In the graph title it says "**Count** all grouped by **Severity**". Click on `Severity` and select `message.component_name` instead. Furthermore, select `Max` as aggregation metric and choose `message.memory.usage` as aggregation field
 
 ![Graph](./images/icl-logs-view-graph.png)
@@ -132,54 +354,38 @@ app:"codeengine" AND message.metric:"instance-resources"
 ![Logs overview](./images/icl-logs-view-overview.png)
 
 
-## IBM Log Analysis setup (deprecated)
+### Troubleshooting & Configuration
 
-### Log lines
+#### Common Issues
 
-Along with a human readable message, like `Captured metrics of app instance 'load-generator-00001-deployment-677d5b7754-ktcf6': 3m vCPU, 109 MB memory, 50 MB ephemeral storage`, each log line passes specific resource utilization details in a structured way allowing to apply advanced filters on them.
+**Trusted Profile Authentication Failures:**
+- **Missing environment variables**: Ensure `MONITORING_INSTANCE_GUID`, `MONITORING_REGION`, and `TRUSTED_PROFILE_NAME` are all set
+- **Container resource token not found**: Verify the job is running in Code Engine with proper service account permissions
+- **IAM token request failed**: Check that the Trusted Profile exists and has the correct trust relationship configured
+- **Monitoring API key retrieval failed**: Verify the Trusted Profile has appropriate permissions (Viewer, Writer) for the Monitoring instance
+- **Invalid region**: Ensure `MONITORING_REGION` matches your Monitoring instance region (e.g., `us-south`, `eu-de`, `eu-gb`)
 
-E.g.
-- `cpu.usage:>80`: Filter for all log lines that noticed a CPU utilization of 80% or higher
-- `memory.current:>1000`: Filter for all log lines that noticed an instance that used 1GB or higher of memory
-- `component_type:app`: Filter only for app instances. Possible values are `app`, `job`, and `build`
-- `component_name:<app-name>`: Filter for all instances of a specific app, job, or build
-- `name:<instance-name>`: Filter for a specific instance
+**Explicit Secret Authentication Failures:**
+- **Missing `/etc/secrets/monitoring-apikey` file**: Ensure the secret is created and properly mounted
+- **Invalid API key**: Regenerate the monitoring API key and update the secret
 
-![IBM Cloud Logs](./images/ibm-cloud-logs--loglines.png)
+**General Issues:**
+- **Missing or wrong `METRICS_REMOTE_WRITE_FQDN`**: Verify the endpoint matches your region's ingestion endpoint
+- **Prometheus agent fails to start**: Check the logs for configuration errors or network connectivity issues
 
-### Log graphs
+#### Environment Variables
 
-Best is to create IBM Cloud Logs Board, in order to visualize the CPU and Memory usage per Code Engine component.
+**Core Configuration:**
+- **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected from the Kubernetes API endpoint in daemon mode.
+- **`COLLECT_DISKUSAGE`** (default: `false`): Set to `true` to collect disk space usage. Note: The metrics collector calculates the overall file size stored in the pod's filesystem, which includes files from the container image, ephemeral storage, and mounted COS buckets. This metric cannot be used to calculate ephemeral storage usage alone.
+- **`METRICS_ENABLED`** (default: `false`): Set to `true` to enable the HTTP metrics server. When disabled, the collector still runs and logs metrics to stdout but does not expose the HTTP endpoint.
+- **`METRICS_REMOTE_WRITE_FQDN`**: IBM Cloud Monitoring ingestion endpoint FQDN (required when `METRICS_ENABLED=true`)
+- **`METRICS_PORT`** (default: `9100`): HTTP server port for the Prometheus metrics endpoint. Only used when `METRICS_ENABLED=true` in daemon mode.
 
-1. In your log instance navigate to Boards
-1. Give it a proper name, enter `metric:instance-resources` as query and submit by clicking `Add Graph`
-![New Board](./images/new-board.png)
-1. Now the graph shows the overall amount of logs captured for the specified query per time interval
-![Count of metrics log lines ](./images/count-of-metrics-lines.png)
-1. Click on the filter icon above the graph and put in `metric:instance-resources AND component_name:<app-name>`
-1. Switch the metric of the Graph to `Maximums`
-1. Below the graph Add a new plot`cpu.usage` as field and choose `ANY` as field values
-![Configure Graph plots](./images/configure-plots.png)
-1. Add another plot for the field `memory.usage` and values `ANY`
-1. Finally delete the plot `metrics:instance-resources` and adjust the plot colors to your likings
-![Resource Usage graph](./images/resource-usage-graph.png)
-1. The usage graph above renders the utilization in % of the CPU and Memory
+**Trusted Profile Authentication (Option 1):**
+- **`MONITORING_INSTANCE_GUID`**: The GUID of your IBM Cloud Monitoring instance (required for Trusted Profile authentication)
+- **`MONITORING_REGION`**: The region where your Monitoring instance is deployed, e.g., `us-south`, `eu-de`, `eu-gb` (required for Trusted Profile authentication)
+- **`TRUSTED_PROFILE_NAME`**: The name of the IBM Cloud Trusted Profile to use for authentication (required for Trusted Profile authentication)
+- **`CR_TOKEN_FILENAME`** (optional): Override the default container resource token file path (default: `/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token`)
 
-#### Add CPU utilization
-1. Duplicate the graph, change its name to CPU and replace its plots with `cpu.configured` and `cpu.current`.
-- The resulting graph will render the actual CPU usage compared to the configured limit. The the unit is milli vCPUs (1000 -> 1 vCPU).
-![](./images/cpu-utilization.png)
-
-
-#### Add memory utilization
-1. Duplicate the graph, change its name to Memory and replace its plots with `memory.configured` and `memory.current`.
-1. The resulting graph will render the actual memory usage compared to the configured limit. The the unit is MB (1000 -> 1 GB).
-![](./images/memory-utilization.png)
-
-
-
-#### Add disk utilization
-1. Duplicate the graph or create a new one, change its name to "Disk usage" and replace its plots with `disk_usage.current`.
-1. The resulting graph will render the actual disk usage. While this does not allow to identify the usage of disk space compared with the configured ephemeral storage limit, this graph gives an impression on whether the disk usage is growing over time. The the unit is MB (1000 -> 1 GB).
-![](./images/disk-utilization.png)
-
+**Note:** When all three Trusted Profile environment variables are set, the collector will attempt Trusted Profile authentication first. If it fails or the variables are not set, it will fall back to using a mounted secret at `/etc/secrets/monitoring-apikey`.
