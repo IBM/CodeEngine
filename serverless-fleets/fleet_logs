@@ -1,0 +1,63 @@
+#!/bin/bash
+set -eo pipefail
+
+ICL_ENDPOINT="${LOGS_URL}"
+REGION="${REGION:=eu-de}"
+NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
+RESOURCE_GROUP="${NAME_PREFIX}--rg"
+ICL_NAME="${NAME_PREFIX}--icl"
+FLEET_ID=
+TIER="frequent_search"
+OUTPUT="logs-raw"
+SINCE="6h0m0s"
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source ${SCRIPT_DIR}/common.sh
+
+target_region $REGION > /dev/null
+target_resource_group $RESOURCE_GROUP > /dev/null
+
+ibmcloud plugin show logs > /dev/null
+
+if [[ $? -ne 0 ]]; then
+    ibmcloud plugin install logs
+fi
+
+if [[ -z "${ICL_ENDPOINT}" ]]; then
+  ICL_ENDPOINT="$(ibmcloud resource service-instance ${ICL_NAME} -o json | jq -r '.[].extensions.external_api')"
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --fleet-id)
+      shift
+      FLEET_ID="$1"
+      ;;
+
+    --tier)
+      shift
+      TIER="$1"
+      ;;
+
+    --output)
+      shift
+      OUTPUT="$1"
+      ;;
+
+    --since)
+      shift
+      SINCE="$1"
+      ;;
+
+    *)
+      echo "Unknown flag $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+if [ -z "$FLEET_ID" ]; then
+    ibmcloud logs query --since ${SINCE} --tier ${TIER} --query "source logs | sort by \$m.timestamp" --service-url "${ICL_ENDPOINT}" --output ${OUTPUT}
+else
+    ibmcloud logs query --since ${SINCE} --tier ${TIER} --query "filter \$d.codeengine.fleetId ~ '${FLEET_ID}' | sort by \$m.timestamp" --service-url "${ICL_ENDPOINT}" --output ${OUTPUT}
+fi
