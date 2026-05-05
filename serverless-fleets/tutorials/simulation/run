@@ -23,16 +23,20 @@ REGISTRY_SECRET_NAME="ce-auto-icr-private-$REGION"
 PRIVATE_IMAGE="private.$IMAGE"
 
 echo ibmcloud code-engine fleet create --name "fleet-${uuid}-1"
-echo "  "--image $PRIVATE_IMAGE
-echo "  "--registry-secret $REGISTRY_SECRET_NAME
-echo "  "--worker-profile $PROFILE
-echo "  "--tasks-from-local-file commands.jsonl
-echo "  "--cpu $CPU
-echo "  "--memory $MEMORY
-echo "  "--max-scale $MAX_SCALE
-echo "  "--mount-data-store /output=fleet-output-store:/simulation
+echo "  " --tasks-state-store fleet-task-store \
+echo "  " --subnetpool-name fleet-subnetpool \
+echo "  " --image $PRIVATE_IMAGE
+echo "  " --registry-secret $REGISTRY_SECRET_NAME
+echo "  " --worker-profile $PROFILE
+echo "  " --tasks-from-local-file commands.jsonl
+echo "  " --cpu $CPU
+echo "  " --memory $MEMORY
+echo "  " --max-scale $MAX_SCALE
+echo "  " --mount-data-store /output=fleet-output-store:/simulation
 
 ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+--tasks-state-store fleet-task-store \
+--subnetpool-name fleet-subnetpool \
 --image $PRIVATE_IMAGE \
 --registry-secret $REGISTRY_SECRET_NAME \
 --max-scale $MAX_SCALE \
@@ -40,6 +44,5 @@ ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
 --cpu $CPU \
 --memory $MEMORY \
 --worker-profile $PROFILE \
---tasks-state-store fleet-task-store \
 --mount-data-store /output=fleet-output-store:/simulation
 

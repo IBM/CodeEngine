@@ -1,0 +1,16 @@
+# Environment files
+.env
+
+# Python
+__pycache__/
+*.py[oc]
+.venv/
+*.egg-info
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

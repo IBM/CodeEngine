@@ -7,6 +7,7 @@ uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 echo ibmcloud code-engine fleet create 
 echo "  " --name "fleet-${uuid}-1" 
 echo "  " --tasks-state-store fleet-task-store
+echo "  " --subnetpool-name fleet-subnetpool
 echo "  " --image registry.access.redhat.com/ubi8/ubi-minimal:latest 
 echo "  " --command="sleep" 
 echo "  " --arg "60" 
@@ -14,4 +15,4 @@ echo "  " --tasks 1
 echo "  " --max-scale 1
 echo "  " --gpu l40s:1
 
-ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi8/ubi-minimal:latest --max-scale 1 --command="sleep" --arg "60" --tasks 1 --gpu l40s:1
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --subnetpool-name fleet-subnetpool --image registry.access.redhat.com/ubi8/ubi-minimal:latest --max-scale 1 --command="sleep" --arg "60" --tasks 1 --gpu l40s:1

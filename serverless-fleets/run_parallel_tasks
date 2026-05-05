@@ -10,14 +10,15 @@ CPU=1
 MEMORY=2G
 
 echo ibmcloud code-engine fleet create 
-echo "  "--name "fleet-${uuid}-1"
-echo "  "--image registry.access.redhat.com/ubi8/ubi-minimal:latest
-echo "  "--tasks-state-store fleet-task-store
-echo "  "--command="sleep" 
-echo "  "--arg "2"
-echo "  "--tasks $TASKS
-echo "  "--cpu $CPU
-echo "  "--memory $MEMORY
-echo "  "--max-scale $MAX_SCALE 
+echo "  " --name "fleet-${uuid}-1"
+echo "  " --tasks-state-store fleet-task-store
+echo "  " --subnetpool-name fleet-subnetpool
+echo "  " --image registry.access.redhat.com/ubi8/ubi-minimal:latest
+echo "  " --command="sleep" 
+echo "  " --arg "2"
+echo "  " --tasks $TASKS
+echo "  " --cpu $CPU
+echo "  " --memory $MEMORY
+echo "  " --max-scale $MAX_SCALE 
 
-ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi9/ubi-minimal:latest --max-scale ${MAX_SCALE} --command="sleep" --arg "2" --tasks ${TASKS} --cpu ${CPU} --memory ${MEMORY}
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --subnetpool-name fleet-subnetpool --image registry.access.redhat.com/ubi9/ubi-minimal:latest --max-scale ${MAX_SCALE} --command="sleep" --arg "2" --tasks ${TASKS} --cpu ${CPU} --memory ${MEMORY}

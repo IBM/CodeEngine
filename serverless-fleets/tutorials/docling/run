@@ -7,22 +7,25 @@ uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 IMAGE="quay.io/docling-project/docling-serve-cpu"
 
 echo ibmcloud code-engine fleet create --name "fleet-${uuid}-1"
-echo "  "--image $IMAGE
-echo "  "--worker-profile mx3d-24x240
-echo "  "--max-scale 8
-echo "  "--tasks-from-local-file commands.jsonl
-echo "  "--cpu 12
-echo "  "--memory 120G
-echo "  "--mount-data-store /input=fleet-input-store:/docling
-echo "  "--mount-data-store /output=fleet-output-store:/docling
+echo "  " --tasks-state-store fleet-task-store
+echo "  " --subnetpool-name fleet-subnetpool
+echo "  " --image $IMAGE
+echo "  " --worker-profile mx3d-24x240
+echo "  " --max-scale 8
+echo "  " --tasks-from-local-file commands.jsonl
+echo "  " --cpu 12
+echo "  " --memory 120G
+echo "  " --mount-data-store /input=fleet-input-store:/docling
+echo "  " --mount-data-store /output=fleet-output-store:/docling
 
 ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+--tasks-state-store fleet-task-store \
+--subnetpool-name fleet-subnetpool \
 --image $IMAGE \
 --worker-profile mx3d-24x240 \
 --max-scale 8 \
 --tasks-from-local-file commands.jsonl \
 --cpu 12 \
 --memory 120G \
---tasks-state-store fleet-task-store \
 --mount-data-store /input=fleet-input-store:/docling \
 --mount-data-store /output=fleet-output-store:/docling

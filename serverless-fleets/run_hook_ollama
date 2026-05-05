@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+PREHOOK=$(cat <<'EOF'
+#!/bin/bash
+
+if nvidia-smi >/dev/null 2>&1; then
+  echo "NVIDIA GPU detected"
+  podman run -d --device nvidia.com/gpu=all -v ollama:/root/.ollama  -p 11434:11434  --name ollama  docker.io/ollama/ollama
+else
+  echo "No NVIDIA GPU detected"
+  podman run -d  -v ollama:/root/.ollama -p 11434:11434 --name ollama docker.io/ollama/ollama:latest
+fi
+
+# pull the model into ollama
+podman exec -it ollama ollama pull granite4:350m
+EOF
+)
+
+echo code-engine fleet create --name "fleet-${uuid}-1"
+echo "  "--tasks-state-store fleet-task-store 
+echo "  "--subnetpool-name fleet-subnetpool 
+echo "  "--image registry.access.redhat.com/ubi10/ubi-minimal 
+echo "  "--max-scale 1 
+echo "  "--command="curl" 
+echo "  "--arg "http://host.containers.internal:11434/api/tags" 
+echo "  "--tasks 1 
+echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=10m
+echo "  "--cpu 2 
+echo "  "--memory 4G
+
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+    --tasks-state-store fleet-task-store \
+    --subnetpool-name fleet-subnetpool \
+    --image registry.access.redhat.com/ubi10/ubi-minimal \
+    --max-scale 1 \
+    --command="curl" \
+    --arg "http://host.containers.internal:11434/api/tags" \
+    --tasks 1 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}" \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=30m \
+    --cpu 2 \
+    --memory 4G

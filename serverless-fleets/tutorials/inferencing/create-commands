@@ -3,7 +3,7 @@ set -eu
 
 truncate -s0 commands.jsonl
 
-batch_size=10
+batch_size=1000
 idx=0
 batch_idx=0
 
@@ -18,10 +18,9 @@ for f in ../../data/input/inferencing/recipes/*.json; do
   fi
 
   file_in=$(basename "$f")
-  file_out=${file_in%.*}.augmented.json
 
   # echo "batch=$batch_idx idx=$idx file=$f"
-  echo "/input/recipes/$file_in;/output/inferencing_$file_out" >> "../../data/input/inferencing/batches/$batch_idx.txt"
+  echo "/input/recipes/${file_in}" >> "../../data/input/inferencing/batches/$batch_idx.txt"
 
 done
 

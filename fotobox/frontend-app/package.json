@@ -13,7 +13,7 @@
 		"carbon-components-svelte": "^0.85.2",
 		"carbon-preprocess-svelte": "^0.11.11",
 		"svelte": "^4.2.7",
-		"vite": "^7.1.7"
+		"vite": "^7.1.11"
 	},
 	"type": "module",
 	"dependencies": {

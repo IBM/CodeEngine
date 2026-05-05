@@ -1,4 +1,4 @@
-FROM  registry.access.redhat.com/ubi9/go-toolset:1.24 AS build-stage
+FROM  registry.access.redhat.com/ubi9/go-toolset:1.25 AS build-stage
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /api
 
 
 # Deploy the application binary into a lean image
-FROM gcr.io/distroless/static:latest
+FROM gcr.io/distroless/static-debian13
 
 WORKDIR /
 

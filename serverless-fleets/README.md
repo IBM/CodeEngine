@@ -82,9 +82,9 @@ Switch to the `serverless-fleets` directory, which will be the root directory fo
 
 To run this end-to-end sample, open a terminal, [login into your IBM Cloud account using the IBM Cloud CLI](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli).
 
-Install the Code Engine CLI with the latest version and enable fleets:
+Install the Code Engine CLI with the latest version:
 ```
-CE_EXPERIMENTAL_FLEET=true ibmcloud plugin install code-engine -f --quiet
+ibmcloud plugin install code-engine -f --quiet
 ```
 
 If you don't have a fleet sandbox, choose one of the two methods to create one.
@@ -142,6 +142,7 @@ Run a serverless fleet that runs 1 single task and instance with 2 CPUs and 4 GB
 ibmcloud code-engine fleet create
    --name fleet-b4bd2a33-1
    --tasks-state-store fleet-task-store
+   --subnetpool-name fleet-subnetpool
    --image registry.access.redhat.com/ubi8/ubi-minimal:latest
    --command=sleep
    --arg 60
@@ -152,6 +153,7 @@ ibmcloud code-engine fleet create
 Successfully created fleet with name 'fleet-b4bd2a33-1' and ID 'e3caac88-cfc2-4602-8684-b527a6811716'
 Run 'ibmcloud ce fleet get --id e3caac88-cfc2-4602-8684-b527a6811716' to check the fleet status.
 Run 'ibmcloud ce fleet worker list --fleet-id e3caac88-cfc2-4602-8684-b527a6811716' to retrieve a list of provisioned workers.
+Run 'ibmcloud ce fleet task list --fleet-id e3caac88-cfc2-4602-8684-b527a6811716' to retrieve a list of tasks.
 OK
 ```
 </details>
@@ -283,8 +285,9 @@ Run a serverless fleet to process 100 tasks where each tasks gets 1 CPU and 2 GB
 ```
 ➜  serverless-fleets ibmcloud code-engine fleet create
   --name fleet-847292b7-1
-  --image registry.access.redhat.com/ubi8/ubi-minimal:latest
   --tasks-state-store fleet-task-store
+  --subnetpool-name fleet-subnetpool
+  --image registry.access.redhat.com/ubi8/ubi-minimal:latest
   --command=sleep
   --arg 2
   --tasks 100
@@ -565,6 +568,43 @@ If you want to quickly iterate you may use the helper script `fleet-logs` in ord
 ./fleet-logs --fleet-id <fleet-id>
 ```
 
+### How to customize fleet workers
+
+> **Note:** This is an experimental feature to unlock specific use cases and might change or will be deprecated.
+
+Fleet workers can be customized using startup hooks to prepare the environment before tasks are executed. These hooks are configured through special environment variables that you set when creating the fleet. This customization capability allows you to install additional software, pull container images, or configure services that your tasks will use—all automatically before your workload begins processing.
+
+#### Example 1: Running Ollama on Fleet Workers
+
+See `run_hook_ollama` for a complete example that demonstrates:
+- Running Ollama (local LLM runtime) on fleet workers
+- Automatic GPU detection and configuration
+- Preloading AI models during worker startup
+- Using the environment variable `__CE_INTERNAL_HOOK_AFTER_STARTUP` to execute setup scripts
+
+Key environment variables used:
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP`: Script to run after worker startup
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3`: Retry attempts if hook fails
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=30m`: Maximum hook execution time
+
+#### Example 2: Running Podman-in-Podman
+
+See `run_hook_podman_in_podman` for a complete example that demonstrates:
+- Running Podman inside fleet workers for nested containerization
+- Preloading container images during startup
+- Using privileged containers and host path mounts
+
+Additional environment variables used:
+- `__CE_INTERNAL_PRIVILEGED_CONTAINER=true`: Enable privileged mode (required for nested containers)
+- `__CE_INTERNAL_HOSTPATH_MOUNTS=/var/lib/containers:/var/lib/containers`: Mount host paths
+
+**Available Hook Environment Variables:**
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP`: The script to execute after worker startup
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT`: Number of retry attempts if the hook fails
+- `__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME`: Maximum time allowed for hook execution
+- `__CE_INTERNAL_PRIVILEGED_CONTAINER`: Enable privileged mode
+- `__CE_INTERNAL_HOSTPATH_MOUNTS`: Mount host paths into the container
+
 ### Cleanup the Environment
 
 To clean up all IBM Cloud resources, that have been created as part of the provided script, run:
@@ -582,10 +622,10 @@ If you need to end your fleet's processing before it ran to completion, or to ge
 Run the following command to delete a single worker:
 
 ```
-ibmcloud ce exp fleet worker delete -n <worker-name>
+ibmcloud ce fleet worker delete -n <worker-name>
 ```
 
 Run the following command to delete all workers in your project:
 ```
-ibmcloud ce exp fleet worker list | grep "fleet-" | awk '{print $1}' | xargs -L1 -I {} ibmcloud ce exp fleet worker delete --name {} -f
+ibmcloud ce fleet worker list | grep "fleet-" | awk '{print $1}' | xargs -L1 -I {} ibmcloud ce fleet worker delete --name {} -f
 ```

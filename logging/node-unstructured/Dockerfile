@@ -1,0 +1,18 @@
+# Download dependencies in builder stage
+FROM registry.access.redhat.com/ubi9/nodejs-24:latest AS builder
+
+COPY --chown=${CNB_USER_ID}:${CNB_GROUP_ID} package.json /app/
+WORKDIR /app
+RUN npm i --omit=dev
+
+
+# Use a small distroless image for as runtime image
+FROM gcr.io/distroless/nodejs24
+
+COPY --chown=1001:0 . /app/
+
+USER 1001:0
+WORKDIR /app
+EXPOSE 8080
+
+CMD ["index.mjs"]

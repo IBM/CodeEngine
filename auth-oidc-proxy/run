@@ -48,6 +48,19 @@ function check_prerequisites {
     echo "Done!"
 }
 
+# helper function to check whether IBM Cloud CLI plugins should get updated, or not
+function ensure_plugin_is_up_to_date() {
+    echo "Checking $1 ..."
+    # check whether plugin is installed
+    if ! ibmcloud plugin show $1 -q >/dev/null; then
+        # install it
+        ibmcloud plugin install $1 -f --quiet
+    else 
+        # check whether there is an update available
+        ibmcloud plugin update $1 -f --quiet
+    fi
+}
+
 # Clean up previous run
 function clean() {
     # cleanup everything within this resource group
@@ -102,12 +115,12 @@ check_prerequisites
 
 # Ensure that latest versions of used IBM Cloud ClI is installed
 print_msg "\nPulling latest IBM Cloud CLI release ..."
-#ibmcloud update --force
+ibmcloud update --force
 echo "Done!"
 
 # Ensure that latest versions of used IBM Cloud CLI plugins are installed
 print_msg "\nInstalling required IBM Cloud CLI plugins ..."
-#ibmcloud plugin install code-engine -f --quiet
+ensure_plugin_is_up_to_date code-engine
 echo "Done!"
 
 

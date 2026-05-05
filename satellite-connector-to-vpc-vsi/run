@@ -354,7 +354,7 @@ echo "Done"
 # Create the connector VSI
 print_msg "\nCreating the VPC VSI '$vsi_agent_name', which runs the Satellite Connector agent ..."
 ibmcloud is instance-create $vsi_agent_name $vpc_name $REGION-1 cx2-2x4 $vpc_name-subnet \
-    --image ibm-centos-stream-9-amd64-6 \
+    --image ibm-centos-stream-10-amd64-5 \
     --boot-volume '{"name": "boot-vol-attachment-name", "volume": {"name": "my-boot-vol", "capacity": 100, "profile": {"name": "general-purpose"}}, "delete_volume_on_instance_delete": true}' \
     --resource-group-name $resource_group_name \
     --host-failure-policy restart \

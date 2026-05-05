@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="/public/css/style.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico">
+    <title><%= pageTitle %></title>
+</head>
+<body>
+    <% if(typeof user == 'object'  && user?.token){ %>
+        <h2>Your are authenticated!</h2>
+        <div>OIDC configuration properties:</div>
+        <div style="padding: 0.75rem 0;">
+            <code>
+                ClientId=<%= clientId %>
+                <br>
+                AuthorizationEndpoint=<%= providerAuthorizationEndpoint %>
+                <br>
+                TokenEndpoint=<%= providerTokenEndpoint %>
+                <br>
+                UserInfoEndpoint=<%= providerUserInfoEndpoint %>
+            </code>
+        </div>
+        <br>
+        <div>Access Token: <pre><%= user.token %></pre></div>
+        <br>
+        <div>User Profile: <pre><%= user.profile %></pre></div>
+        <br>
+        <a href="/auth/logout" class="center-block">Logout</a>
+    <% } else{ %> 
+        <a href="/auth/login" class="center-block">Login</a>
+    <% } %>
+</div>
+
+</body>
+</html>

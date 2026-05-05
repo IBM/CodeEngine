@@ -1,6 +1,6 @@
 module github.com/IBM/CodeEngine/thumbnail/vTwo
 
-go 1.16
+go 1.25
 
 require (
 	github.com/duglin/cosclient v0.0.0-20220220144541-831ae437b3cd

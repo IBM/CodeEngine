@@ -1,6 +1,6 @@
 module github.com/IBM/CodeEngine/kafka-observer
 
-go 1.23.0
+go 1.25
 
 require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20240126185534-a6e054aa01ed

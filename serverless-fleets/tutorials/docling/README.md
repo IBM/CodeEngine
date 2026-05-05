@@ -76,6 +76,8 @@ Launch the fleet with the following command in the `tutorials/docling` directory
 ```
 ➜  docling ./run
 ibmcloud code-engine fleet create --name fleet-3128b1c7-1
+  --tasks-state-store fleet-task-store
+  --subnetpool-name fleet-subnetpool
   --image quay.io/docling-project/docling-serve-cpu
   --registry-secret fleet-registry-secret
   --worker-profile mx3d-24x240
@@ -88,6 +90,7 @@ ibmcloud code-engine fleet create --name fleet-3128b1c7-1
 Successfully created fleet with name 'fleet-3128b1c7-1' and ID 'bd00d46e-4645-43b0-a892-d153455ac576'
 Run 'ibmcloud ce fleet get --id bd00d46e-4645-43b0-a892-d153455ac576' to check the fleet status.
 Run 'ibmcloud ce fleet worker list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576' to retrieve a list of provisioned workers.
+Run 'ibmcloud ce fleet task list --fleet-id bd00d46e-4645-43b0-a892-d153455ac576' to retrieve a list of tasks.
 OK
 ```
 </details>
@@ -240,6 +243,8 @@ The GPUs are defined by setting the family and the number of GPUs per task, e.g.
 ```
 ./run_gpu
 ibmcloud code-engine fleet create --name fleet-cc1f880d-1
+  --tasks-state-store fleet-task-store
+  --subnetpool-name fleet-subnetpool
   --image quay.io/docling-project/docling-serve
   --registry-secret fleet-registry-secret
   --max-scale 1

@@ -89,6 +89,8 @@ Now run the fleet to process the 24 stock tickers. In this tutorial we use the `
 ```
 ➜  simulation ./run
 ibmcloud code-engine fleet create --name fleet-c042e88d-1
+  --tasks-state-store fleet-task-store \
+  --subnetpool-name fleet-subnetpool \
   --image private.br.icr.io/ce--fleet-simulation/simulation
   --registry-secret ce-auto-icr-private-br-sao
   --worker-profile mx2-4x32

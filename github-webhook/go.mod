@@ -1,6 +1,6 @@
 module github.com/IBM/CodeEngine/github-webhook
 
-go 1.23.0
+go 1.25
 
 require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.0

@@ -1,0 +1,28 @@
+name: Deploy Application to Code Engine using existing container image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Deploy Application to Code Engine using existing container image
+      uses: IBM/code-engine-github-action@v1
+      with:
+        api-key: ${{ secrets.IBM_IAM_API_KEY }}
+        resource-group: 'Default'
+        region: 'eu-de'
+        project: 'MY-PROJECT'
+        component: 'app'
+        name: 'my-img-app'
+        image: icr.io/codeengine/helloworld:latest
+        cpu: 1
+        memory: 4G

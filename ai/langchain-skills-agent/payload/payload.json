@@ -1,0 +1,9 @@
+{
+  "agent_name": "Travel_Weather_Assistant",
+  "input": [{
+    "role": "user", 
+    "parts": [{
+      "content": "{\"message\": \"What's the weather like in Paris for the next 3 days? Also, can you recommend some good travel destinations for someone who loves beaches and culture? And please convert 500 USD to EUR for my trip budget.\"}"
+    }]
+  }]
+}

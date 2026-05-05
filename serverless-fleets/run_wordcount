@@ -22,15 +22,17 @@ CMDS=wordcount_commands.jsonl
 # ls data/tutorials/wordcount | awk '{ printf " { \"command\":\"/bin/bash\", \"args\": [\"-c\", \"cd /mnt/ce/data; wc tutorials/wordcount/"$1" > result/wordcount_"$1"\"]}\n" }' > wordcount_commands.jsonl
 
 echo ibmcloud code-engine fleet run 
-echo "  "--name "fleet-${uuid}-1"
-echo "  "--image registry.access.redhat.com/ubi9/ubi-minimal:latest
-echo "  "--tasks-from-local-file $CMDS
-echo "  "--cpu $CPU
-echo "  "--memory $MEMORY
-echo "  "--max-scale $MAX_SCALE 
-echo "  "--mount-data-store /input=fleet-input-store:/wordcount
-echo "  "--mount-data-store /output=fleet-output-store:/wordcount
+echo "  " --name "fleet-${uuid}-1"
+echo "  " --tasks-state-store fleet-task-store
+echo "  " --subnetpool-name fleet-subnetpool
+echo "  " --image registry.access.redhat.com/ubi9/ubi-minimal:latest
+echo "  " --tasks-from-local-file $CMDS
+echo "  " --cpu $CPU
+echo "  " --memory $MEMORY
+echo "  " --max-scale $MAX_SCALE 
+echo "  " --mount-data-store /input=fleet-input-store:/wordcount
+echo "  " --mount-data-store /output=fleet-output-store:/wordcount
 
-ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --image registry.access.redhat.com/ubi9/ubi-minimal:latest --max-scale $MAX_SCALE --tasks-from-local-file $CMDS --cpu $CPU --memory $MEMORY --mount-data-store /input=fleet-input-store:/wordcount --mount-data-store /output=fleet-output-store:/wordcount
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" --tasks-state-store fleet-task-store --subnetpool-name fleet-subnetpool --image registry.access.redhat.com/ubi9/ubi-minimal:latest --max-scale $MAX_SCALE --tasks-from-local-file $CMDS --cpu $CPU --memory $MEMORY --mount-data-store /input=fleet-input-store:/wordcount --mount-data-store /output=fleet-output-store:/wordcount
 
 

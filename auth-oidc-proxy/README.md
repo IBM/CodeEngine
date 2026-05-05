@@ -14,7 +14,7 @@ In order to be able to authenticate using OIDC SSO, you'll need to choose and co
 
 ### Github.com OIDC SSO
 
-Github.com provides a publicly available OIDC provider, that can be used to point to Code Engine applications, which you deployed in your IBM Cloud account. Use the following steps to configure an SSO app:
+GitHub.com provides a publicly available OIDC provider, that can be used to point to Code Engine applications, which you deployed in your IBM Cloud account. Use the following steps to configure an SSO app:
 
 * Create Github OIDC app through https://github.com/settings/developers
     ```
@@ -29,7 +29,7 @@ Github.com provides a publicly available OIDC provider, that can be used to poin
     ```
 * Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
     ```
-    echo "COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
+    echo "COOKIE_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
     ```
 * From your OIDC provider obtain the following values and add them to the `oidc.properties` file
     ```
@@ -40,12 +40,12 @@ Github.com provides a publicly available OIDC provider, that can be used to poin
 * To add authorization checks one can check for a specific user property
     ```
     echo "AUTHZ_USER_PROPERTY=login" >> oidc.properties
-    echo "AUTHZ_ALLOWED_USERS=<<comma-separated-list-of-github-users>" >> oidc.properties
+    echo "AUTHZ_ALLOWED_USERS=<comma-separated-list-of-github-users>" >> oidc.properties
     ```
 
 ### IBMers-only: w3Id OIDC SSO
 
-To protect IBM's workforce, the SSO Provisioner provides the ability to configure an w3Id SSO. Note: This SSO provider can only be used by IBMers
+To protect IBM-owned, internal applications, the w3Id SSO Provisioner provides the ability to configure an w3Id SSO. Note: This SSO provider can only be used by IBMers
 
 * Create w3Id OIDC configuration through https://w3.ibm.com/security/sso-provisioner
     ```
@@ -60,7 +60,7 @@ To protect IBM's workforce, the SSO Provisioner provides the ability to configur
     ```
 * Generate a random cookie secret that is used to encrypt the auth cookie value and add it to the `oidc.properties` file
     ```
-    echo "COOKIE_SIGNING_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
+    echo "COOKIE_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> oidc.properties
     ```
 * From your OIDC provider obtain the following values and add them to the `oidc.properties` file
     ```

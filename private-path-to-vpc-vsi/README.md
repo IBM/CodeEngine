@@ -55,3 +55,9 @@ In order to connect to the VSI via ssh, you can specify the name of an VPC SSH k
 ```
 VPC_SSH_KEY=<name-of-ssh-key> DEBUG=true CLEANUP_ON_SUCCESS=false ./run
 ```
+
+## Noteworthy
+
+Connecting a Private Path service with a Code Engine project opens up a wide variety of integration scenarios, including connecting to on-premise infrastructure.
+
+![](./docs/code-engine-private-path---component-diagram.all-integrations.png)
