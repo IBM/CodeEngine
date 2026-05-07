@@ -444,7 +444,7 @@ if ! ibmcloud is endpoint-gateway "$vpegw_icr" --vpc $vpc_name >/dev/null 2>&1; 
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_icr}-ip-1\",\"auto_delete\":true}" \
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_icr}-ip-2\",\"auto_delete\":true}" \
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_icr}-ip-3\",\"auto_delete\":true}" \
-        --allow-dns-resolution-binding false
+        --dns-resolution-binding-mode disabled
     if [ $? -ne 0 ]; then
         print_error "ICR VPE Gateway creation failed!"
         abortScript
@@ -463,7 +463,7 @@ if ! ibmcloud is endpoint-gateway "$vpegw_cos" --vpc $vpc_name >/dev/null 2>&1; 
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_cos}-ip-1\",\"auto_delete\":true}" \
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_cos}-ip-2\",\"auto_delete\":true}" \
         --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_cos}-ip-3\",\"auto_delete\":true}" \
-        --allow-dns-resolution-binding false
+        --dns-resolution-binding-mode disabled
     if [ $? -ne 0 ]; then
         print_error "COS VPE Gateway creation failed!"
         abortScript
@@ -483,7 +483,7 @@ if [[ "$SETUP_LOGGING" == "true" ]]; then
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_icl}-ip-1\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_icl}-ip-2\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_icl}-ip-3\",\"auto_delete\":true}" \
-            --allow-dns-resolution-binding false
+            --dns-resolution-binding-mode disabled
         if [ $? -ne 0 ]; then
             print_error "ICL VPE Gateway creation failed!"
             abortScript
@@ -502,7 +502,7 @@ if [[ "$SETUP_MONITORING" == "true" ]]; then
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_monitoring}-ip-1\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_monitoring}-ip-2\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_monitoring}-ip-3\",\"auto_delete\":true}" \
-            --allow-dns-resolution-binding false
+            --dns-resolution-binding-mode disabled
         if [ $? -ne 0 ]; then
             print_error "Monitoring VPE Gateway creation failed!"
             abortScript
