@@ -1,0 +1,16 @@
+[header]
+  layout = "sticky"
+
+[homepage]
+  layout = "card"
+  showRecent = true
+  showRecentItems = 6
+
+[article]
+  showDate = true
+  showReadingTime = true
+  showThumbnail = true
+
+[search]
+  enable = true
+  showOnHeader = true
