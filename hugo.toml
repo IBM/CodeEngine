@@ -1,0 +1,13 @@
+baseURL = "https://IBM.github.io/CodeEngine/"
+title = "Code Engine Dev Blog"
+theme = "blowfish"
+languageCode = "en"
+defaultContentLanguage = "en"
+
+# Instructs Hugo to build using Go modules to fetch Blowfish remotely
+[module]
+  [[module.imports]]
+    path = "github.com/nunocoracao/blowfish/v2"
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
