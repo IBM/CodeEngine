@@ -3,10 +3,9 @@ title: "How to Blog on Code Engine Dev Blog"
 date: 2026-05-27
 description: "A comprehensive guide for authors contributing to the IBM Code Engine blog using Hugo and the Blowfish theme."
 tags: ["meta", "guide", "documentation", "hugo"]
-author: "code-engine-team"
-showTaxonomies: true
-showAuthor: true
-showAuthorBottom: true
+featureImage: "featured.jpg"
+authors: ["uwefassnacht"]
+draft: false
 ---
 
 Welcome to the **IBM Code Engine Developer Blog** contribution guide! This site is powered by Hugo and built using the highly customizable Blowfish Theme. 
@@ -52,7 +51,6 @@ Create a new file named `your-post-title.md` inside `content/posts/`.
 ### Step 2: Configure Front Matter
 Every article requires a block of configuration at the absolute top of the file, wrapped in triple hyphens (`---`). Use this exact template:
 
-\
 ```yaml
 ---
 title: "Deploying Microservices with Code Engine"
@@ -78,7 +76,6 @@ Blowfish includes rich utility components to make your content visually engaging
 ### Code Snippets and Syntax Highlighting
 Always specify the programming language next to your opening backticks to enable clean code block rendering:
 
-\
 ```javascript
 // Example of clean syntax highlighting
 const client = new CodeEngineClient();
