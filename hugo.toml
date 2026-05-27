@@ -27,6 +27,7 @@ theme = "github.com/nunocoracao/blowfish/v2"
   showDate = true
   showReadingTime = true
   showThumbnail = true
+  showHero = true
 
 [params.search]
   enable = true
