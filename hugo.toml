@@ -2,7 +2,7 @@ baseURL = "https://IBM.github.io/CodeEngine/"
 title = "Code Engine Dev Blog"
 locale = "en-us"
 
-# Fix: Force Hugo to treat the theme itself as a remote module URL
+# Force Hugo to treat the theme itself as a remote module URL
 theme = "github.com/nunocoracao/blowfish/v2"
 
 [module]
@@ -13,3 +13,7 @@ theme = "github.com/nunocoracao/blowfish/v2"
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
+
+# FIX: Forces the Blowfish theme to look into your /posts/ folder for the homepage grid
+[params]
+  mainSections = ["posts"]
