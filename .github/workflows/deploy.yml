@@ -30,20 +30,29 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: Install Hugo Extended Natively
-        run: |
-          HUGO_VERSION=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
-          echo "Installing Hugo version v${HUGO_VERSION}"
-          curl -sL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" -o hugo.tar.gz
-          tar -xzf hugo.tar.gz
-          sudo mv hugo /usr/local/bin/
-          hugo version
+      # 1. Faster, cached Hugo installation (bypasses raw curl downloads)
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
 
-      - name: Fetch Remote Modules and Build
+      # 2. Add high-speed caching layer for Go modules (stores Blowfish theme)
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum', '**/hugo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # 3. Cleaned build execution (removed the slow forced remote download)
+      - name: Build Site
         run: |
-            hugo mod init github.com/IBM/CodeEngine || true
-            hugo mod get -u github.com/nunocoracao/blowfish/v2
-            hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+          hugo mod tidy
+          hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
