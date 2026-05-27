@@ -59,19 +59,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # 4. Cleaned build execution
+      # 4. Cleaned build execution (Now fully native)
       - name: Build Site
         run: |
-          # If a go.mod doesn't exist yet, initialize it so Hugo modules work
-          if [ ! -f go.mod ]; then
-            hugo mod init github.com/IBM/CodeEngine
-          fi
-          
-          # Force Hugo to download and vendor the Blowfish theme module
-          hugo mod get github.com/nunocoracao/blowfish/v2
           hugo mod tidy
-          
-          # Build the static files
           hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
           
       - name: Upload artifact
