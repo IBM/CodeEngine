@@ -1,5 +1,5 @@
 ---
-title: "How to Blog on Code Engine Dev Blog"
+title: "How to post on the Code Engine Dev Blog"
 date: 2026-05-27
 description: "A comprehensive guide for authors contributing to the IBM Code Engine blog using Hugo and the Blowfish theme."
 tags: ["meta", "guide", "documentation", "hugo"]
