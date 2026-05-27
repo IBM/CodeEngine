@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-# Forces the runner to execute all JavaScript actions using the Node.js 24 runtime environment
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -31,7 +30,6 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
 
-      # Replaces unverified marketplace plugins with a direct, native binary compilation
       - name: Install Hugo Extended Natively
         run: |
           HUGO_VERSION=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
@@ -41,8 +39,11 @@ jobs:
           sudo mv hugo /usr/local/bin/
           hugo version
 
-      - name: Build with Hugo
-        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+      # Explicitly forces Hugo to pull down the remote Blowfish files over the network
+      - name: Fetch Remote Modules and Build
+        run: |
+          hugo mod get -u
+          hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
