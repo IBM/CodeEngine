@@ -1,6 +1,6 @@
 name = "Uwe Fassnacht"
 bio = "Product Manager for IBM Cloud Code Engine"
-avatar = "/uwefassnacht.jpg"
+avatar = "uwefassnacht.jpg"
 
 # Add external links (this will automatically generate clickable icons under the author name)
 [links]
