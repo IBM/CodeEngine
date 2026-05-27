@@ -28,6 +28,8 @@ theme = "github.com/nunocoracao/blowfish/v2"
   showReadingTime = true
   showThumbnail = true
   showHero = true
+  showAuthor = true        # Appears as a clean line right below the title
+  showAuthorBottom = true  # Appears as a rich bio card at the end of the post
 
 [params.search]
   enable = true
