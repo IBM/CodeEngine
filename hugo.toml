@@ -2,11 +2,10 @@ baseURL = "https://IBM.github.io/CodeEngine/"
 title = "Code Engine Dev Blog"
 locale = "en-us"
 
-# Instruct Hugo to pull the theme out of the Module pipeline
-theme = "blowfish"
+# Fix: Force Hugo to treat the theme itself as a remote module URL
+theme = "github.com/nunocoracao/blowfish/v2"
 
 [module]
-  # Identifies this exact repository folder as the core module workspace root
   path = "github.com/IBM/CodeEngine"
   
   [[module.imports]]
