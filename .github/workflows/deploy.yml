@@ -7,7 +7,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  HUGO_VERSION: "0.125.0" # Pinning version for reliable cache matching
+  HUGO_VERSION: "0.125.0"
 
 permissions:
   contents: read
@@ -27,11 +27,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 1. Install Go Natively (Forces Hugo to use Module mode instead of looking for /themes)
+      - name: Setup Go Environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' # This is created by GitHub and explicitly allowed
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
 
-      # 1. Look for Hugo Extended binary in the official GitHub Cache
+      # 2. Look for Hugo Extended binary in the official GitHub Cache
       - name: Cache Hugo Binary
         id: cache-hugo
         uses: actions/cache@v4
@@ -39,7 +45,7 @@ jobs:
           path: /usr/local/bin/hugo
           key: ${{ runner.os }}-hugo-extended-${{ env.HUGO_VERSION }}
 
-      # 2. Only download Hugo manually if it wasn't found in the cache
+      # 3. Only download Hugo manually if it wasn't found in the cache
       - name: Download Hugo (Fallback)
         if: steps.cache-hugo.outputs.cache-hit != 'true'
         run: |
@@ -48,7 +54,7 @@ jobs:
           sudo mv hugo /usr/local/bin/
           rm hugo.tar.gz
 
-      # 3. Add high-speed caching layer for Go modules (stores Blowfish theme)
+      # 4. Add high-speed caching layer for Go modules (stores Blowfish theme)
       - name: Cache Go modules
         uses: actions/cache@v4
         with:
@@ -59,7 +65,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # 4. Cleaned build execution (Now fully native)
+      # 5. Cleaned build execution
       - name: Build Site
         run: |
           hugo mod tidy
