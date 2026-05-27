@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+# Forces the runner to execute all JavaScript actions using the Node.js 24 runtime environment
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: read
   pages: write
@@ -27,7 +31,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
 
-      # Replaces the third-party action with an enterprise-safe manual download
+      # Replaces unverified marketplace plugins with a direct, native binary compilation
       - name: Install Hugo Extended Natively
         run: |
           HUGO_VERSION=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
