@@ -5,7 +5,7 @@ description: "B300 GPUs now available in IBM Cloud Code Engine."
 tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets", "news"]
 featureImage: "featured.jpg"
 draft: false
-authors: "uwefassnacht"
+authors: ["uwefassnacht"]
 ---
 
 The AI landscape is moving at a breakneck pace, and today we are shifting into a new gear. We are thrilled to announce that NVIDIA B300 (Blackwell Ultra) GPUs are now also available in IBM Cloud Code Engine Serverless Fleets.
