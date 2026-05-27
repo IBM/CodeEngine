@@ -17,6 +17,11 @@ theme = "github.com/nunocoracao/blowfish/v2"
 [params.header]
   layout = "sticky"
 
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  author = "authors"    # Explicitly instructs Hugo to build index pages for authors
+
 [params.homepage]
   layout = "card"
   showRecent = true
