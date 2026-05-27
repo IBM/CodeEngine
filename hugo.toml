@@ -1,7 +1,6 @@
 baseURL = "https://IBM.github.io/CodeEngine/"
 title = "Code Engine Dev Blog"
 locale = "en-us"
-theme = "github.com/nunocoracao/blowfish/v2"
 
 [module]
   path = "github.com/IBM/CodeEngine"
