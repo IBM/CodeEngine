@@ -31,6 +31,13 @@ theme = "github.com/nunocoracao/blowfish/v2"
   showAuthor = true        # Appears as a clean line right below the title
   showAuthorBottom = true  # Appears as a rich bio card at the end of the post
 
+[params.list]
+  showDownloads = false
+  showReadingTime = true
+  showTableOfContents = false
+  showTaxonomies = true       # Displays the interactive global tag cloud filter on list views
+  showViews = true            # Adds a slick grid/list toggle view option for readers
+
 [params.search]
   enable = true
   showOnHeader = true
