@@ -2,9 +2,10 @@
   layout = "sticky"
 
 [homepage]
-  layout = "card"
-  showRecent = true
-  showRecentItems = 6
+  layout = "card"       # Forces the page to arrange entries as clear, structured cards
+  showRecent = true      # Instructs Blowfish to fetch active articles
+  showRecentItems = 6    # Shows the 6 most recent posts on the landing page
+  cardView = true
 
 [article]
   showDate = true
@@ -12,5 +13,5 @@
   showThumbnail = true
 
 [search]
-  enable = true
+  enable = true          # Ensures the magnifying glass search bar is active in the header
   showOnHeader = true
