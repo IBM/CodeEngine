@@ -7,8 +7,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  # Upgrade from 0.125.0 to a stable modern release
-  HUGO_VERSION: "0.134.0" 
+  HUGO_VERSION: "0.162.0" 
 
 permissions:
   contents: read
