@@ -1,19 +1,33 @@
 baseURL = "https://IBM.github.io/CodeEngine/"
 title = "Code Engine Dev Blog"
 locale = "en-us"
-
-# Force Hugo to treat the theme itself as a remote module URL
 theme = "github.com/nunocoracao/blowfish/v2"
 
 [module]
   path = "github.com/IBM/CodeEngine"
-  
   [[module.imports]]
     path = "github.com/nunocoracao/blowfish/v2"
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
-# FIX: Forces the Blowfish theme to look into your /posts/ folder for the homepage grid
 [params]
   mainSections = ["posts"]
+
+[params.header]
+  layout = "sticky"
+
+[params.homepage]
+  layout = "card"
+  showRecent = true
+  showRecentItems = 6
+  cardView = true
+
+[params.article]
+  showDate = true
+  showReadingTime = true
+  showThumbnail = true
+
+[params.search]
+  enable = true
+  showOnHeader = true
