@@ -41,10 +41,10 @@ jobs:
 
       - name: Fetch Remote Modules and Build
         run: |
-          hugo mod init github.com/IBM/CodeEngine || true
-          hugo mod get -u github.com/nunocoracao/blowfish/v2
-          hugo --minify --configDir config/_default --baseURL "${{ steps.pages.outputs.base_url }}/"
-
+            hugo mod init github.com/IBM/CodeEngine || true
+            hugo mod get -u github.com/nunocoracao/blowfish/v2
+            hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
