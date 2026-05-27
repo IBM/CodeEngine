@@ -565,7 +565,7 @@ An IBM Cloud Logs instance is being setup and enabled by default during the auto
 If you want to quickly iterate you may use the helper script `fleet-logs` in order to display fleet logs directly in your terminal. The scripts uses a `LOGS_URL` env variable targetting your ICL endpoint, or if unset will try to find that ICL endpoint of your ICL instance. Additionally, you may specify `--fleet-id <fleet-id>`, `--task-id <task-id>`, `--subcomponent-type [fleet_worker|fleet_task]`, `--since <duration>`, `--tier <search-tier>` and `--output <output-format>` to parameterize your query. Available values are directly taken from `ibmcloud logs query --help`.
 
 ```
-./fleet_logs --tier <tier> --fleet-id <fleet-id> --task-id <task-id> --since 6h0m0s
+./fleet_logs --tier <tier> --fleet-id <fleet-id> --task-id <task-id> --subcomponent-type [fleet_task|fleet_worker] --since 6h0m0s
 ```
 
 ### How to customize fleet workers

@@ -2,7 +2,7 @@
 set -eo pipefail
 
 usage() {
-  echo "Example usage: ./fleet_logs --tier <tier> --fleet-id <fleet-id> --task-id <task-id> --since 6h0m0s"
+  echo "Example usage: ./fleet_logs --tier <tier> --fleet-id <fleet-id> --task-id <task-id> --subcomponent-type [fleet_task|fleet_worker] --since 6h0m0s"
   exit 1
 }
 
