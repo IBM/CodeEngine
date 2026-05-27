@@ -46,7 +46,7 @@ A fleet consists of a collection of worker nodes that automatically scale up or 
 Like applications, jobs, and functions, fleets run within a Code Engine project. A project is a grouping of Code Engine resources within a specific IBM Cloud region. Projects are used to organize resources and manage access to entities such as configmaps, secrets, and persistent data stores.
 
 
-## Architecture 
+## Architecture
 
 The architecture used in this tutorial looks as follows.
 
@@ -75,7 +75,7 @@ The tutorial has been tested on a MacOS and Ubuntu24 client machine with the fol
 
 Clone this repository
 ```
-git clone https://github.com/IBM/CodeEngine.git 
+git clone https://github.com/IBM/CodeEngine.git
 ```
 
 Switch to the `serverless-fleets` directory, which will be the root directory for all steps of this tutorial
@@ -298,7 +298,7 @@ Run a serverless fleet to process 100 tasks where each tasks gets 1 CPU and 2 GB
 </details>
 <br>
 
-In the fleet details you will see 5 workers being provisined. The number of workers is determined by the profile, cpu/memory and number of parallel tasks. 
+In the fleet details you will see 5 workers being provisined. The number of workers is determined by the profile, cpu/memory and number of parallel tasks.
 
 ```
 ibmcloud ce fleet get --id <id>
@@ -416,7 +416,7 @@ The 6 tasks are submitted using the `tasks-from-local-file` option using the [wo
 
 ![](./images/example_wordcount.png)
 
-The example mounts the [Persistant Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) (PDS) to the container using the `--mount-data-store MOUNT_DIRECTORY=STORAGE_NAME:[SUBPATH]`, where 
+The example mounts the [Persistant Data Stores](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) (PDS) to the container using the `--mount-data-store MOUNT_DIRECTORY=STORAGE_NAME:[SUBPATH]`, where
 - `MOUNT_DIRECTORY` - is the directory within the container
 - `STORAGE_NAME` - is the name of the PDS
 - `SUBPATH` - is the prefix within the COS bucket to mount.
@@ -437,10 +437,10 @@ Upload the .txt files from the local data directory to Cloud Object Storage
 
 #### Step 2 - Run the fleet
 
-Launch the fleet to perform `wc` on each of the novels which defines the tasks from [wordcount_commands.jsonl](./wordcount_commands.jsonl) and mounts the input and output data stores. 
+Launch the fleet to perform `wc` on each of the novels which defines the tasks from [wordcount_commands.jsonl](./wordcount_commands.jsonl) and mounts the input and output data stores.
 ```
 ./run_wordcount
-``` 
+```
 
 Confirm that you uploaded the files with `#? 1`
 
@@ -509,7 +509,7 @@ Download the results from the output COS bucket to `./data/output`
 
 ```
 ./download
-```` 
+````
 
 
 🚀 The example was successful, if you can tell the number of words of the "Alice in Wonderland" novel 🚀
@@ -557,6 +557,16 @@ Once the push is complete, you can run the fleet by modifying `./run` and replac
 An IBM Cloud Logs instance is being setup and enabled by default during the automated One Time Setup. Each fleet worker will ingest logs to the IBM Cloud Logs instance by default. [Navigating to the UI](https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-instance-launch) and use [Using Livetail](https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-livetail) or [Filtering log data](https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-query-data-filter) to view the logs.
 
 ![](./images/prototype_logs.png)
+
+![](./images/prototype_logs.png)
+
+#### Using helper scripts
+
+If you want to quickly iterate you may use the helper script `fleet-logs` in order to display fleet logs directly in your terminal. The scripts uses a `LOGS_URL` env variable targetting your ICL endpoint, or if unset will try to find that ICL endpoint of your ICL instance. Additionally, you may specify `--fleet-id <fleet-id>`, `--task-id <task-id>`, `--subcomponent-type [fleet_worker|fleet_task]`, `--since <duration>`, `--tier <search-tier>` and `--output <output-format>` to parameterize your query. Available values are directly taken from `ibmcloud logs query --help`.
+
+```
+./fleet_logs --tier <tier> --fleet-id <fleet-id> --task-id <task-id> --subcomponent-type [fleet_task|fleet_worker] --since 6h0m0s
+```
 
 ### How to customize fleet workers
 
