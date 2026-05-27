@@ -2,7 +2,7 @@
 title: "NVIDIA B300 GPUs Now Available in IBM Cloud Code Engine Serverless Fleets"
 date: 2026-05-26
 description: "B300 GPUs now available in IBM Cloud Code Engine."
-tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets"]
+tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets", "news"]
 featureImage: "featured.jpg"
 draft: false
 ---
