@@ -1,13 +1,14 @@
 baseURL = "https://IBM.github.io/CodeEngine/"
 title = "Code Engine Dev Blog"
-
-# Fixes the Hugo deprecation warning
 locale = "en-us"
 
-# Tells Hugo to use the module engine instead of looking for a local /themes folder
-theme = "github.com/nunocoracao/blowfish/v2"
+# Instruct Hugo to pull the theme out of the Module pipeline
+theme = "blowfish"
 
 [module]
+  # Identifies this exact repository folder as the core module workspace root
+  path = "github.com/IBM/CodeEngine"
+  
   [[module.imports]]
     path = "github.com/nunocoracao/blowfish/v2"
 
