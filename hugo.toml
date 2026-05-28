@@ -10,12 +10,13 @@ locale = "en-us"
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
-[params]
+[params.main]
   mainSections = ["posts"]
 
 [params.main.logo]
   src = "code-engine-logo.svg"
   alt = "IBM Code Engine Logo"
+  disabled = false
 
 [params.header]
   layout = "sticky"
