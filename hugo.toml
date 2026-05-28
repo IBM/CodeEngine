@@ -1,5 +1,5 @@
-baseURL = "https://IBM.github.io/CodeEngine/"
-title = "Code Engine Dev Blog"
+baseURL = "https://ibm.github.io/CodeEngine/"
+title = "Code Engine Blog"
 locale = "en-us"
 
 [module]
