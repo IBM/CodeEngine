@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+FUNCTION_NAME="my-spa-angular"
+RUNTIME="nodejs-24"
+
+echo "[run-angular] Creating new Angular project: my-spa-angular"
+
+# Create Angular project with SSR disabled, using defaults and non-interactive mode
+npx @angular/cli@latest new my-spa-angular \
+  --directory=my-spa-angular \
+  --routing=true \
+  --style=css \
+  --ssr=false \
+  --skip-git=true \
+  --package-manager=npm \
+  --standalone=true \
+  --defaults=true \
+  --interactive=false
+
+echo "[run-angular] Angular project created successfully in my-spa-angular/"
+echo "[run-angular] Building and deploying to IBM Cloud Code Engine..."
+
+# Check if function exists and prepare appropriate command
+if ibmcloud ce function get --name "$FUNCTION_NAME" >/dev/null 2>&1; then
+  DEPLOY_COMMAND="ibmcloud ce function update --name $FUNCTION_NAME --build-source ."
+else
+  DEPLOY_COMMAND="ibmcloud ce function create --name $FUNCTION_NAME --runtime $RUNTIME --build-source ."
+fi
+
+echo "$DEPLOY_COMMAND"
+read -r -p "Press Enter to run it, or Ctrl+C to cancel: "
+
+eval "$DEPLOY_COMMAND"
+
+echo "[run-angular] Deployment complete!"
