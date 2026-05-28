@@ -49,5 +49,5 @@ locale = "en-us"
   showOnHeader = true
 
 [params.main.logo]
-  src = "content/code-engine-logo.svg"
+  src = "assets/code-engine-logo.svg"
   alt = "IBM Code Engine Logo"
