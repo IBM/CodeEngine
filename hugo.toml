@@ -13,8 +13,13 @@ locale = "en-us"
 [params]
   mainSections = ["posts"]
 
+[params.main.logo]
+  src = "code-engine-logo.svg"
+  alt = "IBM Code Engine Logo"
+
 [params.header]
   layout = "sticky"
+  logoType = "logo"
 
 [taxonomies]
   tag = "tags"
@@ -47,7 +52,3 @@ locale = "en-us"
 [params.search]
   enable = true
   showOnHeader = true
-
-[params.main.logo]
-  src = "assets/code-engine-logo.svg"
-  alt = "IBM Code Engine Logo"
