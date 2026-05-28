@@ -47,3 +47,7 @@ locale = "en-us"
 [params.search]
   enable = true
   showOnHeader = true
+
+[params.main.logo]
+  src = "content/code-engine-logo.svg"
+  alt = "IBM Code Engine Logo"
