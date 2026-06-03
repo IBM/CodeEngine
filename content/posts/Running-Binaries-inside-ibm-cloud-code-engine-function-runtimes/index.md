@@ -3,6 +3,7 @@ title: "IBM Cloud Code Engine: Running Binaries inside the IBM Cloud Code Engine
 date: 2025-01-30
 description: "Dunning Binaries inside the IBM Cloud Code Engine Function Runtimes"
 tags: ["serverless", "code engine", "functions"]
+featureImage: "featured.jpg"
 draft: false
 authors: ["luke-roy-ibm"]
 ---
