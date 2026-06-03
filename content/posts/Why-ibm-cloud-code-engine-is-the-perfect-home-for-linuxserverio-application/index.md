@@ -63,8 +63,8 @@ Prefer a visual approach? No problem. Navigate to your Code Engine project : Con
 - **Port** (usually 3000 for LinuxServer images)
 - **Environment Variables** (CUSTOM_USER, PASSWORD)
 
-![LinuxServer.io App create 1](app-create-1.png)
-![LinuxServer.io App create 2](app-create-2.png)
+![LinuxServer.io App create 1](app-create-1.jpg)
+![LinuxServer.io App create 2](app-create-2.jpg)
 
 Click Create, and your application will be up and running within minutes. Once deployed, simply grab the URL to access your app directly in your browser — no extra configuration needed.
 Become a Medium member
@@ -109,8 +109,8 @@ The `--mount-data-store=/mydata=my-cos-pds` flag mounts your COS persistent data
 
 Using the **UI**, the process is just as straightforward. When deploying an app like **LibreOffice**, simply specify the persistent data store under the **Volume Mounts** section in addition to the previously specified configuration. This enables your application to retain documents, configurations, or media files between sessions — perfect for collaborative environments or long-term projects.
 
-![Code Engine PDS](ce-pds.png)
-![Code Engine App create with Volume mount](ce-volume-mount.png)
+![Code Engine PDS](ce-pds.jpg)
+![Code Engine App create with Volume mount](ce-volume-mount.jpg)
 
 ## Wrapping Up: What’s Next?
 
