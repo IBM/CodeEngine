@@ -3,6 +3,7 @@ title: "Upscaling Videos with IBM Cloud Code Engine Serverless Fleets"
 date: 2025-10-07
 description: "Upscaling Videos with IBM Cloud Code Engine Serverless Fleets"
 tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets", ]
+featureImage: "featured.jpg"
 draft: false
 authors: ["luke-roy-ibm"]
 ---

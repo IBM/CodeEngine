@@ -3,6 +3,7 @@ title: "Writing TypeScript Functions for IBM Cloud Code Engine"
 date: 2025-08-04
 description: "Writing TypeScript Functions for IBM Cloud Code Engine"
 tags: ["serverless", "code engine", "functions", "typescript"]
+featureImage: "featured.jpg"
 draft: false
 authors: ["luke-roy-ibm"]
 ---

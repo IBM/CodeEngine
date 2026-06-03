@@ -3,6 +3,7 @@ title: "Creating a IBM Cloud Code Engine Function Code Bundle FROM scratch"
 date: 2025-08-04
 description: "Creating a IBM Cloud Code Engine Function Code Bundle FROM scratch"
 tags: ["serverless", "code engine", "functions"]
+featureImage: "featured.jpg"
 draft: false
 authors: ["luke-roy-ibm"]
 ---

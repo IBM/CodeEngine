@@ -3,6 +3,7 @@ title: "IBM Cloud Code Engine GitHub Action: Getting into the Cloud just got a l
 date: 2025-11-26
 description: "Getting into the Cloud just got a lot easier!"
 tags: ["serverless", "code engine", "github actions"]
+featureImage: "featured.jpg"
 draft: false
 authors: ["luke-roy-ibm"]
 ---
