@@ -96,15 +96,25 @@ fi
 project_guid=$(ibmcloud ce project get --name $ce_project_name --output json | jq -r '.guid')
 
 print_msg "\nCreating code engine secret for the agent with parameters from .env file"
-ibmcloud ce secret create --name langchain-agent-secret --from-literal INFERENCE_BASE_URL="$INFERENCE_BASE_URL" \
---from-literal INFERENCE_API_KEY="$INFERENCE_API_KEY" \
---from-literal INFERENCE_MODEL_NAME="$INFERENCE_MODEL_NAME" \
---from-literal INFERENCE_PROJECT_ID="$INFERENCE_PROJECT_ID" \
---from-literal OPENWEATHER_API_KEY="$OPENWEATHER_API_KEY" \
---from-literal EXCHANGE_RATE_API_KEY="$EXCHANGE_RATE_API_KEY"
+ibmcloud ce secret create --name langchain-agent-secret \
+  --from-literal IBM_CLOUD_API_KEY="$IBM_CLOUD_API_KEY" \
+  --from-literal INFERENCE_BASE_URL="$INFERENCE_BASE_URL" \
+  --from-literal INFERENCE_MODEL_NAME="$INFERENCE_MODEL_NAME" \
+  --from-literal OPENWEATHER_API_KEY="$OPENWEATHER_API_KEY" \
+  --from-literal EXCHANGE_RATE_API_KEY="$EXCHANGE_RATE_API_KEY"
 
-print_msg "\nCreating the LangChain agent as a code engine application"
-ibmcloud ce app create --name langchain-agent --env-from-secret langchain-agent-secret --build-source ./src --cpu 1 --memory 4G -p 8080  --wait-timeout 600 --min-scale 1 --visibility public
+print_msg "\nCreating the LangChain agent as a code engine application using Dockerfile strategy"
+ibmcloud ce app create --name langchain-agent \
+  --build-source ./src \
+  --build-strategy dockerfile \
+  --env-from-secret langchain-agent-secret \
+  --cpu 1 \
+  --memory 4G \
+  --port 8080 \
+  --min-scale 1 \
+  --max-scale 10 \
+  --wait-timeout 600 \
+  --visibility public
 
 while true; do
     ibmcloud ce app list
