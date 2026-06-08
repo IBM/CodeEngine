@@ -144,6 +144,93 @@ def render_landing_page(name: str) -> str:
                 font-size: 2em;
                 margin-bottom: 10px;
             }}
+            
+            .chat-section {{
+                background: #f8f9fa;
+                padding: 30px;
+                border-radius: 10px;
+                margin-top: 30px;
+            }}
+            
+            .chat-section h2 {{
+                color: #333;
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }}
+            
+            .chat-input-container {{
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }}
+            
+            .chat-input {{
+                flex: 1;
+                padding: 12px 15px;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                font-size: 1em;
+                font-family: inherit;
+                transition: border-color 0.3s;
+            }}
+            
+            .chat-input:focus {{
+                outline: none;
+                border-color: #667eea;
+            }}
+            
+            .test-button {{
+                background: #667eea;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 8px;
+                font-size: 1em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.3s;
+            }}
+            
+            .test-button:hover {{
+                background: #5568d3;
+            }}
+            
+            .test-button:disabled {{
+                background: #ccc;
+                cursor: not-allowed;
+            }}
+            
+            .response-box {{
+                background: white;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                padding: 20px;
+                min-height: 150px;
+                max-height: 400px;
+                overflow-y: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 0.9em;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                display: none;
+            }}
+            
+            .response-box.visible {{
+                display: block;
+            }}
+            
+            .loading {{
+                color: #667eea;
+                font-style: italic;
+            }}
+            
+            .error {{
+                color: #dc3545;
+            }}
+            
+            .success {{
+                color: #28a745;
+            }}
         </style>
     </head>
     <body>
@@ -200,11 +287,105 @@ def render_landing_page(name: str) -> str:
                 </div>
             </div>
             
+            <div class="chat-section">
+                <h2>🧪 Test the Agent</h2>
+                <div class="chat-input-container">
+                    <input
+                        type="text"
+                        id="chatInput"
+                        class="chat-input"
+                        placeholder="Plan a trip to ..."
+                        value="Plan a trip to Paris for 5 days with a budget of $2000"
+                    />
+                    <button id="testButton" class="test-button" onclick="testAgent()">Test</button>
+                </div>
+                <div id="responseBox" class="response-box"></div>
+            </div>
+            
             <div class="footer">
                 <p>Powered by LangChain • IBM Cloud Code Engine</p>
                 <p style="margin-top: 5px;">Skills are dynamically loaded from the skills/ directory</p>
             </div>
         </div>
+        
+        <script>
+            async function testAgent() {{
+                const input = document.getElementById('chatInput');
+                const button = document.getElementById('testButton');
+                const responseBox = document.getElementById('responseBox');
+                
+                const query = input.value.trim();
+                if (!query) {{
+                    alert('Please enter a query');
+                    return;
+                }}
+                
+                // Show loading state
+                button.disabled = true;
+                button.textContent = 'Testing...';
+                responseBox.className = 'response-box visible loading';
+                responseBox.textContent = 'Processing your request...';
+                
+                try {{
+                    // Call the /runs endpoint
+                    const response = await fetch('/runs', {{
+                        method: 'POST',
+                        headers: {{
+                            'Content-Type': 'application/json',
+                        }},
+                        body: JSON.stringify({{
+                            agent_name: '{name}',
+                            input: [
+                                {{
+                                    role: 'user',
+                                    parts: [
+                                        {{
+                                            content: query
+                                        }}
+                                    ]
+                                }}
+                            ]
+                        }})
+                    }});
+                    
+                    if (!response.ok) {{
+                        throw new Error(`HTTP error! status: ${{response.status}}`);
+                    }}
+                    
+                    const data = await response.json();
+                    
+                    // Extract the response content
+                    let resultText = 'No response received';
+                    if (data.output && data.output.length > 0) {{
+                        const firstMessage = data.output[0];
+                        if (firstMessage.parts && firstMessage.parts.length > 0) {{
+                            resultText = firstMessage.parts[0].content || 'Empty response';
+                        }}
+                    }}
+                    
+                    // Display the result
+                    responseBox.className = 'response-box visible success';
+                    responseBox.textContent = resultText;
+                    
+                }} catch (error) {{
+                    // Display error
+                    responseBox.className = 'response-box visible error';
+                    responseBox.textContent = `Error: ${{error.message}}\\n\\nPlease check the console for more details.`;
+                    console.error('Error testing agent:', error);
+                }} finally {{
+                    // Reset button state
+                    button.disabled = false;
+                    button.textContent = 'Test';
+                }}
+            }}
+            
+            // Allow Enter key to submit
+            document.getElementById('chatInput').addEventListener('keypress', function(event) {{
+                if (event.key === 'Enter') {{
+                    testAgent();
+                }}
+            }});
+        </script>
     </body>
     </html>
     """
