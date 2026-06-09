@@ -309,7 +309,8 @@ else
     sysdig_access_key=$(echo $sysdig_key | jq '.credentials["Sysdig Access Key"]' -r)
     sysdig_collector_host=$(echo "$sysdig_key" | jq '.credentials["Sysdig Collector Endpoint"]' -r)
     sysdig_instance=$(ibmcloud resource service-instance $sysdig_name -o JSON)
-    sysdig_crn=$(echo "$sysdig_instance"|jq -r '.[0].crn')
+    sysdig_crn_instance_based=$(echo "$sysdig_instance"|jq -r '.[0].crn')
+    sysdig_crn_service_based=${sysdig_crn_instance_based%a/*}::endpoint:private.${REGION}.monitoring.cloud.ibm.com
 fi
 
 #
@@ -493,19 +494,33 @@ fi
 
 if [[ "$SETUP_MONITORING" == "true" ]]; then
     if ! ibmcloud is endpoint-gateway "${vpegw_monitoring}" --vpc $vpc_name >/dev/null 2>&1; then
-        print_msg "\nCreating a VPE Gateway to enable monitoring ingestion ..."
+        print_msg "\nCreating a service-based VPE Gateway to enable monitoring ingestion ..."
         ibmcloud is endpoint-gateway-create \
             --vpc $vpc_name \
             --sg $vpc_name-group \
-            --target ${sysdig_crn} \
+            --target ${sysdig_crn_service_based} \
             --name "${vpegw_sysdig}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_monitoring}-ip-1\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_monitoring}-ip-2\",\"auto_delete\":true}" \
             --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_monitoring}-ip-3\",\"auto_delete\":true}" \
             --dns-resolution-binding-mode disabled
         if [ $? -ne 0 ]; then
-            print_error "Monitoring VPE Gateway creation failed!"
-            abortScript
+            print_error "Monitoring service-based VPE Gateway creation failed, fallback to instance-based creation ..."
+            print_msg "\nCreating an instance-based VPE Gateway to enable monitoring ingestion ..."
+            ibmcloud is endpoint-gateway-create \
+                --vpc $vpc_name \
+                --sg $vpc_name-group \
+                --target ${sysdig_crn_instance_based} \
+                --name "${vpegw_sysdig}" \
+                --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_1}\"},\"name\":\"${vpegw_monitoring}-ip-1\",\"auto_delete\":true}" \
+                --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_2}\"},\"name\":\"${vpegw_monitoring}-ip-2\",\"auto_delete\":true}" \
+                --new-reserved-ip "{\"subnet\": {\"id\": \"${subnet_id_3}\"},\"name\":\"${vpegw_monitoring}-ip-3\",\"auto_delete\":true}" \
+                --dns-resolution-binding-mode disabled
+
+            if [ $? -ne 0 ]; then
+                print_error "Monitoring instance-based VPE Gateway creation failed!"
+                abortScript
+            fi
         fi
     fi
 fi
