@@ -313,7 +313,7 @@ func main() {
 		sleepDuration := rand.IntN(SLEEP_MAX-SLEEP_MIN) + SLEEP_MIN
 		if sleep == "NONE" {
 			sleepDuration = 0
-		} else {
+		} else if len(sleep) > 0 {
 			sleepDuration, _ = strconv.Atoi(sleep)
 		}
 
