@@ -12,7 +12,7 @@ A modular, skill-based agent built with LangChain that demonstrates a clean arch
 - **Simple deployment**: Integrates with container registries and CI/CD pipelines.
 - **Managed endpoint**: Provides a secure http endpoint with a managed certificate.
 
-## Why RedHat AI Inference Service
+## Why Red Hat AI Inference Service
 
 This agent uses the [RedHat AI Inference Service](https://cloud.ibm.com/inference/overview) for its LLM capabilities, offering:
 
