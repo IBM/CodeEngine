@@ -1,14 +1,35 @@
 # IBM Cloud Code Engine - Metrics Collector
 
-Code Engine job that demonstrates how to collect resource metrics (CPU, memory and disk usage) of running Code Engine apps, jobs, and builds. Those metrics can either be render 
 
-in **IBM Cloud Monitoring** (see [instructions](#Send-metrics-to-IBM-Cloud-Monitoring))
+## Table of contents
+- [Overview](#overview)
+- [Send metrics to IBM Cloud Monitoring](#send-metrics-to-ibm-cloud-monitoring)
+  - [How It Works](#how-it-works)
+  - [Setup Instructions](#setup-instructions)
+  - [Scraping Resource Metrics](#scraping-resource-metrics)
+  - [Scraping Custom Metrics](#scraping-custom-metrics)
+  - [Custom metrics examples](#custom-metrics-examples)
+- [IBM Cloud Logs setup](#ibm-cloud-logs-setup)
+  - [Custom dashboard](#custom-dashboard)
+  - [Logs view](#logs-view)
+- [Troubleshooting & Configuration](#troubleshooting--configuration)
+  - [Common Issues](#common-issues)
+  - [Environment Variables](#environment-variables)
+
+
+## Overview
+
+Code Engine job that demonstrates how to collect resource metrics (CPU and memory) of running Code Engine apps, jobs, and builds. 
+
+Resource metrics can either be render in **IBM Cloud Monitoring** (see [instructions](#send-metrics-to-ibm-cloud-monitoring))
 
 ![](./images/monitoring-dashboard-ce-component-resources.png)
 
 or in **IBM Cloud Logs** (see [instructions](#ibm-cloud-logs-setup))
 
 ![Dashboard overview](./images/icl-dashboard-overview.png)
+
+Furthermore, this asset can collect custom metrics of running apps and jobs (see [instructions](#scraping-user-metrics)). 
 
 
 ## Send metrics to IBM Cloud Monitoring
@@ -145,25 +166,13 @@ ibmcloud ce jobrun submit \
     --job metrics-collector
 ```
 
-#### Import Dashboard
+### Scraping Resource Metrics
 
-After setting up the metrics collector with either authentication method, import the dashboard:
+The metrics collector scrapes CPU/Memory metrics from your Code Engine applications, jobs, and builds. Metrics of all running instances are scraped every 30 seconds.
 
-```bash
-# Load the most recent dashboard configuration
-CE_MONITORING_DASHBOARD=$(curl -sL https://raw.githubusercontent.com/IBM/CodeEngine/main/metrics-collector/setup/ibm-cloud-monitoring/code-engine-component-resource-overview.json)
+Once, metrics are ingested into an IBM Cloud Monitoring instance, the pre-populated dashboard "IBM Cloud Code Engine - Component Resource Overview" appears in Dashboard Manager.
 
-# Import the dashboard
-curl -X POST https://$REGION.monitoring.cloud.ibm.com/api/v3/dashboards \
-      -H "Authorization: $(ibmcloud iam oauth-tokens --output JSON|jq -r '.iam_token')" \
-      -H "IBMInstanceID: $MONITORING_INSTANCE_GUID" \
-      -H "Content-Type: application/json" \
-      -d "{\"dashboard\": $CE_MONITORING_DASHBOARD}"
-
-```
-
-**Note:** A more elaborated approach to manage custom Cloud Monitoring dashboards can be found [here](setup/ibm-cloud-monitoring/README.md)
-
+![](./images/monitoring-dashboard-library.png)
 
 #### Exposed Metrics
 
@@ -181,6 +190,18 @@ The following 3 metrics are used to monitor the collector itself:
 - **`ibm_codeengine_collector_last_collection_timestamp_seconds`**: Unix timestamp of last successful collection (if `METRICS_INTERNAL_STATS=true`)
 - **`ibm_codeengine_collector_collection_errors_total`**: Total number of collection errors (counter) (if `METRICS_INTERNAL_STATS=true`)
 
+
+Sample metrics content:
+```prometheus
+# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
+# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge
+ibm_codeengine_instance_cpu_usage_millicores{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 250
+
+# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes
+# TYPE ibm_codeengine_instance_memory_usage_bytes gauge
+ibm_codeengine_instance_memory_usage_bytes{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 134217728
+```
+
 #### Metric Labels
 
 All container metrics include the following labels:
@@ -189,18 +210,16 @@ All container metrics include the following labels:
 - `ibm_codeengine_instance_name`: Name of the pod instance (optional, see cardinality control below)
 - `ibm_codeengine_subcomponent_name`: Name of the app revision (optional, see cardinality control below)
 
-#### User Metrics Scraping
+### Scraping Custom Metrics
 
-The metrics collector can automatically discover and scrape custom Prometheus metrics from your Code Engine applications. To enable this feature, add the following annotations to your application:
+The metrics collector can discover and scrape custom Prometheus metrics from your Code Engine applications and jobs. To enable this feature, add the following annotations to your application:
 
 **Required annotation:**
 - `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` - Enables metrics scraping for this application
-
-**Optional annotations:**
 - `codeengine.cloud.ibm.com/userMetricsPath: '/metrics'` - Custom metrics endpoint path (default: `/metrics`)
 - `codeengine.cloud.ibm.com/userMetricsPort: '2112'` - Custom metrics port
 
-**Example:**
+**How to enable scraping of custom metrics on an app:**
 ```bash
 kubectl patch ksvc myapp --type merge -p '{
   "spec": {
@@ -217,7 +236,14 @@ kubectl patch ksvc myapp --type merge -p '{
 }'
 ```
 
-#### Cardinality Control for User Metrics
+**How to enable scraping of custom metrics on a job:**
+```bash
+kubectl annotate jobdefinition myjob codeengine.cloud.ibm.com/userMetricsScrape=true
+kubectl annotate jobdefinition myjob codeengine.cloud.ibm.com/userMetricsPath='/metrics'
+kubectl annotate jobdefinition myjob codeengine.cloud.ibm.com/userMetricsPort=2112
+```
+
+#### Cardinality Control for Custom Metrics
 
 To manage metric cardinality and reduce costs, you can control which labels are included in scraped user metrics using the following annotations:
 
@@ -265,19 +291,11 @@ kubectl patch ksvc myapp --type merge -p '{
 }'
 ```
 
-**Note:** Only set these annotations to `'true'` when you specifically need the additional label granularity. Keeping them disabled (default) helps reduce metric cardinality and associated monitoring costs.
+**Note:** Only set these annotations to `"true"` when you specifically need the additional label granularity. Keeping them disabled (default) helps reduce metric cardinality and associated monitoring costs.
 
-#### Example Metrics Output
+### Custom metrics examples
 
-```prometheus
-# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores
-# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge
-ibm_codeengine_instance_cpu_usage_millicores{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 250
-
-# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes
-# TYPE ibm_codeengine_instance_memory_usage_bytes gauge
-ibm_codeengine_instance_memory_usage_bytes{ibm_codeengine_instance_name="myapp-00001-deployment-abc123",ibm_codeengine_component_type="app",ibm_codeengine_component_name="myapp"} 134217728
-```
+See the [metrics-example/README.MD](../metrics-examples/README.MD) for language specific examples on how to emit prometheus metrics.
 
 ## IBM Cloud Logs setup
 
@@ -354,9 +372,9 @@ app:"codeengine" AND message.metric:"instance-resources"
 ![Logs overview](./images/icl-logs-view-overview.png)
 
 
-### Troubleshooting & Configuration
+## Troubleshooting & Configuration
 
-#### Common Issues
+### Common Issues
 
 **Trusted Profile Authentication Failures:**
 - **Missing environment variables**: Ensure `MONITORING_INSTANCE_GUID`, `MONITORING_REGION`, and `TRUSTED_PROFILE_NAME` are all set
@@ -373,7 +391,7 @@ app:"codeengine" AND message.metric:"instance-resources"
 - **Missing or wrong `METRICS_REMOTE_WRITE_FQDN`**: Verify the endpoint matches your region's ingestion endpoint
 - **Prometheus agent fails to start**: Check the logs for configuration errors or network connectivity issues
 
-#### Environment Variables
+### Environment Variables
 
 **Core Configuration:**
 - **`INTERVAL`** (default: `30`): Collection interval in seconds (minimum 30 seconds). Controls how frequently metrics are collected from the Kubernetes API endpoint in daemon mode.

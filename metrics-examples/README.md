@@ -126,14 +126,13 @@ LANGUAGE=python ./load-test.sh
 LANGUAGE=all ./load-test.sh
 
 # Test against a remote deployment
-TARGET_URL=https://your-app.example.com LANGUAGE=node ./load-test.sh
+TARGET_URL=https://your-app.example.com ./load-test.sh
 
 # Custom configuration
-TARGET_URL=https://your-app.example.com LANGUAGE=go DURATION=120 CONCURRENT_REQUESTS=10 ./load-test.sh
+TARGET_URL=https://your-app.example.com DURATION=120 CONCURRENT_REQUESTS=10 ./load-test.sh
 ```
 
 Configuration options:
-- `LANGUAGE`: Target language (node, go, java, python, or all) (default: node)
 - `TARGET_URL`: Application endpoint (default: http://localhost:8080)
 - `DURATION`: Test duration in seconds (default: 60)
 - `CONCURRENT_REQUESTS`: Number of concurrent workers (default: 5)
@@ -195,5 +194,7 @@ metrics-examples/
 ├── python/         # Python implementation
 ├── build           # Build script for all languages
 ├── load-test.sh    # Load testing script
-└── README.md       # This file
+├── README.md       # This file
+├── run             # Script to install sample apps for all languages 
+└── run-job         # Script to install sample jobs for all languages
 ```
