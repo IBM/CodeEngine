@@ -1,0 +1,55 @@
+baseURL = "https://ibm.github.io/CodeEngine/"
+title = "Code Engine Blog"
+locale = "en-us"
+
+[module]
+  path = "github.com/IBM/CodeEngine"
+  [[module.imports]]
+    path = "github.com/nunocoracao/blowfish/v2"
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[params.main]
+  mainSections = ["posts"]
+
+[params.main.logo]
+  src = "code-engine-logo.svg"
+  alt = "IBM Code Engine Logo"
+  disabled = false
+
+[params.header]
+  layout = "sticky"
+  logoType = "logo"
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  author = "authors"    # Explicitly instructs Hugo to build index pages for authors
+
+[params.homepage]
+  layout = "card"
+  showRecent = true
+  showRecentItems = 6
+  cardView = true
+
+[params.article]
+  showDate = true
+  showReadingTime = true
+  showThumbnail = true
+  showHero = true
+  showAuthor = true        # Appears as a clean line right below the title
+  showAuthorBottom = true  # Appears as a rich bio card at the end of the post
+  showTaxonomies = true
+  showAuthorsBadges = true
+
+[params.list]
+  showDownloads = false
+  showReadingTime = true
+  showTableOfContents = false
+  showTaxonomies = true       # Displays the interactive global tag cloud filter on list views
+  showViews = true            # Adds a slick grid/list toggle view option for readers
+
+[params.search]
+  enable = true
+  showOnHeader = true

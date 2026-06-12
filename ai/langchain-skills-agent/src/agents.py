@@ -4,35 +4,41 @@ This module configures the LLM and creates the LangChain agent with loaded skill
 Uses the modern approach with tool binding instead of deprecated AgentExecutor.
 """
 
+import logging
 import os
 from typing import Any, List
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ibm import ChatWatsonx
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 def create_llm():
     """Create and configure the LLM instance.
     
     Returns:
-        Configured ChatWatsonx instance
+        Configured ChatOpenAI instance for RedHat AI Inference service
     """
+    api_key = os.getenv("IBM_CLOUD_API_KEY")
+    base_url = os.getenv("INFERENCE_BASE_URL")
+    model = os.getenv("INFERENCE_MODEL_NAME", "llama-3-3-70b-instruct")
+    
+    logger.info("🔧 CONFIGURING LLM")
+    logger.info(f"Base URL: {base_url}")
+    logger.info(f"Model: {model}")
+    logger.info(f"Temperature: 0.7")
+    logger.info(f"Max Tokens: 2048")
 
-    parameters = {
-        "temperature": 0.7,
-        "max_tokens": 2048,
-    }
-
-    return ChatWatsonx(
-        model_id=os.getenv("INFERENCE_MODEL_NAME", "gpt-3.5-turbo"),
-        url=os.getenv("INFERENCE_BASE_URL"),
-        api_key=os.getenv("INFERENCE_API_KEY", ""),
-        project_id=os.getenv("INFERENCE_PROJECT_ID"),
-        params=parameters
+    return ChatOpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        model=model,
+        temperature=0.7,
     )
 
 
@@ -43,20 +49,35 @@ def get_system_message() -> str:
     Returns:
         System message string
     """
-    return """You are a helpful travel and weather assistant with access to specialized skills.
+    return """You are a helpful travel and weather assistant. Your job is to help users plan trips by providing practical, actionable information.
 
-Your capabilities include:
-- Providing weather forecasts for any location
-- Recommending travel destinations based on preferences
-- Converting currencies for travel planning
+IMPORTANT INSTRUCTIONS:
+- When you call tools, WAIT for their results before responding to the user
+- Use the actual data returned by the tools in your response
+- DO NOT explain what tools you're calling or how you work
+- DO NOT mention function calls, APIs, or technical details
+- Provide direct, helpful answers based on the tool results
+- Format your responses as a helpful travel guide would
 
-When users ask questions:
-1. Understand their needs clearly
-2. Use the appropriate skills to gather information
-3. Provide comprehensive, well-formatted responses
-4. Be friendly and helpful
+Your capabilities:
+- Get weather forecasts for any location
+- Recommend travel destinations based on preferences and budget
+- Convert currencies for travel planning
 
-Always format your responses in a clear, readable way. Use the skills available to you to provide accurate and helpful information."""
+When helping users:
+1. Call the appropriate tools to gather information
+2. Wait for the tool results
+3. Synthesize the information into a helpful, natural response
+4. Present the information as if you're a knowledgeable travel advisor
+5. Be friendly, practical, and focus on what the user needs to know
+
+Example good response style:
+"Based on the current forecast, Paris will have sunny weather for the next 5 days with temperatures around 22°C. For your $2000 budget (approximately €1,850), I recommend staying in the Marais district where you can find mid-range hotels for about €120/night..."
+
+Example BAD response (never do this):
+"I have called the weather_forecast function and the currency_converter function..."
+
+Always provide natural, helpful responses using the actual data from the tools."""
 
 
 def create_langchain_agent(tools: List):
@@ -69,6 +90,10 @@ def create_langchain_agent(tools: List):
         LLM instance with tools bound
     """
     llm = create_llm()
+    
+    logger.info(f"🔗 BINDING {len(tools)} TOOLS TO LLM")
+    for tool in tools:
+        logger.info(f"  - {tool.name}: {tool.description[:80]}..." if len(tool.description) > 80 else f"  - {tool.name}: {tool.description}")
     
     # Bind tools to the LLM (modern approach)
     llm_with_tools = llm.bind_tools(tools)

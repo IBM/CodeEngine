@@ -310,10 +310,10 @@ func main() {
 		fleetName := os.Getenv("CE_FLEET_NAME")
 
 		sleep := os.Getenv("SLEEP")
-		sleepDuration := 0
-		if sleep == "RANDOM" {
-			sleepDuration = rand.IntN(SLEEP_MAX-SLEEP_MIN) + SLEEP_MIN
-		} else {
+		sleepDuration := rand.IntN(SLEEP_MAX-SLEEP_MIN) + SLEEP_MIN
+		if sleep == "NONE" {
+			sleepDuration = 0
+		} else if len(sleep) > 0 {
 			sleepDuration, _ = strconv.Atoi(sleep)
 		}
 

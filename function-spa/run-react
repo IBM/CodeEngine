@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+FUNCTION_NAME="my-spa-react"
+RUNTIME="nodejs-24"
+
+echo "[run-react] Creating new React project: my-spa-react"
+
+# Create React project with TypeScript, using defaults and non-interactive mode
+# Use npm init -y to auto-confirm, then use yes to auto-accept all prompts
+npm init -y &>/dev/null
+yes "" | npm create vite@latest my-spa-react -- --template react-ts
+
+echo "[run-react] React project created successfully in my-spa-react/"
+echo "[run-react] Building and deploying to IBM Cloud Code Engine..."
+
+# Check if function exists and prepare appropriate command
+if ibmcloud ce function get --name "$FUNCTION_NAME" >/dev/null 2>&1; then
+  DEPLOY_COMMAND="ibmcloud ce function update --name $FUNCTION_NAME --build-source ."
+else
+  DEPLOY_COMMAND="ibmcloud ce function create --name $FUNCTION_NAME --runtime $RUNTIME --build-source ."
+fi
+
+echo "$DEPLOY_COMMAND"
+read -r -p "Press Enter to run it, or Ctrl+C to cancel: "
+
+eval "$DEPLOY_COMMAND"
+
+echo "[run-react] Deployment complete!"

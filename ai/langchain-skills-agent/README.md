@@ -1,6 +1,6 @@
 # LangChain Skills Agent on Code Engine
 
-A modular, skill-based agent built with LangChain that demonstrates a clean architecture for organizing agent capabilities. This agent provides weather forecasting, travel recommendations, and currency conversion through a dynamic skill loading system.
+A modular, skill-based agent built with LangChain that demonstrates a clean architecture for organizing agent capabilities. This agent runs a **full agentic loop**, autonomously calling tools and processing results until it can provide a complete answer. It provides weather forecasting, travel recommendations, and currency conversion through a dynamic skill loading system.
 
 ## Why IBM Cloud Code Engine
 
@@ -11,6 +11,18 @@ A modular, skill-based agent built with LangChain that demonstrates a clean arch
 - **Pay-per-use pricing**: Cost-efficient for intermittent workloads common to agents.
 - **Simple deployment**: Integrates with container registries and CI/CD pipelines.
 - **Managed endpoint**: Provides a secure http endpoint with a managed certificate.
+
+## Why Red Hat AI Inference Service
+
+This agent uses the [RedHat AI Inference Service](https://cloud.ibm.com/inference/overview) for its LLM capabilities, offering:
+
+- **Production-ready frontier AI models**: Access to state-of-the-art models like Llama 3.3 70B
+- **No operational overhead**: Fully managed service with no infrastructure to maintain
+- **Built-in enterprise security**: Enterprise-grade security and compliance out of the box
+- **Cost controls**: Token-based consumption pricing with no standing costs - you only pay for what you use
+- **Zero infrastructure management**: No servers to provision, scale, or maintain
+
+The token-based consumption model means you're never paying for idle capacity, making it perfect for agent workloads that scale dynamically.
 
 ## The architecture
 
@@ -24,12 +36,71 @@ This agent showcases a **skill-based setup** where each capability is:
 - Implemented as a LangChain tool
 - Dynamically discovered and loaded at runtime
 
+![](images/agent_dashboard.png)
+
+### Agentic Loop
+
+The agent runs a **full agentic loop** that autonomously:
+1. Receives a user query
+2. Analyzes what information is needed
+3. Calls appropriate tools (weather, travel, currency conversion)
+4. Processes tool results
+5. Decides if more information is needed
+6. Repeats steps 3-5 until it has everything needed
+7. Synthesizes a comprehensive response
+
+This means the agent can handle complex, multi-step queries without requiring step-by-step user guidance.
+
+**Example Agentic Loop Output:**
+
+```
+User Query: "Plan a trip to Paris for 5 days with a budget of $2000"
+
+🔄 AGENT ITERATION 1/10
+🤖 CALLING INFERENCE SERVICE
+✅ INFERENCE SERVICE RESPONSE RECEIVED
+🔧 EXECUTING 2 TOOL CALL(S)
+  📌 Tool Call 1/2
+     Name: weather_forecast
+     Arguments: {'location': 'Paris', 'days': 5}
+     ✅ Success: Paris will have partly cloudy weather for the next 5 days...
+  📌 Tool Call 2/2
+     Name: currency_converter
+     Arguments: {'amount': 2000, 'from_currency': 'USD', 'to_currency': 'EUR'}
+     ✅ Success: 2000 USD = 1850.00 EUR
+
+🔄 AGENT ITERATION 2/10
+🤖 CALLING INFERENCE SERVICE
+✅ INFERENCE SERVICE RESPONSE RECEIVED
+🔧 EXECUTING 1 TOOL CALL(S)
+  📌 Tool Call 1/1
+     Name: travel_recommendations
+     Arguments: {'destination_type': 'city', 'budget': 'moderate', 'season': 'current'}
+     ✅ Success: For Paris with a moderate budget, consider staying in the Marais...
+
+🔄 AGENT ITERATION 3/10
+🤖 CALLING INFERENCE SERVICE
+✅ INFERENCE SERVICE RESPONSE RECEIVED
+✅ AGENT LOOP COMPLETE
+Total iterations: 3
+📤 FINAL OUTPUT: Based on the current forecast, Paris will have partly cloudy weather
+for the next 5 days with temperatures around 18-22°C. Perfect for sightseeing!
+
+For your $2,000 budget (approximately €1,850), here's a suggested plan:
+- Accommodation: Stay in the Marais district (€120/night = €600 total)
+- Daily expenses: €150/day for meals and activities (€750 total)
+- Transportation: Paris Visite pass for 5 days (€65)
+- Remaining budget: €435 for shopping and extras
+
+Must-see attractions: Eiffel Tower, Louvre Museum, Notre-Dame, and Montmartre...
+```
 
 ### Key Features
 
 - **🔧 Modular Skills**: Each skill is independent and easy to add/remove
 - **📝 Metadata-Driven**: Skills include YAML frontmatter with configuration
 - **🔄 Dynamic Loading**: Skills are automatically discovered from the `skills/` directory
+- **🤖 Full Agentic Loop**: Autonomous tool calling and result processing
 - **🚀 Production Ready**: Containerized and deployable to IBM Cloud Code Engine
 - **🎨 Clean Architecture**: Clear separation of concerns and easy to extend
 
@@ -89,222 +160,74 @@ langchain-skills-agent/
 
 ### Prerequisites
 
-1. **LLM Backend**: Configure an OpenAI-compatible API endpoint
-   - [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai) (recommended)
+1. **RedHat AI Inference Service**: Get your API key from [IBM Cloud Inference](https://cloud.ibm.com/inference/overview)
+   - Token-based consumption with no standing costs
+   - Access to production-ready frontier AI models
+   - Built-in enterprise security and compliance
 
 2. **IBM Cloud CLI** (for deployment):
    ```bash
    curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
    ```
 
-## ☁️ Deploy to IBM Cloud Code Engine
 
-### Configuration
+### Run locally
 
-1. **Copy and configure environment**:
+1. Copy the sample environment file and add your credentials:
    ```bash
    cp .env.sample .env
    ```
 
-2. **Edit `.env`** with your credentials:
+2. Start the app locally from the `src` directory:
    ```bash
-   INFERENCE_BASE_URL=https://eu-de.ml.cloud.ibm.com
-   INFERENCE_API_KEY="YOUR_API_KEY"
-   INFERENCE_MODEL_NAME="meta-llama/llama-3-2-11b-vision-instruct"
-   INFERENCE_PROJECT_ID="YOUR_PROJECT_ID"
+   cd src
+   uv run uvicorn main:app --host 0.0.0.0 --port 8080
    ```
 
-### Deploy
+3. Open the dashboard in your browser:
+   ```text
+   http://localhost:8080/
+   ```
 
-1. **Login to IBM Cloud**:
+## ☁️ Deploy to IBM Cloud Code Engine
+
+1. Authenticate with IBM Cloud:
    ```bash
    ibmcloud login --sso
-   # or with API key:
-   ibmcloud login --apikey "$IBMCLOUD_APIKEY"
+   ```
+   Or use an API key:
+   ```bash
+   ibmcloud login --apikey YOUR_IBM_CLOUD_API_KEY
    ```
 
-2. **Run deployment**:
+2. Deploy the application:
    ```bash
    ./deploy.sh
    ```
 
-3. **The script will**:
-   - Create a Code Engine project
-   - Build and deploy the containerized agent
-   - Configure secrets from your `.env` file
-   - Provide the agent URL
-
-### Cleanup
-
-Remove all created resources:
-```bash
-./deploy.sh clean
-```
-
-### Local Development
-
-1. **Clone and setup**:
-   ```bash
-   cd langchain-skills-agent
-   cp .env.sample .env
-   # Edit .env with your API credentials
+3. Access the app using the URL printed by the script, for example:
+   ```text
+   https://langchain-agent.xxx.codeengine.appdomain.cloud
    ```
 
-2. **Install dependencies**:
-   ```bash
-   cd src
-   pip install -e .
-   # or with uv:
-   uv sync
-   ```
+For the full deployment walkthrough, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-3. **Run locally**:
-   ```bash
-   python main.py
-   ```
+![](images/agent_test.png)
 
-4. **Test the agent**:
-   ```bash
-   # Visit the landing page
-   open http://localhost:8080
 
-   # Or use the API
-   curl -X POST http://localhost:8080/runs \
-     -H "Content-Type: application/json" \
-     -d @payload/payload.json
-   ```
+## 📚 Next steps
 
-## 🔌 API Endpoints
+- Add and deploy more agents to the same Code Engine project
+- Add and deploy [MCP Servers](../mcp-server/README.md)
+- Secure the agent endpoint with [OIDC-based authentication](../../auth-oidc-proxy/README.md)
 
-### `GET /`
-Landing page with agent information and documentation
-
-### `GET /agents`
-List available agents
-
-### `POST /runs`
-Execute the agent with a query
-
-**Request:**
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "What's the weather in Paris?"
-    }
-  ]
-}
-```
-
-### `GET /info`
-Get agent information and loaded skills
-
-### `GET /health`
-Health check endpoint
-
-## 🛠️ Adding New Skills
-
-1. **Create skill directory**:
-   ```bash
-   mkdir -p src/skills/my_new_skill
-   ```
-
-2. **Create `skill.md`** with metadata:
-   ```markdown
-   ---
-   name: "My New Skill"
-   description: "What this skill does"
-   version: "1.0.0"
-   category: "utility"
-   parameters:
-     - name: input
-       type: string
-       required: true
-       description: "Input parameter"
-   ---
-
-   # My New Skill
-
-   Detailed documentation here...
-   ```
-
-3. **Create `__init__.py`** with implementation:
-   ```python
-   from langchain.tools import tool
-
-   @tool
-   def my_new_skill(input: str) -> str:
-       """Tool description for the LLM."""
-       # Implementation here
-       return result
-   ```
-
-4. **Restart the agent** - the skill will be automatically discovered!
-
-## 📊 Skill Metadata Format
-
-Each `skill.md` file uses YAML frontmatter:
-
-```yaml
----
-name: "Skill Name"
-description: "Brief description"
-version: "1.0.0"
-category: "category_name"
-parameters:
-  - name: param_name
-    type: string|integer|float|boolean
-    required: true|false
-    default: default_value
-    description: "Parameter description"
----
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `INFERENCE_BASE_URL` | LLM API endpoint | `https://eu-de.ml.cloud.ibm.com` |
-| `INFERENCE_API_KEY` | API key for LLM | `your-api-key` |
-| `INFERENCE_MODEL_NAME` | Model identifier | `watsonx/meta-llama/llama-3-3-70b-instruct` |
-| `INFERENCE_PROJECT_ID` | Project ID (watsonx.ai) | `your-project-id` |
-| `OPENWEATHER_API_KEY` | Weather API key (optional) | `your-key` |
-| `EXCHANGE_RATE_API_KEY` | Exchange rate API key (optional) | `your-key` |
-
-## 🎨 Architecture Highlights
-
-### Dynamic Skill Loading
-
-The `skill_loader.py` module:
-1. Scans the `skills/` directory
-2. Parses `skill.md` metadata
-3. Imports Python modules
-4. Registers tools with LangChain
-5. Makes them available to the agent
-
-### LangChain Integration
-
-- Uses `ChatWatxonx` for Watsonx-compatible APIs
-- Implements `create_tool_calling_agent` for tool use
-- Provides `AgentExecutor` for orchestration
-- Supports async operations
-
-### ACP SDK Integration
-
-- Compatible with Agent Communication Protocol
-- Provides standard agent endpoints
-- Supports message-based interaction
-- Easy integration with agent platforms
 
 ## 📚 Learn More
 
-- [IBM Cloud Code Engine](https://cloud.ibm.com/docs/codeengine)
-- [LangChain Documentation](https://python.langchain.com/)
-- [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai)
-- [Agent Communication Protocol](https://github.com/IBM/agent-communication-protocol)
+- [RedHat AI Inference Service](https://cloud.ibm.com/inference/overview) - Production-ready frontier AI models with no operational overhead
+- [IBM Cloud Code Engine](https://cloud.ibm.com/docs/codeengine) - Serverless container platform
+- [LangChain Documentation](https://python.langchain.com/) - LangChain framework
+- [Agent Communication Protocol](https://github.com/IBM/agent-communication-protocol) - Standard agent protocol
 
 
 ---

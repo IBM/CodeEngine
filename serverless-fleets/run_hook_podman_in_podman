@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+PREHOOK=$(cat <<'EOF'
+#!/bin/bash
+podman pull docker.io/library/hello-world:latest
+EOF
+)
+
+
+echo ibmcloud code-engine fleet create --name "fleet-${uuid}-1"
+echo "  "--tasks-state-store fleet-task-store
+echo "  "--subnetpool-name fleet-subnetpool
+echo "  "--image quay.io/podman/stable:latest
+echo "  "--max-scale 1
+echo "  "--command="podman"
+echo "  "--arg "run"
+echo "  "--arg "hello-world"
+echo "  "--tasks 1
+echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=10m
+echo "  "--env __CE_INTERNAL_PRIVILEGED_CONTAINER=true 
+echo "  "--env __CE_INTERNAL_HOSTPATH_MOUNTS=/var/lib/containers:/var/lib/containers 
+echo "  "--cpu 2 
+echo "  "--memory 4G
+
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+    --tasks-state-store fleet-task-store \
+    --subnetpool-name fleet-subnetpool \
+    --image quay.io/podman/stable:latest \
+    --max-scale 1 \
+    --command="podman" \
+    --arg "run" \
+    --arg "hello-world" \
+    --tasks 1 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}" \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=10m \
+    --env __CE_INTERNAL_PRIVILEGED_CONTAINER=true \
+    --env __CE_INTERNAL_HOSTPATH_MOUNTS=/var/lib/containers:/var/lib/containers \
+    --cpu 2 \
+    --memory 4G

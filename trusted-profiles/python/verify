@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euxo pipefail
+
+docker build --platform linux/amd64 .
