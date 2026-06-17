@@ -84,6 +84,33 @@ $ ibmcloud ce project create --name demos
 With that, `cd` into the directory of interest, and read the README to see how
 to get started.
 
+## AI Skill for Agentic IDEs
+
+Deploy and manage Code Engine workloads directly from your AI-powered IDE like
+[IBM Bob](https://bob.ibm.com/) using the **Code Engine Specialist** skill defined in [`SKILL.md`](SKILL.md).
+
+### Install via [skills.sh](https://www.skills.sh/)
+
+```
+npx skills add IBM/CodeEngine
+```
+
+### Example prompts
+
+**Generate and deploy a new project:**
+```
+Hey Bob, Create a new project with a fancy web site that shows that IBM Bob + Code Engine = A perfect fit.
+Add two boxes with the value proposition of Bob and Code Engine and deploy the website to IBM Cloud.
+```
+
+**Deploy existing code:**
+```
+Deploy this application to IBM Cloud.
+```
+
+> **Note:** Login to IBM Cloud (`ibmcloud login`) before using the skill.
+
+
 ## Tutorials / Assets
 
 - [Gallery](gallery)<br>
@@ -197,6 +224,10 @@ followed is:
   `icr.io/codeengine`.
   - invoking `run clean` should clean up from any previous execution without
     re-running the sample.
+
+
+
+---
 
 ## Additional Resources
 
