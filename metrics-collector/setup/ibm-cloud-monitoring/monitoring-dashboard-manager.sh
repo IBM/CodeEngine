@@ -25,6 +25,7 @@ declare -A REGION_ENDPOINTS=(
     ["eu-es"]="https://eu-es.monitoring.cloud.ibm.com"
     ["eu-gb"]="https://eu-gb.monitoring.cloud.ibm.com"
     ["jp-tok"]="https://jp-tok.monitoring.cloud.ibm.com"
+    ["in-che"]="https://in-che.monitoring.cloud.ibm.com"
     ["au-syd"]="https://au-syd.monitoring.cloud.ibm.com"
     ["jp-osa"]="https://jp-osa.monitoring.cloud.ibm.com"
     ["ca-tor"]="https://ca-tor.monitoring.cloud.ibm.com"
