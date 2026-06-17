@@ -77,26 +77,31 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(output))
 }
 
+// Helper function to escape label values
+func escapeLabelValue(s string) string {
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "\"", "\\\"")
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	return s
+}
+
+// Helper function to craft a string that corresponds to common labels that should be added to each metric
+func defineCommonLabels(resourceStats InstanceResourceStats) string {
+	return fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
+		escapeLabelValue(resourceStats.Name),
+		escapeLabelValue(resourceStats.ComponentType),
+		escapeLabelValue(resourceStats.ComponentName))
+}
+
 // formatPrometheusMetrics converts metrics to Prometheus text format
 func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, lastUpdate time.Time) string {
 	var sb strings.Builder
-
-	// Helper function to escape label values
-	escapeLabelValue := func(s string) string {
-		s = strings.ReplaceAll(s, "\\", "\\\\")
-		s = strings.ReplaceAll(s, "\"", "\\\"")
-		s = strings.ReplaceAll(s, "\n", "\\n")
-		return s
-	}
 
 	// Write container CPU usage metrics
 	sb.WriteString("# HELP ibm_codeengine_instance_cpu_usage_millicores Current CPU usage in millicores\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_usage_millicores gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
-			escapeLabelValue(m.Name),
-			escapeLabelValue(m.ComponentType),
-			escapeLabelValue(m.ComponentName))
+		labels := defineCommonLabels(m)
 		sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_cpu_usage_millicores{%s} %d\n", labels, m.Cpu.Current))
 	}
 	sb.WriteString("\n")
@@ -106,10 +111,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_cpu_limit_millicores gauge\n")
 	for _, m := range metrics {
 		if m.Cpu.Configured > 0 {
-			labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
-				escapeLabelValue(m.Name),
-				escapeLabelValue(m.ComponentType),
-				escapeLabelValue(m.ComponentName))
+			labels := defineCommonLabels(m)
 			sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_cpu_limit_millicores{%s} %d\n", labels, m.Cpu.Configured))
 		}
 	}
@@ -119,10 +121,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# HELP ibm_codeengine_instance_memory_usage_bytes Current memory usage in bytes\n")
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_usage_bytes gauge\n")
 	for _, m := range metrics {
-		labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
-			escapeLabelValue(m.Name),
-			escapeLabelValue(m.ComponentType),
-			escapeLabelValue(m.ComponentName))
+		labels := defineCommonLabels(m)
 		// Convert MB to bytes
 		sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_memory_usage_bytes{%s} %d\n", labels, m.Memory.Current*1000*1000))
 	}
@@ -133,10 +132,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 	sb.WriteString("# TYPE ibm_codeengine_instance_memory_limit_bytes gauge\n")
 	for _, m := range metrics {
 		if m.Memory.Configured > 0 {
-			labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
-				escapeLabelValue(m.Name),
-				escapeLabelValue(m.ComponentType),
-				escapeLabelValue(m.ComponentName))
+			labels := defineCommonLabels(m)
 			// Convert MB to bytes
 			sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_memory_limit_bytes{%s} %d\n", labels, m.Memory.Configured*1000*1000))
 		}
@@ -157,10 +153,7 @@ func formatPrometheusMetrics(metrics []InstanceResourceStats, namespace string, 
 		sb.WriteString("# TYPE ibm_codeengine_instance_ephemeral_storage_usage_bytes gauge\n")
 		for _, m := range metrics {
 			if m.DiskUsage.Current > 0 {
-				labels := fmt.Sprintf("ibm_codeengine_instance_name=\"%s\",ibm_codeengine_component_type=\"%s\",ibm_codeengine_component_name=\"%s\"",
-					escapeLabelValue(m.Name),
-					escapeLabelValue(m.ComponentType),
-					escapeLabelValue(m.ComponentName))
+				labels := defineCommonLabels(m)
 				// Convert MB to bytes
 				sb.WriteString(fmt.Sprintf("ibm_codeengine_instance_ephemeral_storage_usage_bytes{%s} %d\n", labels, m.DiskUsage.Current*1000*1000))
 			}
