@@ -171,6 +171,7 @@ export SYSDIG_REGION="us-south"
 - `eu-es` - EU Spain (Madrid)
 - `eu-gb` - EU GB (London)
 - `jp-tok` - Japan (Tokyo)
+- `in-che` - India (Chennai)
 - `jp-osa` - Japan (Osaka)
 - `au-syd` - Australia (Sydney)
 - `ca-tor` - Canada (Toronto)
