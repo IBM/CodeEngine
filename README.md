@@ -87,12 +87,12 @@ to get started.
 ## AI Skill for Agentic IDEs
 
 Deploy and manage Code Engine workloads directly from your AI-powered IDE like
-[IBM Bob](https://bob.ibm.com/) using the **Code Engine Specialist** skill defined in [`SKILL.md`](SKILL.md).
+[IBM Bob](https://bob.ibm.com/) using the **Code Engine Specialist** skill defined in [`SKILL.md`](skills/code-engine-specialist/SKILL.md).
 
 ### Install via [skills.sh](https://www.skills.sh/)
 
 ```
-npx skills add IBM/CodeEngine
+npx skills add IBM/CodeEngine/skills
 ```
 
 ### Example prompts
