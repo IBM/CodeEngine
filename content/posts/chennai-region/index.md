@@ -3,7 +3,7 @@ title: "IBM Cloud Code Engine Is Now Available in the Chennai Region"
 date: 2026-06-18
 description: "Code Engine now available in India."
 tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets", "news"]
-featureImage: "chennai.jpg"
+featureImage: "featured.jpg"
 draft: false
 authors: ["uwefassnacht"]
 ---
