@@ -7,8 +7,8 @@
   - [How It Works](#how-it-works)
   - [Setup Instructions](#setup-instructions)
   - [Scraping Resource Metrics](#scraping-resource-metrics)
-  - [Scraping Custom Metrics](#scraping-custom-metrics)
-  - [Custom metrics examples](#custom-metrics-examples)
+  - [Scraping User-defined Metrics](#scraping-user-defined-metrics)
+  - [User-defined metrics examples](#user-defined-metrics-examples)
 - [IBM Cloud Logs setup](#ibm-cloud-logs-setup)
   - [Custom dashboard](#custom-dashboard)
   - [Logs view](#logs-view)
@@ -19,9 +19,9 @@
 
 ## Overview
 
-Code Engine job that demonstrates how to collect resource metrics (CPU and memory) of running Code Engine apps, jobs, and builds. 
+Code Engine job that demonstrates how to collect resource consumption metrics (vCPU and memory) of running Code Engine apps, jobs, and builds. 
 
-Resource metrics can either be render in **IBM Cloud Monitoring** (see [instructions](#send-metrics-to-ibm-cloud-monitoring))
+Resource consumption metrics can either be render in **IBM Cloud Monitoring** (see [instructions](#send-metrics-to-ibm-cloud-monitoring))
 
 ![](./images/monitoring-dashboard-ce-component-resources.png)
 
@@ -38,15 +38,24 @@ Furthermore, this asset can collect custom metrics of running apps and jobs (see
 
 ![](./images/metrics-collector.overview.png)
 
-1. The metrics collector exposes Prometheus metrics on `localhost:9100/metrics`
-2. The embedded Prometheus agent scrapes these metrics every 30 seconds
-3. The agent also discovers and scrapes pods with the `codeengine.cloud.ibm.com/userMetricsScrape: 'true'` annotation
+The `metrics-collector` is an as-is asset, that can be use to transmit resource consumption metrics (like vCPU and memory), and user-defined metrics (also known as custom metrics) to any target IBM Cloud Monitoring instance. To collect metrics through the `metrics-collector`, an instance needs to be running. It's recommended to run the `metrics-collector` as a daemon job.
+
+**Note:** `metrics-collector` is project scoped, which means only metrics of the corresponding project in which the `metrics-collector` instance itself resides are collected. To scrape metrics of multiple projects, a `metrics-collector` instance needs to get deployed and started into each of the projects.
+
+While resource consumption metrics are automatically collected of all running app, jobrun and buildrun instances, user-defined metrics are only scraped if enabled on the corresponding application or job.
+
+At a high level, the `metrics-collector` has following characteristics
+1. An instance comprises of mainly two processes
+    * an HTTP server that exposes vCPU and memory information as Prometheus metrics on `localhost:9100/metrics`
+    * a prometheus agent which scrapes metrics and sends them to IBM Cloud Monitoring
+1. Metrics are scraped every 30 seconds
+3. For user-defined metrics the agent discovers and scrapes instances that are annotated with `codeengine.cloud.ibm.com/userMetricsScrape: 'true'`
 4. All metrics are forwarded to IBM Cloud Monitoring via remote write
-5. If either the collector or Prometheus agent crashes, the container exits with a non-zero code to trigger a restart
+5. If one of the aforementioned processes crashes, the container exits with a non-zero code to trigger a restart
 
 ### Setup Instructions
 
-The metrics collector supports two authentication methods for accessing IBM Cloud Monitoring:
+The `metrics-collector` supports two authentication methods for accessing IBM Cloud Monitoring:
 
 - **Option 1: Trusted Profile Authentication (Recommended)** - Automatically obtains monitoring API keys using IBM Cloud Trusted Profiles
 - **Option 2: Explicit API Key Secret** - Manually create and mount a monitoring API key as a secret
@@ -210,7 +219,7 @@ All container metrics include the following labels:
 - `ibm_codeengine_instance_name`: Name of the pod instance (optional, see cardinality control below)
 - `ibm_codeengine_subcomponent_name`: Name of the app revision (optional, see cardinality control below)
 
-### Scraping Custom Metrics
+### Scraping User-defined Metrics
 
 The metrics collector can discover and scrape custom Prometheus metrics from your Code Engine applications and jobs. To enable this feature, add the following annotations to your application:
 
@@ -243,7 +252,7 @@ kubectl annotate jobdefinition myjob codeengine.cloud.ibm.com/userMetricsPath='/
 kubectl annotate jobdefinition myjob codeengine.cloud.ibm.com/userMetricsPort=2112
 ```
 
-#### Cardinality Control for Custom Metrics
+#### Cardinality Control for User-defined metrics
 
 To manage metric cardinality and reduce costs, you can control which labels are included in scraped user metrics using the following annotations:
 
@@ -293,7 +302,7 @@ kubectl patch ksvc myapp --type merge -p '{
 
 **Note:** Only set these annotations to `"true"` when you specifically need the additional label granularity. Keeping them disabled (default) helps reduce metric cardinality and associated monitoring costs.
 
-### Custom metrics examples
+### User-defined metrics examples
 
 See the [metrics-example/README.MD](../metrics-examples/README.MD) for language specific examples on how to emit prometheus metrics.
 
