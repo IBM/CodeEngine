@@ -290,7 +290,7 @@ How do I configure a custom domain for my Code Engine app?
 
 Bob will guide you through each of these tasks conversationally!
 
-### Remove the application
+### Delete the application
 
 ```
 Delete the application
