@@ -5,7 +5,7 @@ description: "Using Bob to deploy an app to Code Engine"
 tags: ["Bob", "serverless", "code engine", "AI"]
 featureImage: "featured.jpg"
 draft: true
-authors: ["uwefassnacht","jeremias-werner"]
+authors: ["uwefassnacht","jeremiaswerner"]
 ---
 
 What if deploying your application to the cloud was as simple as having a conversation? No memorizing commands, no context-switching to documentation, just you describing what you want and your AI assistant making it happen.
