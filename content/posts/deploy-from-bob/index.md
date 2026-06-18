@@ -5,7 +5,7 @@ description: "Using Bob to deploy an app to Code Engine"
 tags: ["Bob", "serverless", "code engine", "AI"]
 featureImage: "featured.jpg"
 draft: true
-authors: ["uwefassnacht","jeremiaswerner"]
+authors: ["uwefassnacht","jeremias-werner"]
 ---
 
 What if deploying your application to the cloud was as simple as having a conversation? No memorizing commands, no context-switching to documentation, just you describing what you want and your AI assistant making it happen.
@@ -184,6 +184,16 @@ Answer each question as it comes. Bob handles the rest.
 Once you've answered Bob's questions, it will build the container, push it to IBM Container Registry, and deploy it to Code Engine — reporting progress as it goes. When finished, Bob will give you a live URL.
 
 Open that URL in your browser to see your Hello World site up and running.
+
+### 4.4 View Application Details in IBM Cloud (Optional)
+
+If you'd like to explore the full application configuration, logs, and scaling settings in the IBM Cloud UI, ask Bob:
+
+```
+Give me a link to the code engine application details in the IBM Cloud UI
+```
+
+Bob will give you a direct link to the application's detail page in the IBM Cloud user interface.
 
 ## Step 5: Understanding What Just Happened
 
