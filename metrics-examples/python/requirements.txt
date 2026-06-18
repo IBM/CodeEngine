@@ -3,5 +3,5 @@ uvicorn[standard]==0.44.0
 httpx==0.28.1
 asyncpg==0.31.0
 prometheus-client==0.25.0
-python-multipart==0.0.26
+python-multipart==0.0.32
 pydantic==2.13.0
