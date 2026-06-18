@@ -1,0 +1,82 @@
+#!/bin/bash
+set -eo pipefail
+
+PREFIX="${PREFIX:=metrics-example}"
+LANGUAGE="${LANGUAGE:=all}"
+
+# Create the Code Engine project if it does not exist, yet
+if ! ibmcloud ce project get --name "$PREFIX" >/dev/null 2>&1;then 
+    ibmcloud ce project create --name "$PREFIX"
+fi
+
+# Select the Code Engine project
+ibmcloud ce project select --name "$PREFIX" --kubecfg
+
+httbin_url=https://httpbin.org
+if ibmcloud ce app get --name httpbin >/dev/null 2>&1; then
+    httbin_url=`ibmcloud ce app get --name httpbin --output url`
+fi
+echo "Using HTTPBin backend URL: '$httbin_url'"
+
+languages=(
+    go
+    java
+    node
+    python
+)
+
+for i in "${languages[@]}"; do
+
+    if [[ "$LANGUAGE" == "all" || "$LANGUAGE" == "$i" ]];then 
+        echo "Deploying Code Engine app for $i ..."
+        app_name="${PREFIX}-app-$i"
+
+        create_or_update=update
+        if ! ibmcloud ce app get --name $app_name >/dev/null 2>&1; then
+            echo -e "\nCreating the app '$app_name' ..."
+            create_or_update=create
+        else
+            echo -e "\nUpdating the app '$app_name' ..."
+        fi
+
+        # Create or update the app
+        ibmcloud ce application $create_or_update \
+            --name $app_name \
+            --context-dir "$i/" \
+            --src "." \
+            --memory 0.5G \
+            --cpu 0.25 \
+            --env "HTTPBIN_BASE_URL=$httbin_url"
+        
+        # Wait for the Kubernetes service resource to be ready before patching
+        echo "Waiting for ksvc '$app_name' to be ready..."
+        kubectl wait --for=condition=Ready ksvc/"$app_name" --timeout=300s
+
+        # Remove the pause-build label if it exists to allow the build to proceed
+        if kubectl get ksvc "$app_name" -o jsonpath='{.spec.template.metadata.labels.codeengine\.cloud\.ibm\.com/pause-build}' 2>/dev/null | grep -q .; then
+            echo "Removing pause-build label from '$app_name'..."
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"remove","path":"/spec/template/metadata/labels/codeengine.cloud.ibm.com~1pause-build"}
+            ]'
+        fi
+
+        # Annotate the app with metrics configuration
+        if [[ "$LANGUAGE" == "java" ]];then
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/prometheus"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+            ]'
+        else
+            kubectl patch kservice "$app_name" --type=json -p='[
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsScrape","value":"true"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPath","value":"/metrics"},
+                {"op":"add","path":"/spec/template/metadata/annotations/codeengine.cloud.ibm.com~1userMetricsPort","value":"2112"}
+            ]'
+        fi
+    else 
+        continue;
+    fi
+done
+
+echo "Done"

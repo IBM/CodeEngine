@@ -6,3 +6,6 @@ node_modules
 # draw.io temp files
 .$*.bkp
 .$*.dtmp
+venv
+__pycache__
+target/

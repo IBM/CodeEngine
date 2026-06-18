@@ -1,0 +1,25 @@
+{
+  "name": "metrics-example",
+  "version": "1.0.0",
+  "description": "App to test connectivity to IBM Cloud Services",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/IBM/CodeEngine"
+  },
+  "keywords": [
+    "network",
+    "test",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "prom-client": "^15.1.3"
+  }
+}
