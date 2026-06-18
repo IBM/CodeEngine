@@ -109,7 +109,7 @@ Targeted resource group Default
 Now let's have Bob verify your authentication. Tell Bob:
 
 ```
-"Check my IBM Cloud authentication"
+Check my IBM Cloud authentication
 ```
 
 Bob will run the verification and show you something like:
@@ -136,7 +136,7 @@ Now for the fun part—let's have Bob create a simple static website for us!
 Tell Bob:
 
 ```
-"Create a simple hello world static website with HTML, CSS, and JavaScript"
+Create a simple hello world static website with HTML, CSS, and JavaScript
 ```
 
 ### 3.2 Review What Bob Creates
@@ -236,7 +236,7 @@ Edit your `index.html` file. For example, change the heading:
 Simply tell Bob:
 
 ```
-"Redeploy my website to Code Engine"
+Redeploy my website to Code Engine
 ```
 
 Bob will:
@@ -253,27 +253,27 @@ Now that you've deployed your first application, try asking Bob:
 
 ### View Your Application Status
 ```
-"Show me the status of my Code Engine application"
+Show me the status of my Code Engine application
 ```
 
 ### Check the Logs
 ```
-"Show me the logs for hello-world-site"
+Show me the logs for hello-world-site
 ```
 
 ### Scale Your Application
 ```
-"I'm expecting more traffic. Can you increase the max instances to 10?"
+I'm expecting more traffic. Can you increase the max instances to 10?
 ```
 
 ### Add Environment Variables
 ```
-"Add an environment variable API_KEY to my application"
+Add an environment variable API_KEY to my application
 ```
 
 ### Set Up a Custom Domain
 ```
-"How do I configure a custom domain for my Code Engine app?"
+How do I configure a custom domain for my Code Engine app?
 ```
 
 Bob will guide you through each of these tasks conversationally!
@@ -303,7 +303,7 @@ Create a Node.js Express API or Python Flask application and deploy it the same 
 
 **Try this**: Tell Bob:
 ```
-"Create a simple REST API with Node.js and Express, then deploy it to Code Engine"
+Create a simple REST API with Node.js and Express, then deploy it to Code Engine
 ```
 
 ### 2. Deploy a Multi-Service Application
@@ -314,7 +314,7 @@ Configure automatic deployments when you push to GitHub.
 
 **Ask Bob**:
 ```
-"How do I set up automatic deployments from GitHub to Code Engine?"
+How do I set up automatic deployments from GitHub to Code Engine?
 ```
 
 ### 4. Explore Batch Jobs
@@ -322,7 +322,7 @@ Code Engine isn't just for web applications—it can run batch jobs too!
 
 **Ask Bob**:
 ```
-"Show me how to run a batch job on Code Engine"
+Show me how to run a batch job on Code Engine
 ```
 
 ### 5. Configure Event-Driven Workloads
@@ -354,7 +354,7 @@ If you run into issues, Bob is there to help! Here are some common scenarios:
 ### "My deployment failed"
 Ask Bob:
 ```
-"Why did my deployment fail? Can you help me troubleshoot?"
+Why did my deployment fail? Can you help me troubleshoot?
 ```
 
 Bob will analyze the error logs and suggest solutions.
@@ -362,7 +362,7 @@ Bob will analyze the error logs and suggest solutions.
 ### "My website is slow to load"
 Ask Bob:
 ```
-"My website seems slow after being idle. How can I fix this?"
+My website seems slow after being idle. How can I fix this?
 ```
 
 Bob will explain cold starts and help you configure min-scale if needed.
@@ -370,7 +370,7 @@ Bob will explain cold starts and help you configure min-scale if needed.
 ### "I want to see what's happening"
 Ask Bob:
 ```
-"Show me the logs for my application"
+Show me the logs for my application
 ```
 
 Bob will fetch and display the logs, helping you understand what's happening.
@@ -378,7 +378,7 @@ Bob will fetch and display the logs, helping you understand what's happening.
 ### "I need to change the configuration"
 Ask Bob:
 ```
-"I want to increase the memory for my application to 1G"
+I want to increase the memory for my application to 1G
 ```
 
 Bob will update the configuration and redeploy for you.
