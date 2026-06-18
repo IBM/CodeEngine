@@ -273,8 +273,10 @@ Show me the logs for hello-world-site
 
 ### Scale Your Application
 ```
-I'm expecting more traffic. Can you increase the max instances to 10?
+I am expecting more load. Can you increase the resources and number of instances?
 ```
+
+Bob may suggests different options, pick one and observe how Bob scales the application.
 
 ### Add Environment Variables
 ```
@@ -287,6 +289,12 @@ How do I configure a custom domain for my Code Engine app?
 ```
 
 Bob will guide you through each of these tasks conversationally!
+
+### Remove the application
+
+```
+Delete the application
+```
 
 ## What Makes This Special
 
