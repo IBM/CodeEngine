@@ -81,7 +81,7 @@ run_worker() {
   while [ $(date +%s) -lt $end_time ] && [ "$INTERRUPTED" = false ]; do
     make_request
     # Random sleep between requests (0.5-2 seconds)
-    sleep $(awk -v min=0.5 -v max=2 'BEGIN{srand(); print min+rand()*(max-min)}') 2>/dev/null || break
+    sleep $(LC_NUMERIC=C awk -v min=0.5 -v max=2 'BEGIN{srand(); print min+rand()*(max-min)}') 2>/dev/null || break
   done
 }
 
