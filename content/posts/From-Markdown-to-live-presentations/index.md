@@ -8,8 +8,6 @@ draft: false
 authors: ["luke-roy-ibm"]
 ---
 
-# From Markdown to Live Presentations: Serverless Slidev Deployments with Code Engine Functions
-
 In our previous post, we explored how to deploy a Single Page Application (SPA) using [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine) Functions removing the need for complex build pipelines and letting the platform handle everything automatically. Read the original post [here](https://ibm.github.io/CodeEngine/posts/serverless-spa-deployment-with-code-engine-functions/). Along the way, we also showed how to streamline deployments using our official Code Engine GitHub Action, enabling CI/CD and fully automated deployments directly from your repository to Code Engine [Code Engine GitHub Action Blog](https://ibm.github.io/CodeEngine/posts/deploying-apps-jobs-and-functions-using-github-actions/).
 
 Now, let's take that idea even further. Imagine a workflow where you simply write your presentation in Markdown, preview it locally, push it to GitHub, and have it automatically deployed as a live web presentation, no manual builds, no infrastructure to manage, and no deployment scripts. Just Markdown to a live URL in minutes.
