@@ -1,0 +1,110 @@
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+PREHOOK=$(cat <<'OUTER'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+### ===== User-tunable variables =====
+
+export NETWORK_NAME="podman"
+export SUBNET_CIDR="10.88.0.0/16"
+export GATEWAY_IP="10.88.0.1"
+
+export SQUID_IP="10.88.0.10"
+export SQUID_CONTAINER="http-proxy"
+export SQUID_IMAGE="docker.io/ubuntu/squid:latest"
+export SQUID_HTTP_PORT="3129"
+
+export WORKDIR="$PWD/podman-transparent-proxy-lab"
+
+### ===== Derived variables =====
+
+SQUID_CONF_DIR="/etc/squid"
+
+mkdir -p "$SQUID_CONF_DIR"
+
+echo "==> Checking dependencies"
+command -v podman >/dev/null
+command -v sudo >/dev/null
+command -v iptables >/dev/null
+
+echo "==> Writing squid.conf"
+cat > "${SQUID_CONF_DIR}/squid.conf" <<INNER
+http_port 3128
+http_port 3129 intercept
+
+acl localnet src ${SUBNET_CIDR}
+acl allowed_http dstdomain example.com
+
+acl Safe_ports port 80
+acl CONNECT method CONNECT
+
+http_access deny !Safe_ports
+http_access allow localnet allowed_http
+http_access deny all
+
+pid_filename /tmp/squid.pid
+coredump_dir /tmp
+cache_log /dev/stderr
+access_log stdio:/dev/stdout
+# cache_dir ufs ${SQUID_CONF_DIR}/cache 100 16 256
+
+cache deny all
+via off
+forwarded_for delete
+request_header_access X-Forwarded-For deny all
+request_header_access Via deny all
+visible_hostname localhost
+
+INNER
+
+echo "==> Creating Podman network if needed"
+if ! podman network exists "${NETWORK_NAME}"; then
+  podman network create \
+    --subnet "${SUBNET_CIDR}" \
+    --gateway "${GATEWAY_IP}" \
+    "${NETWORK_NAME}"
+fi
+
+echo "==> Removing old containers if present"
+podman rm -f "${SQUID_CONTAINER}" 2>/dev/null || true
+
+echo "==> Preparing Squid cache and logs"
+mkdir -p "${SQUID_CONF_DIR}/cache" "${SQUID_CONF_DIR}/logs"
+
+echo "==> Starting Squid HTTP transparent proxy"
+podman run -d \
+  --name "${SQUID_CONTAINER}" \
+  --network host \
+  --entrypoint sh \
+  -v "${SQUID_CONF_DIR}/:/etc/squid/:Z,rw,rbind" \
+  "${SQUID_IMAGE}" \
+  -c 'exec squid -N -f /etc/squid/squid.conf'
+
+echo "==> Enabling IPv4 forwarding on host"
+sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
+
+echo "==> Preparing iptables chain"
+sudo iptables -t nat -N SQUID_PROXY 2>/dev/null || true
+sudo iptables -t nat -F SQUID_PROXY
+
+sudo iptables -t nat -A SQUID_PROXY -d 127.0.0.0/8 -j RETURN
+sudo iptables -t nat -A SQUID_PROXY -d ${SUBNET_CIDR} -j RETURN
+sudo iptables -t nat -A SQUID_PROXY -p tcp --dport 80 -j REDIRECT --to-ports 3129
+
+sudo iptables -t nat -A PREROUTING -s ${SUBNET_CIDR} -p tcp -j SQUID_PROXY
+OUTER
+)
+
+ibmcloud ce fleet create  --name "fleet-${uuid}" \
+  --tasks-state-store fleet-task-store \
+  --tasks 1 \
+  --image registry.access.redhat.com/ubi10/ubi-minimal \
+  --cpu "2" \
+  --memory "4G" \
+  --command curl --argument "--silent" --argument "--write-out" --argument "%{http_code}" --argument "--output" --argument "/dev/null" --argument "http://example.com" \
+  --max-scale 1 \
+  --retrylimit 0 \
+  --subnetpool-name fleet-subnetpool \
+  --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
+
