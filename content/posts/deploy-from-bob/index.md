@@ -48,7 +48,7 @@ Open Bob in your development environment (VS Code, terminal, or wherever you hav
 In Bob, type the following command:
 
 ```
-Install the code-engine-specialist skill that you find in github.com/IBM/CodeEngine/skills/code-engine-specialist globally
+Install the code-engine-specialist skill that you find in github.com/IBM/CodeEngine/ai/skills/code-engine-specialist globally
 ```
 
 Bob will:
@@ -61,7 +61,7 @@ Bob will:
 Once installed, confirm the skill is available by asking Bob:
 
 ```
-Do you have the code-engine-specialist-skill installed?
+Do you have the code-engine-specialist skill installed?
 ```
 
 Bob will confirm the skill is active and ready to use.
