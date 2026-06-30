@@ -98,12 +98,11 @@ OUTER
 
 ibmcloud ce fleet create  --name "fleet-${uuid}" \
   --tasks-state-store fleet-task-store \
-  --tasks 1 \
   --image registry.access.redhat.com/ubi10/ubi-minimal \
   --cpu "2" \
   --memory "4G" \
-  --command curl --argument "--silent" --argument "--write-out" --argument "%{http_code}" --argument "--output" --argument "/dev/null" --argument "http://example.com" \
-  --max-scale 1 \
+  --tasks-from-local-file run_hook_squid_http_proxy_commands.jsonl \
+  --max-scale 2 \
   --retrylimit 0 \
   --subnetpool-name fleet-subnetpool \
   --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
