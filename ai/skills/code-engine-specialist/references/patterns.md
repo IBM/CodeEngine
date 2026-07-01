@@ -364,7 +364,7 @@ ibmcloud ce application update --name my-app \
   --probe-live initial-delay=2 \
   --probe-live interval=10 \
   --probe-ready type="http" \
-  --probe-ready path="/health" \
+  --probe-ready path="/ready" \
   --probe-ready initial-delay=2 \
   --probe-ready interval=10
 ```

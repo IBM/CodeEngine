@@ -30,7 +30,6 @@ Before we begin, make sure you have:
 
 1. **An IBM Cloud account** - [Sign up for free](https://cloud.ibm.com/registration) if you don't have one
 2. **Bob 2.0 (or higher) installed** - Your AI coding assistant ([Learn more about Bob](https://www.ibm.com/products/watsonx-code-assistant))
-3. **Allow outside workspace tools** - In the IBM Bob chat -> Settings (icon) -> Chat -> Allow outside workspace tool requests
 3. **IBM Cloud CLI** - [Installation guide](https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli)
 4. **Code Engine CLI plugin** - Install with: `ibmcloud plugin install code-engine`
 
@@ -49,13 +48,18 @@ Open Bob in your development environment (VS Code, terminal, or wherever you hav
 In Bob, type the following command:
 
 ```
-Install the code-engine-specialist skill that you find in github.com/IBM/CodeEngine/ai/skills/code-engine-specialist globally
+Install the code-engine-specialist skill in this workspace using the following command:
+
+npx skills add github:IBM/CodeEngine --skill code-engine-specialist -y 2>&1 || true
 ```
 
 Bob will:
 - Fetch the official IBM Code Engine skill directly from GitHub
-- Install it globally so it's available across all your projects
+- Install it in your workspace so it's available in your projects
 - Make the skill immediately available — no restart required
+
+> Note: If you want to install the skill globally, make sure you have enabled **Allow outside workspace tools**  (In the IBM Bob chat -> Settings (icon) -> Chat -> Allow outside workspace tool requests) 
+
 
 ### 1.3 Verify the Skill is Active
 
