@@ -4,7 +4,7 @@ date: 2026-06-21
 description: "Using Bob to deploy an app to Code Engine"
 tags: ["Bob", "serverless", "code engine", "AI"]
 featureImage: "featured.jpg"
-draft: true
+draft: false
 authors: ["uwefassnacht","jeremiaswerner"]
 ---
 
