@@ -1,2 +1,2 @@
-{ "command":"curl", "args": ["--silent", "--write-out", "%{url} %{http_code}", "--output", "/dev/null", "http://example.com"]}
-{ "command":"curl", "args": ["--silent", "--write-out", "%{url} %{http_code}", "--output", "/dev/null", "http://google.com"]}
+{ "cmds": ["curl", "--silent", "--write-out", "%{url} %{http_code}", "--output", "/dev/null", "http://example.com"]}
+{ "cmds": ["curl", "--silent", "--write-out", "%{url} %{http_code}", "--output", "/dev/null", "http://google.com"]}
