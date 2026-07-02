@@ -1,0 +1,9 @@
+name = "Jeremias Werner"
+bio = "Senior Architect (STSM) for IBM Cloud Code Engine"
+image = "jeremiaswerner.jpg"
+
+# Add external links (this will automatically generate clickable icons under the author name)
+[links]
+  linkedin = "https://www.linkedin.com/in/jeremias-werner"
+  github = "https://github.com/jeremiaswerner"
+  
