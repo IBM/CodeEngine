@@ -188,6 +188,8 @@ Answer each question as it comes. Bob handles the rest.
 
 Once you've answered Bob's questions, it will build the container, push it to IBM Container Registry, and deploy it to Code Engine — reporting progress as it goes. When finished, Bob will give you a live URL.
 
+> **Note:** Some steps (e.g. project creation or application deployment) might take a minute or two ... be patient and follow the conversation
+
 Open that URL in your browser to see your Hello World site up and running.
 
 ### 4.4 View Application Details in IBM Cloud (Optional)
