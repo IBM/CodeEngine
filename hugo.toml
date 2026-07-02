@@ -42,6 +42,7 @@ locale = "en-us"
   showAuthorBottom = true  # Appears as a rich bio card at the end of the post
   showTaxonomies = true
   showAuthorsBadges = true
+  enableCodeCopy = true
 
 [params.list]
   showDownloads = false
