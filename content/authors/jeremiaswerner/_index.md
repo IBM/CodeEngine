@@ -1,6 +1,6 @@
 ---
 title: "Jeremias Werner"
-text: "Senior Architect (STSM) @ IBM Cloud Code Engine"
+text: "Senior Architect (STSM) for IBM Cloud Code Engine"
 ---
 
 Welcome to my blog post feed.
