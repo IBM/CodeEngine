@@ -529,6 +529,10 @@ Download the results from the output COS bucket to `./data/output`
 
 In order to control/monitor/capture HTTP egress traffic on your tasks for which security group based network controls are not sufficient i.e. hostname based controls: you can use after startup hooks to deploy a HTTP proxy on each worker node that intercepts all HTTP traffic of the tasks running on that worker node. An example using squid proxy to allowlist only traffic to a single domain can be found in `run_hook_squid_http_proxy`.
 
+### HTTPS egress control
+
+If you simply want to access control HTTPS egress traffic on your tasks for which security group based network controls are not sufficient i.e. hostname based controls: you can use after startup hooks in conjunction with a gateway/HTTPS proxy on each worker node that is able to drop HTTPS traffic of the tasks running on that worker node based on SNI header sniffing. The proxy may close connections for non-allowlisted traffic and passthrough everything else.
+An example using mitm proxy to allowlist only traffic to a single domain can be found in `run_hook_mitm_https_proxy`.
 
 ## HowTo
 
