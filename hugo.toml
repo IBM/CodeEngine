@@ -13,7 +13,7 @@ locale = "en-us"
 # --- GLOBAL THEME PARAMETERS ---
 [params]
   enableCodeCopy = true
-  colorScheme = "blowfish"  # Options: "blowfish", "congo", "forest", "ocean", "sunset", "fire", "terminal"
+  colorScheme = "github"  # Options: "blowfish", "congo", "forest", "ocean", "sunset", "fire", "terminal", "github"
 
 [params.main]
   mainSections = ["posts"]
