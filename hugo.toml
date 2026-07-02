@@ -10,6 +10,10 @@ locale = "en-us"
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
+# --- GLOBAL THEME PARAMETERS ---
+[params]
+  enableCodeCopy = true
+
 [params.main]
   mainSections = ["posts"]
 
@@ -42,7 +46,6 @@ locale = "en-us"
   showAuthorBottom = true  # Appears as a rich bio card at the end of the post
   showTaxonomies = true
   showAuthorsBadges = true
-  enableCodeCopy = true
 
 [params.list]
   showDownloads = false
@@ -54,3 +57,8 @@ locale = "en-us"
 [params.search]
   enable = true
   showOnHeader = true
+
+# --- SYNTAX HIGHLIGHTING (Required for copy script) ---
+[markup]
+  [markup.highlight]
+    noClasses = false
