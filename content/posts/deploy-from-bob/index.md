@@ -39,9 +39,9 @@ Don't worry if you're new to Code Engine—Bob will guide you through everything
 
 Bob's Code Engine expertise comes from a dedicated skill that you install once. This skill gives Bob deep knowledge of IBM Cloud Code Engine deployments, configurations, and troubleshooting.
 
-### 1.1 Open Bob
+### 1.1 Open Bob in an existing or new folder
 
-Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured).
+Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured). Either open an existing project folder or create a new one for Bob to work in.
 
 ### 1.2 Install the Code Engine Skill
 
