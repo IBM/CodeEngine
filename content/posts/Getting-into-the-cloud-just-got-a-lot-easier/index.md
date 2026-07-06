@@ -5,7 +5,7 @@ description: "Getting into the Cloud just got a lot easier!"
 tags: ["serverless", "code engine", "github actions"]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 ## Introduction
