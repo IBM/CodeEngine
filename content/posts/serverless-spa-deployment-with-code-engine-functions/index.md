@@ -4,7 +4,7 @@ date: 2026-06-08
 description: "Learn how to deploy Single Page Applications (SPAs) to IBM Cloud Code Engine Functions with automatic builds during deployment. No manual build steps, no infrastructure management—just point Code Engine at your source code and deploy."
 tags: ["serverless", "code engine", "functions", "spa", "react", "angular", "svelte"]
 draft: false
-authors: ["luke-roy-ibm", "josip-ledic"]
+authors: ["lukeroy", "josip-ledic"]
 ---
 
 # The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions

@@ -4,7 +4,7 @@ date: 2024-02-23
 description: "Deploying Apps, Jobs and Functions using GitHub Actions"
 tags: ["serverless", "code engine", "github actions"]
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 ## Introduction:
