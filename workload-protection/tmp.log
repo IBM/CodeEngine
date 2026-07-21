@@ -1,0 +1,1311 @@
+Getting logs for application instance 'sample-app-00020-deployment-64cfb5bbb7-5v7mk'...
+OK
+
+sample-app-00020-deployment-64cfb5bbb7-5v7mk/user-container:    
+Starting Code Engine Sysdig Secure Collector...  
+{"level":"info","ts":1784627895.3356354,"logger":"workload_launcher","caller":"workload_launcher/main.go:46","msg":"Sysdig workload launcher 3.2.0 starting"}  
+{"level":"info","ts":1784627895.3357022,"logger":"workload_launcher","caller":"workload_launcher/main.go:51","msg":"FIPS mode: OFF"}  
+{"level":"info","ts":1784627895.3357253,"logger":"workload_launcher","caller":"env/environment.go:185","msg":"Sysdig environment variables:\n  \"SYSDIG_COLLECTOR\": \"ingest.private.eu-es.security-compliance-secure.cloud.ibm.com\"\n  \"SYSDIG_GENERIC_METADATA\": \"{\"containerName\":\"sample-app-00020-deployment-64cfb5bbb7-5v7mk\", \"containerId\":\"sample-app-00020-deployment-64cfb5bbb7-5v7mk\",\"image\":\"icr.io/myns/my-instrumented-app:latest\",\"imageId\":\"<sha256>\"}\"\n  \"SYSDIG_WORKLOAD_ID\": \"sample-app-00020-deployment-64cfb5bbb7-5v7mk\"\n  \"SYSDIG_ACCESS_KEY\": \"HIDDEN\""}  
+{"level":"warn","ts":1784627895.335773,"logger":"workload_launcher","caller":"env/environment.go:196","msg":"Potentially malformed Sysdig environment variables found: \n  \"SYSDIG_ADDITIONAL_CONF\": \"HIDDEN\""}  
+{"level":"info","ts":1784627895.3357928,"logger":"workload_launcher","caller":"env/platform.go:165","msg":"Using generic metadata, cloud platform detection skipped"}  
+{"level":"info","ts":1784627895.335819,"logger":"workload_launcher","caller":"workload_launcher/main.go:59","msg":"Cloud platform: generic"}  
+{"level":"info","ts":1784627895.3358393,"logger":"workload_launcher","caller":"workload_launcher/main.go:65","msg":"Instrumentation running in workload mode"}  
+{"level":"info","ts":1784627895.3358688,"logger":"workload_launcher","caller":"agentino/run_agentino.go:135","msg":"Will bridge events to ingest.private.eu-es.security-compliance-secure.cloud.ibm.com"}  
+{"level":"info","ts":1784627895.3364832,"logger":"workload_launcher","caller":"agentino/run_agentino.go:155","msg":"Generated configuration:\n-----------------------collector: ingest.private.eu-es.security-compliance-secure.cloud.ibm.com\ncollector_port: 6443\ncustom_container:\n    enabled: \"true\"\n    id: sample-app-00020-deployment-64cfb5bbb7-5v7mk\n    image: icr.io/myns/my-instrumented-app:latest\n    incremental_metadata: \"true\"\n    labels:\n        ImageId: <sha256>\n    match:\n        cgroup: \"\"\n        environ:\n            SYSDIG_SIDECAR: .*\n    name: sample-app-00020-deployment-64cfb5bbb7-5v7mk\ncustomerid: HIDDEN\nlog:\n    console_priority: info\n    file_priority: info\nmalware_control:\n    enabled: false\n\n-----------------------"}  
+{"level":"warn","ts":1784627895.3365238,"logger":"workload_launcher","caller":"agentino/run_agentino.go:26","msg":"Log forwarding is not supported on generic platform"}  
+{"level":"info","ts":1784627895.336549,"logger":"workload_launcher","caller":"env/spawn.go:35","msg":"Spawning agent, ForkExec: [/opt/draios/bin/agentino --name=sample-app-00020-deployment-64cfb5bbb7-5v7mk --conf-file=/dev/shm/draiosConf.yaml --cloud-platform=generic --debug-logging]"}  
+{"level":"info","ts":1784627895.336831,"logger":"workload_launcher","caller":"env/spawn.go:59","msg":"Spawned agent, PID: 10"}  
+{"level":"info","ts":1784627895.3368468,"logger":"workload_launcher","caller":"env/spawn.go:35","msg":"Spawning entrypoint, ForkExec: [/opt/draios/bin/pdig -C -t -1 -l /opt/draios/bin/libudigembed.so -u 60 python app.py]"}  
+{"level":"info","ts":1784627895.3371196,"logger":"workload_launcher","caller":"env/spawn.go:59","msg":"Spawned entrypoint, PID: 11"}  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command agent tail-log  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:1180: agentino starting (version 6.3.0)  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command prometheus config show  
+2026-07-21 09:58:15.475, 10.10, Error, agentino:1175: Failed to open log file '/opt/draios/logs/draios.log' (filesystem error: cannot create directories: Permission denied [/opt/draios/logs]); logging to console only.  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:290: Handling option: name = sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:290: Handling option: conf-file = /dev/shm/draiosConf.yaml  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:290: Handling option: cloud-platform = generic  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:303: The cloud platform is generic  
+2026-07-21 09:58:15.475, 10.10, Information, agentino:286: Handling option: debug-logging (no value)  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command version  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command agent configuration show-dragent-yaml  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command agent configuration show-default-yaml  
+2026-07-21 09:58:15.475, 10.10, Information, promscrape:prom_helper:93: Memory optimized promscrape enabled without promscrape or service discovery, disabling  
+2026-07-21 09:58:15.475, 10.10, Information, metric_forwarding_configuration:205: At boot, setting metric limit to 3k per metric type.  
+2026-07-21 09:58:15.475, 10.10, Information, metric_forwarding_configuration:253: At boot, custom metric limits set to the following:   
+Prometheus (prometheus.max_metrics): 1000  
+StatsD (statsd.limit): 100  
+AppChecks (app_checks_limit): 500  
+JMX (jmx.limit): 500  
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/host-shield.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/kubernetes/config/host-shield.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/dragent.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/kubernetes/config/dragent.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/kubernetes/secrets/access-key, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/kubernetes/secrets/rapid-response/password, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/prometheus.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/kubernetes/config/prometheus.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, dragent:configuration:1978: Config file: /opt/draios/etc/local_forwarder_config.yaml, initial mtime 0, initial digest   
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command agent configuration show-agentino-yaml  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command agent configuration show-default-yaml  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1008: Initializing Agent in agentino variant and agentino mode  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config log.rotate updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config http_client_ca updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config memdump.size updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config log.location updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config max_thread_table_size updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config sinsp_event_source.delay_us updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config sinsp.thread_timeout_s updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config watchdog.sinsp_worker_timeout_no_events_s updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config sinsp.thread_purge_interval_s updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config security.k8s_audit_server_enabled updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config max_n_proc_lookups updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config ssl_verify_certificate updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1150: Config security.actions_enabled updated by feature manager  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:359: Security Features: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:375: Security Report Interval (ms)1000  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:377: Security Throttled Report Interval (ms)10000  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:379: Security Actions Poll Interval (ms)100  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:382: Policy events rate: 0.5  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:384: Policy events max burst: 50  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:386: Will not send sysdig monitor events when policies trigger  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:389: Will not send compliance events  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:391: Will send compliance results  
+2026-07-21 09:58:15.475, 10.10, Information, security_config:394: Increased statsd metric limit by 100 for compliance tasks  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1177: Feature manager initialization completed  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	prometheus: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	statsd: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	jmx: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	app checks: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	cointerface: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	driver: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	secure: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	command line capture: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	baseliner: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	memdump: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	secure audit: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	full syscalls: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	network breakdown: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	file breakdown: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	protocol stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	http stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	mysql stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	postgres stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	mongodb stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	full monitor: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	network topology: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	drift control: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	malware control: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	dns detection: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	hash detection: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	response actions: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	monitor stats: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	live logs: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	k8s command: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	Pull v2 policies: Enabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	Kspm analyzer: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	Host scanner: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	Rapid response: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, feature_manager:1180: 	fim detection: Disabled  
+2026-07-21 09:58:15.475, 10.10, Information, command_line_manager:109: Register command features show  
+2026-07-21 09:58:15.475, 10.10, Information, security:common:fd_pool:48: Initialized instance 0x73cd8800ab60 without altering RLIMIT_NOFILE, requested=6655, current: 1048576  
+2026-07-21 09:58:16.476, 10.10, Information, agentino:552: Agentino running in workload mode.  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1987: Distribution: cpe:/o:redhat:enterprise_linux:9::baseos  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1988: machine id: f2:23:dd:26:09:c1  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1989: rootdir: /opt/draios  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1990: conffile: /dev/shm/draiosConf.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1991: log.location: /opt/draios/logs  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1992: log.globally_readable: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1993: collector: ingest.private.eu-es.security-compliance-secure.cloud.ibm.com  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1994: collector_port: 6443  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1995: log.file_priority: 6  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1996: log.console_priority: 6  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1997: log.event_priority: 6  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1917: hotpot.enable: .v0;.v1 // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1922: hotpot.disable: <not set> // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1927: hotpot.report: 60 // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1932: hotpot.sample: event_source.v0:1000;sinsp-next.v2:1000 // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1937: hotpot.logs_max: 1 // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1942: hotpot.delay_1st: <not set> // note: hotpot hands compiled out  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1947: hotpot.cpuset: <not set>  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:1999: CURL debug: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2000: ssl: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2001: ca_certificate:   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2009: ca_cert_paths: /etc/pki/tls/certs/ca-bundle.crt /usr/lib/ssl/certs /etc/ssl/certs /opt/draios/$OPENSSLDIR/certs/ca-bundle.crt /opt/draios/$OPENSSLDIR/certs  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2011: secure_audit_streams:   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2012: secure_audit_streams.k8s_active_filters:  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2015:   - exec  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2017: secure_audit_streams.k8s_filters:  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2020:   exec:  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2023:     /objectRef/subresource : exec  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2023:     /objectRef/resource : pods  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2023:     /verb : create  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2027: commandlines_capture.capture_mode: 0  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2029: Will not include container health checks in collected commandlines  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2036: commandlines_capture.valid_ancestors:   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2037: absorb_event_bursts: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2059: watchdog_enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2060: watchdog.connection_manager_timeout_s: 100  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2062: watchdog.subprocesses_logger_timeout_s: 60  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.cointerface: 1024  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.local_forwarder: 256  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.mountedfs_reader: 32  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.promscrape: 640  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.sdchecks: 256  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.sdjagent: 256  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2067: watchdog.max_memory_usage_subprocesses.statsite_forwarder: 64  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2071: watchdog.analyzer_tid_collision_check_interval_s: 600  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2073: watchdog.sinsp_data_handler_timeout_s: 65  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2075: User events rate: 1  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2076: User events max burst: 1000  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2100: Percentiles: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2126: protocols_truncation_size: 512  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2127: remotefs: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2128: jmx.sampling: 1  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2130: java detected: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2131: java_binary:   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2132: sdjagent_opts:-Xmx256m  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2143: prometheus autodetection enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2144: prometheus service discovery enabled: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2147: prometheus histograms enabled: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2150: prometheus exporter enabled: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2165: local forwarder enabled: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2166: local forwarder sock path: /opt/draios/run/local_forwarder.sock  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2178: K8s metadata local update frequency: 1  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2179: K8s metadata cluster update frequency: 1  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2199: Marathon API server not configured.  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2201: Mesos autodetect enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2202: Mesos connection timeout [ms]: 10000  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2203: Mesos leader following enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2204: Marathon leader following enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2217: POSIX queue limit: 157286400  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2230: Will not ignore any events by process name  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2250: Will not ignore any events by type  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2253: K8s events channel: Go  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2256: K8s events filter:  
+daemonSet:SelectingAll,   
+deployment:DeploymentRollback, DeploymentRollbackRevisionNotFound, DeploymentRollbackTemplateUnchanged, ScalingReplicaSet, SelectingAll,   
+horizontalPodAutoscaler:FailedComputeMetricsReplicas, FailedConvertHPA, FailedGetScale, FailedRescale, FailedUpdateStatus, InvalidSelector, SelectorRequired,   
+node:CIDRAssignmentFailed, CIDRNotAvailable, DeletingNode, FreeDiskSpaceFailed, HostNetworkNotSupported, InsufficientFreeCPU, InsufficientFreeMemory, InvalidDiskCapacity, KubeletSetupFailed, NilShaper, NodeHasSufficientDisk, NodeNotReady, NodeNotSchedulable, NodeOutOfDisk, NodeReady, NodeSchedulable, NodeSelectorMismatching, OutOfDisk, Rebooted, RegisteredNode, RemovingNode, Starting, TerminatingEvictedPod,   
+pod:BackOff, ErrImageNeverPull, Failed, FailedMount, FailedScheduling, HostPortConflict, InspectFailed, Killing, OutOfDisk, Unhealthy,   
+replicaSet:FailedCreate, FailedDelete, SuccessfulCreate, SuccessfulDelete,   
+replicationController:FailedCreate, FailedDelete, SuccessfulCreate, SuccessfulDelete,   
+service:CleanupLoadBalancerFailed, CreatingLoadBalancerFailed, DeletingLoadBalancerFailed, SyncLoadBalancerFailed, UnAvailableLoadBalancer, UpdatedLoadBalancer, UpdateLoadBalancerFailed,   
+statefulSet:FailedCreate, FailedDelete, RecreatingFailedPod, SuccessfulCreate, SuccessfulDelete,   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2264: Docker events filter:  
+container:kill,   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2272: ContainerD events filter:  
+container:die, oom,   
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2280: Auto config enabled. File types and digests:  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2283:     dragent.auto.injected.yaml: file digest: da39a3ee5e6b4b0d3255bfef95601890afd80709  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2283:     dragent.auto.yaml: file digest: da39a3ee5e6b4b0d3255bfef95601890afd80709  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2291: Metric filters and over limit logging:false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2300: Metrics filters:  
+exclude: varnish.VBE.*  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2307: Metrics filter log disabled  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2315: Metrics cache disabled  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2318: Monitor file frequency: 5 seconds  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2321: Files to monitor:  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/dragent.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/host-shield.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/kubernetes/config/dragent.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/kubernetes/config/host-shield.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/kubernetes/config/prometheus.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/kubernetes/secrets/access-key  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/kubernetes/secrets/rapid-response/password  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/local_forwarder_config.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:2325:    /opt/draios/etc/prometheus.yaml  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: 10s_flush_enable: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: 60s_flush_enable: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_metrics.enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_metrics.resubmit_attempts: 4294967294  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_metrics.slots: 3  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_policy_events.enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_policy_events.resubmit_attempts: 4294967294  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_policy_events.slots: 6  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_secure_audit.enabled: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_secure_audit.resubmit_attempts: 4294967294  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: ack_secure_audit.slots: 3  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: add_event_scopes: false  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: agentino.delay_startup_until_metadata_timeout_s: 30  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: agentino.delay_startup_until_policies_timeout_s: 0  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: agentino.run_without_policies: true  
+2026-07-21 09:58:16.476, 10.10, Information, dragent:configuration:700: agentino.socket_path: /dev/shm/udig.sock  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: allocator_decay_interval_s: 5  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_check_thread: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_check_timeout: 60  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_checks_always_send: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_checks_enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_checks_enabled_opt.force: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_checks_enabled_opt.weak: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: app_checks_limit: 500  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_labels.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_labels.exclude: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_labels.include: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_labels.max_agent_tags: 30  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.container_emit_delay_s: 20  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.container_types: [podman]  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.debug_only: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.emit_local_connections: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.emit_opened_files: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.emit_pending_connections: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.emit_process_guids: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.enable_labels: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.excluded_labels: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.included_labels: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.max_agent_tags: 30  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.max_command_arg_length: 100  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.max_files_tracked: 1000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.max_parents_hierarchy: 0  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.process_map_cleanup_interval: 60  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: audit_tap.report_syscall_event_proc: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: auto_config: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.adjust_for_cpu_count: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.baseliner_lower_threshold: 27  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.baseliner_upper_threshold: 30  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.lower_threshold: 3  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.seconds_before_action: 5  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: autodrop.upper_threshold: 5  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: backoff_on_proxy_error: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: be_enrichment.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: be_enrichment.enforce: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: be_enrichment.override: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: be_features.timeout: 10  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: blacklisted_ports: Count: 1  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: ca_cert_dir:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: ca_certificate:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.check_interval_ms: 1000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.enable: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.enable_force_start: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.static_cpu_usage_threshold: 75.000000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.timeout_condition_hold_start_ms: 30000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.timeout_condition_hold_stop_after_force_start_ms: 3000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.timeout_condition_hold_stop_ms: 30000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.timeout_force_start_ms: 60000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_controller.use_static_cpu_usage_threshold: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_dragent_events: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_memory_thresholds.critical_max: 18446744073709551615  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_memory_thresholds.critical_percentage: 95  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_memory_thresholds.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_memory_thresholds.warning_max: 18446744073709551615  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: capture_memory_thresholds.warning_percentage: 90  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: clear_policy_scope_cache.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: coclient_max_loop_evts: 100  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_cpu_profile_enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_enabled_opt.force: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_enabled_opt.weak: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_events_per_profile: 10000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_mem_profile_enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cointerface_total_profiles: 30  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collect_aws_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collect_azure_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collect_gcp_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collect_ibm_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collect_oci_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collector: ingest.private.eu-es.security-compliance-secure.cloud.ibm.com  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collector_endpoint.transmit_filter_message_types: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: collector_port: 6443  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: command_line.async_heartbeat_timeout_ms: 10000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: command_line.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: commandlines_capture.capture_mode: tty  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: commandlines_capture.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: commandlines_capture.enabled_opt.force: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: commandlines_capture.enabled_opt.weak: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: commandlines_capture.include_container_healthchecks: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: compliance_throttle_entry_expiry_minutes: 720  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: compliance_throttle_expiry_poll_interval_minutes: 15  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: congroup_ttl_s: 60  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: connect_timeout: 60000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: connection.max_count: 65536  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: connection.timeout_ns: 90000000000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: connection_table.truncation_log_interval: 0  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: connection_table.truncation_report_interval: 0  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_engines.max_label_len: 100  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_labels_cache_size: 0  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_labels_excess_log: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_memory_as_working_set: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.bpm.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.containerd.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.cri.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.docker.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.ecs.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.libvirt_lxc.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.lxc.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.mesos.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.podman.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.rkt.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_runtime.size_request_enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: container_start_count.enable: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: containers.include: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: containers.limit: 200  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: coredump: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cpu_calculation.missing_jiffies_threshold_container: 90  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cpu_calculation.missing_jiffies_threshold_host: 90  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cpu_usage_max_sr_seconds: 5  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cpu_usage_max_sr_threshold: 0.000000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cri.initial_backoff_ms: 100  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cri.known_socket_paths: [/run/containerd/containerd.sock, /var/run/crio/crio.sock, /run/k3s/containerd/containerd.sock, /run/k0s/containerd.sock, /run/dockershim.sock]  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cri.socket_path:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: cri.timeout_s: 15  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: curl_debug: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.id: sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.image: icr.io/myns/my-instrumented-app:latest  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.incremental_metadata: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.limit: 50  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.match.cgroup:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.max_id_length: 12  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.metadata_deadline_secs: 10  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: custom_container.name: sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: customerid: 2a46f195-eba7-4172-848f-616e3ed2680b  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dcos_password:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dcos_user:   
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dirty_shutdown.report_log_size_b: 30720  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dirty_shutdown.trace_report_log_size_b: 307200  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: disable_analyzer_flush: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: display_drift_prevention_message: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.dns_enrichment: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.dns_ports: [53]  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.enabled_opt.force: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.enabled_opt.weak: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.enrichment_cache_size: 512  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.enrichment_zero_ttl_val: 1  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.event_burst: 200  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.event_rate: 100.000000  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.log_level: info  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.metrics_report_interval: 10  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.proc_gc_interval: 100  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.proc_ignore_count: 10  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.proc_ignore_timeout: 10  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.skip_failed_requests: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.trace_domains: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dns_detection.trace_ptr_records: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dragent_cpu_profile_enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dragent_profile_time_seconds: 120  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dragent_total_profiles: 30  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: drift_control.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: drift_control.enabled_opt.force: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: drift_control.enabled_opt.weak: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: drift_deny_execution_from_upper_layer: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: drift_deny_execution_from_volumes: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: dumpdir: /tmp/  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: emitfullconnections_enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enable_grpc_tracing: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enable_large_environments: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enrich_with_host_ips.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enrich_with_host_ips.refresh_interval_s: 60  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enrich_with_host_ips.regex: ^lo$  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enrich_with_host_ips.regex_type: exclude  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: enrich_with_process_lineage: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.enabled: false  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.hash_ttl: 86400  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.max_per_flush: 3  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.max_size: 8192  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.send_audit_tap: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: environment_tracking.send_metrics: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: event_labels.enabled: true  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: event_labels.exclude: []  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: event_labels.include: [process.name, host.hostName, agent.tag, container.name, kubernetes.cluster.name, kubernetes.namespace.name, kubernetes.deployment.name, kubernetes.pod.name, kubernetes.node.name]  
+2026-07-21 09:58:16.477, 10.10, Information, dragent:configuration:700: event_labels.max_agent_tags: 30  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: events.max_burst: 1000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: events.rate: 1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: extra_internal_metrics: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falco_observations.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falco_optimizer.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falco_optimizer.features: [all]  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.autodisable_interval: 1800000000000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.debug: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.debug_metadata: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.enabled_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.file_table_high_priority_patterns: [*/node_modules/*/package.json, *.deps.json, *.jar, *.ear, *.war, *.egg-info/PKG-INFO, *.egg-info/SOURCES.txt, *.egg-info/native_libs.txt, *.dist-info/METADATA, *.dist-info/RECORD, */lib/apk/db/installed/*, */var/lib/dpkg/*, */usr/share/licenses/*, */usr/lib/sysimage/rpm/Packages/*, */var/lib/rpm/Packages/*, */var/lib/rpm/rpmdb.sqlite/*, */usr/share/rpm/Packages/*, */usr/share/rpm/rpmdb.sqlite/*]  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.max_drops_buffer_rate_percentage: 0.100000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.max_sampling_ratio: 4  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.randomize_start: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: falcobaseline.report_interval: 900000000000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.driver: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.driver_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.driver_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.file_breakdown: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.file_breakdown_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.file_breakdown_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.full_syscalls: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.full_syscalls_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.full_syscalls_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.http_stats: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.http_stats_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.http_stats_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mode: monitor  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mongodb_stats: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mongodb_stats_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mongodb_stats_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.monitor: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.monitor_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.monitor_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mysql_stats: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mysql_stats_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.mysql_stats_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.network_breakdown: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.network_breakdown_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.network_breakdown_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.postgres_stats: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.postgres_stats_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.postgres_stats_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.protocol_stats: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.protocol_stats_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature.protocol_stats_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature_syscalls_filtering.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: feature_syscalls_filtering.use_required_set: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.detections.ml_policies.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.respond.response_actions.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.capture.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.kill_container.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.kill_process.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.pause_container.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.stop_container.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.response.response_actions.unpause_container.trigger: all  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.container_vulnerability_management.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.container_vulnerability_management.target_workloads.kubernetes.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.container_vulnerability_management.target_workloads.kubernetes.image_source:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.container_vulnerability_management.target_workloads.non_orchestrated_containers.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.container_vulnerability_management.target_workloads.non_orchestrated_containers.ignore_init_failures: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.containers.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.containers.ignore_init_failures: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.containers.loader_type: daemon  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.host.dirs_to_scan:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.host.dirs_to_skip:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.host_vulnerability_management.host.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features.vulnerability_management.in_use.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: features_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: file_integrity_monitoring.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: file_integrity_monitoring.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: file_integrity_monitoring.enabled_opt.weak: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: file_integrity_monitoring.hash_workers.count: 2  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: full_monitor.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: full_monitor.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: full_monitor.enabled_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: go_k8s_user_events: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: go_k8s_user_events_debug: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: go_k8s_user_events_queue_len: 100  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: group_percentiles.check_interval: 60  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: group_percentiles.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: group_percentiles.max_containers: 50  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.enable_data_sharing: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.enable_shared_object_support: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.enabled_opt.weak: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.hash_workers.count: 2  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.hash_workers.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.max_hash_file_size: 524288000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hash_detection.process_lineage_lookup: 8  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: heartbeat_interval_s: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.additional_host_dirs_to_scan:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.api_server_enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.api_server_port: 38765  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.containerd_socket_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.crio_containers_storage_options_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.crio_socket_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.debug_logging: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.delay_startup:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.disable_platform_scanning: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.docker_socket_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.enable_parallel_scans: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.enabled_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.host_fs_mount_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.host_scan_base_interval:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.image_streaming_cert_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.image_streaming_enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.image_streaming_key_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.image_streaming_port: 31039  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.initial_state_json:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.interval_send_keep_alive:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.k8s_container_detection_enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.log_http_calls: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.offline_analyzer: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.podman_socket_path:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.probes_port: 7000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.prometheus_enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.prometheus_endpoint: /metrics  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.prometheus_port: 25000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.scan_containers_startup_delay:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.scan_on_start: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.send_containers_interval:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.verify_certificate: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: host_scanner.vulnerability_db_version:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.default_cpuset:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.delay_1st:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.disable:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.enable: .v0;.v1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.logs_max: 1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.report: 60  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: hotpot.sample: event_source.v0:1000;sinsp-next.v2:1000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http.url_table_size: 1024  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http_proxy.ca_certificate: root.cert  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http_proxy.proxy_host:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http_proxy.proxy_port: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http_proxy.ssl: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: http_proxy.ssl_verify_certificate: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: imds_version: 2  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: increased_snaplen_port_range_end: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: increased_snaplen_port_range_start: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: infra_state.cointerface_refresh_interval: 2000000  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: java_home:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.enabled_opt.weak: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.java_commands: [java, jsvc]  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.limit: 500  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.print_json: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: jmx.sampling: 1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: json_parse_errors.events_max_burst: 10  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: json_parse_errors.events_rate: 0.003330  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: json_parse_errors_logfile:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_add_labels_to_container: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_annotations_allowlist: []  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_api_request.max_delay: 5  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_api_request.max_retry: 5  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_api_request.socket_timeout_sec: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_autodetect: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_bt_auth_token:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_ca_certificate:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_cluster_name:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_cluster_size: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_cluster_update_frequency: 1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.enforce_leader_election: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.lease_duration: 60  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.max_cold_start_duration: 60  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.max_parallel_cold_start: 10  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.max_wait_for_lock_sec: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.namespace:   
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.renew_deadline: 30  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_coldstart.retry_period: 15  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_command.enabled: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_command.enabled_opt.force: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_command.enabled_opt.weak: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_completed_jobs_enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_delegated_nodes: 1  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_delegation_election: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_drop_unneeded_fields: true  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_event_counts_log_time: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_extra_resources.include: [services, resourcequotas, persistentvolumes, persistentvolumeclaims, storageclasses]  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_infrastate_backup_enabled: false  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_infrastate_backup_frequency: 10  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_infrastate_backup_path: /infrastate  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_infrastate_max_age: 60  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_klog_file_max_size_mb: 10  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_klog_verbosity: 0  
+2026-07-21 09:58:16.478, 10.10, Information, dragent:configuration:700: k8s_labels_cache_size: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_labels_excess_log: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_local_update_frequency: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_max_rnd_conn_delay: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_metadata.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_metadata.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_metadata.enabled_opt.weak: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_min_rnd_conn_delay: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_per_node_conn_delay: 0.250000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_send_containers: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_send_pod_times: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_ssl_cert:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_ssl_cert_type: PEM  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_ssl_key:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_ssl_verify_certificate: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_terminated_pod_enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_terminated_pod_enabled_if_delegated: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_timeout_s: 60  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_uri:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: k8s_wait_before_ready: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: known_ports: Count: 30  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.agent_app_name: secure-iac-node-analyzer  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.command_timeout: 600  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.enabled_opt.weak: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.environment: production  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.host_root: /  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.max_result_payload_bytes: 1000000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.nodes_processing_backoff_duration: 5  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.nodes_processing_batch_size: 100  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.pod_namespace:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: kspm_analyzer.port: 12000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: live_logs.enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: live_logs.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: live_logs.enabled_opt.weak: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: local_forwarder.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: local_forwarder.sock_path:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: local_forwarder.transmit_message_types: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.console_priority: info  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.console_priority_by_component: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.console_stderr_only: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.event_priority: info  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.file_priority: info  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.file_priority_by_component: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.globally_readable: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.location:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.max_size: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: log.rotate: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: machine_id_prefix:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: malware_control.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: malware_control.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: malware_control.enabled_opt.weak: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: marathon_follow_leader: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: marathon_password:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: marathon_user:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: max_incoming_message_len: 10485760  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: max_n_external_clients: 30  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: max_n_proc_lookups: -1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: max_n_proc_socket_lookups: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: max_thread_table_size: 20000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.autodisable.capture_headers_percentage_threshold: 60  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.autodisable.enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.autodisable.min_time_between_switch_states_ms: 150  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.autodisable.re_enable_interval_minutes: 30  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.enabled_opt.weak: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.max_init_attempts: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: memdump.size: 33554432  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_autodetect: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_follow_leader: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_password:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_state_uri:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_timeout_ms: 10000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mesos_user:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: message_batching.enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: message_dump.hostnames: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: message_dump.location:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: message_dump.types: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics.container_non_resource_metrics_enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics.host_non_resource_metrics_enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics.process_metrics_enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics_cache_size: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics_excess_log: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: metrics_sender_timeout: 120  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: monitor_files.check_frequency_s: 5  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mountedfs_interval_ms: 1000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mountedfs_reader.enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: mounts_limit_size: 15  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: msgqueue_limit: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.cluster_cidr:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.connections_limit: 65536  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.debug: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.enabled_opt.weak: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.filtered_process_names: [kubelet]  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.pod_prefix_for_cidr_retrieval: [kube-apiserver, kube-controller-manager]  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.randomize_start: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.report_interval: 180000000000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.service_cidr:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: network_topology.skip_host_activity: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_batch_msgs_queue_len: 100  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_batch_msgs_tick_interval_ms: 100  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_filter_empty: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_gc: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_inf_wait_time_s: 5  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_low_evt_threshold: 50  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_low_ticks_needed: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_queue_len: 10000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: orch_tick_interval_ms: 100  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: percentiles: []  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: policy_load_check_digest.enabled: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: policy_load_interval: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: policy_load_once: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: proc_lookup_period_ms: 1000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: proc_scan_log_interval_ms: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: proc_scan_timeout_ms: 0  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process.flush_filter:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process.flush_filter_enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process.limit: 250  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process.top_n_per_container: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process.top_n_per_host: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process_emitter.filter_verbose: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: process_emitter.max_command_arg_length: 100  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: procfs_scan_interval: 20  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: procfs_scanner.scan_interval_ms: 1000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_conf_out_dir: /host/var/run  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_conf_out_file: promcc_conf.yaml  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_conf_src_dir: etc/prom_cluster_conf.yaml.d  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_rules_out_dir: /host/var/run  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_rules_out_file: promcc_rules.yaml  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.cluster_rules_src_dir: etc/prom_cluster_rules.yaml.d  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.handle_upgrade: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.merge_default: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.promscrape_out_dir: etc  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.promscrape_out_file: promscrape.yaml  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.promscrape_src_dir: etc/promscrape.yaml.d  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prom_config_files.reload_interval: 20  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.enabled_opt.force: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.enabled_opt.weak: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.histograms: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.ingest_calculated: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.ingest_raw: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.interval: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.log_errors: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.max_metrics: 1000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.max_metrics_per_process: 1000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.max_tags_per_metric: 40  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.metric_expiration: 300  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.prom_service_discovery: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus.timeout: 1  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.connect_url:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.container_labels:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.enabled: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.export_coverage_metrics: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.export_health_metrics: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: prometheus_exporter.listen_url: 0.0.0.0:9544  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_address: unix:/run/promscrape.sock  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_coldstart_delay: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_connect_delay: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_connect_interval: 10  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_emit_all: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_fastproto: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_gather_stats: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_labels: --source.label=pod_id,sysdig_k8s_pod_uid,remove --source.label=container_name,sysdig_k8s_pod_container_name,remove --source.label=container_name,sysdig_container_name,remove --source.label=container_id,sysdig_container_id,remove --source.label=sysdig_omit_source,sysdig_omit_source,remove  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_optimized: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_stats_log_interval: 60  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_thread_timeout: 60  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_verbose: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_web_address: 127.0.0.1:9990  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: promscrape_web_enable: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.drift_control.enable_regex_matching: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.drift_control.force_regex_matching: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.drift_control.max_logged_events: 20  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.fdpool.count: 512  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.fdpool.start: 6144  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.artifact_download_interval_mins: 60  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.db_path:   
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.disable_sysdig_managed_signatures: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.display_message: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.enable_elf_object_malware_scanning: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.enable_polymorphic_malware_engine: true  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.enable_prevention_on_host: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.force_enable_polymorphic_engine: false  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.max_filesize: 50000000  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.max_logged_events: 20  
+2026-07-21 09:58:16.479, 10.10, Information, dragent:configuration:700: protections.malware_control.polymorphic_malware_rules_file: /opt/draios/etc/polymorphic_malware_rules.yaml  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: protections.malware_control.signatures_file: /opt/draios/etc/malware_signatures.yaml  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: protobuf_print: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: protobuf_size_limit: 96000000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: protocols: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: protocols_truncation_size: 512  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.enabled: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.enabled_opt.force: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.enabled_opt.weak: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.password:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.session_dir: /tmp  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rapid_response.tls_skip_check: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: reconnect_max_backoff: 360  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: remotefs: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: remotefs_stats.enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: report_source_port: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: responder.socket: /opt/draios/run/responder.sock  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: restart_on_failed_config_update: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: rootdir: /opt/draios  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: run_mode: standard  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sdjagent_opts: -Xmx256m  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.commands_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.commands_max_lru: 10000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.commands_threshold: 10  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.connections_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.connections_max_lru: 40000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.connections_threshold: 20  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.files_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.files_max_lru: 40000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.files_threshold: 20  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.sliding_window: 28800  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_filter.stats_window: 28800  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.commands_include_non_interactive: []  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_cmdline: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_cmdline_maxlen: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_include_non_interactive: [sshd, telnetd]  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_limit: 1000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_local: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.connections_only_interactive: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.container_processes_include_non_interactive_exec: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.debug: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.enabled: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.enabled_opt.force: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.enabled_opt.weak: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.executed_commands: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.executed_commands_limit: 1000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.executed_commands_per_container_limit: 30  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.file_accesses_limit: 1000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.file_writes: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.file_writes_cmdline: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.file_writes_exclude: []  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.file_writes_only_interactive: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.frequency: 10  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.k8s_audit: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_audit_streams.k8s_limit: 200  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_debug_policy_event: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: secure_events_extra_fields: []  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.actions_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.actions_long_container_id: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.container_labels_map: [kubernetes.pod.name: container.label.io.kubernetes.pod.name, kubernetes.namespace.name: container.label.io.kubernetes.pod.namespace]  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.enabled: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.enabled_opt.force: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.enabled_opt.weak: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.falco_match_strategy: all  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.ignore_container_action: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.report_container_actions_to_stderr: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.use_container_labels_map: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.v2_policies_id_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.v2_policies_id_enabled_opt.force: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security.v2_policies_id_enabled_opt.weak: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: security_legacy_dns_manager_policy: always  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: serializer_timeout: 10  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: shutdown_deadman: 30  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp.thread_purge_interval_s: 120  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp.thread_timeout_s: 300  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.async_events_queue_capacity: 30000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.delay_us: 250000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.min_nodriver_switch_time_ns: 180000000000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.nodriver_proclist_refresh_interval_ns: 5000000000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.ringbuffer_scraping.strategy: auto  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sinsp_event_source.ringbuffer_scraping.turbo_min_cpu_count: 48  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: skip_analyzer_metrics_flush: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: smart_container_reporting: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: snaplen: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: socket.poll_timeout: 1000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: socket_timeout: 1000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: ssl: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: ssl_verify_certificate: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.enabled_opt.force: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.enabled_opt.weak: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.flush_interval: 1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.ip_address: 127.0.0.1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.limit: 100  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.tcp_port: 8125  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.udp_port: 8125  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.use_forwarder: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsd.use_host_statsd: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsite_buffer_warning_length: 300  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: statsite_check_format: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: status_host: 127.0.0.1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: status_port: 24483  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.cgroup_cleanup_timeout: 10000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.cointerface.cpu_quota: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.cointerface.cpu_shares: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.default.cpu_quota: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.default.cpu_shares: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.host_scanner.cpu_quota: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subprocess_resource_limits.host_scanner.cpu_shares: -1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: subsampling.ratio: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: substitute_container_label_value_char: _  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: swarm_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: syscall_stats_plugin.interval_s: 60  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: syscall_stats_plugin.pid_map_max_entries: 65536  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sysdig capture.max outstanding: 1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sysdig capture.transmit rate: 1048576.000000  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sysdig_api_endpoint:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: sysdig_capture_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: tags:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: thin_cointerface_enabled: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_connections_in_sample: 40  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_file_devices.per_container: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_file_devices.per_host: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_file_devices.per_program: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_files.per_container: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_files.per_host: 10  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_files.per_program: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_processes_in_sample: 30  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: top_processes_per_container: 1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: tracepoint_hits_seconds: 5  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: tracepoint_hits_threshold: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: track_connection_status: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: transmit_delay: 1  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: transmit_queue_max_burst: 5  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: transmit_queue_timeout_ms: 300  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: ui.customname:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: ui.hidden_processes:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: ui.is_hidden: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: url_grouping_enabled: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: url_groups:   
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: use_container_filter: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: use_metrics_sender: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: use_promscrape: true  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: username_lookups: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.analyzer_tid_collision_check_interval_s: 600  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.check_memory_for_k8s: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.connection_manager_timeout_s: 100  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.connection_manager_unacked_reconnect_s: 120  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.connection_manager_unacked_timeout_s: 480  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.disable_tid_collision_check: false  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.max_memory_usage_mb: 1024  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.plugin_sinsp_event_source_timeout_s: 1200  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_data_handler_timeout_s: 65  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_event_source_drop_events_timeout_s: 0  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_event_source_timeout_s: 300  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_worker_debug_timeout_s: 55  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_worker_timeout_no_events_s: 60  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.sinsp_worker_timeout_s: 60  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.subprocesses_logger_timeout_s: 60  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.timer_thread_timeout_s: 60  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.udig_sinsp_event_source_timeout_s: 1800  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog.warn_memory_usage_mb: 256  
+2026-07-21 09:58:16.480, 10.10, Information, dragent:configuration:700: watchdog_enabled: true  
+2026-07-21 09:58:16.480, 10.10, Information, agentino:569: Retrieving metadata  
+2026-07-21 09:58:16.480, 10.10, Information, generic_metadata:48: Loading generic metadata from SYSDIG_GENERIC_METADATA envar  
+2026-07-21 09:58:16.481, 10.10, Information, agentino:575: Waiting for metadata ...  
+2026-07-21 09:58:16.481, 10.10, Information, agentino:593: Metadata ready  
+2026-07-21 09:58:16.481, 10.10, Information, agentino:1360: Platform metadata: unknown  
+2026-07-21 09:58:16.481, 10.10, Information, agentino:1362: Agentino ID: sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:16.481, 10.10, Information, base_configuration:9: Using machine prefix sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:16.481, 10.10, Information, agentino:609: Prefix: sample-app-00020-deployment-64cfb5bbb7-5v7mk  
+2026-07-21 09:58:16.482, 10.10, Information, agentino:612: Unique identifier: 4d52e29d2cec3a1185dc2f97855cada8cbab85edb9caf8834a488523ab2f7519  
+2026-07-21 09:58:16.482, 10.10, Information, container_manager:32: Initializing container manager with base table  
+2026-07-21 09:58:16.482, 10.14, Information, watchdog_runnable:112: subprocesses_logger starting  
+2026-07-21 09:58:16.482, 10.14, Information, subprocesses_logger:839: subprocesses_logger: Starting  
+2026-07-21 09:58:16.483, 10.10, Information, event_source_mgr:event_source_mgr:591: {msg: 'Registering source', name: syscall, type: userspace, primary: true}  
+2026-07-21 09:58:16.483, 10.10, Warning, Cannot read host init process proc root: 13  
+2026-07-21 09:58:16.484, 10.10, Information, event_source_mgr:event_source_mgr:465: Plugin 'security-dns' loaded successfully  
+2026-07-21 09:58:16.485, 10.10, Information, event_source_mgr:event_source_mgr:465: Plugin 'security-hashing' loaded successfully  
+2026-07-21 09:58:16.485, 10.15, Information, watchdog_runnable:112: timer_thread starting  
+2026-07-21 09:58:16.485, 10.10, Information, event_source_mgr:event_source_mgr:275: Initializing security manager for syscall source  
+2026-07-21 09:58:16.485, 10.10, Information, security:security_mgr:276: security_mgr::init, source=syscall  
+2026-07-21 09:58:16.485, 10.16, Information, watchdog_runnable:112: collector endpoint thread starting  
+2026-07-21 09:58:16.485, 10.10, Information, security:syscall:security_mgr:238: initializing legacy dns_manager (always enabled)  
+2026-07-21 09:58:16.485, 10.10, Information, security:syscall:security_mgr:389: security manager initialization complete, initial value for m_agent_container_id: ''  
+2026-07-21 09:58:16.485, 10.10, Information, security:syscall:security_mgr:1802: Protections disabled on serverless via configuration  
+2026-07-21 09:58:16.485, 10.10, Information, security:security_policies_v2_message_handler:108: Starting policy worker  
+2026-07-21 09:58:16.486, 10.18, Information, watchdog_runnable:112: connection_manager starting  
+2026-07-21 09:58:16.486, 10.19, Information, watchdog_runnable:112: command_line starting  
+2026-07-21 09:58:16.486, 10.20, Information, watchdog_runnable:112: serializer starting  
+2026-07-21 09:58:16.486, 10.21, Information, agentino:1218: Starting event source  
+2026-07-21 09:58:16.486, 10.21, Information, event_source_mgr:event_source_mgr:978: {msg: 'Starting source', name: syscall, type: userspace}  
+2026-07-21 09:58:16.486, 10.21, Information, dns_detection: configuration.cpp:116: received json: {  
+	"dns_enrichment" : true,  
+	"dns_ports" :   
+	[  
+		53  
+	],  
+	"enrichment_cache_size" : 512,  
+	"enrichment_zero_ttl_val" : 1,  
+	"event_burst" : 200,  
+	"event_rate" : 100.0,  
+	"log_level" : "info",  
+	"metrics_report_interval" : 10,  
+	"proc_gc_interval" : 100,  
+	"proc_ignore_count" : 10,  
+	"proc_ignore_timeout" : 10,  
+	"skip_failed_requests" : false,  
+	"trace_domains" : [],  
+	"trace_ptr_records" : false  
+}  
+  
+2026-07-21 09:58:16.486, 10.21, Information, dns_detection: configuration.cpp:215: parsed configuration:  
+	event_rate: 100  
+	event_burst: 200  
+	proc_ignore_count: 10  
+	proc_ignore_timeout: 10  
+	proc_gc_interval: 100  
+	dns_enrichment: 1  
+	log_level: info  
+	dns_ports[53]  
+	trace_domains[]  
+	trace_ptr_records: 0  
+	enrichment_cache_size: 512  
+	enrichment_zero_ttl_val: 1  
+	metrics_report_interval: 10  
+	skip_failed_requests: 0  
+  
+2026-07-21 09:58:16.486, 10.21, Information, security-hashing: can't find external hash database table: can't get table  
+2026-07-21 09:58:16.486, 10.21, Information, security-hashing: reading hash database on filesystem is not supported, will use empty one  
+2026-07-21 09:58:16.486, 10.21, Information, sinsp_event_src:253: Opening the capture source. Type 1  
+2026-07-21 09:58:16.486, 10.21, Information, Trying to open the right engine!  
+2026-07-21 09:58:16.490, 10.24, Information, watchdog_runnable:112: syscall_sinsp_event_source starting  
+2026-07-21 09:58:16.490, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:16.490, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=0, msg_loaded=0, msg_dropped=0, total=0, enabled=0  
+2026-07-21 09:58:16.491, 10.21, Information, agentino:1249: Starting the agentino metrics sender  
+2026-07-21 09:58:16.491, 10.25, Information, watchdog_runnable:112: capture_job_manager starting  
+2026-07-21 09:58:16.491, 10.25, Information, memdumper:74: creating memdump, size=33554432  
+2026-07-21 09:58:16.491, 10.25, Information, memdumper:95: memdumper: initializing memdumper, bufsize=33554432, max_disk_size=33554432  
+2026-07-21 09:58:16.491, 10.26, Information, watchdog_runnable:112: metrics_sender starting  
+2026-07-21 09:58:16.535, 10.16, Information, endpoint:cm_collector_endpoint:761: Initiating connection to collector  
+2026-07-21 09:58:16.569, 10.27, Information, cm_socket:1643: Performing SSL handshake  
+2026-07-21 09:58:16.609, 10.27, Information, cm_socket:1649: SSL identity verified  
+2026-07-21 09:58:16.609, 10.27, Information, endpoint:cm_collector_endpoint:844: Connected to collector at host ingest.private.eu-es.security-compliance-secure.cloud.ibm.com, port 6443  
+2026-07-21 09:58:16.609, 10.16, Information, endpoint:cm_collector_endpoint:974: Performing protocol handshake  
+2026-07-21 09:58:16.610, 10.16, Information, endpoint:cm_collector_endpoint:1047: Waiting for 60 seconds for handshake to complete  
+2026-07-21 09:58:16.733, 10.16, Information, endpoint:cm_collector_endpoint:1131: Received response of type 25 (ver: 5 len: 156)  
+2026-07-21 09:58:16.733, 10.16, Information, endpoint:cm_collector_endpoint:1520: Sending scraper version promscrape_v1 to backend  
+2026-07-21 09:58:16.733, 10.16, Information, endpoint:cm_collector_endpoint:1582: handshake request: timestamp_ns: 1784627896733375000  
+machine_id: "sample-app-00020-deployment-64cfb5bbb7-5v7mkf2:23:dd:26:09:c1"  
+customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
+supported_compressions: COMPRESSION_GZIP  
+supported_agg_intervals: 10  
+features {  
+  mode: agentino  
+  prometheus_enabled: false  
+  statsd_enabled: false  
+  jmx_enabled: false  
+  app_checks_enabled: false  
+  cointerface_enabled: false  
+  driver_enabled: true  
+  secure_enabled: true  
+  commandline_capture_enabled: false  
+  baseliner_enabled: false  
+  memdump_enabled: true  
+  secure_audit_enabled: false  
+  full_syscalls_enabled: true  
+  network_breakdown_enabled: false  
+  file_breakdown_enabled: false  
+  protocol_stats_enabled: false  
+  http_stats_enabled: false  
+  mysql_stats_enabled: false  
+  postgres_stats_enabled: false  
+  mongodb_stats_enabled: false  
+  custom_config: false  
+  monitor_enabled: false  
+  network_topology_enabled: false  
+  variant: variant_agentino  
+  live_logs_enabled: true  
+  full_monitor_enabled: false  
+  k8s_command_enabled: false  
+  drift_control_enabled: false  
+  malware_control_enabled: false  
+  version {  
+    agent_version: "6.3.0"  
+    falco_engine_version: "1000.58.0"  
+    falco_plugin_infos {  
+      name: "security-dns"  
+      version: "0.1.0"  
+    }  
+    falco_plugin_infos {  
+      name: "security-hashing"  
+      version: "0.6.0"  
+    }  
+  }  
+  dns_detection_enabled: true  
+  hash_detection_enabled: true  
+  policies_v2_identifier_enabled: true  
+  responder_enabled: false  
+  kspm_analyzer_enabled: false  
+  host_scanner_enabled: false  
+  rapid_response_enabled: false  
+  fim_detection_enabled: false  
+}  
+supported_raw_prometheus: PROMSCRAPE_NO_SUPPORT  
+supported_custom_metric_limits: CUSTOM_METRIC_DEFAULT  
+supported_custom_metric_limits: CUSTOM_METRIC_10k  
+supported_custom_metric_limits: CUSTOM_METRIC_20k  
+supported_custom_metric_limits: CUSTOM_METRIC_50k  
+supported_custom_metric_limits: CUSTOM_METRIC_100k  
+supported_custom_metric_limits: CUSTOM_METRIC_200k  
+supported_custom_metric_limits: CUSTOM_METRIC_300k  
+supported_custom_metric_limits: CUSTOM_METRIC_400k  
+supported_custom_metric_limits: CUSTOM_METRIC_500k  
+supported_custom_metric_limits: CUSTOM_METRIC_1m  
+prom_fastproto: FASTPROTO_SUPPORT  
+prom_fastproto: FASTPROTO_NO_SUPPORT  
+prom_scraper_version: PROMSCRAPE_V1  
+prom_config: PROM_CONFIG_SUPPORT  
+prom_config: PROM_CONFIG_NO_SUPPORT  
+prom_optimized: PROM_OPTIMIZED_NO_SUPPORT  
+k8s_enrichment_modes: WITH_GLOBAL_STATE_V1  
+k8s_enrichment_modes: WITH_LOCAL_STATE  
+orchestrator {  
+  type: KUBERNETES  
+}  
+host_tags: ""  
+ack_supported_message_types: SECURE_AUDIT  
+ack_supported_message_types: POLICY_EVENTS  
+ack_supported_message_types: METRICS  
+policies_v2_identifier: ""  
+opaque_uid: "4d52e29d2cec3a1185dc2f97855cada8cbab85edb9caf8834a488523ab2f7519"  
+supported_message_batching: MESSAGE_BATCHING_NO_SUPPORT  
+  
+2026-07-21 09:58:16.742, 10.25, Information, capture_job_handler:767: capture_job_handler: memdumper enabled  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1214: Received response of type 27 (ver: 5 len: 330)  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1315: Negotiated metrics batching: MESSAGE_BATCHING_NO_SUPPORT  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1324: handshake rsp: timestamp_ns: 1784627896789000000  
+machine_id: "sample-app-00020-deployment-64cfb5bbb7-5v7mkf2:23:dd:26:09:c1"  
+customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
+last_acked_gen_num: 0  
+last_acked_seq_num: 0  
+compression: COMPRESSION_GZIP  
+agg_interval: 10  
+agg_context {  
+  timestamp_ns: 1784627896789000000  
+  machine_id: "sample-app-00020-deployment-64cfb5bbb7-5v7mkf2:23:dd:26:09:c1"  
+  customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
+  metr_limits {  
+    jmx: 5000  
+    statsd: 10000  
+    app_check: 5000  
+    prometheus: 47000  
+    connections: 80  
+    prog_aggregation_count: 98  
+    top_files_count: 40  
+    top_devices_count: 40  
+    host_server_ports: 10  
+    container_server_ports: 5  
+    containers: 200  
+    event_count: 1000  
+    client_queries: 20  
+    server_queries: 20  
+    client_query_types: 20  
+    server_query_types: 20  
+    client_tables: 20  
+    server_tables: 20  
+    client_status_codes: 30  
+    server_status_codes: 30  
+    client_urls: 20  
+    server_urls: 20  
+    client_ops: 20  
+    server_ops: 20  
+    client_collections: 20  
+    server_collections: 20  
+    container_mounts: 40  
+    metrics_mounts: 80  
+    prom_metrics_weight: 2  
+  }  
+  opaque_uid: "4d52e29d2cec3a1185dc2f97855cada8cbab85edb9caf8834a488523ab2f7519"  
+}  
+raw_prometheus: PROMSCRAPE_NO_SUPPORT  
+custom_metric_limit: CUSTOM_METRIC_500k  
+prom_fastproto: FASTPROTO_SUPPORT  
+supported_k8s_state_be_push: K8S_STATE_BE_PUSH_NO_SUPPORT  
+k8s_enrichment_mode: WITH_LOCAL_STATE  
+ack_supported_message_types: POLICY_EVENTS  
+ack_supported_message_types: SECURE_AUDIT  
+k8s_state_message: K8S_STATE_MESSAGE_V1_SUPPORT  
+agent_generic_event: AGENT_GENERIC_EVENT_V1_SUPPORT  
+message_batching: MESSAGE_BATCHING_NO_SUPPORT  
+netsec_version: NETSEC_NO_SUPPORT  
+  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1332: enabling ACK expect for POLICY_EVENTS messages  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1332: enabling ACK expect for SECURE_AUDIT messages  
+2026-07-21 09:58:16.795, 10.16, Information, aggregator_limits:12: Updating Aggregator ObjectLimits...  
+2026-07-21 09:58:16.795, 10.16, Information, aggregator_limits:13: timestamp_ns: 1784627896789000000  
+machine_id: "sample-app-00020-deployment-64cfb5bbb7-5v7mkf2:23:dd:26:09:c1"  
+customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
+metr_limits {  
+  jmx: 5000  
+  statsd: 10000  
+  app_check: 5000  
+  prometheus: 47000  
+  connections: 80  
+  prog_aggregation_count: 98  
+  top_files_count: 40  
+  top_devices_count: 40  
+  host_server_ports: 10  
+  container_server_ports: 5  
+  containers: 200  
+  event_count: 1000  
+  client_queries: 20  
+  server_queries: 20  
+  client_query_types: 20  
+  server_query_types: 20  
+  client_tables: 20  
+  server_tables: 20  
+  client_status_codes: 30  
+  server_status_codes: 30  
+  client_urls: 20  
+  server_urls: 20  
+  client_ops: 20  
+  server_ops: 20  
+  client_collections: 20  
+  server_collections: 20  
+  container_mounts: 40  
+  metrics_mounts: 80  
+  prom_metrics_weight: 2  
+}  
+opaque_uid: "4d52e29d2cec3a1185dc2f97855cada8cbab85edb9caf8834a488523ab2f7519"  
+  
+2026-07-21 09:58:16.795, 10.16, Information, endpoint:cm_collector_endpoint:1019: Processing messages  
+2026-07-21 09:58:16.796, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=448 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:17.111, 10.18, Information, conn_mgr:connection_manager:663: Received command 11 (CONFIG_DATA)  
+2026-07-21 09:58:17.111, 10.18, Information, conn_mgr:connection_manager:668:     header_len: 22    length field: 623    version field: 5  
+2026-07-21 09:58:17.507, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:17.711, 10.18, Information, conn_mgr:connection_manager:663: Received command 53 (POLICIES_V2_IDENTIFIER)  
+2026-07-21 09:58:17.711, 10.18, Information, conn_mgr:connection_manager:668:     header_len: 22    length field: 52    version field: 5  
+2026-07-21 09:58:17.713, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=52 (POLICIES_V2_REQUEST) len=42 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:18.609, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:19.212, 10.18, Information, conn_mgr:connection_manager:663: Received command 22 (POLICIES_V2)  
+2026-07-21 09:58:19.212, 10.18, Information, conn_mgr:connection_manager:668:     header_len: 22    length field: 572658    version field: 5  
+2026-07-21 09:58:19.213, 10.18, Information, security:security_policies_v2_message_handler:204: registering policies; digests old: 00000000000000000000000000000000, new: f3b45d8ed668b8e2647e432bdb2f7619  
+2026-07-21 09:58:19.251, 10.17, Information, event_source_mgr:event_source_mgr:874: {msg: 'Loading policies for', name: syscall, type: userspace}  
+2026-07-21 09:58:19.251, 10.17, Information, security:syscall:security_loaded_v2_policies:846: {msg: 'Adding Falco source', name: syscall, type: userspace, alias: falco, optimizer: true, observations: true}  
+2026-07-21 09:58:19.251, 10.17, Information, security:syscall:security_loaded_v2_policies:895: {msg: 'Falco m_source_idx for source', m_source_idx: 0, source: syscall}  
+2026-07-21 09:58:19.251, 10.17, Information, security:syscall:security_loaded_v2_policies:930: {msg: 'Adding Falco source', name: observation}  
+2026-07-21 09:58:19.251, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: default_lists.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.58.0, size: 1210626}  
+2026-07-21 09:58:19.269, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: cloud.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 527}  
+2026-07-21 09:58:19.269, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: threat_intelligence_feed.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 49506}  
+2026-07-21 09:58:19.269, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: falco_rules.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.35.0, size: 1703499}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: awscloudtrail.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.10.0, size: 31}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: gcp_auditlog.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 306}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: azure_platformlogs.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 30}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: k8s_audit_rules.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 84755}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: aws_cloudtrail.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.8.0, size: 30}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: okta_rules.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.11.0, size: 706}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: github_rules.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.10.0, size: 655}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: windows.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.19.0, size: 12287}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: azure_entra.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.18.0, size: 655}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: guardduty.yaml, tag: 0.255.2, falco_engine_version: 1000.58.0, required_engine_version: 1000.18.0, size: 31}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:324: {msg: 'Loading falco rules content', filename: falco_rules_local.yaml, tag: 0.0.0, falco_engine_version: 1000.58.0, required_engine_version: 1000.0.0, size: 540}  
+2026-07-21 09:58:19.271, 10.17, Information, security:syscall:security_loaded_v2_policies:434: {msg: 'Loading combined falco rules', size: 3064259}  
+2026-07-21 09:58:19.552, 10.18, Information, security:security_policies_v2_message_handler:197: skip registering policy due to checksum equality: f3b45d8ed668b8e2647e432bdb2f7619  
+2026-07-21 09:58:19.750, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+INFO uvicorn.error - Started server process [28]  
+INFO uvicorn.error - Waiting for application startup.  
+INFO __main__ - Application server is running at http://localhost:8080  
+INFO __main__ - Configured httpbin backend: https://httpbin.org  
+INFO uvicorn.error - Application startup complete.  
+INFO uvicorn.error - Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)  
+2026-07-21 09:58:20.875, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:21.996, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:23.117, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:24.238, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:25.360, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:26.481, 10.24, Information, security:syscall:security_mgr:632: perform_periodic_tasks: policies not loaded yet  
+2026-07-21 09:58:26.521, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=507 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:26.830, 10.17, Information, security:filter_optimizer:449: Step finalize: rules=123 policies=2 empty_policies=1 remove_disabled=0 remove_always_false=0 container_only=14 index_typechar=14 index_evtdir=95 index_evt_arg_res_0=47 index_open_read=5 index_open_write=3 cache_extract=4687 cache_identical_checks=4682  
+2026-07-21 09:58:26.831, 10.17, Information, security:syscall:security_loaded_v2_policies:177: stats: source syscall, 1/1 scope groups applied (0 discarded), 163/163 rules applied (0 discarded)  
+2026-07-21 09:58:26.831, 10.17, Information, security:syscall:security_loaded_v2_policies:970: Rules groups by scope initializing: duration = 695 ms  
+2026-07-21 09:58:27.602, 10.24, Information, security:syscall:security_mgr:1096: Policies. Scoping complete t: 0 ms, containers: 2. Total: rp=1, lp=1, dp=0, lpsr=0, np=3, pe=3  
+2026-07-21 09:58:27.602, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:58:27.602, 10.24, Warning, security:syscall:security_mgr:1023: unable to retrieve agent's container id  
+2026-07-21 09:58:29.284, 10.24, Information, security:filter_optimizer:182: Event efficiency: events=0 skip_no_args=0 skip_no_policy=0 skip_evttype=0 efficiency=0  
+2026-07-21 09:58:29.284, 10.24, Information, security:filter_optimizer:184: Rule efficiency: evals=0 skip_typechar=0 skip_opentype=0 skip_evt_arg_res_0=0 skip_container_only=0 efficiency=0  
+2026-07-21 09:58:29.284, 10.24, Information, security:filter_optimizer:186: Rule field efficiency: extract=0 cached=0 efficiency=0 compare=0 cached=0 efficiency=0  
+2026-07-21 09:58:36.525, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=509 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:37.694, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:58:46.530, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=512 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:47.784, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:58:56.535, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=509 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:58:57.875, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:06.540, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=510 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:07.965, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:16.546, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=511 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:18.056, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:26.551, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=508 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:28.146, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:36.557, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=511 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:38.237, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:39.358, 10.24, Information, security:filter_optimizer:182: Event efficiency: events=12 skip_no_args=0 skip_no_policy=0 skip_evttype=0 efficiency=0  
+2026-07-21 09:59:39.358, 10.24, Information, security:filter_optimizer:184: Rule efficiency: evals=24 skip_typechar=0 skip_opentype=0 skip_evt_arg_res_0=0 skip_container_only=0 efficiency=0  
+2026-07-21 09:59:39.358, 10.24, Information, security:filter_optimizer:186: Rule field efficiency: extract=48 cached=12 efficiency=0.25 compare=108 cached=24 efficiency=0.222222  
+2026-07-21 09:59:46.563, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=510 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:48.327, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 09:59:56.568, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=512 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 09:59:58.418, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 10:00:06.573, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=509 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 10:00:08.508, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 10:00:16.579, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=511 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  
+2026-07-21 10:00:18.597, 10.24, Information, security:syscall:security_mgr:657: policies: msg_received=1, msg_loaded=1, msg_dropped=0, total=3, enabled=3  
+2026-07-21 10:00:26.585, 10.16, Information, endpoint:cm_collector_endpoint:437: Sent msgtype=1 (METRICS) len=510 to collector at host=ingest.private.eu-es.security-compliance-secure.cloud.ibm.com port=6443  

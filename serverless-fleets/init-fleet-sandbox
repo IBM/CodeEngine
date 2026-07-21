@@ -13,6 +13,7 @@ REGION="${REGION:=eu-de}"
 NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 SETUP_LOGGING="${SETUP_LOGGING:-true}"
 SETUP_MONITORING="${SETUP_MONITORING:-true}"
+SETUP_ACTIVITY_TRACKING="${SETUP_ACTIVITY_TRACKING:-false}"
 
 IPS_PER_SUBNET=${IPS_PER_SUBNET:=1024}
 
@@ -36,8 +37,14 @@ vpegw_monitoring=${NAME_PREFIX}--is-vpegw-monitoring
 
 cos_key_name="${NAME_PREFIX}--cos-key"
 icl_name="${NAME_PREFIX}--icl"
+atracker_name="${NAME_PREFIX}--audit"
 sysdig_name="${NAME_PREFIX}--sysdig"
 sysdig_key_name="${NAME_PREFIX}--sysdig-key"
+
+icr_region=$REGION
+if [[ "$REGION" == "us-east" ]]; then
+    icr_region="global"
+fi
 
 # ==============================
 # COMMON FUNCTIONS
@@ -63,6 +70,11 @@ function clean() {
             ibmcloud is endpoint-gateway-delete "${icl_name}-vpegw" --force 2>/dev/null
             ibmcloud is endpoint-gateway-delete ${vpegw_icl} --force 2>/dev/null
             ibmcloud resource service-instance-delete "$icl_name" -g ${resource_group_name} -f -q 2>/dev/null
+        fi
+
+        if [[ "$SETUP_ACTIVITY_TRACKING" == "true" ]]; then
+            ibmcloud atracker target rm --target atracker-$REGION --force
+            ibmcloud resource service-instance-delete "$atracker_name" -g ${resource_group_name} -f -q 2>/dev/null
         fi
 
         ibmcloud is endpoint-gateway-delete "${vpegw_icr}" --force 2>/dev/null
@@ -156,7 +168,7 @@ print_msg "\n======================================================"
 print_msg " Setting up \"Code Engine Serverless Fleet\" sample"
 print_msg "======================================================\n"
 
-if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then 
+if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" || "$SETUP_ACTIVITY_TRACKING" != "true" ]]; then 
    print_msg " ATTENTION: You requested to setup a fleet sandbox without : \n"
    if [[ "$SETUP_LOGGING" != "true" ]]; then 
         print_msg "  - logging support \n"
@@ -164,6 +176,9 @@ if [[ "$SETUP_LOGGING" != "true" || "$SETUP_MONITORING" != "true" ]]; then
    if [[ "$SETUP_MONITORING" != "true" ]]; then 
         print_msg "  - monitoring support \n"
    fi 
+   if [[ "$SETUP_ACTIVITY_TRACKING" != "true" ]]; then 
+        print_error "  - Activity Tracking support"
+   fi
    print_msg "Do you really want to continue setup without these services? They cannot be added later \n"
    read -p "Continue [y|n]? " yn
     case $yn in
@@ -314,6 +329,58 @@ else
 fi
 
 #
+# Check whether Activity Tracking should be configured
+print_msg "\nShould Activity Tracking be configured?"
+if [[ "$SETUP_ACTIVITY_TRACKING" != "true" ]]; then
+    echo "No! "
+else 
+    echo "Yes!"
+    if ! ibmcloud resource service-instance "$atracker_name" >/dev/null 2>&1; then 
+        print_msg "\nCreating the IBM Cloud Logs instance '$atracker_name' used for activity tracking ..."
+        ibmcloud resource service-instance-create "$atracker_name" logs standard $REGION -p '{"private_endpoints_only": true}'
+        if [ $? -ne 0 ]; then
+            print_error "IBM Cloud Activity Tracking creation failed!"
+            abortScript
+        fi
+    fi
+    atracker_instance=$(ibmcloud resource service-instance "$atracker_name" -o JSON)
+    atracker_guid=$(echo "$atracker_instance"|jq -r '.[0].guid')
+    atracker_crn=$(echo "$atracker_instance"|jq -r '.[0].crn')
+    atracker_dashboard_url=$(echo "$atracker_instance"|jq -r '.[0].dashboard_url')
+
+    print_msg "\nSetting up S2S policy to allow atracker to send logs to ICL ..."
+    s2s_authorization=$(ibmcloud iam authorization-policies -o JSON|jq -r '.[]|select((.resources[].attributes[].value=="logs") and (.roles[].display_name=="Sender") and (.subjects[].attributes[].value=="atracker"))|.id')
+    if [[ "$s2s_authorization" != "" ]]; then
+        echo "Already set!"
+    else
+        ibmcloud iam authorization-policy-create atracker logs "Sender"
+        if [ $? -ne 0 ]; then
+            print_error "Granting ATracker permission to forward logs to IBM Cloud Logs failed!"
+            abortScript
+        fi
+    fi
+    
+    if ! ibmcloud atracker target get --target atracker-$REGION >/dev/null 2>&1; then
+        print_msg "\nSetting up ICL as a target for attracker ..."
+        ibmcloud atracker target create --name atracker-$REGION --type cloud_logs --target-crn "$atracker_crn"
+        if [ $? -ne 0 ]; then
+            print_error "Failed to set an Activity Tracker Target for the ICL instance!"
+            abortScript
+        fi
+    fi
+
+    if ! ibmcloud atracker route get --route from-$REGION >/dev/null 2>&1; then
+        atracker_target_id=$(ibmcloud atracker target get --target atracker-$REGION --output JSON|jq -r '.id')
+        print_msg "\nSetting up ICL as a route to receive all activities from $REGION ..."
+        ibmcloud atracker route create --name from-$REGION --target-ids "${atracker_target_id}"  --locations $REGION
+        if [ $? -ne 0 ]; then
+            print_error "Failed to set an Activity Tracker route for all activity events from $REGION!"
+            abortScript
+        fi
+    fi
+fi
+
+#
 # Create the VPC
 if ! ibmcloud is vpc $vpc_name >/dev/null 2>&1; then
     print_msg "\nCreating the VPC '$vpc_name' ..."
@@ -434,7 +501,7 @@ fi
 #
 # Creating the VPE Gateway for ICR
 if ! ibmcloud is endpoint-gateway "$vpegw_icr" --vpc $vpc_name >/dev/null 2>&1; then
-    ibmcloud cr region-set $REGION
+    ibmcloud cr region-set $icr_region
     registry_endpoint=$(ibmcloud cr info|grep -m 1 "Container Registry"|awk '{print $3}')
     print_msg "\nCreating a VPE Gateway to enable Image pulls from ICR (endpoint: ${registry_endpoint})..."
     ibmcloud is endpoint-gateway-create \
@@ -571,6 +638,25 @@ if [[ "$res" == "" ]]; then
     ibmcloud cos bucket-lifecycle-configuration-put --bucket ${cos_bucket_name_output} --region ${REGION} --lifecycle-configuration '{ "Rules": [ {"Expiration": {"Days": 1},"Filter": {"Prefix": "simulation/ticker"},"ID": "simulation results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "inverencing/inferencing"},"ID": "inferencing results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "docling/docling"},"ID": "docling results","Status": "Enabled"}, {"Expiration": {"Days": 1},"Filter": {"Prefix": "wordcount/wordcount"},"ID": "wordcount results","Status": "Enabled"}  ] }'
 else 
     cos_bucket_name_output=$res
+fi
+
+
+# Make sure that activity tracking is enabled for the bucket that contain client-owned data
+if [[ "$SETUP_ACTIVITY_TRACKING" == "true" ]]; then
+
+    print_msg "\nMake sure Activity Tracker events are sent on all operations towards bucket '${cos_bucket_name_output}' ..."
+    data_bucket_config=$(curl -H "Content-Type: application/json" --silent -H "Authorization: ${IAM_TOKEN}" -X GET https://config.cloud-object-storage.cloud.ibm.com/v1/b/${cos_bucket_name_output})
+    if [[ "$(echo "$data_bucket_config"|jq '.activity_tracking')" != "null" ]]; then
+        echo "Activity Tracking is already enabled for COS bucket '$cos_bucket_name_output'"
+    else
+        IAM_TOKEN=`ibmcloud iam oauth-tokens --output json | jq -r '.iam_token'`
+        curl -H "Authorization: ${IAM_TOKEN}" --data '{ "activity_tracking": { "read_data_events": true, "write_data_events": true, "management_events": true } }' -X PATCH https://config.cloud-object-storage.cloud.ibm.com/v1/b/${cos_bucket_name_data}
+        if [ $? -ne 0 ]; then
+            print_error "Failed to enable activity events for bucket $cos_bucket_name_output!"
+            abortScript
+        fi
+        echo "Enabled Activity Tracking events for COS bucket '$cos_bucket_name_output'"
+    fi
 fi
 
 # Create COS credentials

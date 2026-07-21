@@ -151,28 +151,29 @@ print_msg "\nTrusted Profile details"
 echo "   id: '$TRUSTED_PROFILE_ID'"
 
 #
-# Setup WLP (sysdig secure)
+# Setup Security and Compliance Center Workload Protection (sysdig secure)
 if ! does_instance_exist sysdig-secure "$sysdig_name"; then 
+    print_msg "\nCreating the IBM Cloud Security and Compliance Center Workload Protection '$sysdig_name' ..."
     ACCOUNT_ID="$(ibmcloud account show --output json|jq -r '.account_id')"
     if ! ibmcloud resource service-instance-create "$sysdig_name" sysdig-secure graduated-tier $REGION -p "{\"enable_cspm\": true, \"target_accounts\": [{\"account_id\": \"$ACCOUNT_ID\", \"config_crn\": \"$APPCONFIG_INSTANCE_CRN\", \"trusted_profile_id\": \"$TRUSTED_PROFILE_ID\"}]}"; then
         print_error "Failed to create the Sysdig Secure instance"
         abortScript
     fi
 fi 
-SYSDIG_INSTANCE_JSON="$(ibmcloud resource service-instance "$sysdig_name" -o json)"
-SYSDIG_INSTANCE_CRN="$(echo "$SYSDIG_INSTANCE_JSON"|jq -r '.[0].crn')"
-SYSDIG_INSTANCE_GUID="$(echo "$SYSDIG_INSTANCE_JSON"|jq -r '.[0].guid')"
-SYSDIG_INSTANCE_REGION="$(echo "$SYSDIG_INSTANCE_JSON"|jq -r '.[0].region_id')"
-print_msg "\nSysdig Secure instance details" 
-echo "   crn:     '$SYSDIG_INSTANCE_CRN'"
-echo "   guid:    '$SYSDIG_INSTANCE_GUID'"
-echo "   region:  '$SYSDIG_INSTANCE_REGION'"
+WLP_INSTANCE_JSON="$(ibmcloud resource service-instance "$sysdig_name" -o json)"
+WLP_INSTANCE_CRN="$(echo "$WLP_INSTANCE_JSON"|jq -r '.[0].crn')"
+WLP_INSTANCE_GUID="$(echo "$WLP_INSTANCE_JSON"|jq -r '.[0].guid')"
+WLP_INSTANCE_REGION="$(echo "$WLP_INSTANCE_JSON"|jq -r '.[0].region_id')"
+print_msg "\nSecurity and Compliance Center Workload Protection instance details" 
+echo "   crn:     '$WLP_INSTANCE_CRN'"
+echo "   guid:    '$WLP_INSTANCE_GUID'"
+echo "   region:  '$WLP_INSTANCE_REGION'"
 
 # Update the trusted profile and set the sysdig instance as identity 
-if ! ibmcloud iam trusted-profile-identity $wlp_trusted_profile_name --id "$SYSDIG_INSTANCE_CRN" --id-type "crn" >/dev/null 2>&1; then
+if ! ibmcloud iam trusted-profile-identity $wlp_trusted_profile_name --id "$WLP_INSTANCE_CRN" --id-type "crn" >/dev/null 2>&1; then
     print_msg "\nUpdating the IAM Trusted Profile '$wlp_trusted_profile_name' ..."
     ibmcloud iam trusted-profile-identity-create $wlp_trusted_profile_name \
-        --id "$SYSDIG_INSTANCE_CRN" \
+        --id "$WLP_INSTANCE_CRN" \
         --id-type "crn"
 fi
 
@@ -212,7 +213,7 @@ if ! ibmcloud iam trusted-profile $ce_trusted_profile_name >/dev/null 2>&1; then
     ibmcloud iam trusted-profile-policy-create $ce_trusted_profile_name \
         --roles Viewer,Reader \
         --service-name sysdig-secure \
-        --service-instance $SYSDIG_INSTANCE_GUID
+        --service-instance $WLP_INSTANCE_GUID
     
     ibmcloud iam trusted-profile-policy-create $ce_trusted_profile_name \
         --roles Viewer,Reader \
@@ -228,21 +229,21 @@ echo "   id: '$TRUSTED_PROFILE_ID'"
 if ! ibmcloud ce app get --name sample-app >/dev/null 2>&1; then
     ibmcloud ce app create \
         --name sample-app \
-        --src $SCRIPT_DIR/app/ \
+        --src $SCRIPT_DIR/python/ \
         --cpu 0.5 \
         --memory 1G \
         --trusted-profiles-enabled \
-        --env MONITORING_INSTANCE_GUID=$SYSDIG_INSTANCE_GUID \
-        --env MONITORING_REGION=$SYSDIG_INSTANCE_REGION \
+        --env WLP_INSTANCE_GUID=$WLP_INSTANCE_GUID \
+        --env WLP_REGION=$WLP_INSTANCE_REGION \
         --env TRUSTED_PROFILE_NAME=$ce_trusted_profile_name
 else 
     ibmcloud ce app update \
         --name sample-app \
-        --src $SCRIPT_DIR/app/ \
+        --src $SCRIPT_DIR/python/ \
         --cpu 0.5 \
         --memory 1G \
         --trusted-profiles-enabled \
-        --env MONITORING_INSTANCE_GUID=$SYSDIG_INSTANCE_GUID \
-        --env MONITORING_REGION=$SYSDIG_INSTANCE_REGION \
+        --env WLP_INSTANCE_GUID=$WLP_INSTANCE_GUID \
+        --env WLP_REGION=$WLP_INSTANCE_REGION \
         --env TRUSTED_PROFILE_NAME=$ce_trusted_profile_name
 fi

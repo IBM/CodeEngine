@@ -4,8 +4,8 @@ FROM quay.io/sysdig/workload-agent:latest AS workload-agent
 FROM registry.access.redhat.com/ubi9/python-312 AS builder
 
 # Install dependencies
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+COPY requirements-312.txt .
+RUN python -m pip install -r requirements-312.txt
 
 
 # Build final stage

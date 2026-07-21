@@ -68,47 +68,47 @@ obtain_iam_token() {
     return 0
 }
 
-# Function to obtain Monitoring API key using IAM token
-obtain_monitoring_apikey() {
+# Function to obtain the Access Key of the WLP instance using IAM token
+obtain_wlp_access_key() {
     local bearer_token="$1"
-    local monitoring_region="$2"
-    local monitoring_instance_guid="$3"
+    local wlp_region="$2"
+    local wlp_instance_guid="$3"
     
-    if [ -z "$bearer_token" ] || [ -z "$monitoring_region" ] || [ -z "$monitoring_instance_guid" ]; then
-        echo "ERROR: Missing required parameters for monitoring API key retrieval"
+    if [ -z "$bearer_token" ] || [ -z "$wlp_region" ] || [ -z "$wlp_instance_guid" ]; then
+        echo "ERROR: Missing required parameters for WLP Access Key retrieval"
         return 1
     fi
     
-    # Fetch monitoring API key
+    # Fetch WLP Access key
     local response
     response=$(curl --silent --fail -X GET \
-        "https://${monitoring_region}.monitoring.cloud.ibm.com/api/token" \
+        "https://private.${wlp_region}.security-compliance-secure.cloud.ibm.com/platform/v1/access-keys" \
         -H "Authorization: Bearer $bearer_token" \
-        -H "IBMInstanceID: $monitoring_instance_guid" \
+        -H "IBMInstanceID: $wlp_instance_guid" \
         -H "content-type: application/json" 2>&1)
     
     if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to obtain Monitoring API key"
+        echo "ERROR: Failed to obtain WLP Access Key"
         echo "Response: $response"
         return 1
     fi
     
     # Extract the API key from response
-    MONITORING_API_KEY=$(echo "$response" | grep -o '"key":"[^"]*"' | cut -d'"' -f4)
+    ACCESS_KEY=$(echo "$response" | grep -o '"accessKey":"[^"]*"' | cut -d'"' -f4)
     
-    if [ -z "$MONITORING_API_KEY" ]; then
-        echo "ERROR: Failed to extract API key from Monitoring response"
+    if [ -z "$ACCESS_KEY" ]; then
+        echo "ERROR: Failed to extract Access key from WLP API response"
         echo "Response: $response"
         return 1
     fi
     
-    echo "Monitoring API key obtained successfully"
+    echo "Access Key key obtained successfully"
     return 0
 }
 
-# Main authentication function with fallback logic
-authenticate_monitoring() {
-    echo "Authenticating to IBM Cloud Monitoring..."
+# Main authentication function
+authenticate_wlp() {
+    echo "Authenticating to IBM Cloud Workload Protection instance ..."
         
     # Step 1: Read container resource token
     if ! read_container_token; then
@@ -122,36 +122,36 @@ authenticate_monitoring() {
         return 1
     fi
 
-    # Step 3: Obtain Monitoring API key
-    if ! obtain_monitoring_apikey "$IBM_CLOUD_BEARER_TOKEN" "$MONITORING_REGION" "$MONITORING_INSTANCE_GUID"; then
-        echo "WARNING: Failed to obtain Monitoring API key"
+    # Step 3: Obtain Sysdig Secure Access Key
+    if ! obtain_wlp_access_key "$IBM_CLOUD_BEARER_TOKEN" "$WLP_REGION" "$WLP_INSTANCE_GUID"; then
+        echo "WARNING: Failed to obtain Workload Protection Access Key"
         return 1
     fi
 
-    # Step 4: Expose the Monitoring API key
-    export SYSDIG_ACCESS_KEY="$MONITORING_API_KEY"
+    # Step 4: Expose the Access Key
+    export SYSDIG_ACCESS_KEY="$ACCESS_KEY"
     return 0
 }
 
 # Check required environment variables
-if [ -z "$MONITORING_REGION" ]; then
-    echo "ERROR: MONITORING_REGION environment variable is required"
+if [ -z "${WLP_REGION:-}" ]; then
+    echo "ERROR: WLP_REGION environment variable is required"
     exit 1
 fi
 
-if [ -z "$SYSDIG_ACCESS_KEY" ]; then
-    if [ -z "$MONITORING_INSTANCE_GUID" ]; then
-        echo "ERROR: MONITORING_INSTANCE_GUID environment variable is required"
+if [ -z "${SYSDIG_ACCESS_KEY:-}" ]; then
+    if [ -z "$WLP_INSTANCE_GUID" ]; then
+        echo "ERROR: WLP_INSTANCE_GUID environment variable is required"
         exit 1
     fi
     
-    if [ -z "$TRUSTED_PROFILE_NAME" ]; then
+    if [ -z "${TRUSTED_PROFILE_NAME:-}" ]; then
         echo "ERROR: TRUSTED_PROFILE_NAME environment variable is required"
         exit 1
     fi
 
-    # Authenticate to IBM Cloud Monitoring (Trusted Profile or mounted secret)
-    if ! authenticate_monitoring; then
+    # Authenticate to IBM Security and Compliance Center Workload Protection (Trusted Profile or mounted secret)
+    if ! authenticate_wlp; then
         exit 1
     fi
     echo "Obtained SYSDIG_ACCESS_KEY: '$SYSDIG_ACCESS_KEY'"
@@ -160,8 +160,14 @@ fi
 # API key used to authenticate the agent with SCC Workload Protection.
 : "${SYSDIG_ACCESS_KEY:?SYSDIG_ACCESS_KEY must be set}"
 
-export SYSDIG_COLLECTOR="ingest.$MONITORING_REGION.monitoring.cloud.ibm.com"
+export SYSDIG_COLLECTOR="ingest.private.$WLP_REGION.security-compliance-secure.cloud.ibm.com"
 export SYSDIG_WORKLOAD_ID="$HOSTNAME"
+#export SYSDIG_API_ENDPOINT="private.$WLP_REGION.security-compliance-secure.cloud.ibm.com"
+export SYSDIG_ADDITIONAL_CONF="log:\n    console_priority: error\n    file_priority: error"
+
+
+# FIXME
+# agent logs clear text monitoring_apikey: customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
 
 # Optional generic metadata string passed to the agent.
 # Not mandatory — default to empty string when absent.
