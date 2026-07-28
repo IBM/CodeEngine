@@ -211,7 +211,7 @@ if ! ibmcloud iam trusted-profile $ce_trusted_profile_name >/dev/null 2>&1; then
 
     # Grant the profile access to the Monitoring instance
     ibmcloud iam trusted-profile-policy-create $ce_trusted_profile_name \
-        --roles Viewer,Reader \
+        --roles Viewer,Reader,"Key Manager" \
         --service-name sysdig-secure \
         --service-instance $WLP_INSTANCE_GUID
     

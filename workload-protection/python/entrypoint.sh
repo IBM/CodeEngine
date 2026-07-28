@@ -78,18 +78,18 @@ obtain_wlp_access_key() {
         echo "ERROR: Missing required parameters for WLP Access Key retrieval"
         return 1
     fi
-    
+
     # Fetch WLP Access key
     local response
     response=$(curl --silent --fail -X GET \
-        "https://private.${wlp_region}.security-compliance-secure.cloud.ibm.com/platform/v1/access-keys" \
+        "https://${wlp_region}.security-compliance-secure.cloud.ibm.com/platform/v1/access-keys" \
         -H "Authorization: Bearer $bearer_token" \
         -H "IBMInstanceID: $wlp_instance_guid" \
-        -H "content-type: application/json" 2>&1)
+        -H "content-type: application/json")
     
     if [ $? -ne 0 ]; then
         echo "ERROR: Failed to obtain WLP Access Key"
-        echo "Response: $response"
+        echo "Response: '$response'"
         return 1
     fi
     
@@ -154,7 +154,6 @@ if [ -z "${SYSDIG_ACCESS_KEY:-}" ]; then
     if ! authenticate_wlp; then
         exit 1
     fi
-    echo "Obtained SYSDIG_ACCESS_KEY: '$SYSDIG_ACCESS_KEY'"
 fi
 
 # API key used to authenticate the agent with SCC Workload Protection.
@@ -163,11 +162,7 @@ fi
 export SYSDIG_COLLECTOR="ingest.private.$WLP_REGION.security-compliance-secure.cloud.ibm.com"
 export SYSDIG_WORKLOAD_ID="$HOSTNAME"
 #export SYSDIG_API_ENDPOINT="private.$WLP_REGION.security-compliance-secure.cloud.ibm.com"
-export SYSDIG_ADDITIONAL_CONF="log:\n    console_priority: error\n    file_priority: error"
-
-
-# FIXME
-# agent logs clear text monitoring_apikey: customer_id: "2a46f195-eba7-4172-848f-616e3ed2680b"  
+export SYSDIG_ADDITIONAL_CONF="log: {console_priority: error, file_priority: error}"
 
 # Optional generic metadata string passed to the agent.
 # Not mandatory — default to empty string when absent.
