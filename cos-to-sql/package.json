@@ -18,7 +18,7 @@
   "dependencies": {
     "@ibm-cloud/secrets-manager": "^2.0.9",
     "csv-parser": "^3.2.0",
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "ibm-cloud-sdk-core": "^5.3.0",
     "pg": "^8.14.0",
     "pg-connection-string": "^2.7.0",
