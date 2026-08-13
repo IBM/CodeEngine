@@ -15,7 +15,7 @@ packaging==25.0
 psutil==7.0.0
 PyYAML==6.0.2
 regex==2024.11.6
-requests==2.32.4
+requests==2.33.0
 safetensors==0.5.3
 sympy==1.14.0
 tokenizers==0.21.1
