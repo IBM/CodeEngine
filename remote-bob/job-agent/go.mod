@@ -1,4 +1,4 @@
-module github.ibm.com/JORDANJ/remote-bob/job-agent
+module github.com/CodeEngine/remote-bob-job-agent
 
 go 1.22
 

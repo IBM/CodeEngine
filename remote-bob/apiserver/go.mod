@@ -1,4 +1,4 @@
-module github.ibm.com/JORDANJ/remote-bob/apiserver
+module github.com/CodeEngine/remote-bob-apiserver
 
 go 1.26.0
 
