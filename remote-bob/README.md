@@ -1,241 +1,147 @@
 # Remote Bob
 
-Remote Bob is a **generic, authenticated tunnel** that carries remote
-services (first service: a Bob Shell terminal) from a job-agent container to
-a static browser page. One `run.sh` invocation starts one apiserver, one
-job-agent running Bob Shell inside `tmux` + `ttyd`, and opens a minimal
-Chrome app with an xterm.js terminal. When you close the Chrome app,
-everything is torn down automatically.
+Remote Bob gives you a **full Bob Shell terminal running in IBM Cloud Code Engine**, accessible from your local browser. One command provisions the infrastructure; a second command opens the terminal. Close the browser — the session keeps running in the cloud. Open it again with a single command.
 
-## Architecture overview
+---
+
+## Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| **IBM Cloud account** | With permission to create Code Engine projects and Container Registry namespaces |
+| **IBM Cloud API key** | Needs Code Engine Writer + Container Registry Writer roles |
+| **Bob Shell API key** | Get from [bob.ibm.com](https://bob.ibm.com) → Settings → API Keys |
+| **`ibmcloud` CLI** | [Install](https://cloud.ibm.com/docs/cli) — the `code-engine` plugin is installed/updated automatically |
+| **`jq`** | `brew install jq` / `apt install jq` |
+| **`curl`**, **`openssl`** | Included on macOS and most Linux distros |
+| **Google Chrome** | Auto-detected on macOS (`/Applications/Google Chrome.app`) and Linux (`google-chrome`) |
+
+---
+
+## Quickstart
+
+```bash
+# 1. Copy the config template and fill in your three keys
+cp .env.template .env
+#   BOBSHELL_API_KEY=...
+#   GATEWAY_PASSWORD=choose-any-password
+#   IBMCLOUD_API_KEY=...
+
+# 2. Provision IBM Cloud resources and build container images (~20 min first time)
+./run.sh --setup
+
+# 3. Start a session — opens a Chrome terminal window
+./run.sh --new-session
+
+# 4. Close the browser window when done. The session keeps running in the cloud.
+
+# 5. Reopen the browser for the same running session
+./run.sh --connect
+
+# 6. End the session (stops the job run; infrastructure stays for fast restart)
+./run.sh --end-session
+
+# 7. Start another session without rebuilding
+./run.sh --new-session
+
+# 8. Remove all IBM Cloud resources when finished
+./run.sh --clean
+
+# Check current status at any time
+./run.sh
+```
+
+---
+
+## Command reference
+
+| Command | What it does |
+|---|---|
+| `--setup` | Provisions IBM Cloud resources (resource group, CE project, secrets) and builds the apiserver and job-agent container images. **Idempotent** — safe to re-run after code changes. |
+| `--new-session` | Submits a new job run, waits for the agent to connect, and opens Chrome. Requires `--setup` to have completed. Prevents starting a second session if one is already live. |
+| `--connect` | Queries IBM Cloud for the live session and reopens the Chrome terminal. No re-provisioning. |
+| `--end-session` | Gracefully disconnects the agent and deletes all job runs. Leaves the app and job definition in place so the next `--new-session` starts in seconds. |
+| `--clean` | Deletes all provisioned IBM Cloud resources: job runs, job, app, secrets, CE project, resource group. |
+| *(no args)* | Logs in and prints current infrastructure + session status with a suggested next command. |
+
+All commands accept `--config=FILE` to use a config file other than `.env`.
+
+---
+
+## Configuration
+
+Copy `.env.template` to `.env`. Only the three required keys need to be set:
+
+```bash
+# Required
+BOBSHELL_API_KEY=your-bob-shell-api-key
+GATEWAY_PASSWORD=any-password-you-choose
+IBMCLOUD_API_KEY=your-ibm-cloud-api-key
+```
+
+Everything else has sensible defaults (region `us-east`, auto-generated `ENCRYPTION_KEY`, etc.). See `.env.template` for the full list of optional settings such as `BOB_MODE`, `DEFAULT_CPU`, `DEFAULT_MEMORY`, and `CHROME_BIN`.
+
+**The `.env` file is never modified at runtime.** Session state (app URL, agent ID) is retrieved live from IBM Cloud on every invocation.
+
+---
+
+## How it works
 
 ```
-Browser (xterm.js, static file:// page)
-        │  WS /ws/browser?token=<wsToken>&agent=<agentId>&service=ttyd
-        ▼
-apiserver (Go, :3000 host / :8080 container)
-   - REST: POST /auth/login (Basic) → 60s single-use WS token
-           POST /auth/runs?agent=<id> (Basic) → per-run agent token
-           GET  /agents (Basic) → registered agents + services
-           GET  /healthz, /readyz (public)
-   - Agent registry (in-memory, multi-agent, no DB)
-   - Opaque frame relay (text + binary preserved)
-        │  control WS /ws/agent (Authorization: Bearer <runToken>)
-        │  relay WS   /ws/relay?relayToken=<one-time>  (one per browser)
-        ▼
-job-agent tunnel daemon (Go, in container)
-   - Control connection: dial /ws/agent, register services
-   - Relay handling: on relay-open, open upstream to the local service, pipe
-   - ttyd adapter: tmux + ttyd on 127.0.0.1:7080, ttyd 1.7.7 handshake
-   - Health server 127.0.0.1:7081, git integration, idle timeout
-        │  raw ttyd WS (binary frames, tty subprotocol)
-        ▼
+Browser (Chrome, file:// page, xterm.js)
+  │  WebSocket  /ws/browser?token=<wsToken>&agent=<id>&service=ttyd
+  ▼
+Apiserver  (Go, IBM Code Engine app, scales to zero)
+  │  auth: POST /auth/login → 60s WS token
+  │        POST /auth/runs  → per-run agent token (HMAC-signed)
+  │  relay: opaque frame proxy — text + binary frames preserved verbatim
+  │  WebSocket  /ws/agent  (Bearer <runToken>)
+  ▼
+Job-agent  (Go, IBM Code Engine job run)
+  │  dials apiserver on startup, registers services
+  │  opens upstream ttyd connection per relay request
+  ▼
 ttyd → tmux → Bob Shell
 ```
 
-The apiserver is a thin authenticated relay: it authenticates clients and
-agents, keeps an in-memory registry of registered agents, and forwards
-WebSocket frames opaquely (opcode, FIN bit, and payload bytes preserved). It
-has **no session management, no SQLite, no persistence, and no webserver**.
-The job-agent is a single Go binary that keeps tmux + ttyd + health + git
-integration + Bob Shell config seeding and replaces the legacy Node/bash
-bridge with a generic tunnel daemon.
+**Apiserver** is a thin authenticated relay deployed as a Code Engine application. It holds an in-memory agent registry, issues short-lived tokens, and proxies WebSocket frames between the browser and the job-agent without inspecting the payload. It has no database and no persistence; it shuts itself down when the last agent disconnects.
 
-See [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md) for the
-full design (protocols, auth model, ports, operational behaviors),
-[documentation/ENVIRONMENT.md](documentation/ENVIRONMENT.md) for the
-environment-variable reference, and
-[documentation/SECURITY.md](documentation/SECURITY.md) for the security
-model.
+**Job-agent** is a Go binary deployed as a Code Engine job run. On startup it dials the apiserver control WebSocket, registers the `ttyd` service, and handles relay connections by piping raw frames between the apiserver and a local `ttyd` process. It runs `tmux` → Bob Shell inside `ttyd` and serves a health endpoint for the job run lifecycle. An idle timeout shuts it down automatically when not in use.
+
+**Browser client** is a single self-contained HTML file loaded from `file://`. It authenticates with the gateway password, opens a WebSocket relay, and renders the terminal using xterm.js. No server-side rendering, no CDN dependencies.
+
+**Secrets** are stored in two IBM Code Engine secrets injected as environment variables:
+- `remote-bob-gateway` — `GATEWAY_PASSWORD`, `ENCRYPTION_KEY`
+- `remote-bob-bobshell` — `BOBSHELL_API_KEY`
+
+---
 
 ## Repository layout
 
 ```
 remote-bob/
-├── apiserver/          # Apiserver (Go): auth, agent registry, opaque relay
+├── apiserver/           # Go apiserver — auth, registry, relay
 │   ├── cmd/apiserver/
 │   ├── internal/
-│   ├── vendor/
-│   ├── go.mod
-│   └── README.md
-├── browser-client/     # Standalone xterm.js terminal page (static, file://)
-│   ├── single-session.html
-│   ├── single-session.js
-│   └── xterm.js / xterm.css / addon-fit.js / fonts/
-├── job-agent/          # Job-agent tunnel daemon (Go)
+│   ├── Dockerfile
+│   └── go.mod
+├── job-agent/           # Go job-agent — tunnel daemon, ttyd, tmux, Bob Shell
 │   ├── cmd/job-agent/
 │   ├── internal/tunnel/
-│   ├── vendor/
-│   ├── go.mod
-│   └── README.md
-├── documentation/      # ARCHITECTURE.md, ENVIRONMENT.md, SECURITY.md,
-│                       # EXTENSIBILITY.md, PROJECT-ARCHITECTURE.md
-├── scripts/            # test-runsh.sh, integration-e2e.sh,
-│                       # integration-ce-e2e.sh, integration/ helpers
-├── run.sh              # Unified launcher (local and Code Engine modes)
-├── plans/
-├── .gitignore
+│   ├── Dockerfile
+│   └── go.mod
+├── browser-client/      # Static xterm.js terminal page (file://)
+│   └── single-session.html
+├── run.sh               # Launcher — all commands
+├── .env.template        # Config template
 └── README.md
 ```
 
-## Quick start (local mode)
+---
 
-1. Copy the config template in the project root and fill in your credentials:
-
-   ```bash
-   cp .env.template .env
-   # then edit .env:
-   # BOBSHELL_API_KEY=your-bobshell-api-key
-   # GATEWAY_PASSWORD=your-gateway-password
-   ```
-
-2. Run the launcher:
-
-   ```bash
-   ./run.sh --mode=local --config=.env
-   ```
-
-   The script will:
-   - generate and persist `GATEWAY_TOKEN` and `ENCRYPTION_KEY` in `.env` if
-     they are missing (idempotent — reused on subsequent runs),
-   - build the apiserver and job-agent images (rebuilt on every invocation;
-     builds are cached),
-   - start the apiserver on host port 3000 (`API_PORT` overrides),
-   - issue a per-run agent token via `POST /auth/runs` and start the
-     job-agent container with `AGENT_ID` + `RUN_TOKEN`,
-   - wait for the agent to register and report `ready` via `GET /agents`,
-   - open `browser-client/single-session.html` in a dedicated Chrome app
-     window (fresh isolated profile).
-
-3. Enter the gateway password in the login prompt, then use the terminal.
-   When you close the Chrome app window, `run.sh` tears everything down
-   (containers, network, Chrome profile, temp dirs).
-
-### Local mode requirements
-
-- `podman` (preferred) or `docker` (aliased) for container builds and runs
-- `google-chrome` (or `google-chrome-stable`) in PATH
-- `curl`, `jq`, `openssl`, `sha256sum`
-- Go 1.25+ only if you build/test the Go modules directly
-
-## Code Engine mode
-
-`run.sh` also supports `--mode=codeengine`, which provisions IBM Code Engine
-resources, deploys the apiserver app, submits a job-agent job run, and opens
-the Chrome app:
+## Building and testing the Go modules
 
 ```bash
-./run.sh --mode=codeengine --config=.env
+cd remote-bob/apiserver && go build ./... && go test ./...
+cd remote-bob/job-agent  && go build ./... && go test ./...
 ```
-
-This mode requires live IBM Cloud credentials (`IBMCLOUD_API_KEY`, plus
-`CE_REGION`, `CE_PROJECT`, and `RESOURCE_GROUP`). The flow: isolated
-`IBMCLOUD_HOME` → login → provision secrets + configmap (idempotent) →
-deploy/update the apiserver app → ensure the job-agent job (rebuilt only
-when missing or stale) → `POST <app-url>/auth/runs` → submit a job run with
-`AGENT_ID` + `RUN_TOKEN` → wait for agent ready → Chrome at the deployed
-app. Closing the browser deletes the job run and the app (or scales it to
-zero with `CE_CLEANUP_APP=stop`).
-
-## Building and testing
-
-The apiserver and job-agent are independent Go modules. Build and test from
-within each directory:
-
-```bash
-cd apiserver
-go build ./...
-go test ./...
-go vet ./...
-```
-
-```bash
-cd job-agent
-go build ./...
-go test ./...
-go vet ./...
-```
-
-The full test suite for the launcher:
-
-```bash
-bash scripts/test-runsh.sh
-```
-
-This asserts the run.sh behaviors (CLI validation, config validation,
-credential generation idempotency, build/tarball/network behavior, local
-auth/agent flow, readiness wait, teardown, redaction, CE-mode structure).
-It takes ~4-6 minutes and requires podman/docker, curl, jq, openssl,
-google-chrome, and a `.env` with `BOBSHELL_API_KEY` + `GATEWAY_PASSWORD`.
-
-The end-to-end integration suite drives the full stack against a real
-run.sh local session (login, echo, resize, reconnect, tmux persistence,
-auth rejection at every layer, opaque frame probes, multi-agent fan-out,
-idle teardown, browser crash/refresh/sleep-wake journeys):
-
-```bash
-bash scripts/integration-e2e.sh
-```
-
-The Code Engine journey is a separate, expensive script guarded by CE
-credentials:
-
-```bash
-bash scripts/integration-ce-e2e.sh
-```
-
-## Environment variables
-
-Required in `.env` (both modes): `BOBSHELL_API_KEY`, `GATEWAY_PASSWORD`.
-Code Engine mode additionally requires `IBMCLOUD_API_KEY`, `CE_REGION`,
-`CE_PROJECT`, `RESOURCE_GROUP`. `GATEWAY_TOKEN` and `ENCRYPTION_KEY` are
-generated and persisted when missing.
-
-See [documentation/ENVIRONMENT.md](documentation/ENVIRONMENT.md) for the
-complete reference, including the job-agent daemon variables
-(`AGENT_ID`, `RUN_TOKEN`, `GATEWAY_WSS`, `TTYD_PORT`, `HEALTH_PORT`,
-`BOB_MODE`, `IDLE_TIMEOUT_MS`, git vars) and the removed v3 variables
-(`SESSION_ID`, `SESSION_TOKEN`, `GATEWAY_CALLBACK_URL`).
-
-## Operational behaviors
-
-- **Image rebuild policy:** local mode rebuilds both images on every
-  invocation (cached layers). Code Engine mode rebuilds the job-agent job
-  only when it is missing or stale; a current job is reused with an env-var
-  refresh.
-- **Crash mid-run:** if the apiserver or job-agent container stops while
-  Chrome is open, run.sh tears down the session and exits non-zero with a
-  clear error.
-- **Env var precedence:** shell environment > `.env` config file; generated
-  credentials are reused, not regenerated.
-
-See [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md) §6 for
-details.
-
-## Important notes
-
-- **One session per invocation.** `run.sh` is the single entrypoint; each
-  invocation creates one agent with a unique `AGENT_ID`. The apiserver
-  registry is multi-agent capable, but there is no session management and no
-  session history.
-- **No SQLite persistence.** Configuration is loaded from the `.env` file
-  (or Code Engine secrets in Code Engine mode). There is no database, no
-  settings sync, and no session history.
-- **No webserver.** The browser client is loaded from `file://` and connects
-  directly to the apiserver WebSocket.
-- **Mutual auth.** The browser authenticates with the gateway password
-  (Basic) for a 60s single-use WS token; the job-agent authenticates with a
-  per-run token in the `Authorization: Bearer` header. No long-lived
-  credentials in URLs; no credentials in logs.
-- **Bob Shell is downloaded at build time.** `run.sh` downloads the latest
-  Bob Shell from `https://bob.ibm.com/releases?bob=shell` when a local
-  tarball is missing, verifies its sha256, caches it in the repo root, and
-  passes it to the job-agent build. The tarball is listed in `.gitignore`
-  and must not be committed.
-- **Vendored dependencies.** Do not modify `vendor/` directories; each
-  component vendors its own Go dependencies.
-
-## Repository URL
-
-Target remote: `github.ibm.com/JORDANJ/remote-bob`
-# dirty

@@ -1,0 +1,24 @@
+# CE source-upload ignore rules for the job-agent build context.
+# The job-agent Dockerfile only needs job-agent/ — exclude everything else.
+
+# Secrets and local config
+.env
+.env.template
+
+# Other service source (not needed for job-agent build)
+apiserver/
+
+# Static browser client (not needed in the container)
+browser-client/
+
+# Launcher script and docs
+run.sh
+README.md
+.gitignore
+.ceignore
+
+# Runtime scratch and caches
+tmp/
+bobshell-*.tgz
+*.log
+.DS_Store

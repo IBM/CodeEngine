@@ -1,17 +1,18 @@
 #!/bin/bash
 # Remote Bob — Code Engine launcher
 #
-# Usage:
-#   cp .env.template .env          # one-time: fill in BOBSHELL_API_KEY, GATEWAY_PASSWORD, IBMCLOUD_API_KEY
-#   ./run.sh                       # start / reconnect
-#   ./run.sh --connect             # open browser for an already-running session
-#   ./run.sh --end-session         # tear down the running session
-#   ./run.sh --help
+# Workflow:
+#   1. ./run.sh --setup          # first time: provision infra + build images
+#   2. ./run.sh --new-session    # start a job run and open the browser
+#   3. ./run.sh --connect        # reopen the browser (session still running)
+#   4. ./run.sh --end-session    # kill the job run (infra stays)
+#   5. ./run.sh --setup          # rebuild after code changes (re-runs step 1)
+#   6. ./run.sh --clean          # remove all IBM Cloud resources
 #
-# All config is read from .env (default) or the file passed via --config.
-# Session state (AGENT_ID, API_SERVER_URL, CE_JOB_RUN_NAME) is persisted
-# back into the config file so reconnects and --end-session work without
-# extra arguments.
+# ./run.sh with no arguments prints the current session status.
+#
+# All config is read from .env (default) or --config=FILE.
+# .env is never modified at runtime — all session state comes from IBM Cloud.
 
 set -euo pipefail
 
@@ -24,41 +25,38 @@ BROWSER_HTML="$SCRIPT_DIR/browser-client/single-session.html"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 CONFIG_FILE="$SCRIPT_DIR/.env"
-END_SESSION=false
-CLEAN=false
-CONNECT=false
+CMD=""   # setup | new-session | connect | end-session | clean | status
 
 for arg in "$@"; do
     case "$arg" in
-        --config=*) CONFIG_FILE="${arg#--config=}" ;;
-        --end-session) END_SESSION=true ;;
-        --clean) CLEAN=true ;;
-        --connect) CONNECT=true ;;
+        --config=*)    CONFIG_FILE="${arg#--config=}" ;;
+        --setup)       CMD=setup ;;
+        --new-session) CMD=new-session ;;
+        --connect)     CMD=connect ;;
+        --end-session) CMD=end-session ;;
+        --clean)       CMD=clean ;;
         --help|-h)
             cat <<EOF
 Remote Bob — Code Engine Session Launcher
 
 Usage:
-  $0 [--config=FILE] [--connect] [--end-session] [--clean] [--help]
+  $0 [--config=FILE] <command>
 
-Options:
-  --config=FILE    Config file (default: .env next to run.sh)
-  --connect        Open the browser for an already-running session without
-                   re-provisioning (requires AGENT_ID and API_SERVER_URL
-                   to be set in the config file from a previous run)
-  --end-session    Terminate the running session (job run + app)
-  --clean          Remove ALL provisioned IBM Cloud artifacts:
-                     app, job, job runs, secrets, CE project, resource group.
-                     Use after --end-session or standalone.
-  --help           Show this help
+Commands:
+  --setup          Provision IBM Cloud resources and build container images.
+                   Safe to re-run — idempotent. Re-run after code changes.
+  --new-session    Submit a new agent job run and open the browser.
+                   Requires a completed --setup.
+  --connect        Reopen the browser for an already-running session.
+  --end-session    Terminate the running job run (infra stays for next session).
+  --clean          Remove ALL provisioned IBM Cloud resources.
+  (no args)        Print current session status.
 
-Required config keys:
+Required config (.env):
   BOBSHELL_API_KEY    Bob Shell API key (https://bob.ibm.com)
   GATEWAY_PASSWORD    Basic-auth password for the browser login
   IBMCLOUD_API_KEY    IBM Cloud API key
 
-Session state written by run.sh (do not edit):
-  AGENT_ID, API_SERVER_URL, CE_JOB_RUN_NAME
 EOF
             exit 0
             ;;
@@ -68,7 +66,7 @@ done
 
 [ -f "$CONFIG_FILE" ] || { print_error "Config file not found: $CONFIG_FILE"; exit 1; }
 
-# ── Load config (shell env takes precedence over file) ────────────────────────
+# ── Load config (env takes precedence over file) ──────────────────────────────
 while IFS= read -r line; do
     [[ -z "$line" || "$line" == \#* ]] && continue
     key="${line%%=*}"; val="${line#*=}"
@@ -79,7 +77,10 @@ done < "$CONFIG_FILE"
 check_var() { [[ -n "${!1:-}" ]] || { print_error "Missing required config: $1"; exit 1; }; }
 check_var BOBSHELL_API_KEY
 check_var GATEWAY_PASSWORD
-[[ "$END_SESSION" == true || "$CLEAN" == true || "$CONNECT" == true ]] || check_var IBMCLOUD_API_KEY
+# IBMCLOUD_API_KEY is needed for every command that talks to IBM Cloud.
+# Only --connect (pure browser open after ibmcloud_setup) could skip it,
+# but we require it anyway since it always calls ibmcloud_setup.
+check_var IBMCLOUD_API_KEY
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 CE_REGION="${CE_REGION:-us-east}"
@@ -93,35 +94,17 @@ DEFAULT_TIMEOUT="${DEFAULT_TIMEOUT:-86400}"
 CE_CLEANUP_APP="${CE_CLEANUP_APP:-delete}"
 CHROME_DEBUG_PORT="${CHROME_DEBUG_PORT:-}"
 
-# Cap job timeout at the CE hard limit.
 if (( DEFAULT_TIMEOUT > 86400 )); then DEFAULT_TIMEOUT=86400; fi
 
-# ── Credential generation (first run only) ────────────────────────────────────
-ensure_credential() {
-    local key="$1" cmd="$2"
-    if [[ -z "${!key:-}" ]]; then
-        local val; val="$(eval "$cmd")"
-        export "$key=$val"
-        echo "${key}=${val}" >> "$CONFIG_FILE"
-        print_msg "Generated $key"
-    fi
-}
-ensure_credential ENCRYPTION_KEY 'openssl rand -base64 32'
-
-# ── Config persistence helper ─────────────────────────────────────────────────
-save() {
-    local key="$1" val="$2"
-    if grep -q "^${key}=" "$CONFIG_FILE" 2>/dev/null; then
-        sed -i '' "s|^${key}=.*|${key}=${val}|" "$CONFIG_FILE"
-    else
-        echo "${key}=${val}" >> "$CONFIG_FILE"
-    fi
-}
+# ── ENCRYPTION_KEY — in-memory only, never written to .env ───────────────────
+if [[ -z "${ENCRYPTION_KEY:-}" ]]; then
+    ENCRYPTION_KEY="$(openssl rand -base64 32)"
+fi
 
 # ── Auth helper ───────────────────────────────────────────────────────────────
 auth_header() { echo "Basic $(echo -n "admin:${GATEWAY_PASSWORD}" | base64)"; }
 
-# ── IBM Cloud setup ───────────────────────────────────────────────────────────
+# ── IBM Cloud login + CE project select ───────────────────────────────────────
 ibmcloud_setup() {
     command -v ibmcloud &>/dev/null || { print_error "ibmcloud CLI not found"; exit 1; }
     command -v jq      &>/dev/null || { print_error "jq not found"; exit 1; }
@@ -131,7 +114,7 @@ ibmcloud_setup() {
     print_msg "\nLogging in to IBM Cloud (region: $CE_REGION, resource group: $RESOURCE_GROUP)"
     ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -g "$RESOURCE_GROUP" -q 2>/dev/null || {
         ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -q
-        ibmcloud resource group $RESOURCE_GROUP -q 2>/dev/null || ibmcloud resource group-create "$RESOURCE_GROUP"
+        ibmcloud resource group "$RESOURCE_GROUP" -q 2>/dev/null || ibmcloud resource group-create "$RESOURCE_GROUP"
         ibmcloud target -g "$RESOURCE_GROUP" -q
     }
 
@@ -181,13 +164,12 @@ deploy_apiserver() {
     fi
 }
 
-# ── Deploy the job-agent job (delete+recreate when stale) ─────────────────────
+# ── Deploy the job-agent job definition (delete+recreate when URL changes) ────
 deploy_job_agent() {
     local gateway_url="$1"
     local gateway_wss="${gateway_url/https:/wss:}/ws"
 
     if ibmcloud ce job get --name "$JOB_NAME" &>/dev/null; then
-        # Refresh GATEWAY_WSS if changed; otherwise skip rebuild.
         local current_wss
         current_wss="$(ibmcloud ce job get --name "$JOB_NAME" --output json \
             | jq -r '[.spec.template.containers[0].env[]? | select(.name=="GATEWAY_WSS") | .value][0] // empty')"
@@ -199,9 +181,9 @@ deploy_job_agent() {
         ibmcloud ce job delete --name "$JOB_NAME" --force -q
     fi
 
-    print_msg "\nCreating job '$JOB_NAME'"
-    local build_run
-    local job_create_out
+    print_msg "\nCreating job '$JOB_NAME' (first build may take up to 20 min)..."
+    local job_create_out build_run
+    # Separate declaration from assignment so set -e sees the exit code.
     job_create_out="$(ibmcloud ce job create \
         --name "$JOB_NAME" \
         --build-source "$SCRIPT_DIR" \
@@ -212,16 +194,12 @@ deploy_job_agent() {
         --retrylimit 0 \
         --env "GATEWAY_WSS=$gateway_wss" \
         --env-from-secret remote-bob-bobshell \
-        --no-wait 2>&1)"
+        --no-wait 2>&1)" || { echo "$job_create_out"; print_error "Job create failed"; exit 1; }
     echo "$job_create_out"
-    local build_run
     build_run="$(echo "$job_create_out" | sed -n "s/.*Submitting build run '\([^']*\)'.*/\1/p" || true)"
 
-    # Poll the build run to completion (job create --no-wait doesn't block).
-    # The CE API returns a flat JSON with "status": "succeeded" | "failed" | "running" | "pending".
-    # First-time builds install Node.js + npm packages and can take 15-20 min.
     if [[ -n "$build_run" ]]; then
-        print_msg "\nWaiting for job build run '$build_run' (may take up to 20 min on first build)..."
+        print_msg "\nWaiting for job build run '$build_run'..."
         local elapsed=0
         while (( elapsed < 1500 )); do
             local br_status
@@ -245,6 +223,42 @@ deploy_job_agent() {
     fi
 }
 
+# ── Submit a new job run and wait for the agent to connect ────────────────────
+start_session() {
+    local api_url="$1"
+
+    # Wait for the apiserver to be healthy.
+    print_msg "\nWaiting for apiserver health check..."
+    local i
+    for i in $(seq 1 60); do
+        curl -sf -o /dev/null "${api_url}/healthz" 2>/dev/null && break
+        sleep 2
+    done
+    curl -sf -o /dev/null "${api_url}/healthz" || { print_error "Apiserver not healthy"; exit 1; }
+
+    # Generate a unique agent ID and issue a run token.
+    AGENT_ID="agent-$(openssl rand -hex 8)"
+    API_SERVER_URL="$api_url"
+
+    local run_token
+    run_token="$(curl -sf -X POST "${api_url}/auth/runs?agent=${AGENT_ID}" \
+        -H "Authorization: $(auth_header)" | jq -r '.run_token // empty')"
+    [[ -n "$run_token" ]] || { print_error "POST /auth/runs returned no run_token"; exit 1; }
+
+    local ce_job_run_name="${JOB_NAME}-${AGENT_ID#agent-}"
+    ibmcloud ce jobrun submit \
+        --name "$ce_job_run_name" \
+        --job "$JOB_NAME" \
+        --mode task \
+        --env "AGENT_ID=$AGENT_ID" \
+        --env "RUN_TOKEN=$run_token" \
+        --cpu "$DEFAULT_CPU" \
+        --memory "$DEFAULT_MEMORY" \
+        --maxexecutiontime "$DEFAULT_TIMEOUT"
+
+    wait_for_agent "$api_url" "$AGENT_ID" 480 || exit 1
+}
+
 # ── Wait for agent to report "ready" ─────────────────────────────────────────
 wait_for_agent() {
     local api_base="$1" agent_id="$2" timeout="${3:-480}" elapsed=0
@@ -258,19 +272,30 @@ wait_for_agent() {
         sleep 3; elapsed=$(( elapsed + 3 ))
     done
     print_error "Agent $agent_id not ready after ${timeout}s"
-    ibmcloud ce jobrun logs --name "$CE_JOB_RUN_NAME" 2>/dev/null | tail -40 || true
+    local run_name="${JOB_NAME}-${agent_id#agent-}"
+    ibmcloud ce jobrun logs --name "$run_name" 2>/dev/null | tail -40 || true
     return 1
 }
 
-# ── Reconnect check ───────────────────────────────────────────────────────────
-session_is_live() {
-    [[ -n "${AGENT_ID:-}" && -n "${API_SERVER_URL:-}" ]] || return 1
-    local base="${API_SERVER_URL%/}"
-    curl -sf -o /dev/null "${base}/healthz" 2>/dev/null || return 1
-    local status
-    status="$(curl -sf "${base}/agents" -H "Authorization: $(auth_header)" 2>/dev/null \
-        | jq -r --arg id "$AGENT_ID" '.[] | select(.agent_id==$id) | .status // empty' 2>/dev/null || true)"
-    [[ "$status" == "ready" ]]
+# ── Find a live session (sets AGENT_ID + API_SERVER_URL) ─────────────────────
+# Returns 0 if a ready agent exists, 1 otherwise.
+find_live_session() {
+    API_SERVER_URL="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" \
+        --output json 2>/dev/null | jq -r '.status.url // empty' 2>/dev/null || true)"
+    [[ -n "$API_SERVER_URL" ]] || return 1
+    API_SERVER_URL="${API_SERVER_URL%/}"
+
+    curl -sf -o /dev/null "${API_SERVER_URL}/healthz" 2>/dev/null || return 1
+
+    AGENT_ID="$(curl -sf "${API_SERVER_URL}/agents" \
+        -H "Authorization: $(auth_header)" 2>/dev/null \
+        | jq -r '[.[] | select(.status=="ready")][0].agent_id // empty' 2>/dev/null || true)"
+    [[ -n "$AGENT_ID" ]]
+}
+
+# ── Check whether the job definition exists ───────────────────────────────────
+job_exists() {
+    ibmcloud ce job get --name "$JOB_NAME" &>/dev/null
 }
 
 # ── Launch Chrome ─────────────────────────────────────────────────────────────
@@ -280,8 +305,7 @@ launch_chrome() {
     mkdir -p "$SCRIPT_DIR/tmp"
     local user_data; user_data="$(mktemp -d "$SCRIPT_DIR/tmp/remote-bob-chrome.XXXXXX")"
 
-    local chrome_bin
-    chrome_bin="${CHROME_BIN:-}"
+    local chrome_bin="${CHROME_BIN:-}"
     if [[ -z "$chrome_bin" ]]; then
         chrome_bin="$(command -v google-chrome \
             || command -v google-chrome-stable \
@@ -295,7 +319,7 @@ launch_chrome() {
         print_error "Chrome not found. Install Google Chrome or add CHROME_BIN=/path/to/chrome to your .env"
         exit 1
     }
-    [[ -f "$BROWSER_HTML" ]]  || { print_error "Browser client not found: $BROWSER_HTML"; exit 1; }
+    [[ -f "$BROWSER_HTML" ]] || { print_error "Browser client not found: $BROWSER_HTML"; exit 1; }
 
     local args=( --app="$url" --user-data-dir="$user_data" --new-window
                  --no-first-run --no-default-browser-check
@@ -308,15 +332,10 @@ launch_chrome() {
     print_msg "\nSession continues in the background when you close the window."
     print_msg "Run './run.sh --end-session' to terminate.\n"
 
-    # On macOS the Chrome binary forks and the parent exits immediately, so
-    # we cannot reliably wait on the PID. Instead, poll until the Chrome
-    # process holding the user-data dir is gone, then clean up.
     "$chrome_bin" "${args[@]}" >/dev/null 2>&1 &
     local pid=$!
 
     if [[ "$(uname)" == "Darwin" ]]; then
-        # Give Chrome a moment to fork its real process, then poll until no
-        # Chrome process references our unique user-data dir.
         sleep 2
         while pgrep -f "$user_data" >/dev/null 2>&1; do
             sleep 2
@@ -330,71 +349,123 @@ launch_chrome() {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-# --connect
+# --setup  — provision infra + build images (idempotent)
 # ═════════════════════════════════════════════════════════════════════════════
-if [[ "$CONNECT" == true ]]; then
-    check_var AGENT_ID
-    check_var API_SERVER_URL
+if [[ "$CMD" == setup ]]; then
+    print_msg "\n========== Remote Bob — Setup =========="
 
-    print_msg "\n========== Remote Bob — Connect =========="
-    print_msg "\nConnecting to session (agent: $AGENT_ID)"
+    ibmcloud_setup
+    provision
+    deploy_apiserver
 
-    # Verify the session is still live before opening Chrome.
-    if ! session_is_live; then
-        print_error "Session is not live (agent $AGENT_ID not ready at $API_SERVER_URL)"
-        print_msg "Run './run.sh' to start a new session, or check the agent status."
+    API_SERVER_URL="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" --output json \
+        | jq -r '.status.url // empty')"
+    [[ -n "$API_SERVER_URL" ]] || { print_error "Could not determine apiserver URL"; exit 1; }
+    API_SERVER_URL="${API_SERVER_URL%/}"
+
+    deploy_job_agent "$API_SERVER_URL"
+
+    print_success "\n========== Setup complete — run './run.sh --new-session' to start ==========\n"
+    exit 0
+fi
+
+# ═════════════════════════════════════════════════════════════════════════════
+# --new-session  — submit a job run and open the browser
+# ═════════════════════════════════════════════════════════════════════════════
+if [[ "$CMD" == new-session ]]; then
+    print_msg "\n========== Remote Bob — New Session =========="
+
+    ibmcloud_setup
+
+    # Guard: setup must have been run first.
+    if ! ibmcloud ce application get --name "$APISERVER_APP_NAME" &>/dev/null; then
+        print_error "Apiserver not deployed. Run './run.sh --setup' first."
+        exit 1
+    fi
+    if ! job_exists; then
+        print_error "Job not built. Run './run.sh --setup' first."
         exit 1
     fi
 
+    # Warn if a session is already live — don't start a second one.
+    if find_live_session; then
+        print_error "A session is already running (agent: $AGENT_ID)."
+        print_msg "Run './run.sh --connect' to reopen it, or './run.sh --end-session' to end it first."
+        exit 1
+    fi
+
+    API_SERVER_URL="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" --output json \
+        | jq -r '.status.url // empty')"
+    [[ -n "$API_SERVER_URL" ]] || { print_error "Could not determine apiserver URL"; exit 1; }
+    API_SERVER_URL="${API_SERVER_URL%/}"
+
+    start_session "$API_SERVER_URL"
     launch_chrome
     exit 0
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
-# --end-session
+# --connect  — reopen the browser for a running session
 # ═════════════════════════════════════════════════════════════════════════════
-if [[ "$END_SESSION" == true ]]; then
-    print_msg "\n========== Remote Bob — End Session =========="
-
-    # Disconnect agent (best effort — server may already be down).
-    if [[ -n "${API_SERVER_URL:-}" && -n "${AGENT_ID:-}" ]]; then
-        print_msg "\nDisconnecting agent $AGENT_ID"
-        curl -sf -X DELETE "${API_SERVER_URL%/}/agents/${AGENT_ID}" \
-            -H "Authorization: $(auth_header)" 2>/dev/null || true
-    fi
+if [[ "$CMD" == connect ]]; then
+    print_msg "\n========== Remote Bob — Connect =========="
 
     ibmcloud_setup
 
-    [[ -n "${CE_JOB_RUN_NAME:-}" ]] && \
-        ibmcloud ce jobrun delete --name "$CE_JOB_RUN_NAME" --force 2>/dev/null || true
-
-    if [[ "$CE_CLEANUP_APP" == "stop" ]]; then
-        ibmcloud ce application update --name "$APISERVER_APP_NAME" \
-            --min-scale 0 --max-scale 0 2>/dev/null || true
-    else
-        ibmcloud ce application delete --name "$APISERVER_APP_NAME" --force 2>/dev/null || true
+    print_msg "\nLooking for live session..."
+    if ! find_live_session; then
+        print_error "No live session found (app not reachable or no ready agent)."
+        print_msg "Run './run.sh --new-session' to start one."
+        exit 1
     fi
 
-    print_success "\n========== Session ended ==========\n"
+    print_msg "\nConnecting to session (agent: $AGENT_ID)"
+    launch_chrome
     exit 0
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
-# --clean
+# --end-session  — kill the job run (infra stays)
 # ═════════════════════════════════════════════════════════════════════════════
-if [[ "$CLEAN" == true ]]; then
-    print_msg "\n========== Remote Bob — Clean =========="
-    check_var IBMCLOUD_API_KEY
+if [[ "$CMD" == end-session ]]; then
+    print_msg "\n========== Remote Bob — End Session =========="
 
     ibmcloud_setup
 
-    # Delete active job run if known.
-    if [[ -n "${CE_JOB_RUN_NAME:-}" ]]; then
-        print_msg "\nDeleting job run: $CE_JOB_RUN_NAME"
-        ibmcloud ce jobrun delete --name "$CE_JOB_RUN_NAME" --force 2>/dev/null || true
+    # Disconnect agent via the apiserver (best effort — server may already be down).
+    local_app_url="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" \
+        --output json 2>/dev/null | jq -r '.status.url // empty' 2>/dev/null || true)"
+    if [[ -n "$local_app_url" ]]; then
+        local_agent_id="$(curl -sf "${local_app_url%/}/agents" \
+            -H "Authorization: $(auth_header)" 2>/dev/null \
+            | jq -r '[.[] | select(.status=="ready")][0].agent_id // empty' 2>/dev/null || true)"
+        if [[ -n "$local_agent_id" ]]; then
+            print_msg "\nDisconnecting agent $local_agent_id"
+            curl -sf -X DELETE "${local_app_url%/}/agents/${local_agent_id}" \
+                -H "Authorization: $(auth_header)" 2>/dev/null || true
+        fi
     fi
 
-    # Delete all job runs for the job.
+    # Delete all running job runs for this job.
+    while IFS= read -r run_name; do
+        [[ -z "$run_name" ]] && continue
+        print_msg "\nDeleting job run: $run_name"
+        ibmcloud ce jobrun delete --name "$run_name" --force 2>/dev/null || true
+    done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
+        | jq -r '.[].name // empty' 2>/dev/null || true)
+
+    print_success "\n========== Session ended — run './run.sh --new-session' to start another ==========\n"
+    exit 0
+fi
+
+# ═════════════════════════════════════════════════════════════════════════════
+# --clean  — remove all IBM Cloud resources
+# ═════════════════════════════════════════════════════════════════════════════
+if [[ "$CMD" == clean ]]; then
+    print_msg "\n========== Remote Bob — Clean =========="
+
+    ibmcloud_setup
+
     print_msg "\nDeleting all job runs for job: $JOB_NAME"
     while IFS= read -r run_name; do
         [[ -z "$run_name" ]] && continue
@@ -403,25 +474,20 @@ if [[ "$CLEAN" == true ]]; then
     done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
         | jq -r '.[].name // empty' 2>/dev/null || true)
 
-    # Delete the job.
     print_msg "\nDeleting job: $JOB_NAME"
     ibmcloud ce job delete --name "$JOB_NAME" --force 2>/dev/null || true
 
-    # Delete the app.
     print_msg "\nDeleting app: $APISERVER_APP_NAME"
     ibmcloud ce application delete --name "$APISERVER_APP_NAME" --force 2>/dev/null || true
 
-    # Delete secrets.
     for secret in remote-bob-gateway remote-bob-bobshell; do
         print_msg "\nDeleting secret: $secret"
         ibmcloud ce secret delete --name "$secret" --force 2>/dev/null || true
     done
 
-    # Delete the CE project.
     print_msg "\nDeleting CE project: $CE_PROJECT"
     ibmcloud ce project delete --name "$CE_PROJECT" --hard --force 2>/dev/null || true
 
-    # Delete the resource group.
     print_msg "\nDeleting resource group: $RESOURCE_GROUP"
     ibmcloud resource group-delete "$RESOURCE_GROUP" --force 2>/dev/null || true
 
@@ -430,63 +496,47 @@ if [[ "$CLEAN" == true ]]; then
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
-# START / RECONNECT
+# (no args) — print status
 # ═════════════════════════════════════════════════════════════════════════════
-print_msg "\n========== Remote Bob — Code Engine =========="
-
-# Reconnect without re-provisioning if a session is already live.
-if session_is_live; then
-    print_msg "\nReconnecting to existing session (agent: $AGENT_ID)"
-    launch_chrome
-    exit 0
-fi
+print_msg "\n========== Remote Bob — Status =========="
 
 ibmcloud_setup
-provision
 
-deploy_apiserver
+app_exists=false
+job_exists_flag=false
+live_session=false
 
-# Get the app URL (available immediately after deploy).
-API_SERVER_URL="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" --output json \
-    | jq -r '.status.url // empty')"
-[[ -n "$API_SERVER_URL" ]] || { print_error "Could not determine apiserver URL"; exit 1; }
-API_SERVER_URL="${API_SERVER_URL%/}"
-save API_SERVER_URL "$API_SERVER_URL"
+if ibmcloud ce application get --name "$APISERVER_APP_NAME" &>/dev/null; then
+    app_exists=true
+fi
+if ibmcloud ce job get --name "$JOB_NAME" &>/dev/null; then
+    job_exists_flag=true
+fi
+if [[ "$app_exists" == true ]] && find_live_session; then
+    live_session=true
+fi
 
-deploy_job_agent "$API_SERVER_URL"
-
-# Wait for the app to serve requests.
-print_msg "\nWaiting for apiserver health check..."
-for i in $(seq 1 60); do
-    curl -sf -o /dev/null "${API_SERVER_URL}/healthz" 2>/dev/null && break
-    sleep 2
-done
-curl -sf -o /dev/null "${API_SERVER_URL}/healthz" || { print_error "Apiserver not healthy"; exit 1; }
-
-# Generate a unique agent ID and issue a run token.
-AGENT_ID="agent-$(openssl rand -hex 8)"
-save AGENT_ID "$AGENT_ID"
-
-RUN_TOKEN="$(curl -sf -X POST "${API_SERVER_URL}/auth/runs?agent=${AGENT_ID}" \
-    -H "Authorization: $(auth_header)" | jq -r '.run_token // empty')"
-[[ -n "$RUN_TOKEN" ]] || { print_error "POST /auth/runs returned no run_token"; exit 1; }
-
-# Submit the job run.
-CE_JOB_RUN_NAME="${JOB_NAME}-${AGENT_ID#agent-}"
-save CE_JOB_RUN_NAME "$CE_JOB_RUN_NAME"
-
-ibmcloud ce jobrun submit \
-    --name "$CE_JOB_RUN_NAME" \
-    --job "$JOB_NAME" \
-    --mode task \
-    --env "AGENT_ID=$AGENT_ID" \
-    --env "RUN_TOKEN=$RUN_TOKEN" \
-    --cpu "$DEFAULT_CPU" \
-    --memory "$DEFAULT_MEMORY" \
-    --maxexecutiontime "$DEFAULT_TIMEOUT"
-
-wait_for_agent "$API_SERVER_URL" "$AGENT_ID" 480 || exit 1
-
-launch_chrome
-
-print_success "\nDone.\n"
+print_msg ""
+if [[ "$app_exists" == false && "$job_exists_flag" == false ]]; then
+    print_msg "  Infrastructure:  not set up"
+    print_msg "  Session:         none"
+    print_msg ""
+    print_msg "  Next step:  ./run.sh --setup"
+elif [[ "$app_exists" == true && "$job_exists_flag" == true && "$live_session" == false ]]; then
+    print_msg "  Infrastructure:  ready"
+    print_msg "  Session:         none running"
+    print_msg ""
+    print_msg "  Next step:  ./run.sh --new-session"
+elif [[ "$live_session" == true ]]; then
+    print_msg "  Infrastructure:  ready"
+    print_msg "  Session:         running (agent: $AGENT_ID)"
+    print_msg ""
+    print_msg "  Next steps: ./run.sh --connect      (open browser)"
+    print_msg "              ./run.sh --end-session   (stop session)"
+else
+    print_msg "  Infrastructure:  partial (app=$app_exists, job=$job_exists_flag)"
+    print_msg "  Session:         unknown"
+    print_msg ""
+    print_msg "  Next step:  ./run.sh --setup"
+fi
+print_msg ""
