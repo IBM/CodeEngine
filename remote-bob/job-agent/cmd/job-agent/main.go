@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.ibm.com/JORDANJ/remote-bob-common/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
 	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/tunnel"
 )
 

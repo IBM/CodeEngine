@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
 )
 
 // TestTTYDHandshake verifies the 1.7.7 binary JSON handshake
@@ -50,14 +50,10 @@ func TestTTYDHandshake(t *testing.T) {
 // tty subprotocol.
 func TestTTYDHandshakeUsesTTYSubprotocol(t *testing.T) {
 	var gotSubprotocol string
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool { return true },
-		Subprotocols: []string{"tty"},
-	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		gotSubprotocol = r.Header.Get("Sec-WebSocket-Protocol")
-		conn, err := upgrader.Upgrade(w, r, nil)
+		conn, err := ws.Upgrade(w, r)
 		if err != nil {
 			return
 		}
@@ -169,7 +165,8 @@ func TestPipeFramesOpaque(t *testing.T) {
 	upstream.waitForHandshake(t)
 
 	// A client connection to the same upstream.
-	client, _, err := websocket.DefaultDialer.Dial(upstream.wsURL, http.Header{"Sec-WebSocket-Protocol": []string{"tty"}})
+	opts := &ws.DialOptions{Subprotocols: []string{"tty"}}
+	client, _, err := ws.DialContext(context.Background(), upstream.wsURL, opts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,14 +178,14 @@ func TestPipeFramesOpaque(t *testing.T) {
 
 	// Binary frame round-trip.
 	binPayload := []byte{0x00, 0x01, 0x02, 0xff, 0xfe}
-	if err := client.WriteMessage(websocket.BinaryMessage, binPayload); err != nil {
+	if err := client.WriteMessage(ws.MsgBinary, binPayload); err != nil {
 		t.Fatal(err)
 	}
 	upstream.waitForFrame(t, binPayload)
 
 	// Text frame round-trip.
 	textPayload := []byte("hello opaque text")
-	if err := client.WriteMessage(websocket.TextMessage, textPayload); err != nil {
+	if err := client.WriteMessage(ws.MsgText, textPayload); err != nil {
 		t.Fatal(err)
 	}
 	upstream.waitForFrame(t, textPayload)
@@ -620,9 +617,9 @@ func TestTmuxDeath503WindowEndToEnd(t *testing.T) {
 // TestNoInsecureSkipVerify is a source-level guard: the tunnel package must
 // never disable TLS verification.
 func TestNoInsecureSkipVerify(t *testing.T) {
-	// The dialer used by the control loop must not set InsecureSkipVerify.
+	// The dial options used by the control loop must not set InsecureSkipVerify.
 	cl := newControlLoop(&Config{}, newTTYDAdapter("ws://127.0.0.1:7080"))
-	if cl.dialer.TLSClientConfig != nil && cl.dialer.TLSClientConfig.InsecureSkipVerify {
+	if cl.dialOpts != nil && cl.dialOpts.TLSConfig != nil && cl.dialOpts.TLSConfig.InsecureSkipVerify {
 		t.Error("control dialer disables TLS verification (InsecureSkipVerify)")
 	}
 }

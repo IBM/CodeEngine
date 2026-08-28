@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob-common/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
 )
 
 // healthState tracks tmux readiness for the health endpoint.

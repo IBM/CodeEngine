@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
-	"github.ibm.com/JORDANJ/remote-bob-common/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
 )
 
 // ttyd 1.7.7 binary protocol opcodes (ASCII prefix bytes on binary frames).
@@ -53,10 +52,11 @@ func newTTYDAdapter(upstreamURL string) *ttydAdapter {
 
 // dialUpstream opens the upstream WS to ttyd with the tty subprotocol,
 // performs the 1.7.7 binary JSON handshake, and returns the connection.
-func (a *ttydAdapter) dialUpstream(ctx context.Context) (*websocket.Conn, error) {
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, a.upstreamURL, http.Header{
-		"Sec-WebSocket-Protocol": []string{"tty"},
-	})
+func (a *ttydAdapter) dialUpstream(ctx context.Context) (*ws.Conn, error) {
+	opts := &ws.DialOptions{
+		Subprotocols: []string{"tty"},
+	}
+	conn, _, err := ws.DialContext(ctx, a.upstreamURL, opts)
 	if err != nil {
 		return nil, fmt.Errorf("ttyd upstream dial failed: %w", err)
 	}
@@ -69,7 +69,7 @@ func (a *ttydAdapter) dialUpstream(ctx context.Context) (*websocket.Conn, error)
 		conn.Close()
 		return nil, fmt.Errorf("ttyd handshake marshal failed: %w", err)
 	}
-	if err := conn.WriteMessage(websocket.BinaryMessage, handshake); err != nil {
+	if err := conn.WriteMessage(ws.MsgBinary, handshake); err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("ttyd handshake send failed: %w", err)
 	}
@@ -87,13 +87,13 @@ func (a *ttydAdapter) dialUpstream(ctx context.Context) (*websocket.Conn, error)
 // browser's initial size. Returns the frame so the caller can decide whether
 // to also forward it through the pipe (it is consumed here and must not be
 // re-sent).
-func (a *ttydAdapter) forwardFirstResize(upstream *websocket.Conn, firstFrame []byte) error {
+func (a *ttydAdapter) forwardFirstResize(upstream *ws.Conn, firstFrame []byte) error {
 	if len(firstFrame) == 0 {
 		return nil
 	}
 	// The browser speaks the ttyd binary protocol directly, so its first
 	// frame is already a valid ttyd frame. Forward it unchanged.
-	if err := upstream.WriteMessage(websocket.BinaryMessage, firstFrame); err != nil {
+	if err := upstream.WriteMessage(ws.MsgBinary, firstFrame); err != nil {
 		return fmt.Errorf("ttyd first-frame forward failed: %w", err)
 	}
 	log.Info("ttyd_first_frame_forwarded", map[string]interface{}{
@@ -106,11 +106,12 @@ func (a *ttydAdapter) forwardFirstResize(upstream *websocket.Conn, firstFrame []
 // timeout elapses. Used at startup so the control dial only happens after
 // ttyd is reachable (startup order tmux → ttyd → control dial).
 func waitForTTYD(ctx context.Context, upstreamURL string, timeout time.Duration) error {
+	opts := &ws.DialOptions{
+		Subprotocols: []string{"tty"},
+	}
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		conn, _, err := websocket.DefaultDialer.DialContext(ctx, upstreamURL, http.Header{
-			"Sec-WebSocket-Protocol": []string{"tty"},
-		})
+		conn, _, err := ws.DialContext(ctx, upstreamURL, opts)
 		if err == nil {
 			_ = conn.Close()
 			return nil

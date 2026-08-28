@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob-common/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
 )
 
 // NewRuntime builds the runtime from a loaded config.

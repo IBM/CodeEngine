@@ -1,5 +1,5 @@
 # Stage 1: build
-FROM registry.access.redhat.com/ubi9/go-toolset:latest AS build
+FROM quay.io/projectquay/golang:1.26 AS build
 USER root
 WORKDIR /src
 COPY go.mod go.sum ./

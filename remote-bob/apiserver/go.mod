@@ -1,6 +1,6 @@
 module github.ibm.com/JORDANJ/remote-bob/apiserver
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20260528100318-4a3d1a978147

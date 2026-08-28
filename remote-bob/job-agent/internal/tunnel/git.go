@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.ibm.com/JORDANJ/remote-bob-common/log"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
 )
 
 // setupGitAuth configures the gh CLI and git identity when a PAT is

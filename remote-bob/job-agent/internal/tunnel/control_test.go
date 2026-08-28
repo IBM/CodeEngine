@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
 )
 
 // testControlServer is a fake apiserver control endpoint for tests. It
@@ -24,9 +24,9 @@ type testControlServer struct {
 	authHeader  string
 	agentParam  string
 	registers   []registerMessage
-	conns       []*websocket.Conn
+	conns       []*ws.Conn
 	connMu      sync.Mutex
-	onConnect   func(conn *websocket.Conn)
+	onConnect   func(conn *ws.Conn)
 	reject      bool
 	rejectCount int
 	relay       *testRelayServer
@@ -34,7 +34,6 @@ type testControlServer struct {
 
 func newTestControlServer() *testControlServer {
 	ts := &testControlServer{}
-	upgrader := websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws/agent", func(w http.ResponseWriter, r *http.Request) {
 		ts.mu.Lock()
@@ -46,7 +45,7 @@ func newTestControlServer() *testControlServer {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		conn, err := upgrader.Upgrade(w, r, nil)
+		conn, err := ws.Upgrade(w, r)
 		if err != nil {
 			return
 		}
@@ -88,7 +87,7 @@ func (ts *testControlServer) close() {
 	ts.server.Close()
 }
 
-func (ts *testControlServer) sendRelayOpen(conn *websocket.Conn, relayID, service, token string) error {
+func (ts *testControlServer) sendRelayOpen(conn *ws.Conn, relayID, service, token string) error {
 	return conn.WriteJSON(map[string]interface{}{
 		"type":        "relay-open",
 		"relay_id":    relayID,
@@ -97,14 +96,14 @@ func (ts *testControlServer) sendRelayOpen(conn *websocket.Conn, relayID, servic
 	})
 }
 
-func (ts *testControlServer) sendRelayClose(conn *websocket.Conn, relayID string) error {
+func (ts *testControlServer) sendRelayClose(conn *ws.Conn, relayID string) error {
 	return conn.WriteJSON(map[string]interface{}{
 		"type":     "relay-close",
 		"relay_id": relayID,
 	})
 }
 
-func (ts *testControlServer) currentConn() *websocket.Conn {
+func (ts *testControlServer) currentConn() *ws.Conn {
 	ts.connMu.Lock()
 	defer ts.connMu.Unlock()
 	if len(ts.conns) == 0 {
@@ -410,26 +409,22 @@ func waitForRegistrations(t *testing.T, ts *testControlServer, n int) {
 // testTTYDUpstream is a fake ttyd server that records the handshake and
 // echoes frames.
 type testTTYDUpstream struct {
-	server    *httptest.Server
-	wsURL     string
-	mu        sync.Mutex
-	writeMu   sync.Mutex
+	server  *httptest.Server
+	wsURL   string
+	mu      sync.Mutex
+	writeMu sync.Mutex
 	handshake []byte
-	frames    [][]byte
-	closed    chan struct{}
-	conn      *websocket.Conn
+	frames  [][]byte
+	closed  chan struct{}
+	conn    *ws.Conn
 }
 
 func newTestTTYDUpstream(t *testing.T) *testTTYDUpstream {
 	t.Helper()
 	u := &testTTYDUpstream{closed: make(chan struct{})}
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool { return true },
-		Subprotocols: []string{"tty"},
-	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
+		conn, err := ws.Upgrade(w, r)
 		if err != nil {
 			return
 		}
@@ -455,10 +450,9 @@ func newTestTTYDUpstream(t *testing.T) *testTTYDUpstream {
 				u.frames = append(u.frames, append([]byte(nil), payload...))
 			}
 			u.mu.Unlock()
-			// Echo the frame back so the relay round-trips. Writes are
-			// serialized because the test may also write via sendFrame.
+			// Echo the frame back so the relay round-trips.
 			u.writeMu.Lock()
-			_ = conn.WriteMessage(websocket.BinaryMessage, payload)
+			_ = conn.WriteFrame(ws.MsgBinary, payload)
 			u.writeMu.Unlock()
 		}
 	})
@@ -526,7 +520,7 @@ func (u *testTTYDUpstream) sendFrame(payload []byte) {
 	u.mu.Unlock()
 	if conn != nil {
 		u.writeMu.Lock()
-		_ = conn.WriteMessage(websocket.BinaryMessage, payload)
+		_ = conn.WriteFrame(ws.MsgBinary, payload)
 		u.writeMu.Unlock()
 	}
 }
@@ -546,13 +540,12 @@ func (u *testTTYDUpstream) waitForClose(t *testing.T) {
 // it. It tracks multiple concurrent relay connections (fan-out).
 type testRelayServer struct {
 	mu     sync.Mutex
-	conns  []*websocket.Conn
+	conns  []*ws.Conn
 	frames [][]byte
 }
 
 func (r *testRelayServer) handle(w http.ResponseWriter, req *http.Request) {
-	upgrader := websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
-	conn, err := upgrader.Upgrade(w, req, nil)
+	conn, err := ws.Upgrade(w, req)
 	if err != nil {
 		return
 	}
@@ -599,7 +592,7 @@ func (r *testRelayServer) sendFirstFrame(payload []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if len(r.conns) > 0 {
-		_ = r.conns[0].WriteMessage(websocket.BinaryMessage, payload)
+		_ = r.conns[0].WriteFrame(ws.MsgBinary, payload)
 	}
 }
 
@@ -608,7 +601,7 @@ func (r *testRelayServer) sendFrameOn(i int, payload []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if i < len(r.conns) {
-		_ = r.conns[i].WriteMessage(websocket.BinaryMessage, payload)
+		_ = r.conns[i].WriteFrame(ws.MsgBinary, payload)
 	}
 }
 
@@ -636,3 +629,5 @@ func (r *testRelayServer) waitForFrame(t *testing.T, want []byte) {
 	}
 	t.Fatalf("relay never received frame %q", want)
 }
+
+var _ = sync.Mutex{}
