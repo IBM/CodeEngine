@@ -9,63 +9,51 @@ import (
 )
 
 const (
-	defaultTTYDPort        = "7080"
-	defaultHealthPort      = "7081"
-	defaultWorkspace       = "/workspace"
-	defaultBobMode         = "interactive"
-	defaultIdleTimeout     = 5 * time.Minute
-	defaultReconnectDelay  = 2 * time.Second
-	defaultTTYDReadyWait   = 30 * time.Second
-	defaultTmuxDeathGrace  = 5 * time.Second
-	defaultGHBranch        = "main"
-	defaultRunTokenFile    = "/secrets/run-token"
-	defaultBobAPIKeyFile   = "/secrets/bobshell/api-key"
-	defaultGithubPATFile   = "/secrets/github-pat"
-	defaultGithubRepoFile  = "/secrets/github-repo"
+	defaultTTYDPort       = "7080"
+	defaultHealthPort     = "7081"
+	defaultWorkspace      = "/workspace"
+	defaultBobMode        = "interactive"
+	defaultIdleTimeout    = 5 * time.Minute
+	defaultReconnectDelay = 2 * time.Second
+	defaultTTYDReadyWait  = 30 * time.Second
+	defaultTmuxDeathGrace = 5 * time.Second
+	defaultRunTokenFile   = "/secrets/run-token"
+	defaultBobAPIKeyFile  = "/secrets/bobshell/api-key"
 )
 
 // Secret file paths are package variables so tests can redirect them to
 // temporary files.
 var (
-	runTokenSecretPath   = defaultRunTokenFile
-	bobAPIKeySecretPath  = defaultBobAPIKeyFile
-	githubPATSecretPath  = defaultGithubPATFile
-	githubRepoSecretPath = defaultGithubRepoFile
+	runTokenSecretPath  = defaultRunTokenFile
+	bobAPIKeySecretPath = defaultBobAPIKeyFile
 )
 
 // Config holds the job-agent tunnel daemon configuration, loaded from the
 // environment and mounted secret files.
 type Config struct {
-	AgentID          string
-	RunToken         string
-	GatewayWSS       string
-	TTYDPort         string
-	HealthPort       string
-	Workspace        string
-	BobMode          string
-	BobShellAPIKey   string
+	AgentID        string
+	RunToken       string
+	GatewayWSS     string
+	TTYDPort       string
+	HealthPort     string
+	Workspace      string
+	BobMode        string
+	BobShellAPIKey string
 	// BobApprovalMode overrides the approvalMode field in settings.json when
 	// non-empty. Loaded from BOB_APPROVAL_MODE env var.
 	BobApprovalMode string
 	// BobTelemetrySet is true when BOB_TELEMETRY_ENABLED is present in the env.
 	BobTelemetrySet     bool
 	BobTelemetryEnabled bool
-	GHRepo           string
-	GHPat            string
-	GHBranch         string
-	Lang             string
-	LCAll            string
-	IdleTimeout      time.Duration
-	ReconnectDelay   time.Duration
-	TTYDReadyTimeout time.Duration
+	Lang               string
+	LCAll              string
+	IdleTimeout        time.Duration
+	ReconnectDelay     time.Duration
+	TTYDReadyTimeout   time.Duration
 	// TmuxDeathGrace is how long the health server keeps serving 503
 	// {"status":"unhealthy"} after the tmux session dies, before the
-	// graceful shutdown sequence proceeds. It makes the unhealthy window
-	// observable to liveness probes (VAL-AGENT-004/005).
+	// graceful shutdown sequence proceeds.
 	TmuxDeathGrace time.Duration
-	// SessionBranch is the git branch created for this agent run (set during
-	// workspace preparation when git is configured).
-	SessionBranch string
 }
 
 // LoadConfig reads configuration from the environment and mounted secret
@@ -73,23 +61,20 @@ type Config struct {
 // descriptive error naming the missing variable.
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
-		AgentID:          os.Getenv("AGENT_ID"),
-		RunToken:         os.Getenv("RUN_TOKEN"),
-		GatewayWSS:       os.Getenv("GATEWAY_WSS"),
-		TTYDPort:         getenv("TTYD_PORT", defaultTTYDPort),
-		HealthPort:       getenv("HEALTH_PORT", defaultHealthPort),
-		Workspace:        getenv("WORKSPACE", defaultWorkspace),
-		BobMode:          getenv("BOB_MODE", defaultBobMode),
-		BobApprovalMode:  os.Getenv("BOB_APPROVAL_MODE"),
-		GHRepo:           os.Getenv("GH_REPO"),
-		GHPat:            os.Getenv("GH_PAT"),
-		GHBranch:         getenv("GH_BRANCH", defaultGHBranch),
-		Lang:             getenv("LANG", "en_US.UTF-8"),
-		LCAll:            getenv("LC_ALL", "en_US.UTF-8"),
-		IdleTimeout:      durationFromEnv("IDLE_TIMEOUT_MS", defaultIdleTimeout),
-		ReconnectDelay:   durationFromEnv("RECONNECT_DELAY_MS", defaultReconnectDelay),
+		AgentID:         os.Getenv("AGENT_ID"),
+		RunToken:        os.Getenv("RUN_TOKEN"),
+		GatewayWSS:      os.Getenv("GATEWAY_WSS"),
+		TTYDPort:        getenv("TTYD_PORT", defaultTTYDPort),
+		HealthPort:      getenv("HEALTH_PORT", defaultHealthPort),
+		Workspace:       getenv("WORKSPACE", defaultWorkspace),
+		BobMode:         getenv("BOB_MODE", defaultBobMode),
+		BobApprovalMode: os.Getenv("BOB_APPROVAL_MODE"),
+		Lang:            getenv("LANG", "en_US.UTF-8"),
+		LCAll:           getenv("LC_ALL", "en_US.UTF-8"),
+		IdleTimeout:     durationFromEnv("IDLE_TIMEOUT_MS", defaultIdleTimeout),
+		ReconnectDelay:  durationFromEnv("RECONNECT_DELAY_MS", defaultReconnectDelay),
 		TTYDReadyTimeout: durationFromEnv("TTYD_READY_TIMEOUT_MS", defaultTTYDReadyWait),
-		TmuxDeathGrace:   durationFromEnv("TMUX_DEATH_GRACE_MS", defaultTmuxDeathGrace),
+		TmuxDeathGrace:  durationFromEnv("TMUX_DEATH_GRACE_MS", defaultTmuxDeathGrace),
 	}
 
 	if telRaw := os.Getenv("BOB_TELEMETRY_ENABLED"); telRaw != "" {
@@ -101,8 +86,7 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("AGENT_ID is required")
 	}
 	if cfg.RunToken == "" {
-		// Fall back to the mounted secret file (v4 run.sh mounts the run
-		// token; the env var is the primary path).
+		// Fall back to the mounted secret file.
 		if token, err := readSecretFile(runTokenSecretPath); err == nil && token != "" {
 			cfg.RunToken = token
 		} else {
@@ -124,19 +108,6 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 	cfg.BobShellAPIKey = apiKey
-
-	// Optional git credentials from mounted secret files (env takes
-	// precedence).
-	if cfg.GHPat == "" {
-		if pat, err := readSecretFile(githubPATSecretPath); err == nil {
-			cfg.GHPat = pat
-		}
-	}
-	if cfg.GHRepo == "" {
-		if repo, err := readSecretFile(githubRepoSecretPath); err == nil {
-			cfg.GHRepo = repo
-		}
-	}
 
 	return cfg, nil
 }
@@ -163,9 +134,6 @@ func readSecretFile(path string) (string, error) {
 }
 
 // bobCommand returns the tmux pane command for the configured BOB_MODE.
-// BOB_MODE variants change the command: interactive runs plain bob chat,
-// plan selects the autonomous-loop-planner custom mode, auto selects the
-// auto mode.
 func bobCommand(cfg *Config) string {
 	switch cfg.BobMode {
 	case "plan":
@@ -177,14 +145,8 @@ func bobCommand(cfg *Config) string {
 	}
 }
 
-// sessionBranch returns the git session branch name for this agent run.
-func sessionBranch(cfg *Config) string {
-	return cfg.BobMode + "-" + cfg.AgentID
-}
-
 // controlURL builds the agent control WS URL: GATEWAY_WSS/ws/agent?agent=<ID>.
-// The run token is never placed in the URL — it travels in the Authorization
-// header.
+// The run token is never placed in the URL — it travels in the Authorization header.
 func controlURL(gatewayWSS, agentID string) string {
 	base := strings.TrimSuffix(gatewayWSS, "/")
 	base = strings.TrimSuffix(base, "/ws")

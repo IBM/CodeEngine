@@ -19,8 +19,6 @@ func setConfigEnv(t *testing.T) {
 	t.Setenv("BOBSHELL_API_KEY", "bob-key")
 	runTokenSecretPath = "/nonexistent/run-token"
 	bobAPIKeySecretPath = "/nonexistent/api-key"
-	githubPATSecretPath = "/nonexistent/github-pat"
-	githubRepoSecretPath = "/nonexistent/github-repo"
 }
 
 func TestLoadConfig_MissingAgentID(t *testing.T) {
@@ -73,9 +71,6 @@ func TestLoadConfig_Defaults(t *testing.T) {
 	}
 	if cfg.TmuxDeathGrace != 5*time.Second {
 		t.Errorf("TmuxDeathGrace = %v, want 5s", cfg.TmuxDeathGrace)
-	}
-	if cfg.GHBranch != "main" {
-		t.Errorf("GHBranch = %q, want main", cfg.GHBranch)
 	}
 }
 
@@ -146,21 +141,6 @@ func TestBobCommandVariants(t *testing.T) {
 	}
 	if !strings.Contains(plan, "autonomous-loop-planner") {
 		t.Errorf("plan command = %q, want autonomous-loop-planner mode", plan)
-	}
-}
-
-func TestSessionBranchPerMode(t *testing.T) {
-	cfg := &Config{AgentID: "agent-9", BobMode: "interactive"}
-	if got := sessionBranch(cfg); got != "interactive-agent-9" {
-		t.Errorf("interactive branch = %q", got)
-	}
-	cfg.BobMode = "plan"
-	if got := sessionBranch(cfg); got != "plan-agent-9" {
-		t.Errorf("plan branch = %q", got)
-	}
-	cfg.BobMode = "auto"
-	if got := sessionBranch(cfg); got != "auto-agent-9" {
-		t.Errorf("auto branch = %q", got)
 	}
 }
 

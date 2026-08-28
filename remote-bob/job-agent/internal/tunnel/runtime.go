@@ -76,9 +76,6 @@ func (rt *Runtime) Run(ctx context.Context) error {
 		})
 	}
 
-	if err := setupGitAuth(rt.cfg); err != nil {
-		return err
-	}
 	if err := prepareWorkspace(rt.cfg); err != nil {
 		return err
 	}
@@ -199,12 +196,6 @@ func (rt *Runtime) shutdown() {
 		})
 		// Close active relays so browsers see a clean close.
 		rt.control.closeAllRelays()
-		// Finalize git (commit/push) before stopping tmux/ttyd.
-		if err := finalizeGit(rt.cfg); err != nil {
-			log.Warn("git_finalize_failed", map[string]interface{}{
-				"error": err.Error(),
-			})
-		}
 		rt.stopTTYD()
 		killTmuxSession(rt.cfg.AgentID)
 		close(rt.shutdownCh)

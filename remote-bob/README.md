@@ -80,11 +80,13 @@ remote-bob/
 
 ## Quick start (local mode)
 
-1. Create a `.env` file in the project root with the required credentials:
+1. Copy the config template in the project root and fill in your credentials:
 
    ```bash
-   BOBSHELL_API_KEY=your-bobshell-api-key
-   GATEWAY_PASSWORD=your-gateway-password
+   cp .env.template .env
+   # then edit .env:
+   # BOBSHELL_API_KEY=your-bobshell-api-key
+   # GATEWAY_PASSWORD=your-gateway-password
    ```
 
 2. Run the launcher:

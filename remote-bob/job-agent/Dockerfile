@@ -34,14 +34,13 @@ RUN if [ -f /tmp/bobshell-src ]; then \
 
 # ── Stage 2: runtime image ────────────────────────────────────────────────────
 # debian:bookworm-slim is the minimal official Debian image; used here because
-# Node.js 22, tmux, ttyd, and gh CLI are not available in the UBI ecosystem.
+# Node.js 22 and tmux are not available in the UBI ecosystem.
 FROM debian:bookworm-slim
 
-# Install system dependencies, Node.js 22, gh CLI, tmux, jq, and locales
+# Install system dependencies, Node.js 22, tmux, jq, and locales
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
-    git \
     ca-certificates \
     gnupg \
     jq \
@@ -54,11 +53,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Node.js 22 apt repo
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    # GitHub CLI apt repo
-    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list \
     && apt-get update \
-    && apt-get install -y nodejs gh \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Set UTF-8 locale so Bob Shell / git / tmux emit Unicode instead of __ placeholders
