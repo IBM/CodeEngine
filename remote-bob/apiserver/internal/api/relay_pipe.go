@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/binary"
+
 	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
 	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
 )
@@ -21,6 +23,7 @@ const closeCodeAgentGone = 4000
 // by the read loop and tears the relay down (invalidating the one-time relay
 // token so a late agent dial is rejected).
 func startRelayPipes(e *relayEntry) {
+	e.pipesStarted = true
 	go browserToRelay(e)
 	go relayToBrowser(e)
 }
@@ -55,17 +58,8 @@ func browserToRelay(e *relayEntry) {
 		if relay == nil {
 			return
 		}
-<<<<<<< Updated upstream
-		if err := relay.SetWriteDeadline(time.Now().Add(relayWriteWait)); err != nil {
-			teardownRelay(e, false)
-			return
-		}
-		if err := relay.WriteMessage(msgType, payload); err != nil {
-			teardownRelay(e, false)
-=======
 		if err := relay.WriteFrame(f.MessageType, f.Payload); err != nil {
-			teardownRelay(e)
->>>>>>> Stashed changes
+			teardownRelay(e, false)
 			return
 		}
 	}
@@ -89,28 +83,27 @@ func relayToBrowser(e *relayEntry) {
 	for {
 		f, err := relay.ReadFrame()
 		if err != nil {
-			// Agent side closed — notify the browser with the agent-gone code
-			// before tearing down so the browser can show "session ended".
-			agentGoneMsg := websocket.FormatCloseMessage(closeCodeAgentGone, "agent disconnected")
-			_ = e.browser.SetWriteDeadline(time.Now().Add(relayWriteWait))
-			_ = e.browser.WriteMessage(websocket.CloseMessage, agentGoneMsg)
+			// Agent side closed — send close code 4000 to the browser before
+			// tearing down so it can show "session ended" rather than an error.
+			agentGoneFrame := buildCloseFrame(closeCodeAgentGone, "agent disconnected")
+			_ = e.browser.WriteFrame(ws.MsgClose, agentGoneFrame)
 			teardownRelay(e, true)
 			return
 		}
-<<<<<<< Updated upstream
-		if err := e.browser.SetWriteDeadline(time.Now().Add(relayWriteWait)); err != nil {
-			teardownRelay(e, false)
-			return
-		}
-		if err := e.browser.WriteMessage(msgType, payload); err != nil {
-			teardownRelay(e, false)
-=======
 		if err := e.browser.WriteFrame(f.MessageType, f.Payload); err != nil {
-			teardownRelay(e)
->>>>>>> Stashed changes
+			teardownRelay(e, false)
 			return
 		}
 	}
+}
+
+// buildCloseFrame encodes a WebSocket close frame payload: 2-byte big-endian
+// code followed by the UTF-8 reason string (RFC 6455 §5.5.1).
+func buildCloseFrame(code int, reason string) []byte {
+	payload := make([]byte, 2+len(reason))
+	binary.BigEndian.PutUint16(payload[:2], uint16(code))
+	copy(payload[2:], reason)
+	return payload
 }
 
 // teardownRelay closes the relay's done channel and both connections. It is
@@ -126,11 +119,6 @@ func teardownRelay(e *relayEntry, agentClosed bool) {
 		if relay := e.relayConn(); relay != nil {
 			relay.Close()
 		}
-		log.Info("relay_closed", map[string]interface{}{
-			"relay_id":     e.id,
-			"agent_id":     e.agentID,
-			"service":      e.service,
-			"agent_closed": agentClosed,
-		})
+		log.Info("relay_closed", "relay_id", e.id, "agent_id", e.agentID, "service", e.service, "agent_closed", agentClosed)
 	})
 }

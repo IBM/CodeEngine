@@ -29,10 +29,9 @@ type agentEntry struct {
 	registeredAt time.Time
 	// terminateCh is closed by Disconnect to signal handleAgentWS that it
 	// should send close code 4001 and close the connection. This avoids a
-	// concurrent-write race: gorilla/websocket does not allow concurrent
-	// reads and writes on the same connection. handleAgentWS owns the read
-	// loop; the write of the close frame must be done from the same
-	// goroutine (or serialised via a mutex) rather than from Disconnect.
+	// concurrent-write race: handleAgentWS owns the read loop; the write of
+	// the close frame is done from a goroutine that waits on terminateCh and
+	// serialises the write through the relayManager's per-connection mutex.
 	terminateCh chan struct{}
 }
 
@@ -84,11 +83,7 @@ func (r *AgentRegistry) maybeFireOnEmpty() {
 // Register adds or replaces the control connection for an agent. A second
 // connection with the same agent ID closes the previous one (replacement
 // semantics). Services are reset until the agent sends a register message.
-<<<<<<< Updated upstream
-func (r *AgentRegistry) Register(agentID string, conn *websocket.Conn) chan struct{} {
-=======
-func (r *AgentRegistry) Register(agentID string, conn *ws.Conn) {
->>>>>>> Stashed changes
+func (r *AgentRegistry) Register(agentID string, conn *ws.Conn) chan struct{} {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

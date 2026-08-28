@@ -30,8 +30,6 @@ type Server struct {
 	relays           *relayManager
 	wsTokenTTL       time.Duration
 	relayOpenTimeout time.Duration
-<<<<<<< Updated upstream
-	upgrader         websocket.Upgrader
 	// shuttingDown is set to 1 atomically when a DELETE /agents/{id} is
 	// processed. New browser WS connections and logins are rejected with 503
 	// so the browser shows "shutting down" rather than reconnecting.
@@ -46,8 +44,6 @@ type Server struct {
 	// until all of them have returned, ensuring every queued 4001 close frame
 	// has been sent before the process exits.
 	agentWG sync.WaitGroup
-=======
->>>>>>> Stashed changes
 }
 
 // Config holds server configuration.
@@ -85,20 +81,7 @@ func NewServer(cfg Config) *Server {
 		relays:           newRelayManager(relayTokenStore.Revoke),
 		wsTokenTTL:       cfg.WSTokenTTL,
 		relayOpenTimeout: cfg.RelayOpenTimeout,
-<<<<<<< Updated upstream
 		shutdownCh:       make(chan struct{}),
-		upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				// Origin policy is enforced at the HTTP layer by the CORS
-				// middleware. WS clients (browser from file://, Go agent
-				// daemon) may legitimately send no or a null Origin.
-				return true
-			},
-		},
-=======
->>>>>>> Stashed changes
 	}
 }
 
@@ -318,20 +301,17 @@ func (s *Server) handleAgentWS(w http.ResponseWriter, r *http.Request) {
 	// If this control connection is replaced or drops, every relay opened on
 	// it is torn down (control-connection replacement semantics).
 	defer s.relays.closeAgent(agentID, conn)
-	log.Info("agent_ws_connected", map[string]interface{}{
-		"agent_id": agentID,
-	})
+	log.Info("agent_ws_connected", "agent_id", agentID)
 
 	// Watch for deliberate termination (DELETE /agents/{id}). When the
 	// terminateCh is closed, send WS close code 4001 to the job-agent and
-	// close the connection to unblock the read loop below. The write is
-	// serialised via the relayManager's per-connection mutex (same mutex
-	// used for relay-open messages) to avoid a concurrent-write race with
-	// gorilla/websocket.
+	// close the connection to unblock the read loop below. The write goes
+	// through the relayManager's per-connection mutex to serialise it with
+	// any concurrent relay-open writes on the same connection.
 	go func() {
 		<-terminateCh
-		closeFrame := websocket.FormatCloseMessage(closeCodeAgentTerminated, "terminated by request")
-		_ = s.relays.sendRaw(conn, websocket.CloseMessage, closeFrame)
+		closeFrame := buildCloseFrame(closeCodeAgentTerminated, "terminated by request")
+		s.relays.sendRawFrame(conn, ws.MsgClose, closeFrame)
 		conn.Close()
 	}()
 
@@ -342,26 +322,16 @@ func (s *Server) handleAgentWS(w http.ResponseWriter, r *http.Request) {
 		}
 		var ctrl controlMessage
 		if err := json.Unmarshal(f.Payload, &ctrl); err != nil {
-			log.Warn("agent_ws_invalid_control_message", map[string]interface{}{
-				"agent_id": agentID,
-			})
+			log.Warn("agent_ws_invalid_control_message", "agent_id", agentID)
 			continue
 		}
 		switch ctrl.Type {
 		case "register":
 			s.agentRegistry.SetServices(agentID, ctrl.Services)
-			log.Info("agent_ws_registered", map[string]interface{}{
-				"agent_id": agentID,
-				"services": len(ctrl.Services),
-			})
+			log.Info("agent_ws_registered", "agent_id", agentID, "services", len(ctrl.Services))
 		case "relay-ready":
 			// Optional acknowledgement that the agent dialed /ws/relay.
-			// The relay is attached when the /ws/relay handshake completes,
-			// so no action is required here.
-			log.Debug("agent_ws_relay_ready", map[string]interface{}{
-				"agent_id": agentID,
-				"relay_id": ctrl.RelayID,
-			})
+			log.Debug("agent_ws_relay_ready", "agent_id", agentID, "relay_id", ctrl.RelayID)
 		default:
 			// Unknown control messages are ignored.
 		}
@@ -404,10 +374,7 @@ func (s *Server) handleBrowserWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	log.Info("browser_ws_connected", map[string]interface{}{
-		"agent_id": agentID,
-		"service":  service,
-	})
+	log.Info("browser_ws_connected", "agent_id", agentID, "service", service)
 
 	// Issue a one-time relay token and register the relay.
 	relayToken, err := s.relayTokens.Issue()
@@ -437,10 +404,7 @@ func (s *Server) handleBrowserWS(w http.ResponseWriter, r *http.Request) {
 		"relay_token": relayToken,
 	}
 	if err := s.relays.sendControl(controlConn, openMsg); err != nil {
-		log.Warn("relay_open_send_failed", map[string]interface{}{
-			"agent_id": agentID,
-			"relay_id": entry.id,
-		})
+		log.Warn("relay_open_send_failed", "agent_id", agentID, "relay_id", entry.id)
 		return
 	}
 
@@ -451,10 +415,7 @@ func (s *Server) handleBrowserWS(w http.ResponseWriter, r *http.Request) {
 	case <-entry.done:
 		return
 	case <-time.After(s.relayOpenTimeout):
-		log.Warn("relay_open_timeout", map[string]interface{}{
-			"agent_id": agentID,
-			"relay_id": entry.id,
-		})
+		log.Warn("relay_open_timeout", "agent_id", agentID, "relay_id", entry.id)
 		return
 	}
 
@@ -491,13 +452,13 @@ func (s *Server) handleRelayWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	log.Info("relay_ws_connected", nil)
+	log.Info("relay_ws_connected", "relay_token", token[:8])
 
 	entry, ok := s.relays.attach(token, conn)
 	if !ok {
 		// The browser disconnected or timed out before the agent dialed;
 		// the token is already consumed, so this late dial is rejected.
-		log.Warn("relay_attach_failed", nil)
+		log.Warn("relay_attach_failed", "reason", "no pending relay for token")
 		return
 	}
 

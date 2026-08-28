@@ -48,16 +48,19 @@ type Frame struct {
 //     not goroutine-safe). Control-frame responses (pong) are sent via writeMu.
 //   - WriteFrame / WriteFrameMasked are goroutine-safe; they hold writeMu.
 //   - Close is safe to call from any goroutine and is idempotent.
-//   - StartPing launches a background goroutine that sends a Ping frame every
-//     interval. Call it after upgrading/dialling to keep the connection alive
-//     through proxies that close idle WebSocket connections (e.g. Code Engine's
-//     HTTP reverse proxy which times out at ~10 minutes).
 type Conn struct {
-	conn    net.Conn
-	rw      *bufio.ReadWriter
-	writeMu sync.Mutex  // serialises all writes (WriteFrame, WriteFrameMasked, Close)
-	once    sync.Once
-	doneCh  chan struct{}
+	conn      net.Conn
+	rw        *bufio.ReadWriter
+	writeMu   sync.Mutex // serialises all writes (WriteFrame, WriteFrameMasked, Close)
+	once      sync.Once
+	doneCh    chan struct{}
+	closeCode int // populated on a close frame from the peer
+}
+
+// CloseCode returns the WebSocket close code from the peer's close frame,
+// or 0 if no close frame has been received.
+func (c *Conn) CloseCode() int {
+	return c.closeCode
 }
 
 // Close sends a Close frame and closes the underlying connection.
@@ -76,34 +79,6 @@ func (c *Conn) Close() error {
 // Use this to park a goroutine without reading from the connection.
 func (c *Conn) Done() <-chan struct{} {
 	return c.doneCh
-}
-
-// StartPing launches a background goroutine that sends a WebSocket Ping frame
-// every interval. The goroutine stops automatically when the connection is
-// closed (Done fires). Ping frames keep the underlying TCP connection alive
-// through load-balancers and reverse proxies that drop idle connections.
-//
-// Call this once after Upgrade or Dial returns. The interval should be well
-// below the proxy idle-timeout — 30 s is a safe choice for Code Engine (10 min
-// proxy timeout).
-func (c *Conn) StartPing(interval time.Duration) {
-	go func() {
-		t := time.NewTicker(interval)
-		defer t.Stop()
-		for {
-			select {
-			case <-c.doneCh:
-				return
-			case <-t.C:
-				c.writeMu.Lock()
-				err := c.writeFrameLocked(MsgPing, nil, false)
-				c.writeMu.Unlock()
-				if err != nil {
-					return
-				}
-			}
-		}
-	}()
 }
 
 // ReadFrame reads the next complete data frame from the connection.
@@ -127,6 +102,10 @@ func (c *Conn) ReadFrame() (Frame, error) {
 			_ = c.writeFrameLocked(MsgPong, payload, false)
 			c.writeMu.Unlock()
 		case MsgClose:
+			// Extract the 2-byte close code if present.
+			if len(payload) >= 2 {
+				c.closeCode = int(payload[0])<<8 | int(payload[1])
+			}
 			c.writeMu.Lock()
 			_ = c.writeFrameLocked(MsgClose, nil, false)
 			c.writeMu.Unlock()
@@ -154,6 +133,21 @@ func (c *Conn) WriteFrameMasked(msgType int, payload []byte) error {
 	c.writeMu.Lock()
 	defer c.writeMu.Unlock()
 	return c.writeFrameLocked(msgType, payload, true)
+}
+
+// IsCloseError reports whether err signals a WebSocket close with one of the
+// given codes. err must be io.EOF (the value ReadFrame returns on close).
+func IsCloseError(conn *Conn, err error, codes ...int) bool {
+	if err != io.EOF {
+		return false
+	}
+	code := conn.CloseCode()
+	for _, c := range codes {
+		if code == c {
+			return true
+		}
+	}
+	return false
 }
 
 // ---------------------------------------------------------------------------

@@ -144,8 +144,7 @@ func (c *Conn) WriteJSON(v interface{}) error {
 }
 
 // ReadMessage reads the next data frame and returns its type and payload.
-// This is a convenience wrapper matching the gorilla/websocket API.
-// Must be called from a single goroutine only.
+// This is a convenience wrapper. Must be called from a single goroutine only.
 func (c *Conn) ReadMessage() (msgType int, payload []byte, err error) {
 	f, err := c.ReadFrame()
 	return f.MessageType, f.Payload, err

@@ -241,7 +241,6 @@ func TestAgentRegistry_GetReturnsConn(t *testing.T) {
 	}
 }
 
-<<<<<<< Updated upstream
 func TestAgentRegistry_OnEmpty_FiredOnUnregister(t *testing.T) {
 	reg := NewAgentRegistry()
 	fired := make(chan struct{}, 1)
@@ -332,7 +331,3 @@ func TestAgentRegistry_OnEmpty_FiredOnceOnly(t *testing.T) {
 		t.Errorf("onEmpty fired %d times, want exactly 1", count)
 	}
 }
-=======
-// suppress unused import
-var _ = nowPlus
->>>>>>> Stashed changes

@@ -2,13 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
 )
 
 // ---------------------------------------------------------------------------
@@ -26,19 +27,22 @@ func deleteAgent(t *testing.T, ts, agentID string) *http.Response {
 
 // agentReceivedClose blocks until the agent WS connection receives the given
 // WS close code or times out.
-func agentReceivedClose(t *testing.T, conn *websocket.Conn, wantCode int) {
+func agentReceivedClose(t *testing.T, conn *ws.Conn, wantCode int) {
 	t.Helper()
-	conn.SetReadDeadline(time.Now().Add(3 * time.Second))
-	_, _, err := conn.ReadMessage()
-	if err == nil {
-		t.Fatal("expected close frame, got a message")
+	// Give the server up to 3 s to deliver the close frame.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		conn.ReadFrame() //nolint:errcheck — we expect an error (close frame)
+	}()
+	select {
+	case <-done:
+	case <-time.After(3 * time.Second):
+		t.Fatal("timed out waiting for close frame from server")
 	}
-	closeErr, ok := err.(*websocket.CloseError)
-	if !ok {
-		t.Fatalf("expected *websocket.CloseError, got %T: %v", err, err)
-	}
-	if closeErr.Code != wantCode {
-		t.Errorf("close code = %d, want %d", closeErr.Code, wantCode)
+	// CloseCode() is populated by ReadFrame when it processes a MsgClose frame.
+	if code := conn.CloseCode(); code != wantCode {
+		t.Errorf("close code = %d, want %d", code, wantCode)
 	}
 }
 
@@ -177,11 +181,11 @@ func TestEndSession_Delete_4001SentBeforeWaitAgentsDoneReturns(t *testing.T) {
 	agentConn := registerTestAgent(t, wsBase, runToken, "agent-1", []Service{{Name: "ttyd"}})
 	go func() {
 		defer agentConn.Close()
-		agentConn.SetReadDeadline(time.Now().Add(5 * time.Second))
-		_, _, err := agentConn.ReadMessage()
-		closeErr, ok := err.(*websocket.CloseError)
-		if ok {
-			receivedClose <- closeErr.Code
+		_, err := agentConn.ReadFrame()
+		if err != nil && ws.IsCloseError(agentConn, err, closeCodeAgentTerminated) {
+			receivedClose <- agentConn.CloseCode()
+		} else if err == io.EOF {
+			receivedClose <- agentConn.CloseCode()
 		} else {
 			receivedClose <- -1
 		}
@@ -410,7 +414,7 @@ func TestEndSession_WaitAgentsDone_BlocksUntilAllHandlersExit(t *testing.T) {
 	ts := "http" + strings.TrimPrefix(wsBase, "ws")
 
 	const n = 3
-	conns := make([]*websocket.Conn, n)
+	conns := make([]*ws.Conn, n)
 	for i := 0; i < n; i++ {
 		agentID := strings.Repeat("a", i+1) // "a", "aa", "aaa"
 		runToken := issueRunToken(t, ts, agentID)
@@ -473,9 +477,8 @@ func TestEndSession_BrowserReceivesClose4000(t *testing.T) {
 	msgs := make(chan agentControlMsg, 32)
 	go func() {
 		for {
-			_, msg, err := agentConn.ReadMessage()
+			f, err := agentConn.ReadFrame()
 			if err != nil {
-				// Connection closing — stop forwarding.
 				return
 			}
 			var ctrl struct {
@@ -484,7 +487,7 @@ func TestEndSession_BrowserReceivesClose4000(t *testing.T) {
 				Service    string `json:"service"`
 				RelayToken string `json:"relay_token"`
 			}
-			if err := json.Unmarshal(msg, &ctrl); err != nil {
+			if err := json.Unmarshal(f.Payload, &ctrl); err != nil {
 				continue
 			}
 			msgs <- agentControlMsg{
@@ -504,29 +507,32 @@ func TestEndSession_BrowserReceivesClose4000(t *testing.T) {
 	_ = open
 
 	// Confirm the relay is live with a round-trip.
-	if err := browser.WriteMessage(websocket.TextMessage, []byte("ping")); err != nil {
+	if err := browser.WriteFrame(ws.MsgText, []byte("ping")); err != nil {
 		t.Fatalf("pre-DELETE write: %v", err)
 	}
-	if _, got, err := browser.ReadMessage(); err != nil || string(got) != "ping" {
-		t.Fatalf("pre-DELETE round-trip: %v %q", err, got)
+	f, err := browser.ReadFrame()
+	if err != nil || string(f.Payload) != "ping" {
+		t.Fatalf("pre-DELETE round-trip: err=%v payload=%q", err, f.Payload)
 	}
 
 	// DELETE the agent — this marks shuttingDown and sends 4001 to agentConn.
 	resp := deleteAgent(t, ts, "agent-1")
 	resp.Body.Close()
 
-	// The browser must receive close code 4000 (agent gone).
-	// The server sends 4001 to the agent and immediately closes the control
-	// connection, which drops the relay pipe, which causes relayToBrowser to
-	// send 4000 to the browser.
-	browser.SetReadDeadline(time.Now().Add(5 * time.Second))
-	_, _, err := browser.ReadMessage()
-	closeErr, ok := err.(*websocket.CloseError)
-	if !ok {
-		t.Fatalf("browser expected close frame, got %T: %v", err, err)
+	// The browser must receive close code 4000 (agent gone). relayToBrowser
+	// sends the close frame when the relay (agent) side disconnects.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		browser.ReadFrame() //nolint:errcheck — expecting a close frame
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("browser did not receive close frame within 5s")
 	}
-	if closeErr.Code != closeCodeAgentGone {
-		t.Errorf("browser close code = %d, want %d (closeCodeAgentGone)", closeErr.Code, closeCodeAgentGone)
+	if code := browser.CloseCode(); code != closeCodeAgentGone {
+		t.Errorf("browser close code = %d, want %d (closeCodeAgentGone)", code, closeCodeAgentGone)
 	}
 }
 
@@ -624,7 +630,7 @@ func TestEndSession_MultipleAgents_AllGet4001(t *testing.T) {
 	ts := "http" + strings.TrimPrefix(wsBase, "ws")
 
 	agentIDs := []string{"alpha", "beta", "gamma"}
-	conns := make(map[string]*websocket.Conn)
+	conns := make(map[string]*ws.Conn)
 	for _, id := range agentIDs {
 		runToken := issueRunToken(t, ts, id)
 		conns[id] = registerTestAgent(t, wsBase, runToken, id, []Service{{Name: "ttyd"}})

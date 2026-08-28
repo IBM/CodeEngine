@@ -4,17 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"sync"
-	"time"
 
 	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
 )
-
-// relayWriteWait is the per-write deadline applied when forwarding frames
-// between the browser and the agent relay, and when sending control messages
-// on an agent control connection. A peer that cannot accept a frame within
-// this window is treated as dead and the relay is torn down, which bounds
-// buffering instead of growing memory without limit (backpressure).
-const relayWriteWait = 30 * time.Second
 
 // relayEntry tracks a single browser↔agent relay. Every browser connection
 // gets its own relay with a distinct relay_id and a one-time relay token.
@@ -30,6 +22,10 @@ type relayEntry struct {
 	attached    chan struct{} // closed when the agent dials /ws/relay
 	done        chan struct{} // closed when the relay is torn down
 	closeOnce   sync.Once
+	// pipesStarted is set to true by startRelayPipes so teardown knows
+	// whether to delegate browser cleanup to relayToBrowser or do it
+	// directly (unit-test code paths that skip startRelayPipes).
+	pipesStarted bool
 }
 
 // relayManager tracks all active relays, keyed by relay_id and by relay
@@ -139,12 +135,12 @@ func (m *relayManager) sendControl(conn *ws.Conn, v interface{}) error {
 	return conn.WriteFrame(ws.MsgText, payload)
 }
 
-// sendRaw writes a raw WebSocket frame on an agent control connection,
+// sendRawFrame writes a raw WebSocket frame on an agent control connection,
 // serialized per connection via the same mutex as sendControl. Used to send
 // the WS close frame (code 4001) on deliberate termination.
-func (m *relayManager) sendRaw(conn *websocket.Conn, msgType int, data []byte) error {
+func (m *relayManager) sendRawFrame(conn *ws.Conn, msgType int, data []byte) {
 	if conn == nil {
-		return errors.New("nil control connection")
+		return
 	}
 	m.mu.Lock()
 	mu, ok := m.connMu[conn]
@@ -155,10 +151,7 @@ func (m *relayManager) sendRaw(conn *websocket.Conn, msgType int, data []byte) e
 	m.mu.Unlock()
 	mu.Lock()
 	defer mu.Unlock()
-	if err := conn.SetWriteDeadline(time.Now().Add(relayWriteWait)); err != nil {
-		return err
-	}
-	return conn.WriteMessage(msgType, data)
+	_ = conn.WriteFrame(msgType, data)
 }
 
 // close tears down a relay by id. It is idempotent.
@@ -226,25 +219,22 @@ func (m *relayManager) teardown(e *relayEntry) {
 	if m.revokeToken != nil {
 		m.revokeToken(e.token)
 	}
-	// Close only the relay (agent) side. relayToBrowser will observe the
-	// read error and send the WS 4000 close frame to the browser before
-	// calling teardownRelay itself. Closing the browser here would race
-	// with that write and cause the browser to receive 1006 instead.
+	// Close the relay (agent) side. If the pipe goroutines are running,
+	// relayToBrowser will observe the read error, send the 4000 close
+	// frame to the browser, and call teardownRelay itself.
 	e.relayMu.Lock()
 	if e.relay != nil {
 		e.relay.Close()
 	}
 	e.relayMu.Unlock()
-	// If the relay connection was never established (agent never dialled
-	// /ws/relay), the entry is still waiting in relayToBrowser on
-	// e.attached. Close done so it unblocks and falls through to the
-	// no-relay return path, then call teardownRelay to close the browser.
-	select {
-	case <-e.attached:
-		// relay was attached — relayToBrowser will send 4000 and clean up.
-	default:
-		// relay was never attached — no relayToBrowser read loop running yet;
-		// fall back to direct teardown.
+
+	// If pipe goroutines are running (startRelayPipes was called),
+	// relayToBrowser will observe the relay-conn close above and take care
+	// of sending the 4000 close frame and calling teardownRelay itself.
+	// Otherwise (unit-test paths that skip startRelayPipes), call
+	// teardownRelay directly so the browser conn and done channel are
+	// properly closed.
+	if !e.pipesStarted {
 		teardownRelay(e, false)
 	}
 }
