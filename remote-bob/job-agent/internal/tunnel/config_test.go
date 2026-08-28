@@ -8,9 +8,8 @@ import (
 	"time"
 )
 
-// setConfigEnv sets the minimal valid env for LoadConfig and returns a
-// cleanup function. Tests that want to exercise a missing variable unset it
-// after calling this.
+// setConfigEnv sets the minimal valid env for LoadConfig.
+// Tests that want to exercise a missing variable unset it after calling this.
 func setConfigEnv(t *testing.T) {
 	t.Helper()
 	t.Setenv("AGENT_ID", "agent-1")
@@ -18,7 +17,6 @@ func setConfigEnv(t *testing.T) {
 	t.Setenv("GATEWAY_WSS", "ws://gateway:8080/ws")
 	t.Setenv("BOBSHELL_API_KEY", "bob-key")
 	runTokenSecretPath = "/nonexistent/run-token"
-	bobAPIKeySecretPath = "/nonexistent/api-key"
 }
 
 func TestLoadConfig_MissingAgentID(t *testing.T) {

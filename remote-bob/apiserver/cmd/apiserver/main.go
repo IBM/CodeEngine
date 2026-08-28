@@ -27,9 +27,8 @@ func main() {
 	}
 
 	log.Info("apiserver_starting", map[string]interface{}{
-		"port":       port,
-		"local_mode": cfg.LocalMode,
-		"log_level":  cfg.LogLevel,
+		"port":      port,
+		"log_level": cfg.LogLevel,
 	})
 
 	// Create the server. The run token signing key is the ENCRYPTION_KEY so

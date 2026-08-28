@@ -11,9 +11,10 @@ USER root
 
 WORKDIR /src
 COPY job-agent/go.mod job-agent/go.sum ./
+RUN go mod download
 COPY job-agent/cmd ./cmd
 COPY job-agent/internal ./internal
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod=vendor -o /out/job-agent ./cmd/job-agent
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/job-agent ./cmd/job-agent
 
 # Prepare the Bob Shell tarball for the runtime stage. run.sh downloads the
 # latest release from https://bob.ibm.com/releases?bob=shell and caches it in
@@ -89,10 +90,6 @@ RUN mkdir -p /home/jobagent/.bob/settings \
         > /home/jobagent/.bob/settings/settings.json \
     && jq -n '{"version":1,"folders":{"/workspace":"TRUST_FOLDER"}}' > /home/jobagent/.bob/trustedFolders.json \
     && chown -R jobagent:jobagent /home/jobagent/.bob
-
-# Install the custom Bob modes (e.g. autonomous-loop-planner for BOB_MODE=plan)
-COPY job-agent/bob-config/settings/custom_modes.yaml /home/jobagent/.bob/settings/custom_modes.yaml
-RUN chown jobagent:jobagent /home/jobagent/.bob/settings/custom_modes.yaml
 
 # Create workspace directory owned by jobagent
 RUN mkdir -p /workspace && chown jobagent:jobagent /workspace

@@ -3,9 +3,9 @@ FROM quay.io/projectquay/golang:1.26 AS build
 USER root
 WORKDIR /src
 COPY go.mod go.sum ./
-COPY vendor ./vendor
+RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /apiserver ./cmd/apiserver
+RUN CGO_ENABLED=0 GOOS=linux go build -o /apiserver ./cmd/apiserver
 
 # Stage 2: runtime
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest

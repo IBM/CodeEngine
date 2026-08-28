@@ -18,15 +18,11 @@ const (
 	defaultTTYDReadyWait  = 30 * time.Second
 	defaultTmuxDeathGrace = 5 * time.Second
 	defaultRunTokenFile   = "/secrets/run-token"
-	defaultBobAPIKeyFile  = "/secrets/bobshell/api-key"
 )
 
-// Secret file paths are package variables so tests can redirect them to
-// temporary files.
-var (
-	runTokenSecretPath  = defaultRunTokenFile
-	bobAPIKeySecretPath = defaultBobAPIKeyFile
-)
+// runTokenSecretPath is a package variable so tests can redirect it to a
+// temporary file.
+var runTokenSecretPath = defaultRunTokenFile
 
 // Config holds the job-agent tunnel daemon configuration, loaded from the
 // environment and mounted secret files.
@@ -103,25 +99,13 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("invalid BOB_MODE %q: must be one of interactive, plan, auto", cfg.BobMode)
 	}
 
-	apiKey, err := loadBobShellAPIKey()
-	if err != nil {
-		return nil, err
+	apiKey := os.Getenv("BOBSHELL_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("BOBSHELL_API_KEY is required")
 	}
 	cfg.BobShellAPIKey = apiKey
 
 	return cfg, nil
-}
-
-// loadBobShellAPIKey reads the Bob Shell API key from the mounted secret file
-// or the environment.
-func loadBobShellAPIKey() (string, error) {
-	if key, err := readSecretFile(bobAPIKeySecretPath); err == nil && key != "" {
-		return key, nil
-	}
-	if key := os.Getenv("BOBSHELL_API_KEY"); key != "" {
-		return key, nil
-	}
-	return "", fmt.Errorf("Bob Shell API key not found (set BOBSHELL_API_KEY or mount it at %s)", bobAPIKeySecretPath)
 }
 
 // readSecretFile reads and trims a mounted secret file.
