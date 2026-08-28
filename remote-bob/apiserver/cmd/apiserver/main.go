@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/api"
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/config"
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/api"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/config"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
 )
 
 func main() {

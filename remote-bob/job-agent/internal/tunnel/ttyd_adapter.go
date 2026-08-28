@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/log"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/ws"
 )
 
 // ttyd 1.7.7 binary protocol opcodes (ASCII prefix bytes on binary frames).

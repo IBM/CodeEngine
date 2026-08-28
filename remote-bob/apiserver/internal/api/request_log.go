@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
 )
 
 // credentialQueryParams are query parameters whose values must never be

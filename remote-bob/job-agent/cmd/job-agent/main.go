@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/tunnel"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/log"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/tunnel"
 )
 
 func main() {

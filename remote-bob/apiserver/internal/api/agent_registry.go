@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 // Service describes a service registered by an agent.

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 // nowPlus returns a time d in the future.

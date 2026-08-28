@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/log"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/ws"
 )
 
 // Control message types on the agent control connection (JSON text frames).

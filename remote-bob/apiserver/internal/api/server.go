@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 const (

@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/ws"
 )
 
 // TestTTYDHandshake verifies the 1.7.7 binary JSON handshake

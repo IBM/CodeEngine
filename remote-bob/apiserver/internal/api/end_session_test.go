@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 // ---------------------------------------------------------------------------

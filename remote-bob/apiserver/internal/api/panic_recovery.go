@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
 )
 
 // panicRecovery wraps a handler so that a panic in any handler returns a 500

@@ -3,8 +3,8 @@ package api
 import (
 	"encoding/binary"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/log"
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/log"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 // closeCodeAgentGone is the application-level WS close code sent to the

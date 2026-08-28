@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/job-agent/internal/ws"
+	"github.com/CodeEngine/remote-bob-job-agent/internal/ws"
 )
 
 // testControlServer is a fake apiserver control endpoint for tests. It

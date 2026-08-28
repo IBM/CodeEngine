@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/JORDANJ/remote-bob/apiserver/internal/ws"
+	"github.com/CodeEngine/remote-bob-apiserver/internal/ws"
 )
 
 // newWSServer builds a Server with only the WS routes registered (no
