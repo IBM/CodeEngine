@@ -1,6 +1,6 @@
 ---
 title: "Remote Bob: Run Bob Shell in IBM Cloud Code Engine"
-date: 2026-08-28
+date: 2026-09-01
 description: "Spin up a full Bob Shell terminal running autonomously in IBM Cloud Code Engine — sandboxed, persistent, and accessible from any browser in under 20 minutes."
 tags: ["Bob", "code engine", "serverless", "AI", "automation"]
 featureImage: "featured.jpg"
@@ -55,7 +55,7 @@ Because the apiserver scales to zero between sessions and job runs are stopped w
 
 ## Prerequisites
 
-Before you begin, make sure you have the following in place. You will need a Bob subscription (or free trial), an IBM Cloud account with the right permissions, two API keys (one for IBM Cloud, one for Bob Shell), and a handful of CLI tools that the launcher script relies on. Everything else — the Code Engine project, container images, secrets — is created automatically by `./remote-bob --setup`.
+Before you begin, make sure you have the following in place. You will need a Bob subscription (or free trial), an IBM Cloud account with the right permissions, two API keys (one for IBM Cloud, one for Bob Shell), a gateway password you choose yourself, and a handful of CLI tools that the launcher script relies on. Everything else — the Code Engine project, container images, secrets — is created automatically by `./remote-bob --setup`.
 
 - **Bob subscription** — An active Bob subscription or [free trial](https://bob.ibm.com) is required to obtain a Bob Shell API key
 - **IBM Cloud account** — With permission to create Code Engine projects and Container Registry namespaces
@@ -63,7 +63,7 @@ Before you begin, make sure you have the following in place. You will need a Bob
 - **Bob Shell API key** — From [bob.ibm.com](https://bob.ibm.com) → Settings → API Keys
 - **`ibmcloud` CLI** — [Install](https://cloud.ibm.com/docs/cli); the `code-engine` plugin is installed automatically by the launcher
 - **`jq`**, **`curl`**, **`openssl`** — `brew install jq` / `apt install jq`; curl and openssl are pre-installed on macOS and most Linux distros
-- **Google Chrome** — Auto-detected on macOS and Linux
+- **Google Chrome** — Auto-detected on macOS and Linux. Chrome is the most widely used browser and is what the launcher opens automatically; the browser client is a standard HTML/WebSocket page and can be opened in any modern browser manually if you prefer a different one
 
 ---
 
@@ -75,7 +75,7 @@ Before you begin, make sure you have the following in place. You will need a Bob
 git clone https://github.com/IBM/CodeEngine
 cd CodeEngine/remote-bob
 
-# Copy the config template and fill in your three keys
+# Copy the config template and fill in the two API keys and gateway password
 cp .env.template .env
 ```
 
@@ -199,7 +199,7 @@ ttyd → tmux → Bob Shell
 
 **Apiserver** is a thin authenticated relay deployed as a Code Engine application. It maintains an in-memory agent registry, issues short-lived single-use tokens, and proxies WebSocket frames between the browser and the job-agent without inspecting the payload. It scales to zero when no agent is connected — zero idle cost.
 
-**Job-agent** is a Go binary deployed as a Code Engine job run. On startup it dials the apiserver control WebSocket, registers the `ttyd` service, and handles relay connections by piping raw frames between the apiserver and a local `ttyd` process. It runs `tmux` → Bob Shell inside `ttyd` and provides a health endpoint for the job run lifecycle. An idle timeout shuts it down automatically.
+**Job-agent** is a Go binary deployed as a Code Engine job run. On startup it dials the apiserver control WebSocket, registers the `ttyd` service, and handles relay connections by piping raw frames between the apiserver and a local `ttyd` process. It runs `tmux` → Bob Shell inside `ttyd` and provides a health endpoint for the job run lifecycle. Code Engine job runs have a maximum execution time of 24 hours, which is also the maximum lifetime of a Remote Bob session. For workloads that must run beyond that limit, Code Engine's [daemon run mode](https://cloud.ibm.com/docs/codeengine?topic=codeengine-job-daemon) is the path forward.
 
 **Browser client** is a single self-contained HTML file loaded from `file://`. It authenticates with the gateway password, opens a WebSocket relay connection, and renders the terminal using xterm.js — no server-side rendering, no CDN dependencies.
 
@@ -225,9 +225,7 @@ The `--new-session` flow is scriptable. You can trigger a Remote Bob session fro
 
 ### Team Shared Agents
 
-Technically, multiple people can `--connect` to the same running session as long as they have the gateway password. In practice, the setup is personal by design — the IBM Cloud account and Bob subscription being used belong to whoever ran `--setup`. For personal use, one person at a time is the natural model.
-
-That said, if the system is provisioned using a shared IBM Cloud account and a functional ID with a team Bob subscription, the session can be shared across a team. In that context, `--connect` makes it easy to hand off a task mid-flight, do a pair-programming style review of what Bob is working on, or demonstrate a live agentic workflow to a colleague.
+Remote Bob is personal by design — the IBM Cloud account and Bob subscription belong to whoever ran `--setup`, and one session runs at a time. That said, multiple people can `--connect` to the same running session using the gateway password. This makes it straightforward to hand off a long-running task mid-flight, review what Bob is working on in real time, or demonstrate a live agentic workflow to a colleague — without any re-provisioning.
 
 ---
 
@@ -250,17 +248,15 @@ Remote Bob demonstrates a pattern that becomes increasingly useful as AI agents 
 
 IBM Cloud Code Engine is a natural fit for this. Job runs give you isolated, ephemeral containers that start in seconds and cost nothing when idle. The apiserver application scales to zero between sessions. The total infrastructure footprint is minimal, and the total idle cost is zero.
 
-Three API keys, one command to provision, one command to start — and Bob is running in the cloud. No infrastructure to manage, no servers to maintain, and nothing running idle when you are not using it. That is the promise of Remote Bob, and Code Engine is what makes it possible.
+Two API keys, one gateway password, one command to provision, one command to start — and Bob is running in the cloud. No infrastructure to manage, no servers to maintain, and nothing running idle when you are not using it. That is the promise of Remote Bob, and Code Engine is what makes it possible.
 
 ## Try It — and Make It Your Own
 
-Get the code from the [CodeEngine sample repository](https://github.com/IBM/CodeEngine), fill in your three keys, and run `--setup`. From there, the system is yours to extend.
+Get the code from the [CodeEngine sample repository](https://github.com/IBM/CodeEngine), fill in the two API keys and gateway password, and run `--setup`. From there, the system is yours to extend.
 
 **Add the tools you need.** The job-agent is a standard container. If Bob needs a tool — a specific CLI, a language runtime, a build toolchain — add it to the Dockerfile. The next `--setup` rebuilds the image and every subsequent session has it available.
 
-**Persist your work across sessions.** By default each session starts from a clean container. If you want Bob to pick up where it left off — keeping a workspace, a git clone, or accumulated context — connect a [Code Engine persistent volume](https://cloud.ibm.com/docs/codeengine?topic=codeengine-getting-started) to the job and mount it into the workspace directory. Files written there survive across sessions.
-
-**Work with data elegantly.** Code Engine integrates natively with IBM Cloud Object Storage. Mount a bucket directly into the job container and Bob can read and write files at scale without any additional infrastructure — useful for large datasets, build artefacts, or shared outputs between sessions.
+**Persist your work across sessions.** By default each session starts from a clean container. If you want Bob to pick up where it left off — keeping a workspace, a git clone, or accumulated context — connect a [Code Engine persistent data store](https://cloud.ibm.com/docs/codeengine?topic=codeengine-persistent-data-store) to the job and mount it into the workspace directory. Files written there survive across sessions. For larger datasets or shared outputs between sessions, Code Engine also integrates natively with IBM Cloud Object Storage — mount a bucket directly into the job container and Bob can read and write files at scale without any additional infrastructure.
 
 **Run your own MCP server.** Deploy any MCP server as a Code Engine application alongside the apiserver, wire up the URL as an environment variable in the job-agent secret, and Bob will have access to it in every session. Your tools, your APIs, your data sources — all reachable from the cloud agent without exposing anything to the public internet.
 
