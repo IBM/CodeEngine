@@ -28,27 +28,27 @@ cp .env.template .env
 #   IBMCLOUD_API_KEY=...
 
 # 2. Provision IBM Cloud resources and build container images (~20 min first time)
-./run.sh --setup
+./remote-bob --setup
 
 # 3. Start a session — opens a Chrome terminal window
-./run.sh --new-session
+./remote-bob --new-session
 
 # 4. Close the browser window when done. The session keeps running in the cloud.
 
 # 5. Reopen the browser for the same running session
-./run.sh --connect
+./remote-bob --connect
 
 # 6. End the session (stops the job run; infrastructure stays for fast restart)
-./run.sh --end-session
+./remote-bob --end-session
 
 # 7. Start another session without rebuilding
-./run.sh --new-session
+./remote-bob --new-session
 
 # 8. Remove all IBM Cloud resources when finished
-./run.sh --clean
+./remote-bob --clean
 
 # Check current status at any time
-./run.sh
+./remote-bob
 ```
 
 ---
@@ -132,7 +132,7 @@ remote-bob/
 │   └── go.mod
 ├── browser-client/      # Static xterm.js terminal page (file://)
 │   └── single-session.html
-├── run.sh               # Launcher — all commands
+├── remote-bob               # Launcher — all commands
 ├── .env.template        # Config template
 └── README.md
 ```

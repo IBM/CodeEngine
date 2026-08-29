@@ -2,14 +2,14 @@
 # Remote Bob — Code Engine launcher
 #
 # Workflow:
-#   1. ./run.sh --setup          # first time: provision infra + build images
-#   2. ./run.sh --new-session    # start a job run and open the browser
-#   3. ./run.sh --connect        # reopen the browser (session still running)
-#   4. ./run.sh --end-session    # kill the job run (infra stays)
-#   5. ./run.sh --setup          # rebuild after code changes (re-runs step 1)
-#   6. ./run.sh --clean          # remove all IBM Cloud resources
+#   1. ./remote-bob --setup          # first time: provision infra + build images
+#   2. ./remote-bob --new-session    # start a job run and open the browser
+#   3. ./remote-bob --connect        # reopen the browser (session still running)
+#   4. ./remote-bob --end-session    # kill the job run (infra stays)
+#   5. ./remote-bob --setup          # rebuild after code changes (re-runs step 1)
+#   6. ./remote-bob --clean          # remove all IBM Cloud resources
 #
-# ./run.sh with no arguments prints the current session status.
+# ./remote-bob with no arguments prints the current session status.
 #
 # All config is read from .env (default) or --config=FILE.
 # .env is never modified at runtime — all session state comes from IBM Cloud.
@@ -91,7 +91,6 @@ JOB_NAME="${JOB_NAME:-remote-bob-job-agent}"
 DEFAULT_CPU="${DEFAULT_CPU:-1}"
 DEFAULT_MEMORY="${DEFAULT_MEMORY:-2G}"
 DEFAULT_TIMEOUT="${DEFAULT_TIMEOUT:-86400}"
-CE_CLEANUP_APP="${CE_CLEANUP_APP:-delete}"
 CHROME_DEBUG_PORT="${CHROME_DEBUG_PORT:-}"
 
 if (( DEFAULT_TIMEOUT > 86400 )); then DEFAULT_TIMEOUT=86400; fi
@@ -330,7 +329,7 @@ launch_chrome() {
     print_msg "  Agent:  $AGENT_ID"
     print_msg "  API:    ${API_SERVER_URL}"
     print_msg "\nSession continues in the background when you close the window."
-    print_msg "Run './run.sh --end-session' to terminate.\n"
+    print_msg "Run './remote-bob --end-session' to terminate.\n"
 
     "$chrome_bin" "${args[@]}" >/dev/null 2>&1 &
     local pid=$!
@@ -345,7 +344,7 @@ launch_chrome() {
     fi
 
     rm -rf "$user_data"
-    print_msg "\nBrowser window closed. Press Ctrl+C to exit, or run './run.sh --connect' to reopen.\n"
+    print_msg "\nBrowser window closed. Press Ctrl+C to exit, or run './remote-bob --connect' to reopen.\n"
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -365,7 +364,7 @@ if [[ "$CMD" == setup ]]; then
 
     deploy_job_agent "$API_SERVER_URL"
 
-    print_success "\n========== Setup complete — run './run.sh --new-session' to start ==========\n"
+    print_success "\n========== Setup complete — run './remote-bob --new-session' to start ==========\n"
     exit 0
 fi
 
@@ -379,18 +378,18 @@ if [[ "$CMD" == new-session ]]; then
 
     # Guard: setup must have been run first.
     if ! ibmcloud ce application get --name "$APISERVER_APP_NAME" &>/dev/null; then
-        print_error "Apiserver not deployed. Run './run.sh --setup' first."
+        print_error "Apiserver not deployed. Run './remote-bob --setup' first."
         exit 1
     fi
     if ! job_exists; then
-        print_error "Job not built. Run './run.sh --setup' first."
+        print_error "Job not built. Run './remote-bob --setup' first."
         exit 1
     fi
 
     # Warn if a session is already live — don't start a second one.
     if find_live_session; then
         print_error "A session is already running (agent: $AGENT_ID)."
-        print_msg "Run './run.sh --connect' to reopen it, or './run.sh --end-session' to end it first."
+        print_msg "Run './remote-bob --connect' to reopen it, or './remote-bob --end-session' to end it first."
         exit 1
     fi
 
@@ -415,7 +414,7 @@ if [[ "$CMD" == connect ]]; then
     print_msg "\nLooking for live session..."
     if ! find_live_session; then
         print_error "No live session found (app not reachable or no ready agent)."
-        print_msg "Run './run.sh --new-session' to start one."
+        print_msg "Run './remote-bob --new-session' to start one."
         exit 1
     fi
 
@@ -454,7 +453,7 @@ if [[ "$CMD" == end-session ]]; then
     done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
         | jq -r '.[].name // empty' 2>/dev/null || true)
 
-    print_success "\n========== Session ended — run './run.sh --new-session' to start another ==========\n"
+    print_success "\n========== Session ended — run './remote-bob --new-session' to start another ==========\n"
     exit 0
 fi
 
@@ -521,22 +520,22 @@ if [[ "$app_exists" == false && "$job_exists_flag" == false ]]; then
     print_msg "  Infrastructure:  not set up"
     print_msg "  Session:         none"
     print_msg ""
-    print_msg "  Next step:  ./run.sh --setup"
+    print_msg "  Next step:  ./remote-bob --setup"
 elif [[ "$app_exists" == true && "$job_exists_flag" == true && "$live_session" == false ]]; then
     print_msg "  Infrastructure:  ready"
     print_msg "  Session:         none running"
     print_msg ""
-    print_msg "  Next step:  ./run.sh --new-session"
+    print_msg "  Next step:  ./remote-bob --new-session"
 elif [[ "$live_session" == true ]]; then
     print_msg "  Infrastructure:  ready"
     print_msg "  Session:         running (agent: $AGENT_ID)"
     print_msg ""
-    print_msg "  Next steps: ./run.sh --connect      (open browser)"
-    print_msg "              ./run.sh --end-session   (stop session)"
+    print_msg "  Next steps: ./remote-bob --connect      (open browser)"
+    print_msg "              ./remote-bob --end-session   (stop session)"
 else
     print_msg "  Infrastructure:  partial (app=$app_exists, job=$job_exists_flag)"
     print_msg "  Session:         unknown"
     print_msg ""
-    print_msg "  Next step:  ./run.sh --setup"
+    print_msg "  Next step:  ./remote-bob --setup"
 fi
 print_msg ""
