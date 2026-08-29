@@ -41,9 +41,6 @@ func NewWSTokenStore(ttl time.Duration) *WSTokenStore {
 	return s
 }
 
-// TTL returns the token lifetime.
-func (s *WSTokenStore) TTL() time.Duration { return s.ttl }
-
 // Issue generates a new single-use token valid for the store's TTL.
 func (s *WSTokenStore) Issue() (string, error) {
 	token, err := randomToken()
