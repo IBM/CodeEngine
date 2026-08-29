@@ -19,7 +19,7 @@
  * for a fresh single-use WS token (no re-prompt); the existing token is
  * reused only for a retry after a first connect that never consumed it.
  *
- * To end a session use:  ./run.sh --end-session --config=.env
+ * To end a session use:  ./remote-bob --end-session --config=.env
  */
 
 (function () {

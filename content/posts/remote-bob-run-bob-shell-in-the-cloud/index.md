@@ -97,7 +97,7 @@ That is it. Everything else — region, resource group name, container image tag
 
 Running `./remote-bob` with no arguments logs in to IBM Cloud and prints a status summary. On first run it creates the resource group and Code Engine project, then tells you what to do next.
 
-![Status output showing IBM Cloud login and initial setup](setup-status.png)
+![Status output showing IBM Cloud login and initial setup](01-status.png)
 
 ### Step 3: Provision infrastructure and build images
 
@@ -107,7 +107,7 @@ Running `./remote-bob` with no arguments logs in to IBM Cloud and prints a statu
 
 `--setup` is idempotent: it creates the Code Engine project, provisions secrets, builds the apiserver container image and the job-agent container image, and deploys the apiserver as a Code Engine application. The first run takes a few minutes because both images are built from source on Code Engine. Subsequent runs skip steps that are already complete and only rebuild if source code has changed.
 
-![--setup output: building apiserver and job-agent, deploying application](setup-build.png)
+![--setup output: building apiserver and job-agent, deploying application](02-setup.png)
 
 At the end of setup you will see the apiserver URL and a prompt to run `--new-session`.
 
@@ -119,21 +119,21 @@ At the end of setup you will see the apiserver URL and a prompt to run `--new-se
 
 This submits a new Code Engine job run, waits for the agent to connect to the apiserver (typically under 30 seconds), and then opens a Chrome window pointed at the browser client.
 
-![--new-session output: job submitted, agent ready after 18s, browser opening](new-session.png)
+![--new-session output: job submitted, agent ready after 21s, browser opening](03-new-session.png)
 
 ### Step 5: Log in and start working
 
 The browser client is a self-contained HTML page served from `file://` — no web server required. It prompts for your gateway password, then opens a full xterm.js terminal connected over WebSocket to your Bob Shell session running in Code Engine.
 
-![Browser login screen for the Remote Bob gateway](browser-login.png)
+![Browser login screen for the Remote Bob gateway](04-browser-login.png)
 
 Once authenticated, you are in Bob Shell — the same experience you would have locally, but running as an isolated job in the cloud.
 
-![Bob Shell welcome screen running inside Code Engine](bob-shell-welcome.png)
+![Bob Shell welcome screen running inside Code Engine](05-bob-shell-welcome.png)
 
 Bob Shell in the cloud has the full set of capabilities: writing and running code in any language, executing CLI commands, managing files, calling external APIs, and working through multi-step agentic tasks autonomously.
 
-![Bob Shell capabilities — code, architecture, tooling, data, configuration](bob-shell-capabilities.png)
+![Bob Shell capabilities — code, architecture, tooling, data, configuration](06-bob-shell-capabilities.png)
 
 ### Step 6: Disconnect and reconnect
 
@@ -147,17 +147,17 @@ To reconnect from any machine:
 
 `--connect` queries IBM Cloud for the live session, constructs the browser client URL, and opens Chrome again. No re-provisioning, no waiting.
 
-![--connect output: live session found, browser opening](connect.png)
+![--connect output: live session found, browser opening](07-connect.png)
 
 ### Step 7: View the running job in IBM Cloud
 
 You can also monitor the session directly from the IBM Cloud console. Navigate to your Code Engine project and open the Jobs section. You will see the job run listed as **Running**.
 
-![Code Engine console showing the job run in Running state](ce-job-running.png)
+![Code Engine console showing the job run in Running state](08-ce-job-running.png)
 
 Only one session can be active at a time — `--new-session` will refuse to start if one is already running. Once you end a session with `--end-session`, you can start a fresh one. The IBM Cloud console keeps a history of all job runs, showing completed sessions alongside the current one.
 
-![Code Engine console showing multiple job runs — one running, one succeeded](ce-job-runs.png)
+![Code Engine console showing multiple job runs — one running, one succeeded](09-ce-job-runs.png)
 
 ### Step 8: End the session and clean up
 

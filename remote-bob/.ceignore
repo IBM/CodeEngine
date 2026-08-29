@@ -12,7 +12,7 @@ apiserver/
 browser-client/
 
 # Launcher script and docs
-run.sh
+remote-bob
 README.md
 .gitignore
 .ceignore

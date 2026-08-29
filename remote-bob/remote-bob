@@ -111,16 +111,22 @@ ibmcloud_setup() {
     ensure_plugin_is_up_to_date code-engine
 
     print_msg "\nLogging in to IBM Cloud (region: $CE_REGION, resource group: $RESOURCE_GROUP)"
-    ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -g "$RESOURCE_GROUP" -q 2>/dev/null || {
-        ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -q
-        ibmcloud resource group "$RESOURCE_GROUP" -q 2>/dev/null || ibmcloud resource group-create "$RESOURCE_GROUP"
-        ibmcloud target -g "$RESOURCE_GROUP" -q
-    }
+    # Login without -g first: ibmcloud login -g exits 0 even when targeting
+    # fails (emits "No resource group targeted" on stdout), so we always do
+    # login + target as two explicit steps to ensure targeting is reliable.
+    ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -q &>/dev/null \
+        || { print_error "IBM Cloud login failed — check IBMCLOUD_API_KEY"; exit 1; }
+
+    # Ensure the resource group exists, then target it.
+    ibmcloud resource group "$RESOURCE_GROUP" -q 2>/dev/null \
+        || ibmcloud resource group-create "$RESOURCE_GROUP" -q 2>/dev/null
+    ibmcloud target -g "$RESOURCE_GROUP" -q &>/dev/null \
+        || { print_error "Failed to target resource group '$RESOURCE_GROUP'"; exit 1; }
 
     print_msg "\nEnsuring Code Engine project '$CE_PROJECT'"
     if ! ibmcloud ce project select --name "$CE_PROJECT" -q 2>/dev/null; then
-        ibmcloud ce project create --name "$CE_PROJECT"
-        ibmcloud ce project select --name "$CE_PROJECT" -q
+        ibmcloud ce project create --name "$CE_PROJECT" -q 2>/dev/null
+        ibmcloud ce project select --name "$CE_PROJECT" -q 2>/dev/null
     fi
 }
 
@@ -156,8 +162,8 @@ deploy_apiserver() {
         ibmcloud ce application create \
             --name "$APISERVER_APP_NAME" \
             --build-source "$APISERVER_DIR" \
-            --port 8080 --min-scale 0 --max-scale 20 \
-            --cpu 0.5 --memory 1G --concurrency 100 \
+            --port 8080 --min-scale 0 --max-scale 10 \
+            --cpu 0.5 --memory 1G --concurrency 10 \
             --env-from-secret remote-bob-gateway \
             --wait
     fi
