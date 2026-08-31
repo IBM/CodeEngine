@@ -250,13 +250,27 @@ start_session() {
         -H "Authorization: $(auth_header)" | jq -r '.run_token // empty')"
     [[ -n "$run_token" ]] || { print_error "POST /auth/runs returned no run_token"; exit 1; }
 
+    # Store the run token in a short-lived CE secret so it never appears as a
+    # literal env var in the job run configuration. The secret is deleted as
+    # soon as the job run has started (the value is already injected into the
+    # running container by then).
     local ce_job_run_name="${JOB_NAME}-${AGENT_ID#agent-}"
+    local run_secret_name="$ce_job_run_name"
+    ibmcloud ce secret create \
+        --name "$run_secret_name" \
+        --from-literal "RUN_TOKEN=$run_token" -q \
+        || { print_error "Failed to create run secret $run_secret_name"; exit 1; }
+
+    # Pass both secrets: --env-from-secret on jobrun submit replaces (not
+    # appends to) the job definition's envFrom list, so remote-bob-bobshell
+    # must be repeated here or BOBSHELL_API_KEY will not be set in the container.
     ibmcloud ce jobrun submit \
         --name "$ce_job_run_name" \
         --job "$JOB_NAME" \
         --mode task \
         --env "AGENT_ID=$AGENT_ID" \
-        --env "RUN_TOKEN=$run_token" \
+        --env-from-secret remote-bob-bobshell \
+        --env-from-secret "$run_secret_name" \
         --cpu "$DEFAULT_CPU" \
         --memory "$DEFAULT_MEMORY" \
         --maxexecutiontime "$DEFAULT_TIMEOUT"
@@ -451,13 +465,25 @@ if [[ "$CMD" == end-session ]]; then
         fi
     fi
 
-    # Delete all running job runs for this job.
+    # Delete all running job runs.
     while IFS= read -r run_name; do
         [[ -z "$run_name" ]] && continue
         print_msg "\nDeleting job run: $run_name"
         ibmcloud ce jobrun delete --name "$run_name" --force 2>/dev/null || true
     done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
         | jq -r '.[].name // empty' 2>/dev/null || true)
+
+    # Delete all per-run secrets by prefix — the secret name equals the job run
+    # name but secrets persist independently of the job run lifecycle, so we
+    # enumerate secrets directly rather than relying on jobrun list.
+    while IFS= read -r secret_name; do
+        [[ -z "$secret_name" ]] && continue
+        print_msg "\nDeleting run secret: $secret_name"
+        ibmcloud ce secret delete --name "$secret_name" --force 2>/dev/null || true
+    done < <(ibmcloud ce secret list --output json 2>/dev/null \
+        | jq -r --arg prefix "${JOB_NAME}-" \
+            '[.[] | select(.name | startswith($prefix)) | .name] | .[]' \
+        2>/dev/null || true)
 
     print_success "\n========== Session ended — run './remote-bob --new-session' to start another ==========\n"
     exit 0
@@ -471,11 +497,12 @@ if [[ "$CMD" == clean ]]; then
 
     ibmcloud_setup
 
-    print_msg "\nDeleting all job runs for job: $JOB_NAME"
+    print_msg "\nDeleting all job runs and per-run secrets for job: $JOB_NAME"
     while IFS= read -r run_name; do
         [[ -z "$run_name" ]] && continue
         print_msg "  Deleting job run: $run_name"
         ibmcloud ce jobrun delete --name "$run_name" --force 2>/dev/null || true
+        ibmcloud ce secret delete --name "$run_name" --force 2>/dev/null || true
     done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
         | jq -r '.[].name // empty' 2>/dev/null || true)
 
