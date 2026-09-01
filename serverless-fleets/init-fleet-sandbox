@@ -20,7 +20,7 @@ IPS_PER_SUBNET=${IPS_PER_SUBNET:=1024}
 uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
 
 # Dependent variables
-resource_group_name="${NAME_PREFIX}--rg"
+resource_group_name=${RESOURCE_GROUP:="${NAME_PREFIX}--rg"}
 ce_project_name="${NAME_PREFIX}--ce-project"
 vpc_name="${NAME_PREFIX}--is-vpc"
 sshkey_name="${NAME_PREFIX}--sshkey"
