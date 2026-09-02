@@ -1,6 +1,6 @@
 ---
 title: "Luke Roy"
-text: "Cloud Sofware Engineer @ IBM Cloud Code Engine"
+text: "Cloud Software Engineer @ IBM Cloud Code Engine"
 ---
 
-Welcome to my blog post feed. 
+Welcome to my blog post feed.

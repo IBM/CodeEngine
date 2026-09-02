@@ -1,0 +1,27 @@
+# ── Secrets & local config ───────────────────────────────────────────────────
+# .env holds real credentials. Never commit it; only .env.template is tracked.
+.env
+
+# ── Go build artefacts ───────────────────────────────────────────────────────
+# Compiled binaries produced by `go build`.
+apiserver/apiserver
+job-agent/job-agent
+
+# Go vendor directories (populated by `go mod vendor`).
+apiserver/vendor/
+job-agent/vendor/
+
+# ── Bob Shell package cache ──────────────────────────────────────────────────
+# run.sh downloads and caches the Bob Shell tarball here before passing it
+# to the job-agent Docker build via --build-arg BOBSHELL_TARBALL.
+bobshell-*.tgz
+
+# ── Runtime scratch directories ──────────────────────────────────────────────
+# Chrome user-data dirs created by run.sh for local CDP / E2E sessions.
+tmp/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+
+# ── OS cruft ─────────────────────────────────────────────────────────────────
+.DS_Store

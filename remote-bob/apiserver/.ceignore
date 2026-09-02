@@ -1,0 +1,6 @@
+# CE source-upload ignore rules for the apiserver build context.
+# --build-source points to remote-bob/apiserver/ — this file lives there.
+# Dependencies are fetched by `go mod download` inside the build.
+.env*
+*.log
+tmp/
