@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 290" font-family="-apple-system,'Segoe UI',system-ui,sans-serif" font-size="12">
+  <!-- Background -->
+  <rect width="700" height="290" fill="#f7f8fa" rx="8"/>
+
+  <!--
+    Scale: y = 195 - (slots * 10)
+    0  slots → y=195
+    5  slots → y=145
+    8  slots → y=115
+    10 slots → y=95
+    12 slots → y=75
+
+    Ramp width: 15px scale-up, 10px scale-down.
+
+    x positions:
+    60:  start (rest, total=5, running=0)
+    120: +5 tasks → running steps 0→5; total ramps 5→8 ending at x=135
+    250: +5 tasks → running steps 5→8 instantly; total ramps 8→12 ending at x=265; running steps 8→10 at x=265
+    380: 5 done  → running steps 10→5 instantly; total ramps 12→10 ending at x=390
+    470: delay exp → total ramps 10→8 ending at x=480
+    560: 5 done  → running steps 5→0 instantly; total ramps 8→5 ending at x=570
+    630: end  (tail shortened from 720 to 630)
+  -->
+
+  <!-- Y-axis guide lines (stop at x=625, labels start at x=635) -->
+  <line x1="60" y1="195" x2="625" y2="195" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="145" x2="625" y2="145" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="115" x2="625" y2="115" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="95"  x2="625" y2="95"  stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="75"  x2="625" y2="75"  stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- Y labels -->
+  <text x="52" y="199" fill="#57606a" text-anchor="end" font-size="11">0</text>
+  <text x="52" y="149" fill="#57606a" text-anchor="end" font-size="11">5</text>
+  <text x="52" y="119" fill="#57606a" text-anchor="end" font-size="11">8</text>
+  <text x="52" y="99"  fill="#57606a" text-anchor="end" font-size="11">10</text>
+  <text x="52" y="79"  fill="#57606a" text-anchor="end" font-size="11">12</text>
+
+  <!-- scale_max ceiling at y=75 (12 slots) — red dashed -->
+  <line x1="60" y1="75" x2="625" y2="75" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="634" y="79" fill="#ef4444" font-size="10" text-anchor="start">max=12</text>
+
+  <!-- scale_min floor at y=145 (5 slots) — amber dashed -->
+  <line x1="60" y1="145" x2="625" y2="145" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="634" y="149" fill="#f59e0b" font-size="10" text-anchor="start">min=5</text>
+
+  <!--
+    FREE CAPACITY (green): single polygon.
+    Top edge = total slots line (steps at ramp-end for scale-up, ramp-start for scale-down).
+    Bottom edge = running tasks (instant steps), traced in reverse.
+
+    Top edge (left→right), steps at: x=135(→8), x=265(→12), x=380(→10), x=470(→8), x=560(→5)
+      60,145  135,145  135,115  265,115  265,75  380,75  380,95  470,95  470,115  560,115  560,145  630,145
+
+    Bottom edge (right→left), running steps:
+      630,195  560,195  560,145  380,145  380,95  265,95  265,115  250,115  250,145  120,145  120,195  60,195
+  -->
+  <polygon
+    points="
+      60,145  135,145  135,115  265,115  265,75  380,75  380,95  470,95  470,115  560,115  560,145  630,145
+      630,195
+      560,195  560,145
+      380,145  380,95
+      265,95  265,115
+      250,115  250,145
+      120,145  120,195
+      60,195
+    "
+    fill="#dcfce7" opacity="0.85"/>
+
+  <!-- RUNNING TASKS (blue): single polygon -->
+  <polygon
+    points="
+      60,195
+      120,195  120,145
+      250,145  250,115
+      265,115  265,95
+      380,95   380,145
+      560,145  560,195
+    "
+    fill="#dbeafe" opacity="0.75"/>
+
+  <!-- TOTAL SLOTS LINE -->
+  <polyline
+    points="60,145 120,145 135,115 250,115 265,75 380,75 390,95 470,95 480,115 560,115 570,145 630,145"
+    fill="none" stroke="#3b82d4" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- EVENT MARKERS -->
+  <line x1="120" y1="30" x2="120" y2="198" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="120" y="12" fill="#57606a" text-anchor="middle" font-size="10">+5 tasks</text>
+  <text x="120" y="22" fill="#57606a" text-anchor="middle" font-size="10">→ 8 slots</text>
+
+  <line x1="250" y1="30" x2="250" y2="198" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="250" y="12" fill="#57606a" text-anchor="middle" font-size="10">+5 tasks</text>
+  <text x="250" y="22" fill="#57606a" text-anchor="middle" font-size="10">→ 12 slots</text>
+
+  <line x1="380" y1="30" x2="380" y2="198" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="380" y="12" fill="#57606a" text-anchor="middle" font-size="10">5 done</text>
+  <text x="380" y="22" fill="#57606a" text-anchor="middle" font-size="10">→ 10 (delay)</text>
+
+  <line x1="470" y1="30" x2="470" y2="198" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="470" y="12" fill="#57606a" text-anchor="middle" font-size="10">delay exp.</text>
+  <text x="470" y="22" fill="#57606a" text-anchor="middle" font-size="10">→ 8 slots</text>
+
+  <line x1="560" y1="30" x2="560" y2="198" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="560" y="12" fill="#57606a" text-anchor="middle" font-size="10">5 done</text>
+  <text x="560" y="22" fill="#57606a" text-anchor="middle" font-size="10">→ min (5)</text>
+
+  <!-- scale_down_delay brace -->
+  <line x1="380" y1="207" x2="470" y2="207" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="380" y1="204" x2="380" y2="210" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="470" y1="204" x2="470" y2="210" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="425" y="221" fill="#f59e0b" text-anchor="middle" font-size="10">scale_down_delay</text>
+
+  <!-- Legend -->
+  <rect x="62" y="235" width="12" height="10" rx="2" fill="#dbeafe" opacity="0.9"/>
+  <text x="78" y="244" fill="#57606a" font-size="10">Running tasks</text>
+  <rect x="152" y="235" width="12" height="10" rx="2" fill="#dcfce7" opacity="0.9"/>
+  <text x="168" y="244" fill="#57606a" font-size="10">Free slots</text>
+  <line x1="224" y1="240" x2="238" y2="240" stroke="#3b82d4" stroke-width="2.5"/>
+  <text x="242" y="244" fill="#57606a" font-size="10">Total slots provisioned</text>
+  <line x1="392" y1="240" x2="406" y2="240" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="410" y="244" fill="#57606a" font-size="10">scale_min floor</text>
+  <line x1="502" y1="240" x2="516" y2="240" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="520" y="244" fill="#57606a" font-size="10">scale_max ceiling</text>
+
+  <!-- X-axis -->
+  <line x1="60" y1="195" x2="630" y2="195" stroke="#d0d7de" stroke-width="1.5"/>
+  <text x="345" y="260" fill="#57606a" text-anchor="middle" font-size="12">Time →</text>
+
+  <!-- Y-axis label -->
+  <text x="42" y="120" fill="#57606a" text-anchor="middle" transform="rotate(-90,42,120)" font-size="11">Container slots</text>
+</svg>
