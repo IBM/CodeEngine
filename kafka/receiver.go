@@ -14,19 +14,20 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("----------")
 	log.Printf("Path: %s", r.URL)
 
-	// Print the HTTP headrs so people can see the event metadata
+	// Print the HTTP headers so people can see the event metadata
 	headers := []string{}
-	for k, _ := range r.Header {
+	for k := range r.Header {
 		headers = append(headers, k)
 	}
 	sort.Strings(headers)
 	for _, k := range headers {
-		log.Printf("Header: %s=%s", k, r.Header[k])
+		// Log only the header name to avoid leaking sensitive header values
+		log.Printf("Header: %s=[REDACTED]", k)
 	}
 
 	// And now show the event data itself (in the HTTP body)
 	body, _ := io.ReadAll(r.Body)
-	log.Printf("Event data: %s", string(body))
+	log.Printf("Event data: %d bytes received", len(body))
 }
 
 func main() {

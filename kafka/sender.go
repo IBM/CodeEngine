@@ -55,7 +55,7 @@ func init() {
 	}
 
 	log.Printf("User: %s", user)
-	log.Printf("Password: %s", password[:5])
+	log.Printf("Password: [REDACTED]")
 	log.Printf("Brokers: %s", brokers)
 
 	// Make sure we're using TLS to talk to Event Streams
@@ -100,7 +100,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Sending %d msg(s) to topic: %s", num, topic)
+	log.Printf("Sending %d msg(s) to topic: %s", num, strings.ReplaceAll(topic, "\n", ""))
 	for i := 0; i < num; i++ {
 		msg := &sarama.ProducerMessage{
 			Topic:     topic,
