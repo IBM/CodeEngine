@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Move into the parent directory as the Dockerfile is located there
+cd ..
+
+docker build --platform linux/amd64 .

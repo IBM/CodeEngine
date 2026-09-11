@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nodejs-24:latest AS build-env
+FROM registry.access.redhat.com/ubi10/nodejs-24:latest AS build-env
 WORKDIR /opt/app-root/src
 COPY --chown=default:root job/* .
 RUN npm install
