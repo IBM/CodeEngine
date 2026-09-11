@@ -58,7 +58,7 @@ func main() {
 		stats.ByObject[event.Key] += 1
 
 		fmt.Printf("%s - Received:\n", daTime)
-		fmt.Printf("\nBody: %s\n", string(body))
+		fmt.Printf("\nBody: %d bytes received\n", len(body))
 	})
 
 	fmt.Printf("Listening on port 8080\n")

@@ -43,7 +43,7 @@ func MakeThumbnail(inBuf []byte) ([]byte, error) {
 }
 
 func CalcThumbnail(bucketName string, objectName string) error {
-	log.Printf("Processing: %s", objectName)
+	log.Printf("Processing: %s", strings.ReplaceAll(objectName, "\n", ""))
 	picture, err := COSClient.DownloadObject(bucketName, objectName)
 	if err != nil {
 		return fmt.Errorf("Error downloading %q: %s", objectName, err)
@@ -56,7 +56,7 @@ func CalcThumbnail(bucketName string, objectName string) error {
 			return fmt.Errorf("Error uploading %q:%s", objectName+"-thumb",
 				err)
 		} else {
-			log.Printf("Added: %s", objectName+"-thumb")
+			log.Printf("Added: %s", strings.ReplaceAll(objectName+"-thumb", "\n", ""))
 		}
 	} else {
 		return fmt.Errorf("Error processing %q: %s", objectName, err)
@@ -90,7 +90,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error reading event: %s", err)
 		return
 	}
-	log.Print("Got an event: %s", string(body))
+	log.Printf("Got an event: %d bytes", len(body))
 
 	if COSClient == nil {
 		log.Printf("Can't process since we're missing the COS connection")
@@ -101,7 +101,9 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	objectName := event.Notification.ObjectName
 
 	if event.Operation == "Object:Write" {
-		log.Printf("%s/%s was uploaded", bucketName, objectName)
+		log.Printf("%s/%s was uploaded",
+			strings.ReplaceAll(bucketName, "\n", ""),
+			strings.ReplaceAll(objectName, "\n", ""))
 
 		// Skip all objects that end with "-thumb" since those are thumbnails
 		if !strings.HasSuffix(objectName, "-thumb") {
@@ -109,11 +111,14 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 			err := CalcThumbnail(bucketName, objectName)
 			if err != nil {
 				log.Printf("Error making thumbnail for %s/%s: %s",
-					bucketName, objectName, err)
+					strings.ReplaceAll(bucketName, "\n", ""),
+					strings.ReplaceAll(objectName, "\n", ""), err)
 			}
 		}
 	} else {
-		log.Printf("%s/%s was deleted", bucketName, objectName)
+		log.Printf("%s/%s was deleted",
+			strings.ReplaceAll(bucketName, "\n", ""),
+			strings.ReplaceAll(objectName, "\n", ""))
 	}
 }
 

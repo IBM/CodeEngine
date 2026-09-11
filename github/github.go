@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // To verify events are from out github webhook set this to the "secert"
@@ -31,7 +32,7 @@ func VerifyEvent(req *http.Request, body []byte, secret string) bool {
 
 // Do whatever logic we need for the incoming event
 func ProcessEvent(eventType string, eventBody []byte) int {
-	log.Printf("Event Type: %s", eventType)
+	log.Printf("Event Type: %s", strings.ReplaceAll(eventType, "\n", ""))
 
 	// Only care about "push" events and "ping" for webhook creation
 	if eventType == "ping" {
@@ -42,7 +43,7 @@ func ProcessEvent(eventType string, eventBody []byte) int {
 	}
 
 	pretty, _ := json.MarshalIndent(json.RawMessage(eventBody), "", "  ")
-	log.Printf("\nEvent:\n%s", string(pretty))
+	log.Printf("\nEvent:\n%s", strings.ReplaceAll(string(pretty), "\r", ""))
 
 	// The following sample JSON is just a subset of the data in the event,
 	// but has the key bits we care about:
@@ -80,12 +81,14 @@ func ProcessEvent(eventType string, eventBody []byte) int {
 	// Parse the event data into the PushEvent object
 	err := json.Unmarshal(eventBody, &PushEvent)
 	if err != nil {
-		log.Printf("Error parsing:\n%s\n%s", err, string(eventBody))
+		log.Printf("Error parsing event body")
 		return http.StatusBadRequest
 	}
 
 	log.Printf("%s committed %q to %q branch",
-		PushEvent.Pusher.Name, PushEvent.After, PushEvent.Ref)
+		strings.ReplaceAll(PushEvent.Pusher.Name, "\n", ""),
+		strings.ReplaceAll(PushEvent.After, "\n", ""),
+		strings.ReplaceAll(PushEvent.Ref, "\n", ""))
 
 	// Now we'd normally do a build, but let's just fake it.
 	// To see how to kick off CodeEngine CLI commands from inside of an app
