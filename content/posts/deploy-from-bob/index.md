@@ -1,10 +1,10 @@
 ---
 title: "From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine"
-date: 2026-06-21
+date: 2026-07-02
 description: "Using Bob to deploy an app to Code Engine"
 tags: ["Bob", "serverless", "code engine", "AI"]
 featureImage: "featured.jpg"
-draft: true
+draft: false
 authors: ["uwefassnacht","jeremiaswerner"]
 ---
 
@@ -39,29 +39,34 @@ Don't worry if you're new to Code Engine—Bob will guide you through everything
 
 Bob's Code Engine expertise comes from a dedicated skill that you install once. This skill gives Bob deep knowledge of IBM Cloud Code Engine deployments, configurations, and troubleshooting.
 
-### 1.1 Open Bob
+### 1.1 Open Bob in an existing or new folder
 
-Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured).
+Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured). Either open an existing project folder or create a new one for Bob to work in.
 
 ### 1.2 Install the Code Engine Skill
 
 In Bob, type the following command:
 
-```
-Install the code-engine-specialist skill that you find in github.com/IBM/CodeEngine/skills/code-engine-specialist globally
+```text
+Install the code-engine-specialist skill in this workspace using the following command:
+
+npx skills add github:IBM/CodeEngine --skill code-engine-specialist -y 2>&1 || true
 ```
 
 Bob will:
 - Fetch the official IBM Code Engine skill directly from GitHub
-- Install it globally so it's available across all your projects
+- Install it in your workspace so it's available in your projects
 - Make the skill immediately available — no restart required
+
+> Note: If you want to install the skill globally, make sure you have enabled **Allow outside workspace tools**  (In the IBM Bob chat -> Settings (icon) -> Chat -> Allow outside workspace tool requests) 
+
 
 ### 1.3 Verify the Skill is Active
 
 Once installed, confirm the skill is available by asking Bob:
 
-```
-Do you have the code-engine-specialist-skill installed?
+```text
+Do you have the code-engine-specialist skill installed?
 ```
 
 Bob will confirm the skill is active and ready to use.
@@ -108,13 +113,13 @@ Targeted resource group Default
 
 Now let's have Bob verify your authentication. Tell Bob:
 
-```
+```text
 Check my IBM Cloud authentication
 ```
 
 Bob will run the verification and show you something like:
 
-```
+```text
 🔐 Authentication Status Check
 ---
 ✅ Authenticated as: your-email@example.com
@@ -135,7 +140,7 @@ Now for the fun part—let's have Bob create a simple static website for us!
 
 Tell Bob:
 
-```
+```text
 Create a simple hello world static website with HTML, CSS, and JavaScript
 ```
 
@@ -161,7 +166,7 @@ Now comes the exciting part—deploying to the cloud!
 
 Make sure you're in the directory with your website files, then tell Bob:
 
-```
+```text
 Deploy this website to Code Engine
 ```
 
@@ -183,13 +188,15 @@ Answer each question as it comes. Bob handles the rest.
 
 Once you've answered Bob's questions, it will build the container, push it to IBM Container Registry, and deploy it to Code Engine — reporting progress as it goes. When finished, Bob will give you a live URL.
 
+> **Note:** Some steps (e.g. project creation or application deployment) might take a minute or two ... be patient and follow the conversation
+
 Open that URL in your browser to see your Hello World site up and running.
 
 ### 4.4 View Application Details in IBM Cloud (Optional)
 
 If you'd like to explore the full application configuration, logs, and scaling settings in the IBM Cloud UI, ask Bob:
 
-```
+```text
 Give me a link to the code engine application details in the IBM Cloud UI
 ```
 
@@ -245,7 +252,7 @@ Edit your `index.html` file. For example, change the heading:
 
 Simply tell Bob:
 
-```
+```text
 Redeploy my website to Code Engine
 ```
 
@@ -262,29 +269,29 @@ The whole process takes just a few minutes!
 Now that you've deployed your first application, try asking Bob:
 
 ### View Your Application Status
-```
+```text
 Show me the status of my Code Engine application
 ```
 
 ### Check the Logs
-```
+```text
 Show me the logs for hello-world-site
 ```
 
 ### Scale Your Application
-```
+```text
 I am expecting more load. Can you increase the resources and number of instances?
 ```
 
 Bob may suggests different options, pick one and observe how Bob scales the application.
 
 ### Add Environment Variables
-```
+```text
 Add an environment variable API_KEY to my application
 ```
 
 ### Set Up a Custom Domain
-```
+```text
 How do I configure a custom domain for my Code Engine app?
 ```
 
@@ -292,7 +299,7 @@ Bob will guide you through each of these tasks conversationally!
 
 ### Delete the application
 
-```
+```text
 Delete the application
 ```
 
@@ -320,7 +327,7 @@ Now that you've deployed your first application with Bob and Code Engine, here a
 Create a Node.js Express API or Python Flask application and deploy it the same way.
 
 **Try this**: Tell Bob:
-```
+```text
 Create a simple REST API with Node.js and Express, then deploy it to Code Engine
 ```
 
@@ -331,7 +338,7 @@ Build an application with a frontend and backend, and deploy both to Code Engine
 Configure automatic deployments when you push to GitHub.
 
 **Ask Bob**:
-```
+```text
 How do I set up automatic deployments from GitHub to Code Engine?
 ```
 
@@ -339,7 +346,7 @@ How do I set up automatic deployments from GitHub to Code Engine?
 Code Engine isn't just for web applications—it can run batch jobs too!
 
 **Ask Bob**:
-```
+```text
 Show me how to run a batch job on Code Engine
 ```
 
@@ -371,7 +378,7 @@ If you run into issues, Bob is there to help! Here are some common scenarios:
 
 ### "My deployment failed"
 Ask Bob:
-```
+```text
 Why did my deployment fail? Can you help me troubleshoot?
 ```
 
@@ -379,7 +386,7 @@ Bob will analyze the error logs and suggest solutions.
 
 ### "My website is slow to load"
 Ask Bob:
-```
+```text
 My website seems slow after being idle. How can I fix this?
 ```
 
@@ -387,7 +394,7 @@ Bob will explain cold starts and help you configure min-scale if needed.
 
 ### "I want to see what's happening"
 Ask Bob:
-```
+```text
 Show me the logs for my application
 ```
 
@@ -395,7 +402,7 @@ Bob will fetch and display the logs, helping you understand what's happening.
 
 ### "I need to change the configuration"
 Ask Bob:
-```
+```text
 I want to increase the memory for my application to 1G
 ```
 

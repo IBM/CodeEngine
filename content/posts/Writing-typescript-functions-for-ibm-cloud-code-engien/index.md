@@ -5,7 +5,7 @@ description: "Writing TypeScript Functions for IBM Cloud Code Engine"
 tags: ["serverless", "code engine", "functions", "typescript"]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine) is IBM’s serverless platform that allows developers to run apps, jobs, and functions at scale — without the hassle of managing infrastructure. Among its workload types are functions, which currently support Node.js and Python runtimes.

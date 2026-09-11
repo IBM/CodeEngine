@@ -5,7 +5,7 @@ description: "Creating a IBM Cloud Code Engine Function Code Bundle FROM scratch
 tags: ["serverless", "code engine", "functions"]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 Have you ever wanted to create a Code Engine Function code bundle that runs as a Python or Node.js function on [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine), without relying on the Code Engine CLI to build it?

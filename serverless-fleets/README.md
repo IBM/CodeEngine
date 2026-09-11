@@ -19,6 +19,7 @@ Using both the intuitive graphical user interface and the command line, you will
 - [Tutorial: Docling](./tutorials/docling/README.md)
 - [Tutorial: Batch Inferencing](./tutorials/inferencing/README.md)
 - [Tutorial: Monte Carlo Simulation](./tutorials/simulation/README.md)
+- [Example: HTTP egress control](#http-egress-control)
 - [HowTo](#howto)
 - [Troubleshooting](#troubleshooting)
 
@@ -522,6 +523,17 @@ Download the results from the output COS bucket to `./data/output`
 - [Tutorial: Simulation](./tutorials/simulation/README.md)
 
 
+## Examples
+
+### HTTP egress control
+
+In order to control/monitor/capture HTTP egress traffic on your tasks for which security group based network controls are not sufficient i.e. hostname based controls: you can use after startup hooks to deploy a HTTP proxy on each worker node that intercepts all HTTP traffic of the tasks running on that worker node. An example using squid proxy to allowlist only traffic to a single domain can be found in `run_hook_squid_http_proxy`.
+
+### HTTPS egress control
+
+If you simply want to access control HTTPS egress traffic on your tasks for which security group based network controls are not sufficient i.e. hostname based controls: you can use after startup hooks in conjunction with a gateway/HTTPS proxy on each worker node that is able to drop HTTPS traffic of the tasks running on that worker node based on SNI header sniffing. The proxy may close connections for non-allowlisted traffic and passthrough everything else.
+An example using mitm proxy to allowlist only traffic to a single domain can be found in `run_hook_mitm_https_proxy`.
+
 ## HowTo
 
 ### How to use your own container and image
@@ -549,7 +561,6 @@ Once the push is complete, you can run the fleet by modifying `./run` and replac
 - the command, e.g. `--command "/bin/bash"`
 - the arguments, e.g. `--arg "-c" --arg "sleep 120"`
 - the environment variables, e.g. `--env foo=bar`
-
 
 
 ### How to access logs

@@ -69,7 +69,7 @@ jobs:
       - name: Build Site
         run: |
           hugo mod tidy
-          hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+          hugo --minify --baseURL "https://ibm.github.io/CodeEngine/"
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

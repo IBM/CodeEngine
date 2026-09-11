@@ -10,6 +10,11 @@ locale = "en-us"
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
+# --- GLOBAL THEME PARAMETERS ---
+[params]
+  enableCodeCopy = true
+  colorScheme = "slate"  # Options: "blowfish", "congo", "forest", "ocean", "sunset", "fire", "terminal", "github"
+
 [params.main]
   mainSections = ["posts"]
 
@@ -53,3 +58,8 @@ locale = "en-us"
 [params.search]
   enable = true
   showOnHeader = true
+
+# --- SYNTAX HIGHLIGHTING (Required for copy script) ---
+[markup]
+  [markup.highlight]
+    noClasses = false

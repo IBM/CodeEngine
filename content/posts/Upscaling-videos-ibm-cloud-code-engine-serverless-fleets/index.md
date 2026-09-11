@@ -5,7 +5,7 @@ description: "Upscaling Videos with IBM Cloud Code Engine Serverless Fleets"
 tags: ["serverless", "code engine", "GPU", "AI", "serverless fleets", ]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine) is IBM’s fully managed, strategic serverless platform that empowers developers to run container images, batch jobs, source code, and functions — all in one unified environment. It abstracts away the complexity of infrastructure management, automatically handling scaling, networking, and security so you can focus on building and deploying your applications.

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" font-family="-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13">
+  <!-- Background -->
+  <rect width="760" height="220" fill="#f7f8fa" rx="8"/>
+
+  <!-- Y-axis guide lines -->
+  <line x1="60" y1="45"  x2="710" y2="45"  stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="90"  x2="710" y2="90"  stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="135" x2="710" y2="135" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="175" x2="710" y2="175" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- Y-axis labels -->
+  <text x="52" y="179" fill="#57606a" text-anchor="end" font-size="11">0</text>
+  <text x="52" y="46"  fill="#57606a" text-anchor="end" font-size="11">max</text>
+
+  <!-- Worker count area -->
+  <polygon points="70,175 85,45 380,45 390,175" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="70,175 85,45 380,45 390,175" fill="none" stroke="#3b82d4" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Zero / idle line after completion -->
+  <line x1="390" y1="175" x2="710" y2="175" stroke="#3b82d4" stroke-width="2.5"/>
+  <text x="555" y="165" fill="#57606a" text-anchor="middle" font-size="11">fleet complete · 0 workers</text>
+
+  <!-- Middle label -->
+  <text x="230" y="108" fill="#3b82d4" text-anchor="middle" font-weight="600" font-size="13">Container slots running at scale_max</text>
+
+  <!-- Event markers (drawn last so they appear on top of the blue area) -->
+  <line x1="70"  y1="40" x2="70"  y2="178" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="70"  y="20"  fill="#7c5cd8" text-anchor="middle" font-size="11">Create fleet</text>
+  <text x="70"  y="32"  fill="#7c5cd8" text-anchor="middle" font-size="11">with all tasks</text>
+
+  <line x1="380" y1="40" x2="380" y2="178" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="20" fill="#7c5cd8" text-anchor="middle" font-size="11">Last task done</text>
+  <text x="380" y="32" fill="#7c5cd8" text-anchor="middle" font-size="11">→ scale to zero</text>
+
+  <!-- X-axis -->
+  <line x1="60" y1="175" x2="710" y2="175" stroke="#d0d7de" stroke-width="1.5"/>
+  <text x="380" y="205" fill="#57606a" text-anchor="middle" font-size="12">Time →</text>
+
+  <!-- Y-axis label -->
+  <text x="42" y="110" fill="#57606a" text-anchor="middle" transform="rotate(-90,42,110)" font-size="11">Container slots</text>
+</svg>

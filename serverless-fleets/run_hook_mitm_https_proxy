@@ -1,0 +1,90 @@
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+PREHOOK=$(cat <<'OUTER'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+### ===== User-tunable variables =====
+
+export NETWORK_NAME="podman"
+export SUBNET_CIDR="10.88.0.0/16"
+export GATEWAY_IP="10.88.0.1"
+
+export MITM_IMAGE="docker.io/mitmproxy/mitmproxy:latest"
+export MITM_PORT="8080"
+export MITM_CONTAINER="https-proxy"
+
+export WORKDIR="$PWD/podman-transparent-proxy-lab"
+
+### ===== Derived variables =====
+
+MITM_DIR="$WORKDIR/mitmproxy"
+CERTS_DIR="$WORKDIR/certs"
+
+mkdir -p "$MITM_DIR" "$CERTS_DIR"
+
+echo "==> Checking dependencies"
+command -v podman >/dev/null
+command -v sudo >/dev/null
+command -v iptables >/dev/null
+
+cat > "${MITM_DIR}/sni_allowlist.py" <<INNER
+from mitmproxy import connection
+from mitmproxy import tls
+
+ALLOWED_HOSTS = ["example.com"]
+
+class SniAllowList:
+    def tls_clienthello(self, data: tls.ClientHelloData):
+        sni = data.client_hello.sni
+        if sni is None or sni not in ALLOWED_HOSTS:
+            data.context.client.state = connection.ConnectionState.CLOSED
+
+addons = [SniAllowList()]
+
+INNER
+
+echo "==> Creating Podman network if needed"
+if ! podman network exists "${NETWORK_NAME}"; then
+  podman network create \
+    --subnet "${SUBNET_CIDR}" \
+    --gateway "${GATEWAY_IP}" \
+    "${NETWORK_NAME}"
+fi
+
+echo "==> Removing old containers if present"
+podman rm -f "${MITM_CONTAINER}" 2>/dev/null || true
+
+echo "==> Starting mitmproxy HTTPS transparent proxy"
+podman run -d \
+  --name "${MITM_CONTAINER}" \
+  --network host \
+  -v "${MITM_DIR}:/home/mitmproxy/.mitmproxy:Z" \
+  "${MITM_IMAGE}" \
+  mitmdump -s /home/mitmproxy/.mitmproxy/sni_allowlist.py --mode transparent --showhost --listen-host 0.0.0.0 --listen-port "${MITM_PORT}" --ignore-hosts 'example.com'
+
+echo "==> Enabling IPv4 forwarding on host"
+sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
+
+echo "==> Preparing iptables chain"
+sudo iptables -t nat -N MITM_PROXY 2>/dev/null || true
+sudo iptables -t nat -F MITM_PROXY
+
+sudo iptables -t nat -A MITM_PROXY -d 127.0.0.0/8 -j RETURN
+sudo iptables -t nat -A MITM_PROXY -d ${SUBNET_CIDR} -j RETURN
+sudo iptables -t nat -A MITM_PROXY -p tcp --dport 443 -j REDIRECT --to-ports 8080
+
+sudo iptables -t nat -A PREROUTING -s ${SUBNET_CIDR} -p tcp -j MITM_PROXY
+OUTER
+)
+
+ibmcloud ce fleet create  --name "fleet-${uuid}" \
+  --tasks-state-store fleet-task-store \
+  --image registry.access.redhat.com/ubi10/ubi-minimal \
+  --cpu "2" \
+  --memory "4G" \
+  --tasks-from-local-file run_hook_mitm_https_proxy_commands.jsonl \
+  --max-scale 2 \
+  --retrylimit 0 \
+  --subnetpool-name fleet-subnetpool \
+  --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"

@@ -1,0 +1,2 @@
+{ "cmds": ["curl", "--silent", "--write-out", "%{url} %{http_code}", "--output", "/dev/null", "https://example.com"]}
+{ "cmds": ["/bin/bash", "-c", "curl --silent --write-out \"%{url} %{http_code}\" --output /dev/null https://google.com || true"]}

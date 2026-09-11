@@ -5,7 +5,7 @@ description: "Why IBM Cloud Code Engine Is the Perfect Home for LinuxServer.io A
 tags: ["serverless", "code engine", "functions", "typescript"]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 [LinuxServer.io](https://www.linuxserver.io/) is a global community of open-source enthusiasts who maintain one of the most extensive collections of standardized Docker images. These images are designed with simplicity, consistency, and transparency in mind — making them ideal for everyone from curious beginners to seasoned self-hosters. Whether you’re looking to run a media server, a productivity tool, or a creative application, LinuxServer.io offers a rich catalog of ready-to-use containers that are well-documented and regularly updated. Just deploy an image, and you can access the application directly in your browser — no complex setup required.

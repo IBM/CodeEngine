@@ -5,7 +5,7 @@ description: " Serverless Slidev Deployments with Code Engine Functions and GitH
 tags: ["serverless", "code engine", "functions", "slidev", "spa", "github actions"]
 featureImage: "featured.jpg"
 draft: false
-authors: ["luke-roy-ibm"]
+authors: ["lukeroy"]
 ---
 
 This post walks through a simple end-to-end workflow for turning a Markdown-based [Slidev](https://sli.dev) deck into a live presentation: create and preview the slides locally, push the project to GitHub, and automatically deploy the generated output to [IBM Cloud Code Engine](https://www.ibm.com/products/code-engine) as a Function using the official [Code Engine GitHub Action](https://github.com/marketplace/actions/code-engine-github-action).
