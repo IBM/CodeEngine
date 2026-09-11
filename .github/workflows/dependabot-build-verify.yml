@@ -71,6 +71,8 @@ jobs:
         if: steps.check-gomod.outputs.has_gomod == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          OS: Linux
+          ARCH: x86_64
         run: |
           gh release download --repo ko-build/ko --pattern "ko_*_${OS}_${ARCH}.tar.gz" --output - | sudo tar -xzf - -C /usr/local/bin ko
           ko version
