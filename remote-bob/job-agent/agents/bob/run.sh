@@ -17,12 +17,5 @@
 set -euo pipefail
 
 # ── Resolve --mode flag from BOB_MODE ────────────────────────────────────────
-MODE_ARGS=()
-case "${BOB_MODE:-}" in
-    plan) MODE_ARGS=(--mode autonomous-loop-planner) ;;
-    auto) MODE_ARGS=(--mode auto) ;;
-    *)    ;;
-esac
-
 # ── Launch Bob Shell ──────────────────────────────────────────────────────────
-exec bob chat --auto-approve --trust --accept-license "${MODE_ARGS[@]}"
+bob chat --auto-approve --trust --accept-license --mode auto

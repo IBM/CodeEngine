@@ -36,6 +36,9 @@ FROM debian:bookworm-slim
 # Install system dependencies, Node.js 22, tmux, jq, and locales.
 # Node.js 22 is installed here so it is available when install.sh runs
 # (agents that need npm do not have to repeat this step).
+# Note: Network debugging utilities like netcat-openbsd were removed to keep
+# the image generic and minimal; if a specific agent requires it, install it in
+# that agent's install.sh.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
@@ -43,7 +46,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     jq \
     tmux \
-    netcat-openbsd \
     locales \
     && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen \

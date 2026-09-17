@@ -13,4 +13,4 @@
 
 set -euo pipefail
 
-exec gemini --yolo
+gemini --yolo

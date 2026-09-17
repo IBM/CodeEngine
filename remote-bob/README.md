@@ -174,12 +174,12 @@ npm install -g my-agent-cli
 my-agent --version
 ```
 
-**`run.sh`** — runs as `jobagent` (uid 1001) inside a tmux session. Should end with `exec <your-tool>`. All environment variables from `.env` (including API keys) are available.
+**`run.sh`** — runs as `jobagent` (uid 1001) inside a tmux session. The last command should be the invocation of your interactive tool. All environment variables from `.env` (including API keys) are available.
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
-exec my-agent --non-interactive --api-key "$MY_AGENT_API_KEY"
+my-agent --non-interactive --api-key "$MY_AGENT_API_KEY"
 ```
 
 Then run `--setup` with the path to your preset directory:

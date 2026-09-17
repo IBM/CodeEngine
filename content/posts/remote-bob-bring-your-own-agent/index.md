@@ -160,14 +160,14 @@ echo "Done."
 
 ### `run.sh`
 
-Runs as `jobagent` (uid 1001) inside a tmux session. All environment variables from your `.env` — including any API keys — are available. End with `exec` so the process replaces the shell and tmux exits cleanly when the agent finishes.
+Runs as `jobagent` (uid 1001) inside a tmux session. All environment variables from your `.env` — including any API keys — are available. The final command is the invocation of your interactive tool, which runs after any setup commands.
 
 ```bash
 #!/usr/bin/env bash
 # agents/my-agent/run.sh
 set -euo pipefail
 
-exec my-agent --non-interactive --workspace /workspace
+my-agent --non-interactive --workspace /workspace
 ```
 
 ### Use it

@@ -13,4 +13,4 @@
 
 set -euo pipefail
 
-exec opencode
+opencode

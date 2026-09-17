@@ -10,4 +10,4 @@
 
 set -euo pipefail
 
-exec bash
+bash

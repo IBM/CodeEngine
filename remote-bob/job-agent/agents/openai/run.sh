@@ -12,4 +12,4 @@
 
 set -euo pipefail
 
-exec codex
+codex

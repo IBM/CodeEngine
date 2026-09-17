@@ -206,8 +206,12 @@ provision() {
 
     # Agent-env secret — built dynamically from all non-infrastructure .env keys.
     # We parse .env line-by-line and skip infrastructure keys and blank/comment lines.
-    local agent_env_args=()
+    # Always created unconditionally (with a default marker) so job creation/submission
+    # referencing remote-bob-agent-env never fails even if no custom agent keys are set.
+    local agent_env_args=(--from-literal "REMOTE_BOB_MANAGED=1")
     while IFS= read -r line; do
+        # Strip CR if CRLF line endings
+        line="${line%$'\r'}"
         [[ -z "$line" || "$line" == \#* ]] && continue
         local k="${line%%=*}"
         local v="${line#*=}"
@@ -220,16 +224,13 @@ provision() {
         agent_env_args+=(--from-literal "${k}=${v}")
     done < "$CONFIG_FILE"
 
-    if [[ ${#agent_env_args[@]} -gt 0 ]]; then
-        upsert_secret remote-bob-agent-env "${agent_env_args[@]}"
-    else
-        print_msg "  No agent environment variables found in .env — skipping remote-bob-agent-env"
-    fi
+    upsert_secret remote-bob-agent-env "${agent_env_args[@]}"
 }
 
 # ── Write the selected preset name into the build context ────────────────────
 # The Dockerfile reads job-agent/agents/selected-preset to know which preset
 # to install. Both this file and the .ceignore are rewritten before every build.
+# If the preset path is outside job-agent/agents/, it is staged into job-agent/agents/<name>.
 prepare_preset() {
     local preset_path="$1"
     local preset_name
@@ -242,6 +243,15 @@ prepare_preset() {
         || { print_error "Agent preset missing run.sh: $preset_path/run.sh"; exit 1; }
 
     print_msg "\nAgent preset: $preset_name ($preset_path)"
+
+    # If the preset directory is outside job-agent/agents/, copy/stage it into job-agent/agents/<name>
+    # so that it is included in the Docker build context.
+    local target_dir="$SCRIPT_DIR/job-agent/agents/$preset_name"
+    if [[ "$(cd "$preset_path" 2>/dev/null && pwd)" != "$(cd "$target_dir" 2>/dev/null && pwd)" ]]; then
+        print_msg "Staging external agent preset from $preset_path into $target_dir"
+        mkdir -p "$target_dir"
+        cp -R "$preset_path"/* "$target_dir/"
+    fi
 
     # Write the selected preset name so the Dockerfile can read it:
     #   preset=$(cat /tmp/agents/selected-preset)

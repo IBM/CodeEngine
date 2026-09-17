@@ -13,4 +13,4 @@
 
 set -euo pipefail
 
-exec claude --dangerously-skip-permissions
+claude --dangerously-skip-permissions
