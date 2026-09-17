@@ -1,6 +1,23 @@
 # CE source-upload ignore rules for the apiserver build context.
-# --build-source points to remote-bob/apiserver/ — this file lives there.
-# Dependencies are fetched by `go mod download` inside the build.
-.env*
+# --build-source points to remote-bob/ (repo root) so browser-client/ is
+# available to the Dockerfile. Everything not needed for the apiserver build
+# is excluded here.
+
+# Secrets and local config
+.env
+.env.template
 *.log
+
+# job-agent source (not needed for apiserver build)
+job-agent/
+
+# Launcher script and docs
+remote-bob
+README.md
+.gitignore
+.ceignore
+
+# Runtime scratch and caches
 tmp/
+bobshell-*.tgz
+.DS_Store

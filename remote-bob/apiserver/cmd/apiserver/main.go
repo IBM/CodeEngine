@@ -27,8 +27,9 @@ func main() {
 	}
 
 	log.Info("apiserver_starting", map[string]interface{}{
-		"port":      port,
-		"log_level": cfg.LogLevel,
+		"port":       port,
+		"log_level":  cfg.LogLevel,
+		"static_dir": cfg.StaticDir,
 	})
 
 	// Create the server. The run token signing key is the ENCRYPTION_KEY so
@@ -36,6 +37,7 @@ func main() {
 	srv := api.NewServer(api.Config{
 		GatewayPassword: cfg.GatewayPassword,
 		RunTokenKey:     cfg.EncryptionKey,
+		StaticDir:       cfg.StaticDir,
 	})
 
 	// Once the last agent disconnects (job succeeded/exited, idle timeout,

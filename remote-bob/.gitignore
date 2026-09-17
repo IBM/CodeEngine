@@ -25,3 +25,13 @@ tmp/
 
 # ── OS cruft ─────────────────────────────────────────────────────────────────
 .DS_Store
+
+# ── Agent preset build state ─────────────────────────────────────────────────
+# selected-preset is written by ./remote-bob --setup to record which agent
+# preset is currently baked into the CE job image. Build artifact — do not commit.
+job-agent/agents/selected-preset
+
+# ── .ceignore — generated at runtime ─────────────────────────────────────────
+# The root .ceignore is rewritten by ./remote-bob --setup before each build.
+# Do not commit it.
+.ceignore

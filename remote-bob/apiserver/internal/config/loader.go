@@ -13,6 +13,10 @@ type AppConfig struct {
 	GatewayPassword string
 	EncryptionKey   []byte
 	LogLevel        string
+	// StaticDir is the filesystem path to the browser-client static files.
+	// When non-empty, the apiserver serves the terminal UI at /ui/.
+	// Defaults to /static (the path used in the production Docker image).
+	StaticDir string
 }
 
 // LoadConfig loads configuration from environment variables. In production
@@ -41,6 +45,7 @@ func LoadConfig() (*AppConfig, error) {
 	cfg.EncryptionKey = encKey
 
 	cfg.LogLevel = getEnvOrDefault("LOG_LEVEL", "info")
+	cfg.StaticDir = getEnvOrDefault("STATIC_DIR", "/static")
 
 	return cfg, nil
 }

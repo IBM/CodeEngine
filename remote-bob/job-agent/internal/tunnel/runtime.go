@@ -2,13 +2,11 @@ package tunnel
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -20,10 +18,10 @@ import (
 func NewRuntime(cfg *Config) *Runtime {
 	adapter := newTTYDAdapter("ws://127.0.0.1:" + cfg.TTYDPort)
 	return &Runtime{
-		cfg:             cfg,
-		state:           &healthState{},
-		control:         newControlLoop(cfg, adapter),
-		shutdownCh:      make(chan struct{}),
+		cfg:              cfg,
+		state:            &healthState{},
+		control:          newControlLoop(cfg, adapter),
+		shutdownCh:       make(chan struct{}),
 		tmuxPollInterval: 5 * time.Second,
 	}
 }
@@ -32,14 +30,14 @@ func NewRuntime(cfg *Config) *Runtime {
 // integration, and the control loop. It owns the startup order
 // (tmux → ttyd → control dial) and the graceful shutdown path.
 type Runtime struct {
-	cfg         *Config
-	state       *healthState
-	control     *controlLoop
-	ttydCmd     *exec.Cmd
-	ttydMu      sync.Mutex
-	closeOnce   sync.Once
-	shutdownCh  chan struct{}
-	shutdownErr error
+	cfg              *Config
+	state            *healthState
+	control          *controlLoop
+	ttydCmd          *exec.Cmd
+	ttydMu           sync.Mutex
+	closeOnce        sync.Once
+	shutdownCh       chan struct{}
+	shutdownErr      error
 	// tmuxPollInterval is how often the tmux monitor checks the session.
 	// It is a field so tests can shorten it.
 	tmuxPollInterval time.Duration
@@ -50,30 +48,22 @@ type Runtime struct {
 // startup failure.
 func (rt *Runtime) Run(ctx context.Context) error {
 	log.Info("job_agent_starting", map[string]interface{}{
-		"agent_id":     rt.cfg.AgentID,
-		"ttyd_port":    rt.cfg.TTYDPort,
-		"health_port":  rt.cfg.HealthPort,
-		"workspace":    rt.cfg.Workspace,
-		"bob_mode":     rt.cfg.BobMode,
-		"idle_timeout": rt.cfg.IdleTimeout.String(),
+		"agent_id":        rt.cfg.AgentID,
+		"ttyd_port":       rt.cfg.TTYDPort,
+		"health_port":     rt.cfg.HealthPort,
+		"workspace":       rt.cfg.Workspace,
+		"agent_run_script": rt.cfg.AgentRunScript,
+		"idle_timeout":    rt.cfg.IdleTimeout.String(),
 	})
 
-	if err := ensureBinary("bob"); err != nil {
-		return err
-	}
 	if err := ensureBinary("tmux"); err != nil {
 		return err
 	}
 	if err := ensureBinary("ttyd"); err != nil {
 		return err
 	}
-	logVersion("bob", "--version")
-
-	if err := patchBobSettings(rt.cfg); err != nil {
-		// Non-fatal: log and continue; baked-in defaults are acceptable.
-		log.Warn("bob_settings_patch_failed", map[string]interface{}{
-			"error": err.Error(),
-		})
+	if err := ensureExecutable(rt.cfg.AgentRunScript); err != nil {
+		return err
 	}
 
 	if err := prepareWorkspace(rt.cfg); err != nil {
@@ -108,8 +98,8 @@ func (rt *Runtime) Run(ctx context.Context) error {
 	// tmux monitor: if the session dies, mark health unhealthy and keep the
 	// health server alive (serving 503) for the bounded grace period so the
 	// unhealthy window is observable to liveness probes, then shut down
-	// gracefully (finalizing git). The health server is bound to childCtx,
-	// so it keeps serving 503 until the grace period elapses.
+	// gracefully. The health server is bound to childCtx, so it keeps serving
+	// 503 until the grace period elapses.
 	tmuxDied := rt.monitorTmux(childCtx)
 	wg.Add(1)
 	go func() {
@@ -205,55 +195,6 @@ func (rt *Runtime) shutdown() {
 	})
 }
 
-// patchBobSettings applies runtime environment overrides to the Bob Shell
-// settings file. It merges BOB_APPROVAL_MODE and BOB_TELEMETRY_ENABLED into
-// the existing settings.json (if present) before Bob is started. Baked-in
-// image defaults are used if the env vars are not set or the file is absent.
-func patchBobSettings(cfg *Config) error {
-	if cfg.BobApprovalMode == "" && !cfg.BobTelemetrySet {
-		return nil // nothing to override
-	}
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("could not determine home directory: %w", err)
-	}
-	settingsPath := filepath.Join(homeDir, ".bob", "settings", "settings.json")
-
-	// Read existing settings; start with empty map if file is absent.
-	raw := map[string]interface{}{}
-	if data, err := os.ReadFile(settingsPath); err == nil {
-		if err := json.Unmarshal(data, &raw); err != nil {
-			return fmt.Errorf("parse %s: %w", settingsPath, err)
-		}
-	}
-
-	if cfg.BobApprovalMode != "" {
-		raw["approvalMode"] = cfg.BobApprovalMode
-	}
-	if cfg.BobTelemetrySet {
-		if t, ok := raw["telemetry"].(map[string]interface{}); ok {
-			t["enabled"] = cfg.BobTelemetryEnabled
-		} else {
-			raw["telemetry"] = map[string]interface{}{"enabled": cfg.BobTelemetryEnabled}
-		}
-	}
-
-	data, err := json.Marshal(raw)
-	if err != nil {
-		return fmt.Errorf("marshal settings: %w", err)
-	}
-	if err := os.WriteFile(settingsPath, data, 0o644); err != nil {
-		return fmt.Errorf("write %s: %w", settingsPath, err)
-	}
-	log.Info("bob_settings_patched", map[string]interface{}{
-		"approval_mode":    cfg.BobApprovalMode,
-		"telemetry_set":    cfg.BobTelemetrySet,
-		"telemetry_enabled": cfg.BobTelemetryEnabled,
-	})
-	return nil
-}
-
 // tmuxSocket returns the explicit tmux server socket path for this agent.
 // Using a fixed path prevents socket-divergence when tmux is created by one
 // process and attached by ttyd (a child that may inherit a different TMPDIR).
@@ -261,10 +202,13 @@ func tmuxSocket(agentID string) string {
 	return "/tmp/tmux-bob-" + agentID
 }
 
-// createTmuxSession starts a detached tmux session running the BOB_MODE
-// variant of `bob chat --auto-approve --trust --accept-license`.
+// createTmuxSession starts a detached tmux session that runs the agent preset's
+// run script (/usr/local/bin/agent-run.sh). The script is installed into the
+// image at build time by the chosen agent preset's run.sh.
+// All environment variables injected by Code Engine (including any agent API
+// keys from the CE secret) are available inside the tmux session because tmux
+// inherits the process environment.
 func createTmuxSession(cfg *Config) error {
-	command := bobCommand(cfg)
 	socket := tmuxSocket(cfg.AgentID)
 	if err := runCommand("tmux", []string{
 		"-S", socket,
@@ -273,8 +217,7 @@ func createTmuxSession(cfg *Config) error {
 		"-e", "TERM=xterm-256color",
 		"-e", "LANG=" + cfg.Lang,
 		"-e", "LC_ALL=" + cfg.LCAll,
-		"-e", "BOBSHELL_API_KEY=" + cfg.BobShellAPIKey,
-		"bash", "-lc", command,
+		"bash", "-lc", cfg.AgentRunScript,
 	}, ""); err != nil {
 		return err
 	}
@@ -354,12 +297,24 @@ func killTmuxSession(session string) {
 	_ = exec.Command("tmux", "-S", tmuxSocket(session), "kill-session", "-t", session).Run()
 }
 
+// ensureExecutable checks that the given file exists and is executable.
+func ensureExecutable(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("agent run script not found at %s: %w", path, err)
+	}
+	if info.Mode()&0111 == 0 {
+		return fmt.Errorf("agent run script at %s is not executable", path)
+	}
+	return nil
+}
+
 func logVersion(name string, args ...string) {
 	cmd := exec.Command(name, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Warn("binary_version_failed", map[string]interface{}{
-			"name": name,
+			"name":  name,
 			"error": err.Error(),
 		})
 		return

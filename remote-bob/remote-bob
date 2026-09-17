@@ -3,6 +3,7 @@
 #
 # Workflow:
 #   1. ./remote-bob --setup          # first time: provision infra + build images
+#      ./remote-bob --setup --agent-preset=job-agent/agents/claude   # Claude Code variant
 #   2. ./remote-bob --new-session    # start a job run and open the browser
 #   3. ./remote-bob --connect        # reopen the browser (session still running)
 #   4. ./remote-bob --end-session    # kill the job run (infra stays)
@@ -26,21 +27,23 @@ BROWSER_HTML="$SCRIPT_DIR/browser-client/single-session.html"
 # ── Argument parsing ──────────────────────────────────────────────────────────
 CONFIG_FILE="$SCRIPT_DIR/.env"
 CMD=""   # setup | new-session | connect | end-session | clean | status
+AGENT_PRESET_ARG=""   # raw --agent-preset value; resolved to path after config load
 
 for arg in "$@"; do
     case "$arg" in
-        --config=*)    CONFIG_FILE="${arg#--config=}" ;;
-        --setup)       CMD=setup ;;
-        --new-session) CMD=new-session ;;
-        --connect)     CMD=connect ;;
-        --end-session) CMD=end-session ;;
-        --clean)       CMD=clean ;;
+        --config=*)         CONFIG_FILE="${arg#--config=}" ;;
+        --setup)            CMD=setup ;;
+        --new-session)      CMD=new-session ;;
+        --connect)          CMD=connect ;;
+        --end-session)      CMD=end-session ;;
+        --clean)            CMD=clean ;;
+        --agent-preset=*)   AGENT_PRESET_ARG="${arg#--agent-preset=}" ;;
         --help|-h)
             cat <<EOF
 Remote Bob — Code Engine Session Launcher
 
 Usage:
-  $0 [--config=FILE] <command>
+  $0 [--config=FILE] <command> [--agent-preset=PATH]
 
 Commands:
   --setup          Provision IBM Cloud resources and build container images.
@@ -52,10 +55,22 @@ Commands:
   --clean          Remove ALL provisioned IBM Cloud resources.
   (no args)        Print current session status.
 
+Options:
+  --agent-preset=PATH  Path to an agent preset directory (used with --setup).
+                       The directory must contain install.sh and run.sh.
+                       Relative paths are resolved from the remote-bob/ directory.
+                       Defaults to job-agent/agents/bob (IBM Bob Shell).
+                       Built-in presets: job-agent/agents/{bob,bash,claude,openai,gemini,opencode}
+
 Required config (.env):
-  BOBSHELL_API_KEY    Bob Shell API key (https://bob.ibm.com)
+  BOBSHELL_API_KEY    Bob Shell API key (https://bob.ibm.com) — required for the bob preset
   GATEWAY_PASSWORD    Basic-auth password for the browser login
   IBMCLOUD_API_KEY    IBM Cloud API key
+
+All non-infrastructure variables in .env are automatically injected into the
+job container as environment variables (via a Code Engine secret). This includes
+agent API keys such as ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, and
+any custom variables you add.
 
 EOF
             exit 0
@@ -73,21 +88,37 @@ while IFS= read -r line; do
     [[ -z "${!key:-}" ]] && export "$key=$val"
 done < "$CONFIG_FILE"
 
+# ── Resolve agent preset path ─────────────────────────────────────────────────
+# --agent-preset on the command line takes precedence over AGENT_PRESET in .env.
+# Both default to job-agent/agents/bob (IBM Bob Shell, original behavior).
+_preset_raw="${AGENT_PRESET_ARG:-${AGENT_PRESET:-job-agent/agents/bob}}"
+
+# Resolve relative paths against SCRIPT_DIR.
+if [[ "$_preset_raw" = /* ]]; then
+    AGENT_PRESET_PATH="$_preset_raw"
+else
+    AGENT_PRESET_PATH="$SCRIPT_DIR/$_preset_raw"
+fi
+# Canonical name used in CE job naming and status output (last path component).
+AGENT_PRESET_NAME="$(basename "$AGENT_PRESET_PATH")"
+
 # ── Validate required variables ───────────────────────────────────────────────
 check_var() { [[ -n "${!1:-}" ]] || { print_error "Missing required config: $1"; exit 1; }; }
-check_var BOBSHELL_API_KEY
 check_var GATEWAY_PASSWORD
-# IBMCLOUD_API_KEY is needed for every command that talks to IBM Cloud.
-# Only --connect (pure browser open after ibmcloud_setup) could skip it,
-# but we require it anyway since it always calls ibmcloud_setup.
 check_var IBMCLOUD_API_KEY
+
+# BOBSHELL_API_KEY is only required for the bob preset (backward compatibility).
+if [[ "$AGENT_PRESET_NAME" == "bob" ]]; then
+    check_var BOBSHELL_API_KEY
+fi
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 CE_REGION="${CE_REGION:-us-east}"
 CE_PROJECT="${CE_PROJECT:-remote-bob--ce-project}"
 RESOURCE_GROUP="${RESOURCE_GROUP:-remote-bob--rg}"
 APISERVER_APP_NAME="${APISERVER_APP_NAME:-remote-bob-apiserver}"
-JOB_NAME="${JOB_NAME:-remote-bob-job-agent}"
+# Job name is preset-specific so multiple presets can coexist without rebuilding.
+JOB_NAME="${JOB_NAME:-remote-bob-job-agent-${AGENT_PRESET_NAME}}"
 DEFAULT_CPU="${DEFAULT_CPU:-1}"
 DEFAULT_MEMORY="${DEFAULT_MEMORY:-2G}"
 DEFAULT_TIMEOUT="${DEFAULT_TIMEOUT:-86400}"
@@ -111,9 +142,6 @@ ibmcloud_setup() {
     ensure_plugin_is_up_to_date code-engine
 
     print_msg "\nLogging in to IBM Cloud (region: $CE_REGION, resource group: $RESOURCE_GROUP)"
-    # Login without -g first: ibmcloud login -g exits 0 even when targeting
-    # fails (emits "No resource group targeted" on stdout), so we always do
-    # login + target as two explicit steps to ensure targeting is reliable.
     ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$CE_REGION" -q &>/dev/null \
         || { print_error "IBM Cloud login failed — check IBMCLOUD_API_KEY"; exit 1; }
 
@@ -131,6 +159,34 @@ ibmcloud_setup() {
 }
 
 # ── Provision CE secrets (idempotent) ─────────────────────────────────────────
+#
+# Two secrets are maintained:
+#
+#  remote-bob-gateway    — apiserver config: GATEWAY_PASSWORD + ENCRYPTION_KEY
+#  remote-bob-agent-env  — all non-infrastructure .env keys, injected into job
+#                          runs. This is built dynamically from .env so any key
+#                          the user adds (ANTHROPIC_API_KEY, OPENAI_API_KEY,
+#                          custom vars, …) flows into the container automatically.
+#
+# Infrastructure-only keys that are consumed by this script and must NOT be
+# forwarded into the container:
+INFRA_KEYS=(
+    IBMCLOUD_API_KEY
+    GATEWAY_PASSWORD
+    CE_REGION
+    CE_PROJECT
+    RESOURCE_GROUP
+    APISERVER_APP_NAME
+    JOB_NAME
+    DEFAULT_CPU
+    DEFAULT_MEMORY
+    DEFAULT_TIMEOUT
+    CHROME_BIN
+    CHROME_DEBUG_PORT
+    ENCRYPTION_KEY
+    AGENT_PRESET
+)
+
 provision() {
     print_msg "\nProvisioning CE secrets"
 
@@ -143,25 +199,144 @@ provision() {
         fi
     }
 
+    # Gateway secret — apiserver only.
     upsert_secret remote-bob-gateway \
         --from-literal GATEWAY_PASSWORD="$GATEWAY_PASSWORD" \
         --from-literal ENCRYPTION_KEY="$ENCRYPTION_KEY"
 
-    upsert_secret remote-bob-bobshell --from-literal BOBSHELL_API_KEY="$BOBSHELL_API_KEY"
+    # Agent-env secret — built dynamically from all non-infrastructure .env keys.
+    # We parse .env line-by-line and skip infrastructure keys and blank/comment lines.
+    local agent_env_args=()
+    while IFS= read -r line; do
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        local k="${line%%=*}"
+        local v="${line#*=}"
+        # Skip infrastructure keys.
+        local is_infra=false
+        for ik in "${INFRA_KEYS[@]}"; do
+            [[ "$k" == "$ik" ]] && { is_infra=true; break; }
+        done
+        $is_infra && continue
+        agent_env_args+=(--from-literal "${k}=${v}")
+    done < "$CONFIG_FILE"
+
+    if [[ ${#agent_env_args[@]} -gt 0 ]]; then
+        upsert_secret remote-bob-agent-env "${agent_env_args[@]}"
+    else
+        print_msg "  No agent environment variables found in .env — skipping remote-bob-agent-env"
+    fi
+}
+
+# ── Write the selected preset name into the build context ────────────────────
+# The Dockerfile reads job-agent/agents/selected-preset to know which preset
+# to install. Both this file and the .ceignore are rewritten before every build.
+prepare_preset() {
+    local preset_path="$1"
+    local preset_name
+    preset_name="$(basename "$preset_path")"
+
+    # Validate preset.
+    [[ -f "$preset_path/install.sh" ]] \
+        || { print_error "Agent preset missing install.sh: $preset_path/install.sh"; exit 1; }
+    [[ -f "$preset_path/run.sh" ]] \
+        || { print_error "Agent preset missing run.sh: $preset_path/run.sh"; exit 1; }
+
+    print_msg "\nAgent preset: $preset_name ($preset_path)"
+
+    # Write the selected preset name so the Dockerfile can read it:
+    #   preset=$(cat /tmp/agents/selected-preset)
+    printf '%s' "$preset_name" > "$SCRIPT_DIR/job-agent/agents/selected-preset"
+}
+
+# ── Write .ceignore for the apiserver build (build source = remote-bob/ root) ──
+# Excludes job-agent/ and other non-apiserver content; keeps browser-client/
+# so the apiserver Dockerfile can COPY it into /static/.
+write_ceignore_apiserver() {
+    cat > "$SCRIPT_DIR/.ceignore" <<'EOF'
+# CE source-upload ignore rules for the apiserver build — generated by ./remote-bob --setup.
+# Do not edit manually; this file is rewritten before each build.
+
+# Secrets and local config
+.env
+.env.template
+
+# job-agent source (not needed for apiserver build)
+job-agent/
+
+# Launcher script and docs
+remote-bob
+README.md
+.gitignore
+
+# Runtime scratch and caches
+tmp/
+bobshell-*.tgz
+*.log
+.DS_Store
+EOF
+}
+
+# ── Write .ceignore for the job-agent build (build source = remote-bob/ root) ──
+# Excludes apiserver/, browser-client/, and all agent preset dirs except the
+# selected one. The selected preset is included so the Dockerfile can COPY it.
+write_ceignore_job_agent() {
+    local preset_name="$1"
+    {
+        cat <<'HEADER'
+# CE source-upload ignore rules for the job-agent build — generated by ./remote-bob --setup.
+# Do not edit manually; this file is rewritten before each build.
+
+# Secrets and local config
+.env
+.env.template
+
+# Apiserver source (not needed for job-agent build)
+apiserver/
+
+# Static browser client (not needed in the job-agent container)
+browser-client/
+
+# Launcher script and docs
+remote-bob
+README.md
+.gitignore
+
+# Runtime scratch and caches
+tmp/
+bobshell-*.tgz
+*.log
+.DS_Store
+
+# Agent preset directories — all excluded except the selected preset.
+# The selected preset is included so the Dockerfile can COPY and run it.
+HEADER
+        for dir in "$SCRIPT_DIR/job-agent/agents"/*/; do
+            local name
+            name="$(basename "$dir")"
+            [[ "$name" == "$preset_name" ]] && continue
+            echo "job-agent/agents/${name}/"
+        done
+    } > "$SCRIPT_DIR/.ceignore"
 }
 
 # ── Deploy / update the apiserver application ─────────────────────────────────
+# Build source is the remote-bob/ root so browser-client/ is available to the
+# Dockerfile. write_ceignore_apiserver() is called immediately before the upload
+# to ensure only apiserver + browser-client content is included.
 deploy_apiserver() {
+    write_ceignore_apiserver
     print_msg "\nDeploying apiserver app '$APISERVER_APP_NAME'"
     if ibmcloud ce application get --name "$APISERVER_APP_NAME" &>/dev/null; then
         ibmcloud ce application update \
             --name "$APISERVER_APP_NAME" \
-            --build-source "$APISERVER_DIR" \
+            --build-source "$SCRIPT_DIR" \
+            --build-dockerfile "apiserver/Dockerfile" \
             --min-scale 0 --wait
     else
         ibmcloud ce application create \
             --name "$APISERVER_APP_NAME" \
-            --build-source "$APISERVER_DIR" \
+            --build-source "$SCRIPT_DIR" \
+            --build-dockerfile "apiserver/Dockerfile" \
             --port 8080 --min-scale 0 --max-scale 10 \
             --cpu 0.5 --memory 1G --concurrency 10 \
             --env-from-secret remote-bob-gateway \
@@ -169,10 +344,16 @@ deploy_apiserver() {
     fi
 }
 
-# ── Deploy the job-agent job definition (delete+recreate when URL changes) ────
+# ── Deploy the job-agent job definition (delete+recreate when URL or preset changes) ──
 deploy_job_agent() {
     local gateway_url="$1"
     local gateway_wss="${gateway_url/https:/wss:}/ws"
+    local preset_name
+    preset_name="$(cat "$SCRIPT_DIR/job-agent/agents/selected-preset" 2>/dev/null || echo "bob")"
+
+    # Write the job-agent .ceignore before the build upload so only the selected
+    # preset directory is included in the build context.
+    write_ceignore_job_agent "$preset_name"
 
     if ibmcloud ce job get --name "$JOB_NAME" &>/dev/null; then
         local current_wss
@@ -186,9 +367,8 @@ deploy_job_agent() {
         ibmcloud ce job delete --name "$JOB_NAME" --force -q
     fi
 
-    print_msg "\nCreating job '$JOB_NAME' (first build may take up to 20 min)..."
+    print_msg "\nCreating job '$JOB_NAME' (preset: $preset_name, first build may take up to 20 min)..."
     local job_create_out build_run
-    # Separate declaration from assignment so set -e sees the exit code.
     job_create_out="$(ibmcloud ce job create \
         --name "$JOB_NAME" \
         --build-source "$SCRIPT_DIR" \
@@ -198,7 +378,7 @@ deploy_job_agent() {
         --maxexecutiontime "$DEFAULT_TIMEOUT" \
         --retrylimit 0 \
         --env "GATEWAY_WSS=$gateway_wss" \
-        --env-from-secret remote-bob-bobshell \
+        --env-from-secret remote-bob-agent-env \
         --no-wait 2>&1)" || { echo "$job_create_out"; print_error "Job create failed"; exit 1; }
     echo "$job_create_out"
     build_run="$(echo "$job_create_out" | sed -n "s/.*Submitting build run '\([^']*\)'.*/\1/p" || true)"
@@ -252,8 +432,7 @@ start_session() {
 
     # Store the run token in a short-lived CE secret so it never appears as a
     # literal env var in the job run configuration. The secret is deleted as
-    # soon as the job run has started (the value is already injected into the
-    # running container by then).
+    # soon as the job run has started.
     local ce_job_run_name="${JOB_NAME}-${AGENT_ID#agent-}"
     local run_secret_name="$ce_job_run_name"
     ibmcloud ce secret create \
@@ -261,15 +440,15 @@ start_session() {
         --from-literal "RUN_TOKEN=$run_token" -q \
         || { print_error "Failed to create run secret $run_secret_name"; exit 1; }
 
-    # Pass both secrets: --env-from-secret on jobrun submit replaces (not
-    # appends to) the job definition's envFrom list, so remote-bob-bobshell
-    # must be repeated here or BOBSHELL_API_KEY will not be set in the container.
+    # Pass all secrets: remote-bob-agent-env (agent API keys + user vars) and
+    # the per-run run token secret. --env-from-secret on jobrun submit replaces
+    # (not appends to) the job definition's envFrom list, so both must be listed.
     ibmcloud ce jobrun submit \
         --name "$ce_job_run_name" \
         --job "$JOB_NAME" \
         --mode task \
         --env "AGENT_ID=$AGENT_ID" \
-        --env-from-secret remote-bob-bobshell \
+        --env-from-secret remote-bob-agent-env \
         --env-from-secret "$run_secret_name" \
         --cpu "$DEFAULT_CPU" \
         --memory "$DEFAULT_MEMORY" \
@@ -348,6 +527,7 @@ launch_chrome() {
     print_success "\nSession live — opening browser"
     print_msg "  Agent:  $AGENT_ID"
     print_msg "  API:    ${API_SERVER_URL}"
+    print_msg "  Web UI: ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
     print_msg "\nSession continues in the background when you close the window."
     print_msg "Run './remote-bob --end-session' to terminate.\n"
 
@@ -371,7 +551,9 @@ launch_chrome() {
 # --setup  — provision infra + build images (idempotent)
 # ═════════════════════════════════════════════════════════════════════════════
 if [[ "$CMD" == setup ]]; then
-    print_msg "\n========== Remote Bob — Setup =========="
+    print_msg "\n========== Remote Bob — Setup (preset: $AGENT_PRESET_NAME) =========="
+
+    prepare_preset "$AGENT_PRESET_PATH"
 
     ibmcloud_setup
     provision
@@ -384,7 +566,7 @@ if [[ "$CMD" == setup ]]; then
 
     deploy_job_agent "$API_SERVER_URL"
 
-    print_success "\n========== Setup complete — run './remote-bob --new-session' to start ==========\n"
+    print_success "\n========== Setup complete (preset: $AGENT_PRESET_NAME) — run './remote-bob --new-session' to start ==========\n"
     exit 0
 fi
 
@@ -473,9 +655,7 @@ if [[ "$CMD" == end-session ]]; then
     done < <(ibmcloud ce jobrun list --job "$JOB_NAME" --output json 2>/dev/null \
         | jq -r '.[].name // empty' 2>/dev/null || true)
 
-    # Delete all per-run secrets by prefix — the secret name equals the job run
-    # name but secrets persist independently of the job run lifecycle, so we
-    # enumerate secrets directly rather than relying on jobrun list.
+    # Delete all per-run secrets by prefix.
     while IFS= read -r secret_name; do
         [[ -z "$secret_name" ]] && continue
         print_msg "\nDeleting run secret: $secret_name"
@@ -512,7 +692,7 @@ if [[ "$CMD" == clean ]]; then
     print_msg "\nDeleting app: $APISERVER_APP_NAME"
     ibmcloud ce application delete --name "$APISERVER_APP_NAME" --force 2>/dev/null || true
 
-    for secret in remote-bob-gateway remote-bob-bobshell; do
+    for secret in remote-bob-gateway remote-bob-agent-env; do
         print_msg "\nDeleting secret: $secret"
         ibmcloud ce secret delete --name "$secret" --force 2>/dev/null || true
     done
@@ -537,6 +717,7 @@ ibmcloud_setup
 app_exists=false
 job_exists_flag=false
 live_session=false
+current_preset="$(cat "$SCRIPT_DIR/job-agent/agents/selected-preset" 2>/dev/null || echo "not set")"
 
 if ibmcloud ce application get --name "$APISERVER_APP_NAME" &>/dev/null; then
     app_exists=true
@@ -549,6 +730,7 @@ if [[ "$app_exists" == true ]] && find_live_session; then
 fi
 
 print_msg ""
+print_msg "  Agent preset:    $current_preset"
 if [[ "$app_exists" == false && "$job_exists_flag" == false ]]; then
     print_msg "  Infrastructure:  not set up"
     print_msg "  Session:         none"
@@ -562,6 +744,7 @@ elif [[ "$app_exists" == true && "$job_exists_flag" == true && "$live_session" =
 elif [[ "$live_session" == true ]]; then
     print_msg "  Infrastructure:  ready"
     print_msg "  Session:         running (agent: $AGENT_ID)"
+    print_msg "  Web UI:          ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
     print_msg ""
     print_msg "  Next steps: ./remote-bob --connect      (open browser)"
     print_msg "              ./remote-bob --end-session   (stop session)"

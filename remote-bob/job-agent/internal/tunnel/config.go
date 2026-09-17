@@ -12,12 +12,14 @@ const (
 	defaultTTYDPort       = "7080"
 	defaultHealthPort     = "7081"
 	defaultWorkspace      = "/workspace"
-	defaultBobMode        = "interactive"
 	defaultIdleTimeout    = 5 * time.Minute
 	defaultReconnectDelay = 2 * time.Second
 	defaultTTYDReadyWait  = 30 * time.Second
 	defaultTmuxDeathGrace = 5 * time.Second
 	defaultRunTokenFile   = "/secrets/run-token"
+	// agentRunScript is the fixed path where the Dockerfile installs the
+	// preset's run.sh. The job-agent exec's this script inside the tmux session.
+	agentRunScript = "/usr/local/bin/agent-run.sh"
 )
 
 // runTokenSecretPath is a package variable so tests can redirect it to a
@@ -25,27 +27,25 @@ const (
 var runTokenSecretPath = defaultRunTokenFile
 
 // Config holds the job-agent tunnel daemon configuration, loaded from the
-// environment and mounted secret files.
+// environment and mounted secret files. This struct is intentionally
+// agent-agnostic: it knows nothing about Bob, Claude, or any specific tool.
+// All agent-specific behaviour is delegated to /usr/local/bin/agent-run.sh,
+// which is installed into the image by the chosen agent preset at build time.
 type Config struct {
-	AgentID        string
-	RunToken       string
-	GatewayWSS     string
-	TTYDPort       string
-	HealthPort     string
-	Workspace      string
-	BobMode        string
-	BobShellAPIKey string
-	// BobApprovalMode overrides the approvalMode field in settings.json when
-	// non-empty. Loaded from BOB_APPROVAL_MODE env var.
-	BobApprovalMode string
-	// BobTelemetrySet is true when BOB_TELEMETRY_ENABLED is present in the env.
-	BobTelemetrySet     bool
-	BobTelemetryEnabled bool
-	Lang               string
-	LCAll              string
-	IdleTimeout        time.Duration
-	ReconnectDelay     time.Duration
-	TTYDReadyTimeout   time.Duration
+	AgentID    string
+	RunToken   string
+	GatewayWSS string
+	TTYDPort   string
+	HealthPort string
+	Workspace  string
+	// AgentRunScript is the path to the preset's run.sh inside the container.
+	// Defaults to agentRunScript; overridable for tests.
+	AgentRunScript string
+	Lang           string
+	LCAll          string
+	IdleTimeout    time.Duration
+	ReconnectDelay time.Duration
+	TTYDReadyTimeout time.Duration
 	// TmuxDeathGrace is how long the health server keeps serving 503
 	// {"status":"unhealthy"} after the tmux session dies, before the
 	// graceful shutdown sequence proceeds.
@@ -57,25 +57,19 @@ type Config struct {
 // descriptive error naming the missing variable.
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
-		AgentID:         os.Getenv("AGENT_ID"),
-		RunToken:        os.Getenv("RUN_TOKEN"),
-		GatewayWSS:      os.Getenv("GATEWAY_WSS"),
-		TTYDPort:        getenv("TTYD_PORT", defaultTTYDPort),
-		HealthPort:      getenv("HEALTH_PORT", defaultHealthPort),
-		Workspace:       getenv("WORKSPACE", defaultWorkspace),
-		BobMode:         getenv("BOB_MODE", defaultBobMode),
-		BobApprovalMode: os.Getenv("BOB_APPROVAL_MODE"),
-		Lang:            getenv("LANG", "en_US.UTF-8"),
-		LCAll:           getenv("LC_ALL", "en_US.UTF-8"),
-		IdleTimeout:     durationFromEnv("IDLE_TIMEOUT_MS", defaultIdleTimeout),
-		ReconnectDelay:  durationFromEnv("RECONNECT_DELAY_MS", defaultReconnectDelay),
+		AgentID:          os.Getenv("AGENT_ID"),
+		RunToken:         os.Getenv("RUN_TOKEN"),
+		GatewayWSS:       os.Getenv("GATEWAY_WSS"),
+		TTYDPort:         getenv("TTYD_PORT", defaultTTYDPort),
+		HealthPort:       getenv("HEALTH_PORT", defaultHealthPort),
+		Workspace:        getenv("WORKSPACE", defaultWorkspace),
+		AgentRunScript:   getenv("AGENT_RUN_SCRIPT", agentRunScript),
+		Lang:             getenv("LANG", "en_US.UTF-8"),
+		LCAll:            getenv("LC_ALL", "en_US.UTF-8"),
+		IdleTimeout:      durationFromEnv("IDLE_TIMEOUT_MS", defaultIdleTimeout),
+		ReconnectDelay:   durationFromEnv("RECONNECT_DELAY_MS", defaultReconnectDelay),
 		TTYDReadyTimeout: durationFromEnv("TTYD_READY_TIMEOUT_MS", defaultTTYDReadyWait),
-		TmuxDeathGrace:  durationFromEnv("TMUX_DEATH_GRACE_MS", defaultTmuxDeathGrace),
-	}
-
-	if telRaw := os.Getenv("BOB_TELEMETRY_ENABLED"); telRaw != "" {
-		cfg.BobTelemetrySet = true
-		cfg.BobTelemetryEnabled = telRaw == "true" || telRaw == "1"
+		TmuxDeathGrace:   durationFromEnv("TMUX_DEATH_GRACE_MS", defaultTmuxDeathGrace),
 	}
 
 	if cfg.AgentID == "" {
@@ -93,18 +87,6 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("GATEWAY_WSS is required")
 	}
 
-	switch cfg.BobMode {
-	case "interactive", "plan", "auto":
-	default:
-		return nil, fmt.Errorf("invalid BOB_MODE %q: must be one of interactive, plan, auto", cfg.BobMode)
-	}
-
-	apiKey := os.Getenv("BOBSHELL_API_KEY")
-	if apiKey == "" {
-		return nil, fmt.Errorf("BOBSHELL_API_KEY is required")
-	}
-	cfg.BobShellAPIKey = apiKey
-
 	return cfg, nil
 }
 
@@ -115,18 +97,6 @@ func readSecretFile(path string) (string, error) {
 		return "", err
 	}
 	return strings.TrimSpace(string(data)), nil
-}
-
-// bobCommand returns the tmux pane command for the configured BOB_MODE.
-func bobCommand(cfg *Config) string {
-	switch cfg.BobMode {
-	case "plan":
-		return "bob chat --auto-approve --trust --accept-license --mode autonomous-loop-planner"
-	case "auto":
-		return "bob chat --auto-approve --trust --accept-license --mode auto"
-	default:
-		return "bob chat --auto-approve --trust --accept-license"
-	}
 }
 
 // controlURL builds the agent control WS URL: GATEWAY_WSS/ws/agent?agent=<ID>.

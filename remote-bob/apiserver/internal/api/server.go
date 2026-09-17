@@ -30,6 +30,7 @@ type Server struct {
 	relays           *relayManager
 	wsTokenTTL       time.Duration
 	relayOpenTimeout time.Duration
+	staticDir        string
 	// shuttingDown is set to 1 atomically when a DELETE /agents/{id} is
 	// processed. New browser WS connections and logins are rejected with 503
 	// so the browser shows "shutting down" rather than reconnecting.
@@ -54,6 +55,10 @@ type Config struct {
 	RunTokenTTL      time.Duration
 	RelayTokenTTL    time.Duration
 	RelayOpenTimeout time.Duration
+	// StaticDir is the filesystem directory containing the browser-client static
+	// files. When non-empty, the server serves the terminal UI at /ui/ and
+	// redirects / to /ui/.
+	StaticDir string
 }
 
 // NewServer creates a new apiserver.
@@ -82,6 +87,7 @@ func NewServer(cfg Config) *Server {
 		wsTokenTTL:       cfg.WSTokenTTL,
 		relayOpenTimeout: cfg.RelayOpenTimeout,
 		shutdownCh:       make(chan struct{}),
+		staticDir:        cfg.StaticDir,
 	}
 }
 
@@ -137,6 +143,20 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/ws/agent", s.handleAgentWS)
 	mux.HandleFunc("/ws/browser", s.handleBrowserWS)
 	mux.HandleFunc("/ws/relay", s.handleRelayWS)
+
+	// Serve the browser-client terminal UI at /ui/ when a static directory is
+	// configured. A request to / is redirected to /ui/ for convenience.
+	if s.staticDir != "" {
+		fs := http.FileServer(http.Dir(s.staticDir))
+		mux.Handle("/ui/", http.StripPrefix("/ui/", fs))
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/" {
+				http.Redirect(w, r, "/ui/", http.StatusFound)
+				return
+			}
+			http.NotFound(w, r)
+		})
+	}
 }
 
 // handleLogin issues a 60s single-use WS token in exchange for valid Basic
