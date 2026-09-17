@@ -273,6 +273,7 @@ The job-agent is now a pure infrastructure component. It dials the apiserver, st
 | Run Gemini CLI | `--setup --agent-preset=job-agent/agents/gemini` + `GEMINI_API_KEY` in `.env` |
 | Run OpenCode | `--setup --agent-preset=job-agent/agents/opencode` + provider key in `.env` |
 | Run a completely custom tool | Write `install.sh` + `run.sh`, pass path to `--agent-preset` |
+| Persist workspace across sessions | `--setup --persistent-workspace` (or `PERSISTENT_WORKSPACE=true` in `.env`) |
 | Inject any env var into the container | Add it to `.env`; it flows automatically into the CE secret |
 | Access the terminal from any browser | Open the `/ui/` URL printed by `--new-session` (or use `--web`) |
 | Keep using Bob Shell | Nothing changes — `--setup` with no `--agent-preset` is unchanged |

@@ -31,6 +31,8 @@ cp .env.template .env
 
 # 2. Provision IBM Cloud resources and build container images (~20 min first time)
 ./remote-bob --setup
+# Optional: enable persistent workspace across sessions with IBM Cloud Object Storage:
+# ./remote-bob --setup --persistent-workspace
 
 # 3. Start a session — opens a Chrome terminal window
 ./remote-bob --new-session
@@ -113,7 +115,7 @@ Then run `./remote-bob --setup` (or just `./remote-bob --new-session` if the ima
 
 | Command | What it does |
 |---|---|
-| `--setup` | Provisions IBM Cloud resources (resource group, CE project, secrets) and builds the apiserver and job-agent container images. **Idempotent** — safe to re-run after code or config changes. Accepts `--agent-preset=PATH`. |
+| `--setup` | Provisions IBM Cloud resources (resource group, CE project, secrets) and builds the apiserver and job-agent container images. **Idempotent** — safe to re-run after code or config changes. Accepts `--agent-preset=PATH` and `--persistent-workspace`. |
 | `--new-session` | Submits a new job run, waits for the agent to connect, and opens Chrome. Requires `--setup` to have completed. |
 | `--connect` | Queries IBM Cloud for the live session and reopens the Chrome terminal. No re-provisioning. |
 | `--end-session` | Gracefully disconnects the agent and deletes all job runs. Leaves the app and job definition in place so the next `--new-session` starts in seconds. |
@@ -201,6 +203,26 @@ Then run `--setup` with the path to your preset directory:
 # or relative to remote-bob/:
 ./remote-bob --setup --agent-preset=job-agent/agents/my-preset
 ```
+
+---
+
+## Persistent Workspace across sessions
+
+By default, every session starts from a fresh container. If you want the agent's `/workspace` (git clones, outputs, state files) to persist across sessions, enable the persistent workspace feature during `--setup`:
+
+```bash
+./remote-bob --setup --persistent-workspace
+```
+
+Or set `PERSISTENT_WORKSPACE=true` in your `.env`.
+
+This automatically:
+1. Provisions an **IBM Cloud Object Storage (COS)** instance and bucket (`remote-workspace-<random_hex>` or `$COS_BUCKET_NAME`).
+2. Configures HMAC service credentials and stores them securely in a Code Engine HMAC secret (`remote-bob-cos-secret`).
+3. Creates a **Code Engine Persistent Data Store (PDS)** (`remote-bob-workspace-store`).
+4. Mounts the COS bucket directly to `/workspace` in the job container.
+
+Running `./remote-bob --clean` removes the PDS, secrets, COS bucket, and COS instance completely.
 
 ---
 

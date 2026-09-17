@@ -29,17 +29,20 @@ CONFIG_FILE="$SCRIPT_DIR/.env"
 CMD=""   # setup | new-session | connect | end-session | clean | status
 AGENT_PRESET_ARG=""   # raw --agent-preset value; resolved to path after config load
 WEB_MODE=false        # when true (--web), output web UI endpoint without launching local Chrome
+PERSISTENT_WORKSPACE_ARG=""  # command-line override for persistent workspace
 
 for arg in "$@"; do
     case "$arg" in
-        --config=*)         CONFIG_FILE="${arg#--config=}" ;;
-        --setup)            CMD=setup ;;
-        --new-session)      CMD=new-session ;;
-        --connect)          CMD=connect ;;
-        --web)              WEB_MODE=true ;;
-        --end-session)      CMD=end-session ;;
-        --clean)            CMD=clean ;;
-        --agent-preset=*)   AGENT_PRESET_ARG="${arg#--agent-preset=}" ;;
+        --config=*)               CONFIG_FILE="${arg#--config=}" ;;
+        --setup)                  CMD=setup ;;
+        --new-session)            CMD=new-session ;;
+        --connect)                CMD=connect ;;
+        --web)                    WEB_MODE=true ;;
+        --persistent-workspace|--persistent-storage|--cos-workspace)
+                                  PERSISTENT_WORKSPACE_ARG="true" ;;
+        --end-session)            CMD=end-session ;;
+        --clean)                  CMD=clean ;;
+        --agent-preset=*)         AGENT_PRESET_ARG="${arg#--agent-preset=}" ;;
         --help|-h)
             cat <<EOF
 Remote Bob — Code Engine Session Launcher
@@ -60,6 +63,11 @@ Commands:
 Options:
   --web                Bypass local Chrome; print the hosted Web UI URL directly.
                        Supported with --new-session and --connect.
+  --persistent-workspace
+                       Enable persistent storage across sessions by provisioning
+                       an IBM Cloud Object Storage (COS) instance and bucket, mounted
+                       to /workspace via a Code Engine Persistent Data Store (PDS).
+                       (Used with --setup, or set PERSISTENT_WORKSPACE=true in .env)
   --agent-preset=PATH  Path to an agent preset directory (used with --setup).
                        The directory must contain install.sh and run.sh.
                        Relative paths are resolved from the remote-bob/ directory.
@@ -128,6 +136,14 @@ DEFAULT_MEMORY="${DEFAULT_MEMORY:-2G}"
 DEFAULT_TIMEOUT="${DEFAULT_TIMEOUT:-86400}"
 CHROME_DEBUG_PORT="${CHROME_DEBUG_PORT:-}"
 
+# ── Persistent Workspace (COS + CE PDS) ──────────────────────────────────────
+# Activated via --persistent-workspace or PERSISTENT_WORKSPACE=true in .env
+PERSISTENT_WORKSPACE="${PERSISTENT_WORKSPACE_ARG:-${PERSISTENT_WORKSPACE:-false}}"
+COS_INSTANCE_NAME="${COS_INSTANCE_NAME:-remote-bob-cos}"
+COS_SERVICE_KEY_NAME="${COS_SERVICE_KEY_NAME:-remote-bob-cos-key}"
+CE_PDS_SECRET_NAME="${CE_PDS_SECRET_NAME:-remote-bob-cos-secret}"
+CE_PDS_NAME="${CE_PDS_NAME:-remote-bob-workspace-store}"
+
 if (( DEFAULT_TIMEOUT > 86400 )); then DEFAULT_TIMEOUT=86400; fi
 
 # ── ENCRYPTION_KEY — in-memory only, never written to .env ───────────────────
@@ -189,6 +205,12 @@ INFRA_KEYS=(
     CHROME_DEBUG_PORT
     ENCRYPTION_KEY
     AGENT_PRESET
+    PERSISTENT_WORKSPACE
+    COS_INSTANCE_NAME
+    COS_BUCKET_NAME
+    COS_SERVICE_KEY_NAME
+    CE_PDS_SECRET_NAME
+    CE_PDS_NAME
 )
 
 provision() {
@@ -229,6 +251,92 @@ provision() {
     done < "$CONFIG_FILE"
 
     upsert_secret remote-bob-agent-env "${agent_env_args[@]}"
+
+    # Provision Persistent Workspace (COS instance, bucket, credentials, and CE PDS) if enabled
+    if [[ "$PERSISTENT_WORKSPACE" == "true" ]]; then
+        provision_persistent_workspace
+    fi
+}
+
+# ── Provision IBM Cloud Object Storage and Code Engine PDS ────────────────────
+provision_persistent_workspace() {
+    print_msg "\nProvisioning Persistent Workspace (COS + Code Engine PDS)"
+
+    ensure_plugin_is_up_to_date cloud-object-storage
+
+    if ! does_instance_exist cloud-object-storage "$COS_INSTANCE_NAME"; then
+        print_msg "  Creating COS instance '$COS_INSTANCE_NAME'..."
+        ibmcloud resource service-instance-create "$COS_INSTANCE_NAME" cloud-object-storage standard global -d premium-global-deployment-iam \
+            || { print_error "Cloud Object Storage creation failed"; exit 1; }
+    fi
+
+    local cos_id
+    cos_id="$(ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json | jq -r '.[0].id // empty')"
+    [[ -n "$cos_id" ]] || { print_error "Failed to get COS instance ID"; exit 1; }
+
+    ibmcloud cos config crn --crn "$cos_id" --force >/dev/null 2>&1
+    ibmcloud cos config auth --method IAM >/dev/null
+    ibmcloud cos config region --region "$CE_REGION" >/dev/null
+    ibmcloud cos config endpoint-url --url "s3.${CE_REGION}.cloud-object-storage.appdomain.cloud" >/dev/null
+
+    # Resolve or create bucket
+    if [[ -z "${COS_BUCKET_NAME:-}" ]]; then
+        local existing_bucket
+        existing_bucket="$(has_bucket_name_with_prefix "remote-workspace-")"
+        if [[ -n "$existing_bucket" ]]; then
+            COS_BUCKET_NAME="$existing_bucket"
+            print_msg "  Using existing COS bucket '$COS_BUCKET_NAME'"
+        else
+            local bucket_uuid
+            bucket_uuid="$(openssl rand -hex 6)"
+            COS_BUCKET_NAME="remote-workspace-${bucket_uuid}"
+            print_msg "  Creating COS bucket '$COS_BUCKET_NAME'..."
+            ibmcloud cos bucket-create --bucket "$COS_BUCKET_NAME" --ibm-service-instance-id "$cos_id" \
+                || { print_error "Failed to create COS bucket $COS_BUCKET_NAME"; exit 1; }
+        fi
+    else
+        # User supplied explicit bucket name
+        if ! ibmcloud cos bucket-head --bucket "$COS_BUCKET_NAME" &>/dev/null; then
+            print_msg "  Creating COS bucket '$COS_BUCKET_NAME'..."
+            ibmcloud cos bucket-create --bucket "$COS_BUCKET_NAME" --ibm-service-instance-id "$cos_id" \
+                || { print_error "Failed to create COS bucket $COS_BUCKET_NAME"; exit 1; }
+        else
+            print_msg "  Using existing COS bucket '$COS_BUCKET_NAME'"
+        fi
+    fi
+
+    # Create HMAC credentials if they don't exist
+    if ! does_serviceid_exist "$COS_SERVICE_KEY_NAME"; then
+        print_msg "  Creating COS service key '$COS_SERVICE_KEY_NAME' with HMAC..."
+        ibmcloud resource service-key-create "$COS_SERVICE_KEY_NAME" --parameters '{"HMAC":true}' --instance-id "$cos_id" \
+            || { print_error "Failed to create COS service key"; exit 1; }
+    fi
+
+    local key_json access_key secret_key
+    key_json="$(ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output JSON 2>/dev/null)"
+    access_key="$(echo "$key_json" | jq -r '.[0].credentials.cos_hmac_keys.access_key_id // empty')"
+    secret_key="$(echo "$key_json" | jq -r '.[0].credentials.cos_hmac_keys.secret_access_key // empty')"
+    [[ -n "$access_key" && -n "$secret_key" ]] || { print_error "Could not retrieve COS HMAC keys"; exit 1; }
+
+    # Create / update CE secret for PDS
+    print_msg "  Configuring Code Engine secret '$CE_PDS_SECRET_NAME' for persistent data store..."
+    if ! ibmcloud ce secret get --name "$CE_PDS_SECRET_NAME" &>/dev/null; then
+        ibmcloud ce secret create --name "$CE_PDS_SECRET_NAME" --format hmac \
+            --access-key-id "$access_key" --secret-access-key "$secret_key" -q
+    else
+        ibmcloud ce secret update --name "$CE_PDS_SECRET_NAME" \
+            --access-key-id "$access_key" --secret-access-key "$secret_key" -q
+    fi
+
+    # Create CE persistent data store (PDS)
+    print_msg "  Configuring Code Engine Persistent Data Store '$CE_PDS_NAME'..."
+    if ! ibmcloud ce pds get --name "$CE_PDS_NAME" &>/dev/null; then
+        ibmcloud ce pds create --name "$CE_PDS_NAME" \
+            --cos-bucket-name "$COS_BUCKET_NAME" \
+            --cos-bucket-location "$CE_REGION" \
+            --cos-access-secret "$CE_PDS_SECRET_NAME"
+    fi
+    print_success "  Persistent Workspace configured (bucket: $COS_BUCKET_NAME, PDS: $CE_PDS_NAME)"
 }
 
 # ── Write the selected preset name into the build context ────────────────────
@@ -381,19 +489,27 @@ deploy_job_agent() {
         ibmcloud ce job delete --name "$JOB_NAME" --force -q
     fi
 
-    print_msg "\nCreating job '$JOB_NAME' (preset: $preset_name, first build may take up to 20 min)..."
+    local job_create_args=(
+        --name "$JOB_NAME"
+        --build-source "$SCRIPT_DIR"
+        --build-dockerfile "job-agent/Dockerfile"
+        --mode task
+        --cpu "$DEFAULT_CPU"
+        --memory "$DEFAULT_MEMORY"
+        --maxexecutiontime "$DEFAULT_TIMEOUT"
+        --retrylimit 0
+        --env "GATEWAY_WSS=$gateway_wss"
+        --env-from-secret remote-bob-agent-env
+    )
+
+    if [[ "$PERSISTENT_WORKSPACE" == "true" ]]; then
+        job_create_args+=(--mount-data-store "/workspace=${CE_PDS_NAME}")
+    fi
+
+    print_msg "\nCreating job '$JOB_NAME' (preset: $preset_name, persistent workspace: $PERSISTENT_WORKSPACE, first build may take up to 20 min)..."
     local job_create_out build_run
-    job_create_out="$(ibmcloud ce job create \
-        --name "$JOB_NAME" \
-        --build-source "$SCRIPT_DIR" \
-        --build-dockerfile "job-agent/Dockerfile" \
-        --mode task \
-        --cpu "$DEFAULT_CPU" --memory "$DEFAULT_MEMORY" \
-        --maxexecutiontime "$DEFAULT_TIMEOUT" \
-        --retrylimit 0 \
-        --env "GATEWAY_WSS=$gateway_wss" \
-        --env-from-secret remote-bob-agent-env \
-        --no-wait 2>&1)" || { echo "$job_create_out"; print_error "Job create failed"; exit 1; }
+    job_create_out="$(ibmcloud ce job create "${job_create_args[@]}" --no-wait 2>&1)" \
+        || { echo "$job_create_out"; print_error "Job create failed"; exit 1; }
     echo "$job_create_out"
     build_run="$(echo "$job_create_out" | sed -n "s/.*Submitting build run '\([^']*\)'.*/\1/p" || true)"
 
@@ -457,6 +573,8 @@ start_session() {
     # Pass all secrets: remote-bob-agent-env (agent API keys + user vars) and
     # the per-run run token secret. --env-from-secret on jobrun submit replaces
     # (not appends to) the job definition's envFrom list, so both must be listed.
+    # Volume mounts (like PDS mounted to /workspace) are inherited directly from
+    # the parent job definition.
     ibmcloud ce jobrun submit \
         --name "$ce_job_run_name" \
         --job "$JOB_NAME" \
@@ -717,13 +835,50 @@ if [[ "$CMD" == clean ]]; then
     print_msg "\nDeleting app: $APISERVER_APP_NAME"
     ibmcloud ce application delete --name "$APISERVER_APP_NAME" --force 2>/dev/null || true
 
-    for secret in remote-bob-gateway remote-bob-agent-env; do
+    # Delete Persistent Data Store and related secrets if they exist
+    if ibmcloud ce pds get --name "$CE_PDS_NAME" &>/dev/null; then
+        print_msg "\nDeleting Code Engine Persistent Data Store: $CE_PDS_NAME"
+        ibmcloud ce pds delete --name "$CE_PDS_NAME" --force 2>/dev/null || true
+    fi
+
+    for secret in remote-bob-gateway remote-bob-agent-env "$CE_PDS_SECRET_NAME"; do
         print_msg "\nDeleting secret: $secret"
         ibmcloud ce secret delete --name "$secret" --force 2>/dev/null || true
     done
 
     print_msg "\nDeleting CE project: $CE_PROJECT"
     ibmcloud ce project delete --name "$CE_PROJECT" --hard --force 2>/dev/null || true
+
+    # Clean up Cloud Object Storage buckets and instance if present
+    if does_instance_exist cloud-object-storage "$COS_INSTANCE_NAME"; then
+        local cos_id
+        cos_id="$(ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json 2>/dev/null | jq -r '.[0].id // empty')"
+        if [[ -n "$cos_id" ]]; then
+            ibmcloud cos config crn --crn "$cos_id" --force >/dev/null 2>&1
+            ibmcloud cos config auth --method IAM >/dev/null
+            ibmcloud cos config region --region "$CE_REGION" >/dev/null
+            ibmcloud cos config endpoint-url --url "s3.${CE_REGION}.cloud-object-storage.appdomain.cloud" >/dev/null
+
+            # Delete any buckets with the remote-workspace- prefix or explicit COS_BUCKET_NAME
+            local bucket_to_del="${COS_BUCKET_NAME:-}"
+            if [[ -z "$bucket_to_del" ]]; then
+                bucket_to_del="$(has_bucket_name_with_prefix "remote-workspace-")"
+            fi
+            if [[ -n "$bucket_to_del" ]]; then
+                print_msg "\nDeleting COS bucket: $bucket_to_del"
+                ibmcloud cos bucket-delete --bucket "$bucket_to_del" --force --region "$CE_REGION" 2>/dev/null || true
+            fi
+        fi
+
+        # Delete service key
+        if does_serviceid_exist "$COS_SERVICE_KEY_NAME"; then
+            print_msg "\nDeleting COS service key: $COS_SERVICE_KEY_NAME"
+            ibmcloud resource service-key-delete "$COS_SERVICE_KEY_NAME" --force 2>/dev/null || true
+        fi
+
+        print_msg "\nDeleting COS service instance: $COS_INSTANCE_NAME"
+        ibmcloud resource service-instance-delete "$COS_INSTANCE_NAME" --force --recursive 2>/dev/null || true
+    fi
 
     print_msg "\nDeleting resource group: $RESOURCE_GROUP"
     ibmcloud resource group-delete "$RESOURCE_GROUP" --force 2>/dev/null || true
@@ -754,8 +909,14 @@ if [[ "$app_exists" == true ]] && find_live_session; then
     live_session=true
 fi
 
+local pds_status="disabled"
+if ibmcloud ce pds get --name "$CE_PDS_NAME" &>/dev/null; then
+    pds_status="enabled ($CE_PDS_NAME)"
+fi
+
 print_msg ""
 print_msg "  Agent preset:    $current_preset"
+print_msg "  Workspace COS:   $pds_status"
 if [[ "$app_exists" == false && "$job_exists_flag" == false ]]; then
     print_msg "  Infrastructure:  not set up"
     print_msg "  Session:         none"
