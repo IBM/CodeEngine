@@ -478,14 +478,28 @@ deploy_job_agent() {
     write_ceignore_job_agent "$preset_name"
 
     if ibmcloud ce job get --name "$JOB_NAME" &>/dev/null; then
-        local current_wss
-        current_wss="$(ibmcloud ce job get --name "$JOB_NAME" --output json \
+        local job_json current_wss current_pds_mount needs_recreate=false
+        job_json="$(ibmcloud ce job get --name "$JOB_NAME" --output json 2>/dev/null || true)"
+        current_wss="$(echo "$job_json" \
             | jq -r '[.spec.template.containers[0].env[]? | select(.name=="GATEWAY_WSS") | .value][0] // empty')"
-        if [[ "$current_wss" == "$gateway_wss" ]]; then
+        current_pds_mount="$(echo "$job_json" \
+            | jq -r '[.spec.template.containers[0].volume_mounts[]? | select(.mount_path=="/workspace") | .name][0] // empty')"
+
+        if [[ "$current_wss" != "$gateway_wss" ]]; then
+            print_msg "\nGateway URL changed — recreating job '$JOB_NAME'"
+            needs_recreate=true
+        elif [[ "$PERSISTENT_WORKSPACE" == "true" && -z "$current_pds_mount" ]]; then
+            print_msg "\nPersistent workspace enabled — recreating job '$JOB_NAME' with volume mount"
+            needs_recreate=true
+        elif [[ "$PERSISTENT_WORKSPACE" != "true" && -n "$current_pds_mount" ]]; then
+            print_msg "\nPersistent workspace disabled — recreating job '$JOB_NAME' without volume mount"
+            needs_recreate=true
+        fi
+
+        if [[ "$needs_recreate" == false ]]; then
             print_msg "\nJob '$JOB_NAME' is current — skipping rebuild"
             return
         fi
-        print_msg "\nGateway URL changed — recreating job '$JOB_NAME'"
         ibmcloud ce job delete --name "$JOB_NAME" --force -q
     fi
 

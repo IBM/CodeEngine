@@ -94,6 +94,12 @@ RUN preset="$(cat /tmp/agents/selected-preset)" \
 # Create workspace directory owned by jobagent.
 RUN mkdir -p /workspace && chown jobagent:jobagent /workspace
 
+# Configure default Git identity for autonomous agents
+RUN git config --global user.name "Remote Bob Agent" \
+    && git config --global user.email "jobagent@remote-bob.local" \
+    && git config --global init.defaultBranch main \
+    && chown jobagent:jobagent /home/jobagent/.gitconfig
+
 # Create tmux config for the jobagent user.
 RUN echo "set -g history-limit 50000" > /home/jobagent/.tmux.conf \
     && echo "set -g mouse on" >> /home/jobagent/.tmux.conf \
