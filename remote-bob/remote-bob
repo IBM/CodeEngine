@@ -28,6 +28,7 @@ BROWSER_HTML="$SCRIPT_DIR/browser-client/single-session.html"
 CONFIG_FILE="$SCRIPT_DIR/.env"
 CMD=""   # setup | new-session | connect | end-session | clean | status
 AGENT_PRESET_ARG=""   # raw --agent-preset value; resolved to path after config load
+WEB_MODE=false        # when true (--web), output web UI endpoint without launching local Chrome
 
 for arg in "$@"; do
     case "$arg" in
@@ -35,6 +36,7 @@ for arg in "$@"; do
         --setup)            CMD=setup ;;
         --new-session)      CMD=new-session ;;
         --connect)          CMD=connect ;;
+        --web)              WEB_MODE=true ;;
         --end-session)      CMD=end-session ;;
         --clean)            CMD=clean ;;
         --agent-preset=*)   AGENT_PRESET_ARG="${arg#--agent-preset=}" ;;
@@ -43,7 +45,7 @@ for arg in "$@"; do
 Remote Bob — Code Engine Session Launcher
 
 Usage:
-  $0 [--config=FILE] <command> [--agent-preset=PATH]
+  $0 [--config=FILE] <command> [options]
 
 Commands:
   --setup          Provision IBM Cloud resources and build container images.
@@ -56,6 +58,8 @@ Commands:
   (no args)        Print current session status.
 
 Options:
+  --web                Bypass local Chrome; print the hosted Web UI URL directly.
+                       Supported with --new-session and --connect.
   --agent-preset=PATH  Path to an agent preset directory (used with --setup).
                        The directory must contain install.sh and run.sh.
                        Relative paths are resolved from the remote-bob/ directory.
@@ -507,7 +511,20 @@ job_exists() {
 }
 
 # ── Launch Chrome ─────────────────────────────────────────────────────────────
-launch_chrome() {
+# ── Open Session (Chrome or Web UI URL) ───────────────────────────────────────
+open_session() {
+    print_success "\nSession live"
+    print_msg "  Agent:  $AGENT_ID"
+    print_msg "  API:    ${API_SERVER_URL}"
+    print_msg "  Web UI: ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
+
+    if [[ "$WEB_MODE" == true ]]; then
+        print_msg "\nOpen the Web UI URL above in your browser to access the terminal."
+        print_msg "Session continues in the background in Code Engine."
+        print_msg "Run './remote-bob --end-session' to terminate.\n"
+        return
+    fi
+
     local api_host="${API_SERVER_URL#https://}"; api_host="${api_host#http://}"
     local url="file://${BROWSER_HTML}?apiHost=${api_host}&agent=${AGENT_ID}"
     mkdir -p "$SCRIPT_DIR/tmp"
@@ -524,7 +541,8 @@ launch_chrome() {
             || true)"
     fi
     [[ -n "$chrome_bin" ]] || {
-        print_error "Chrome not found. Install Google Chrome or add CHROME_BIN=/path/to/chrome to your .env"
+        print_warn "Chrome not found locally. You can use '--web' or open the Web UI directly:"
+        print_msg "  ${API_SERVER_URL}/ui/?agent=${AGENT_ID}\n"
         exit 1
     }
     [[ -f "$BROWSER_HTML" ]] || { print_error "Browser client not found: $BROWSER_HTML"; exit 1; }
@@ -534,11 +552,8 @@ launch_chrome() {
                  --disable-extensions --disable-sync --disable-translate )
     [[ -n "$CHROME_DEBUG_PORT" ]] && args+=( "--remote-debugging-port=$CHROME_DEBUG_PORT" )
 
-    print_success "\nSession live — opening browser"
-    print_msg "  Agent:  $AGENT_ID"
-    print_msg "  API:    ${API_SERVER_URL}"
-    print_msg "  Web UI: ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
-    print_msg "\nSession continues in the background when you close the window."
+    print_msg "\nOpening local Chrome browser..."
+    print_msg "Session continues in the background when you close the window."
     print_msg "Run './remote-bob --end-session' to terminate.\n"
 
     "$chrome_bin" "${args[@]}" >/dev/null 2>&1 &
@@ -611,7 +626,7 @@ if [[ "$CMD" == new-session ]]; then
     API_SERVER_URL="${API_SERVER_URL%/}"
 
     start_session "$API_SERVER_URL"
-    launch_chrome
+    open_session
     exit 0
 fi
 
@@ -631,7 +646,7 @@ if [[ "$CMD" == connect ]]; then
     fi
 
     print_msg "\nConnecting to session (agent: $AGENT_ID)"
-    launch_chrome
+    open_session
     exit 0
 fi
 

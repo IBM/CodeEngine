@@ -200,17 +200,27 @@ After adding these, run `./remote-bob --setup` (or just `--new-session` if the i
 
 ---
 
-## The Hosted Browser UI
+## The Hosted Browser UI & `--web` Flag
 
-The apiserver now serves the browser-client terminal page at `/ui/`. When a session is running, the launcher prints:
+The apiserver now serves the browser-client terminal page at `/ui/`. When a session is running, the launcher prints the hosted URL:
 
 ```
 Web UI: https://<apiserver-url>/ui/?agent=<agent-id>
 ```
 
+To bypass launching local Chrome and directly retrieve the web link, pass `--web` to either `--new-session` or `--connect`:
+
+```bash
+# Start a new session and get the web URL
+./remote-bob --new-session --web
+
+# Reconnect to an existing session and get the web URL
+./remote-bob --connect --web
+```
+
 Open that URL in any browser. The page authenticates with your `GATEWAY_PASSWORD`, opens a WebSocket to the relay, and renders the terminal — the same experience as the local `file://` page, but accessible from any device without needing the repository cloned locally.
 
-The `file://` Chrome path still works identically. The hosted UI is an addition, not a replacement.
+The `file://` Chrome path still works identically by default when `--web` is omitted.
 
 ---
 
@@ -264,7 +274,7 @@ The job-agent is now a pure infrastructure component. It dials the apiserver, st
 | Run OpenCode | `--setup --agent-preset=job-agent/agents/opencode` + provider key in `.env` |
 | Run a completely custom tool | Write `install.sh` + `run.sh`, pass path to `--agent-preset` |
 | Inject any env var into the container | Add it to `.env`; it flows automatically into the CE secret |
-| Access the terminal from any browser | Open the `/ui/` URL printed by `--new-session` |
+| Access the terminal from any browser | Open the `/ui/` URL printed by `--new-session` (or use `--web`) |
 | Keep using Bob Shell | Nothing changes — `--setup` with no `--agent-preset` is unchanged |
 
 Remote Bob started as a way to run Bob Shell in the cloud. It is now a general-purpose serverless agent runner. The Code Engine infrastructure handles the lifecycle; the preset system handles the tool. Bring your agent, point it at a job run, and let Code Engine take care of the rest.

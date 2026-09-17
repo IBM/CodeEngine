@@ -126,15 +126,27 @@ All commands accept `--config=FILE` to use a config file other than `.env`.
 
 ## Browser access
 
-**Local (Chrome, `file://`):** The launcher opens Chrome automatically with the `browser-client/single-session.html` page. This is the original method, unchanged.
+**Local (Chrome, `file://`):** By default, `./remote-bob --new-session` or `./remote-bob --connect` opens Chrome automatically with the `browser-client/single-session.html` page.
 
-**Hosted (any browser):** The apiserver also serves the terminal UI at `/ui/` directly from its public URL. After starting a session, the launcher prints:
+**Hosted Web UI (any browser / `--web`):** The apiserver also serves the terminal UI at `/ui/` directly from its public URL. Pass the `--web` flag to bypass local Chrome launch and only output the URL:
 
+```bash
+# Start session and get web link directly (no local Chrome opened):
+./remote-bob --new-session --web
+
+# Reconnect and get web link for existing session:
+./remote-bob --connect --web
 ```
-Web UI: https://<apiserver-url>/ui/?agent=<agent-id>
+
+Output:
+```
+Session live
+  Agent:  agent-xxxx
+  API:    https://<apiserver-url>
+  Web UI: https://<apiserver-url>/ui/?agent=agent-xxxx
 ```
 
-Open that URL in any browser — no Chrome, no `file://`, no local files needed. This is useful for reconnecting from a different machine or sharing access.
+Open that URL in any browser on any device — no Chrome, no `file://`, no local files needed.
 
 ---
 
