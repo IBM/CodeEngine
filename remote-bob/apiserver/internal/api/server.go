@@ -151,7 +151,11 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 		mux.Handle("/ui/", http.StripPrefix("/ui/", fs))
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == "/" {
-				http.Redirect(w, r, "/ui/", http.StatusFound)
+				dest := "/ui/single-session.html"
+				if r.URL.RawQuery != "" {
+					dest += "?" + r.URL.RawQuery
+				}
+				http.Redirect(w, r, dest, http.StatusFound)
 				return
 			}
 			http.NotFound(w, r)

@@ -35,3 +35,8 @@ job-agent/agents/selected-preset
 # The root .ceignore is rewritten by ./remote-bob --setup before each build.
 # Do not commit it.
 .ceignore
+
+# ── Local workspace mirror ───────────────────────────────────────────────────
+# Downloaded by ./remote-bob --workspace-pull. Contains agent-produced files
+# from the COS bucket — not source code, never commit.
+workspace/

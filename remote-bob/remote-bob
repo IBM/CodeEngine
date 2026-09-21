@@ -26,7 +26,7 @@ BROWSER_HTML="$SCRIPT_DIR/browser-client/single-session.html"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 CONFIG_FILE="$SCRIPT_DIR/.env"
-CMD=""   # setup | new-session | connect | end-session | clean | status
+CMD=""   # setup | new-session | connect | end-session | clean | workspace-pull | workspace-push | status
 AGENT_PRESET_ARG=""   # raw --agent-preset value; resolved to path after config load
 WEB_MODE=false        # when true (--web), output web UI endpoint without launching local Chrome
 PERSISTENT_WORKSPACE_ARG=""  # command-line override for persistent workspace
@@ -42,6 +42,8 @@ for arg in "$@"; do
                                   PERSISTENT_WORKSPACE_ARG="true" ;;
         --end-session)            CMD=end-session ;;
         --clean)                  CMD=clean ;;
+        --workspace-pull)         CMD=workspace-pull ;;
+        --workspace-push)         CMD=workspace-push ;;
         --agent-preset=*)         AGENT_PRESET_ARG="${arg#--agent-preset=}" ;;
         --help|-h)
             cat <<EOF
@@ -51,14 +53,18 @@ Usage:
   $0 [--config=FILE] <command> [options]
 
 Commands:
-  --setup          Provision IBM Cloud resources and build container images.
-                   Safe to re-run — idempotent. Re-run after code changes.
-  --new-session    Submit a new agent job run and open the browser.
-                   Requires a completed --setup.
-  --connect        Reopen the browser for an already-running session.
-  --end-session    Terminate the running job run (infra stays for next session).
-  --clean          Remove ALL provisioned IBM Cloud resources.
-  (no args)        Print current session status.
+  --setup            Provision IBM Cloud resources and build container images.
+                     Safe to re-run — idempotent. Re-run after code changes.
+  --new-session      Submit a new agent job run and open the browser.
+                     Requires a completed --setup.
+  --connect          Reopen the browser for an already-running session.
+  --end-session      Terminate the running job run (infra stays for next session).
+  --clean            Remove ALL provisioned IBM Cloud resources.
+  --workspace-pull   Download the COS workspace bucket to ./workspace/ locally.
+                     Requires PERSISTENT_WORKSPACE=true and rclone.
+  --workspace-push   Upload ./workspace/ to the COS workspace bucket.
+                     Requires PERSISTENT_WORKSPACE=true and rclone.
+  (no args)          Print current session status.
 
 Options:
   --web                Bypass local Chrome; print the hosted Web UI URL directly.
@@ -441,6 +447,96 @@ HEADER
     } > "$SCRIPT_DIR/.ceignore"
 }
 
+# ── Workspace sync (rclone) ───────────────────────────────────────────────────
+# Writes a short-lived rclone config to tmp/ using the HMAC credentials already
+# stored in the COS service key, runs the sync, then removes the config file.
+
+# workspace_rclone_conf <conf_file>
+# Writes an rclone S3/IBMCOS config section to <conf_file>.
+workspace_rclone_conf() {
+    local conf_file="$1"
+
+    [[ "$PERSISTENT_WORKSPACE" == "true" ]] \
+        || { print_error "Persistent workspace is not enabled. Set PERSISTENT_WORKSPACE=true in .env or pass --persistent-workspace at setup time."; exit 1; }
+    command -v rclone &>/dev/null \
+        || { print_error "rclone not found. Install it from https://rclone.org/install/"; exit 1; }
+
+    # Ensure COS plugin is available and credentials are fetchable.
+    ensure_plugin_is_up_to_date cloud-object-storage
+
+    local cos_id
+    cos_id="$(ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json 2>/dev/null \
+        | jq -r '.[0].id // empty')"
+    [[ -n "$cos_id" ]] \
+        || { print_error "COS instance '$COS_INSTANCE_NAME' not found. Has --setup been run with --persistent-workspace?"; exit 1; }
+
+    local key_json access_key secret_key
+    key_json="$(ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output JSON 2>/dev/null)"
+    access_key="$(echo "$key_json" | jq -r '.[0].credentials.cos_hmac_keys.access_key_id // empty')"
+    secret_key="$(echo "$key_json" | jq -r '.[0].credentials.cos_hmac_keys.secret_access_key // empty')"
+    [[ -n "$access_key" && -n "$secret_key" ]] \
+        || { print_error "Could not retrieve HMAC keys from COS service key '$COS_SERVICE_KEY_NAME'"; exit 1; }
+
+    # Resolve bucket name if not set explicitly.
+    if [[ -z "${COS_BUCKET_NAME:-}" ]]; then
+        COS_BUCKET_NAME="$(has_bucket_name_with_prefix "remote-workspace-")"
+    fi
+    [[ -n "${COS_BUCKET_NAME:-}" ]] \
+        || { print_error "Could not determine COS bucket name. Set COS_BUCKET_NAME in .env."; exit 1; }
+
+    mkdir -p "$(dirname "$conf_file")"
+    cat > "$conf_file" <<EOF
+[cos]
+type = s3
+provider = IBMCOS
+access_key_id = ${access_key}
+secret_access_key = ${secret_key}
+endpoint = https://s3.${CE_REGION}.cloud-object-storage.appdomain.cloud
+acl = private
+region = ${CE_REGION}
+location_constraint = ${CE_REGION}
+EOF
+    chmod 600 "$conf_file"
+}
+
+# workspace_pull — sync COS bucket → local ./workspace/
+workspace_pull() {
+    local local_dir="${WORKSPACE_LOCAL_DIR:-$SCRIPT_DIR/workspace}"
+    local conf_file="$SCRIPT_DIR/tmp/.rclone-workspace.conf"
+
+    ibmcloud_setup
+    workspace_rclone_conf "$conf_file"
+
+    print_msg "\nPulling workspace from COS bucket '$COS_BUCKET_NAME' → $local_dir"
+    mkdir -p "$local_dir"
+    rclone --config "$conf_file" sync \
+        "cos:${COS_BUCKET_NAME}" "$local_dir" \
+        --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+
+    rm -f "$conf_file"
+    print_success "\nWorkspace pull complete → $local_dir"
+}
+
+# workspace_push — sync local ./workspace/ → COS bucket
+workspace_push() {
+    local local_dir="${WORKSPACE_LOCAL_DIR:-$SCRIPT_DIR/workspace}"
+    local conf_file="$SCRIPT_DIR/tmp/.rclone-workspace.conf"
+
+    [[ -d "$local_dir" ]] \
+        || { print_error "Local workspace directory not found: $local_dir\nRun '--workspace-pull' first or create the directory."; exit 1; }
+
+    ibmcloud_setup
+    workspace_rclone_conf "$conf_file"
+
+    print_msg "\nPushing workspace from $local_dir → COS bucket '$COS_BUCKET_NAME'"
+    rclone --config "$conf_file" sync \
+        "$local_dir" "cos:${COS_BUCKET_NAME}" \
+        --progress --multi-thread-streams=16 --checkers=32 --transfers=8
+
+    rm -f "$conf_file"
+    print_success "\nWorkspace push complete → s3:${COS_BUCKET_NAME}"
+}
+
 # ── Deploy / update the apiserver application ─────────────────────────────────
 # Build source is the remote-bob/ root so browser-client/ is available to the
 # Dockerfile. write_ceignore_apiserver() is called immediately before the upload
@@ -648,7 +744,8 @@ open_session() {
     print_success "\nSession live"
     print_msg "  Agent:  $AGENT_ID"
     print_msg "  API:    ${API_SERVER_URL}"
-    print_msg "  Web UI: ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
+    local api_host="${API_SERVER_URL#https://}"; api_host="${api_host#http://}"
+    print_msg "  Web UI: ${API_SERVER_URL}/ui/single-session.html?apiHost=${api_host}&agent=${AGENT_ID}"
 
     if [[ "$WEB_MODE" == true ]]; then
         print_msg "\nOpen the Web UI URL above in your browser to access the terminal."
@@ -657,7 +754,6 @@ open_session() {
         return
     fi
 
-    local api_host="${API_SERVER_URL#https://}"; api_host="${api_host#http://}"
     local url="file://${BROWSER_HTML}?apiHost=${api_host}&agent=${AGENT_ID}"
     mkdir -p "$SCRIPT_DIR/tmp"
     local user_data; user_data="$(mktemp -d "$SCRIPT_DIR/tmp/remote-bob-chrome.XXXXXX")"
@@ -674,7 +770,7 @@ open_session() {
     fi
     [[ -n "$chrome_bin" ]] || {
         print_warn "Chrome not found locally. You can use '--web' or open the Web UI directly:"
-        print_msg "  ${API_SERVER_URL}/ui/?agent=${AGENT_ID}\n"
+        print_msg "  ${API_SERVER_URL}/ui/single-session.html?apiHost=${api_host}&agent=${AGENT_ID}\n"
         exit 1
     }
     [[ -f "$BROWSER_HTML" ]] || { print_error "Browser client not found: $BROWSER_HTML"; exit 1; }
@@ -791,15 +887,15 @@ if [[ "$CMD" == end-session ]]; then
     ibmcloud_setup
 
     # Disconnect agent via the apiserver (best effort — server may already be down).
-    local_app_url="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" \
+    app_url="$(ibmcloud ce application get --name "$APISERVER_APP_NAME" \
         --output json 2>/dev/null | jq -r '.status.url // empty' 2>/dev/null || true)"
-    if [[ -n "$local_app_url" ]]; then
-        local_agent_id="$(curl -sf "${local_app_url%/}/agents" \
+    if [[ -n "$app_url" ]]; then
+        active_agent_id="$(curl -sf "${app_url%/}/agents" \
             -H "Authorization: $(auth_header)" 2>/dev/null \
             | jq -r '[.[] | select(.status=="ready")][0].agent_id // empty' 2>/dev/null || true)"
-        if [[ -n "$local_agent_id" ]]; then
-            print_msg "\nDisconnecting agent $local_agent_id"
-            curl -sf -X DELETE "${local_app_url%/}/agents/${local_agent_id}" \
+        if [[ -n "$active_agent_id" ]]; then
+            print_msg "\nDisconnecting agent $active_agent_id"
+            curl -sf -X DELETE "${app_url%/}/agents/${active_agent_id}" \
                 -H "Authorization: $(auth_header)" 2>/dev/null || true
         fi
     fi
@@ -823,6 +919,24 @@ if [[ "$CMD" == end-session ]]; then
         2>/dev/null || true)
 
     print_success "\n========== Session ended — run './remote-bob --new-session' to start another ==========\n"
+    exit 0
+fi
+
+# ═════════════════════════════════════════════════════════════════════════════
+# --workspace-pull  — download COS bucket → local workspace/
+# ═════════════════════════════════════════════════════════════════════════════
+if [[ "$CMD" == workspace-pull ]]; then
+    print_msg "\n========== Remote Bob — Workspace Pull =========="
+    workspace_pull
+    exit 0
+fi
+
+# ═════════════════════════════════════════════════════════════════════════════
+# --workspace-push  — upload local workspace/ → COS bucket
+# ═════════════════════════════════════════════════════════════════════════════
+if [[ "$CMD" == workspace-push ]]; then
+    print_msg "\n========== Remote Bob — Workspace Push =========="
+    workspace_push
     exit 0
 fi
 
@@ -865,7 +979,6 @@ if [[ "$CMD" == clean ]]; then
 
     # Clean up Cloud Object Storage buckets and instance if present
     if does_instance_exist cloud-object-storage "$COS_INSTANCE_NAME"; then
-        local cos_id
         cos_id="$(ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json 2>/dev/null | jq -r '.[0].id // empty')"
         if [[ -n "$cos_id" ]]; then
             ibmcloud cos config crn --crn "$cos_id" --force >/dev/null 2>&1
@@ -874,7 +987,7 @@ if [[ "$CMD" == clean ]]; then
             ibmcloud cos config endpoint-url --url "s3.${CE_REGION}.cloud-object-storage.appdomain.cloud" >/dev/null
 
             # Delete any buckets with the remote-workspace- prefix or explicit COS_BUCKET_NAME
-            local bucket_to_del="${COS_BUCKET_NAME:-}"
+            bucket_to_del="${COS_BUCKET_NAME:-}"
             if [[ -z "$bucket_to_del" ]]; then
                 bucket_to_del="$(has_bucket_name_with_prefix "remote-workspace-")"
             fi
@@ -923,7 +1036,7 @@ if [[ "$app_exists" == true ]] && find_live_session; then
     live_session=true
 fi
 
-local pds_status="disabled"
+pds_status="disabled"
 if ibmcloud ce pds get --name "$CE_PDS_NAME" &>/dev/null; then
     pds_status="enabled ($CE_PDS_NAME)"
 fi
@@ -944,7 +1057,8 @@ elif [[ "$app_exists" == true && "$job_exists_flag" == true && "$live_session" =
 elif [[ "$live_session" == true ]]; then
     print_msg "  Infrastructure:  ready"
     print_msg "  Session:         running (agent: $AGENT_ID)"
-    print_msg "  Web UI:          ${API_SERVER_URL}/ui/?agent=${AGENT_ID}"
+    local _api_host_status="${API_SERVER_URL#https://}"; _api_host_status="${_api_host_status#http://}"
+    print_msg "  Web UI:          ${API_SERVER_URL}/ui/single-session.html?apiHost=${_api_host_status}&agent=${AGENT_ID}"
     print_msg ""
     print_msg "  Next steps: ./remote-bob --connect      (open browser)"
     print_msg "              ./remote-bob --end-session   (stop session)"
