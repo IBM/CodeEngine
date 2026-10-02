@@ -1,0 +1,7 @@
+# apiserver build context — Code Engine source builds upload this directory.
+# Exclude the built binary (rebuilt in the image), env/template files, and
+# local cruft. Dependencies are fetched by `go mod download` inside the build.
+apiserver
+.env*
+*.log
+tmp/

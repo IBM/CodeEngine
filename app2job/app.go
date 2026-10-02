@@ -43,14 +43,26 @@ func init() {
 	CertPool.AppendCertsFromPEM(cert)
 }
 
-// Handle incoming requests. Job definition name will be in the path
+// Handler handles incoming requests. The job definition name is taken from the
+// URL path. Only alphanumeric characters, hyphens and underscores are allowed
+// to prevent XSS and injection attacks.
 func Handler(w http.ResponseWriter, r *http.Request) {
 	jobDef := strings.Trim(r.URL.Path, "/")
 
 	if len(jobDef) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Bad path: %s - should be 'jobdef'\n", r.URL.Path)
+		fmt.Fprintf(w, "Bad path - should be 'jobdef'\n")
 		return
+	}
+
+	// Validate jobDef to contain only safe characters (alphanumeric, hyphen, underscore)
+	for _, c := range jobDef {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+			(c >= '0' && c <= '9') || c == '-' || c == '_') {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Invalid job definition name\n")
+			return
+		}
 	}
 
 	// Only submit a Job on a PUT or POST

@@ -1,0 +1,8 @@
+name = "Sascha Schwarze"
+bio = "Senior Software Enginer @ IBM Cloud Code Engine"
+image = "saschaschwarze.jpg"
+
+# Add external links (this will automatically generate clickable icons under the author name)
+[links]
+  github = "https://github.com/SaschaSchwarze0"
+  

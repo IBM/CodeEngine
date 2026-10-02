@@ -1,8 +1,9 @@
 #!/bin/sh
 
+NAME_PREFIX="${NAME_PREFIX:=ce-fleet-sandbox}"
 # get the current resource group name
 resource_group_name=$(ibmcloud target -o JSON | jq -r '.resource_group.name')
-cos_instance=${resource_group_name/--rg/}--cos
+cos_instance=${NAME_PREFIX}--cos
 
 echo "switching to COS instance $cos_instance"
 

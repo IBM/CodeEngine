@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Bob</title>
+    <link rel="stylesheet" href="xterm.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Top toolbar ── */
+        #toolbar {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 48px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            user-select: none;
+        }
+
+        #toolbar-title {
+            color: #888;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Terminal fills remaining height ── */
+        #terminal {
+            flex: 1 1 0;
+            min-height: 0;
+            width: 100%;
+        }
+
+        /* Login overlay */
+        #login-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            z-index: 150;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #login-overlay.visible {
+            display: flex;
+        }
+
+        .login-box {
+            width: 360px;
+            max-width: 90%;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 28px;
+            text-align: center;
+        }
+
+        .login-title {
+            color: #e0e0e0;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .login-subtitle {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .login-subtitle .agent-name {
+            color: #7ab8ff;
+            font-family: Menlo, Monaco, monospace;
+            word-break: break-all;
+        }
+
+        #login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #password-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 15px;
+            color: #e0e0e0;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        #password-input:focus {
+            border-color: #7ab8ff;
+        }
+
+        #login-button {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            background: #2472c8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #login-button:hover {
+            background: #2b82e0;
+        }
+
+        #login-button:disabled {
+            background: #555;
+            cursor: default;
+        }
+
+        .login-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 12px;
+            min-height: 18px;
+            line-height: 1.4;
+        }
+
+        /* Disconnect overlay */
+        #disconnect-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #disconnect-overlay.visible {
+            display: flex;
+        }
+
+        #disconnect-overlay .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #ff6b6b;
+        }
+
+        #disconnect-overlay .message {
+            color: #e0e0e0;
+            font-size: 18px;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        #disconnect-overlay .sub-message {
+            color: #888;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        #retry-button {
+            margin-top: 20px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: #2472c8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #retry-button:hover {
+            background: #2b82e0;
+        }
+
+        /* Error overlay for missing parameters / fatal errors */
+        #error-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #error-overlay.visible {
+            display: flex;
+        }
+
+        #error-overlay .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #ff6b6b;
+        }
+
+        /* "Session ended" variant — green check instead of red X */
+        #error-overlay.ended .icon {
+            color: #23d18b;
+        }
+
+        #error-overlay .message {
+            color: #e0e0e0;
+            font-size: 18px;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        /* Visual bell flash */
+        #bell-flash {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.18);
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        #bell-flash.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <span id="toolbar-title">Remote Bob</span>
+    </div>
+
+    <div id="terminal"></div>
+
+    <div id="bell-flash"></div>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <div class="login-title">Remote Bob</div>
+            <div class="login-subtitle">Enter the gateway password to connect to <span class="agent-name" id="login-agent"></span></div>
+            <form id="login-form" autocomplete="off">
+                <input type="password" id="password-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                <button type="submit" id="login-button">Connect</button>
+            </form>
+            <div class="login-error" id="login-error"></div>
+        </div>
+    </div>
+
+    <div id="disconnect-overlay">
+        <div class="icon">&#x26A0;</div>
+        <div class="message" id="disconnect-message">Connection lost</div>
+        <div class="sub-message" id="disconnect-submessage">Reconnecting…</div>
+        <button id="retry-button" style="display:none">Retry</button>
+    </div>
+
+    <div id="error-overlay">
+        <div class="icon" id="error-icon">&#x2716;</div>
+        <div class="message" id="error-message"></div>
+    </div>
+
+    <script src="xterm.js"></script>
+    <script src="addon-fit.js"></script>
+    <script src="single-session.js"></script>
+</body>
+</html>

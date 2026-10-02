@@ -43,7 +43,7 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = r.URL.Path[1:]
 	}
 
-	log.Printf("Got: %s", r.URL.Path)
+	log.Printf("Got: %s", strings.ReplaceAll(r.URL.Path, "\n", ""))
 	if r.URL.Path == "/" {
 		page, err := os.ReadFile("page.html")
 		if err != nil {
@@ -76,8 +76,8 @@ func HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	if path[0] == '/' {
 		path = path[1:]
 	}
-	if strings.Index(path, "..") >= 0 {
-		http.Error(w, "Bad path: "+path, 404)
+	if strings.Contains(path, "..") || strings.Contains(path, "/") {
+		http.Error(w, "Bad path", 404)
 		return
 	}
 

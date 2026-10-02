@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi10/nodejs-22-minimal:latest AS build-env
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:latest AS build-env
 WORKDIR /app
 
 # Define which files should be copied into the container image
@@ -12,7 +12,7 @@ RUN mkdir tmp/
 RUN npm install
 
 # Use a small distroless image for as runtime image
-FROM gcr.io/distroless/nodejs22-debian12
+FROM gcr.io/distroless/nodejs24-debian12
 COPY --from=build-env /app /app
 WORKDIR /app
 EXPOSE 8080

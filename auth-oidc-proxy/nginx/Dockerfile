@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nginx-124
+FROM registry.access.redhat.com/ubi10/nginx-124
 
 # Start-nginx is a script that'll replace all environment variables in the nginx.conf file
 COPY start-nginx /

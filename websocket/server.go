@@ -29,7 +29,7 @@ func main() {
 				fmt.Printf("Read error: %s\n", err)
 				break
 			}
-			fmt.Printf("Server read: %s\n", message)
+			fmt.Printf("Server read: %d bytes\n", len(message))
 
 			// Reverse the string in the message
 			l := len(message)

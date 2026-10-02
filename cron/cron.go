@@ -22,16 +22,17 @@ func main() {
 
 		// Sort the HTTP Headers
 		keys := []string{}
-		for k, _ := range r.Header {
+		for k := range r.Header {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
 
 		// Now print the incoming event (headers then body)
+		// Header values are not logged to avoid leaking sensitive data
 		for _, k := range keys {
-			fmt.Printf("Header: %s=%v\n", k, r.Header[k])
+			fmt.Printf("Header: %s=[REDACTED]\n", k)
 		}
-		fmt.Printf("\nBody: %s\n", string(body))
+		fmt.Printf("\nBody: %d bytes received\n", len(body))
 	})
 
 	fmt.Printf("Listening on port 8080\n")

@@ -1,5 +1,5 @@
 # Download dependencies in builder stage
-FROM registry.access.redhat.com/ubi9/nodejs-24:latest AS builder
+FROM registry.access.redhat.com/ubi10/nodejs-24:latest AS builder
 
 COPY --chown=${CNB_USER_ID}:${CNB_GROUP_ID} package.json /app/
 WORKDIR /app
