@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ibm-cloud/cloudant": "^0.12.16",
+    "@ibm-cloud/cloudant": "^0.12.25",
     "@ibm-cloud/ibm-code-engine-sdk": "^5.0.0",
     "ibm-cloud-sdk-core": "^5.4.9",
     "lru-cache": "^11.2.7",
