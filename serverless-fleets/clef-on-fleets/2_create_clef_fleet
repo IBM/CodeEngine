@@ -1,0 +1,232 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Self-contained helper functions
+print_msg() { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error() { echo -e "\033[31m$1\033[0m"; }
+print_cmd() { echo -e "  $1"; }
+
+# ==============================
+# CONFIGURATION
+# ==============================
+NAME_PREFIX="${NAME_PREFIX:=clef-classification}"
+REGION="${REGION:=eu-de}"
+
+# Persistent data stores
+FLEET_TASKS_STATE_STORE="${FLEET_TASKS_STATE_STORE:=fleet-task-store}"
+FLEET_OUTPUT_STORE="${FLEET_OUTPUT_STORE:=fleet-output-store}"
+FLEET_OUTPUT_COS_PATH="${FLEET_OUTPUT_COS_PATH:=clef-result}"
+FLEET_SUBNETPOOL="${FLEET_SUBNETPOOL:=fleet-subnetpool}"
+
+# Registry / image for the fleet task container (see task-container/Dockerfile)
+ICR_REGISTRY="${ICR_REGISTRY:=private.de.icr.io}"
+
+if [[ -z "${ICR_NAMESPACE:-}" ]]; then
+  print_error "ICR_NAMESPACE is required. Set it to your IBM Container Registry namespace."
+  echo "  export ICR_NAMESPACE=<your-icr-namespace>"
+  exit 1
+fi
+
+FLEET_IMAGE="${FLEET_IMAGE:=${ICR_REGISTRY}/${ICR_NAMESPACE}/clef-classification-task:latest}"
+FLEET_REGISTRY_SECRET="${FLEET_REGISTRY_SECRET:=ce-auto-icr-private-eu-de}"
+
+# Worker profile — gx3-16x80x1l4: 16 vCPU, 80 GiB RAM, 1x NVIDIA L4 GPU (eu-de)
+FLEET_WORKER_PROFILE="${FLEET_WORKER_PROFILE:=gx3-16x80x1l4}"
+FLEET_MAX_SCALE="${FLEET_MAX_SCALE:=1}"
+FLEET_MIN_SCALE="${FLEET_MIN_SCALE:=0}"
+FLEET_SPARE_SCALE="${FLEET_SPARE_SCALE:=0}"
+FLEET_SCALE_DOWN_DELAY="${FLEET_SCALE_DOWN_DELAY:=900}"
+FLEET_RETRYLIMIT="${FLEET_RETRYLIMIT:=1}"
+# The task container (entrypoint.py) is a thin HTTP client — ollama running via
+# podman on the worker host does all the heavy lifting.
+FLEET_CPU="${FLEET_CPU:=4}"
+FLEET_MEMORY="${FLEET_MEMORY:=5G}"
+
+# ==============================
+# PREHOOK DEFINITION
+# Runs once on each worker node after startup:
+#   1. Starts the ollama server via podman (GPU-aware)
+#   2. Pulls the clef model into the local ollama store
+# ==============================
+PREHOOK=$(cat <<'EOF'
+#!/bin/bash
+set -euo pipefail
+
+# Ensure jq is available — used to parse ollama API responses reliably
+if ! command -v jq &>/dev/null; then
+  echo "[prehook] jq not found — installing..."
+  curl -fsSL https://github.com/jqlang/jq/releases/latest/download/jq-linux-amd64 \
+    -o /usr/local/bin/jq
+  chmod +x /usr/local/bin/jq
+fi
+
+# Helper: returns 0 if the given model name exists in /api/tags
+ollama_has_model() {
+  curl -sf http://localhost:11434/api/tags \
+    | jq -e --arg name "$1" '.models[] | select(.name | startswith($name)) | .name' \
+    >/dev/null 2>&1
+}
+
+echo "[prehook] Starting ollama container..."
+
+if podman ps --filter "name=^ollama$" --format "{{.Names}}" | grep -q "^ollama$"; then
+  echo "[prehook] ollama container is already running — skipping creation"
+elif podman ps -a --filter "name=^ollama$" --format "{{.Names}}" | grep -q "^ollama$"; then
+  # Container exists but is stopped (e.g. from a previous failed hook run) — restart it
+  echo "[prehook] ollama container exists but is stopped — restarting"
+  podman start ollama
+else
+  if nvidia-smi >/dev/null 2>&1; then
+    echo "[prehook] NVIDIA GPU detected — enabling GPU passthrough"
+    podman run -d \
+      --device nvidia.com/gpu=all \
+      -v ollama:/root/.ollama \
+      -p 11434:11434 \
+      --name ollama \
+      docker.io/ollama/ollama
+  else
+    echo "[prehook] No NVIDIA GPU — running ollama in CPU mode"
+    podman run -d \
+      -v ollama:/root/.ollama \
+      -p 11434:11434 \
+      --name ollama \
+      docker.io/ollama/ollama:latest
+  fi
+fi
+
+# Wait until the ollama API is responsive before pulling the model
+echo "[prehook] Waiting for ollama API to become ready..."
+RETRIES=0
+until curl -sf http://localhost:11434/api/tags >/dev/null 2>&1; do
+  sleep 3
+  RETRIES=$((RETRIES + 1))
+  if [[ $RETRIES -ge 40 ]]; then
+    echo "[prehook] ERROR: ollama did not become ready within 2 minutes"
+    exit 1
+  fi
+done
+echo "[prehook] ollama is ready."
+
+# Pull the clef model only if it is not already present — avoids re-downloading
+# 17 GB on every hook retry when only the warmup step failed previously.
+# OLLAMA_NOHISTORY=1 + TERM=dumb suppress the interactive spinner/escape codes
+# that ollama emits when it detects a capable terminal on its stdout.
+if ollama_has_model "clef"; then
+  echo "[prehook] clef model already present — skipping pull"
+else
+  echo "[prehook] Pulling clef model..."
+  podman exec -e TERM=dumb -e OLLAMA_NOHISTORY=1 ollama ollama pull clef
+fi
+
+# Verify the clef model appears in /api/tags using jq.
+# Add a short delay first to allow ollama to flush the manifest to disk.
+sleep 3
+echo "[prehook] Verifying clef model is registered in ollama..."
+VERIFY_RETRIES=0
+until ollama_has_model "clef"; do
+  sleep 5
+  VERIFY_RETRIES=$((VERIFY_RETRIES + 1))
+  if [[ $VERIFY_RETRIES -ge 12 ]]; then
+    echo "[prehook] ERROR: clef model not found in ollama after pull"
+    echo "[prehook] Current models:" >&2
+    curl -s http://localhost:11434/api/tags | jq '.models[].name' >&2
+    exit 1
+  fi
+done
+echo "[prehook] clef model registered."
+
+# Warm up: send a real /v1/systemone request so clef weights are loaded into
+# (V)RAM before the first task arrives. Using the same endpoint the task calls
+# ensures the model is initialised correctly (clef does not use /api/generate).
+# The 18 GB model can take 2-5 minutes to load; allow up to 10 minutes (120 × 5s).
+# Success requires both .model and a non-empty .answers object in the response,
+# confirming that the model processed the request rather than just returning metadata.
+echo "[prehook] Warming up clef model (loading weights into VRAM)..."
+WARMUP_RETRIES=0
+until curl -sf http://localhost:11434/v1/systemone \
+    -H "Content-Type: application/json" \
+    -d '{"model":"clef","state":"warmup","questions":{"ok":{"type":"noul","instructions":"Is this a warmup request?"}}}' \
+    --max-time 300 \
+    | jq -e '.model and (.answers | length > 0)' >/dev/null 2>&1; do
+  sleep 5
+  WARMUP_RETRIES=$((WARMUP_RETRIES + 1))
+  if [[ $WARMUP_RETRIES -ge 120 ]]; then
+    echo "[prehook] ERROR: clef model did not load into VRAM within 10 minutes"
+    exit 1
+  fi
+done
+
+echo "[prehook] clef model ready and verified."
+EOF
+)
+
+# ==============================
+# FLEET CREATION
+# ==============================
+FLEET_NAME="${NAME_PREFIX}-clef-$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')"
+
+print_msg "\nCreating fleet '${FLEET_NAME}' ..."
+echo ""
+echo "ibmcloud ce fleet create"
+echo "    --name                  ${FLEET_NAME}"
+echo "    --tasks-state-store     ${FLEET_TASKS_STATE_STORE}"
+echo "    --subnetpool-name       ${FLEET_SUBNETPOOL}"
+echo "    --image                 ${FLEET_IMAGE}"
+echo "    --registry-secret       ${FLEET_REGISTRY_SECRET}"
+echo "    --scale-max             ${FLEET_MAX_SCALE}"
+[[ "${FLEET_MIN_SCALE}" != "0" ]] && echo "    --scale-min             ${FLEET_MIN_SCALE}"
+[[ "${FLEET_SPARE_SCALE}" != "0" ]] && echo "    --scale-spare           ${FLEET_SPARE_SCALE}"
+[[ -n "${FLEET_SCALE_DOWN_DELAY}" ]] && echo "    --scale-down-delay      ${FLEET_SCALE_DOWN_DELAY}"
+echo "    --retrylimit            ${FLEET_RETRYLIMIT}"
+echo "    --worker-profile        ${FLEET_WORKER_PROFILE}"
+echo "    --cpu                   ${FLEET_CPU}"
+echo "    --memory                ${FLEET_MEMORY}"
+echo "    --mount-data-store      /data/results=${FLEET_OUTPUT_STORE}:${FLEET_OUTPUT_COS_PATH}"
+echo "    --env __CE_INTERNAL_HOOK_AFTER_STARTUP=<prehook>"
+echo "    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3"
+echo "    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=60m"
+echo "    --env __CE_INTERNAL_SSH_SECRET=fleet-ssh-secret"
+echo ""
+
+SCALE_FLAGS=(--scale-max "${FLEET_MAX_SCALE}")
+[[ "${FLEET_MIN_SCALE}" != "0" ]] && SCALE_FLAGS+=(--scale-min "${FLEET_MIN_SCALE}")
+[[ "${FLEET_SPARE_SCALE}" != "0" ]] && SCALE_FLAGS+=(--scale-spare "${FLEET_SPARE_SCALE}")
+[[ -n "${FLEET_SCALE_DOWN_DELAY}" ]] && SCALE_FLAGS+=(--scale-down-delay "${FLEET_SCALE_DOWN_DELAY}")
+
+ibmcloud ce fleet create \
+    --name "${FLEET_NAME}" \
+    --tasks-state-store "${FLEET_TASKS_STATE_STORE}" \
+    --subnetpool-name "${FLEET_SUBNETPOOL}" \
+    --image "${FLEET_IMAGE}" \
+    --registry-secret "${FLEET_REGISTRY_SECRET}" \
+    "${SCALE_FLAGS[@]}" \
+    --retrylimit "${FLEET_RETRYLIMIT}" \
+    --worker-profile "${FLEET_WORKER_PROFILE}" \
+    --cpu "${FLEET_CPU}" \
+    --memory "${FLEET_MEMORY}" \
+    --mount-data-store "/data/results=${FLEET_OUTPUT_STORE}:${FLEET_OUTPUT_COS_PATH}" \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}" \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=60m \
+    --env __CE_INTERNAL_SSH_SECRET=fleet-ssh-secret
+
+# Query fleet UUID
+FLEET_ID=$(ibmcloud ce fleet get --name "${FLEET_NAME}" --output json | jq -r '.id // empty' 2>/dev/null || echo "")
+
+print_success "\n=========================================="
+print_success " Fleet created successfully"
+print_success "==========================================\n"
+print_msg "Fleet Name:  ${FLEET_NAME}"
+if [[ -n "${FLEET_ID}" ]]; then
+  print_msg "Fleet ID:    ${FLEET_ID}"
+  print_msg "\nTo export the fleet ID:"
+  print_cmd "  export FLEET_ID=\"${FLEET_ID}\""
+fi
+print_msg "\nMonitor worker prehook progress:"
+print_cmd "  ibmcloud ce fleet get -n ${FLEET_NAME}"
+print_cmd "  ibmcloud ce fleet worker list --fn ${FLEET_NAME}"
+print_msg "\nNext step: deploy the classification function"
+print_cmd "  ./3_deploy_function"

@@ -1,0 +1,129 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Self-contained helper functions
+print_msg() { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error() { echo -e "\033[31m$1\033[0m"; }
+print_cmd() { echo -e "  $1"; }
+
+# ==============================
+# CONFIGURATION
+# ==============================
+FN_NAME="${FN_NAME:=clef-classify-fn}"
+FLEET_ID="${1:-${FLEET_ID:-}}"
+SECRET_NAME="${SECRET_NAME:=clef-fn-secrets}"
+CE_API_KEY="${CE_API_KEY:=}"
+COS_PREFIX="${COS_PREFIX:=clef-result}"
+FILE_PREFIX="${FILE_PREFIX:=result}"
+PDS_NAME="${PDS_NAME:=fleet-output-store}"
+COS_BUCKET="${COS_BUCKET:=}"
+COS_ENDPOINT="${COS_ENDPOINT:=}"
+
+# Auto-discover the real COS bucket name and region from persistent data store (PDS)
+if [[ -z "${COS_BUCKET}" ]]; then
+  PDS_JSON=$(ibmcloud ce pds get --name "${PDS_NAME}" --output json 2>/dev/null || echo "")
+  if [[ -n "${PDS_JSON}" ]]; then
+    COS_BUCKET=$(echo "${PDS_JSON}" | jq -r '.data.bucket_name // .cos_bucket_name // .cos_bucket // empty')
+    PDS_REGION=$(echo "${PDS_JSON}" | jq -r '.data.bucket_location // .bucket_region // .region // empty')
+    if [[ -n "${PDS_REGION}" && -z "${COS_ENDPOINT}" ]]; then
+      COS_ENDPOINT="https://s3.direct.${PDS_REGION}.cloud-object-storage.appdomain.cloud"
+    fi
+  fi
+fi
+
+COS_BUCKET="${COS_BUCKET:=fleet-output-store}"
+COS_ENDPOINT="${COS_ENDPOINT:=https://s3.direct.eu-de.cloud-object-storage.appdomain.cloud}"
+POLL_TIMEOUT="${POLL_TIMEOUT:=45}"
+MAX_EXECUTION_TIME="${MAX_EXECUTION_TIME:=120}"
+FUNCTION_DIR="${SCRIPT_DIR}/function"
+
+# If FLEET_ID is not provided in env, attempt to auto-discover the latest clef fleet
+if [[ -z "${FLEET_ID}" ]]; then
+  print_msg "FLEET_ID not set. Looking up latest clef fleet in the project..."
+  FLEET_ID=$(ibmcloud ce fleet list --output json 2>/dev/null | jq -r '([.[] | select(.name | test("clef"))] | sort_by(.created_at) | last | .id // empty) // empty' || echo "")
+fi
+
+if [[ -z "${FLEET_ID}" ]]; then
+  print_error "FLEET_ID is required. Pass it as \$1 (./3_deploy_function <fleet-id>) or set export FLEET_ID=<fleet-id>."
+  exit 1
+fi
+
+# Ensure secret exists or create it if CE_API_KEY was supplied in env
+if [[ -n "${CE_API_KEY}" ]]; then
+  print_msg "Creating/updating secret '${SECRET_NAME}'..."
+  if ibmcloud ce secret get --name "${SECRET_NAME}" >/dev/null 2>&1; then
+    ibmcloud ce secret update --name "${SECRET_NAME}" --from-literal CE_API_KEY="${CE_API_KEY}"
+  else
+    ibmcloud ce secret create --name "${SECRET_NAME}" --from-literal CE_API_KEY="${CE_API_KEY}"
+  fi
+else
+  if ! ibmcloud ce secret get --name "${SECRET_NAME}" >/dev/null 2>&1; then
+    print_error "Secret '${SECRET_NAME}' does not exist and CE_API_KEY environment variable is not set."
+    echo "Create the secret with:"
+    echo "  ibmcloud ce secret create --name ${SECRET_NAME} --from-literal CE_API_KEY=<your-ibmcloud-api-key>"
+    echo "or set export CE_API_KEY=<key> before running."
+    exit 1
+  fi
+fi
+
+print_msg "\nDeploying Code Engine function '${FN_NAME}' from ${FUNCTION_DIR} ..."
+echo ""
+echo "ibmcloud ce fn create"
+echo "    --name            ${FN_NAME}"
+echo "    --build-source    ${FUNCTION_DIR}"
+echo "    --runtime         python-3.11"
+echo "    --maxexecutiontime ${MAX_EXECUTION_TIME}"
+echo "    --env             FLEET_ID=${FLEET_ID}"
+echo "    --env             COS_BUCKET=${COS_BUCKET}"
+echo "    --env             COS_PREFIX=${COS_PREFIX}"
+echo "    --env             FILE_PREFIX=${FILE_PREFIX}"
+echo "    --env             COS_ENDPOINT=${COS_ENDPOINT}"
+echo "    --env             POLL_TIMEOUT=${POLL_TIMEOUT}"
+echo "    --env-from-secret ${SECRET_NAME}"
+echo ""
+
+if ibmcloud ce fn get --name "${FN_NAME}" >/dev/null 2>&1; then
+  print_msg "Function '${FN_NAME}' already exists. Updating..."
+  ibmcloud ce fn update \
+    --name "${FN_NAME}" \
+    --build-source "${FUNCTION_DIR}" \
+    --runtime python-3.11 \
+    --maxexecutiontime "${MAX_EXECUTION_TIME}" \
+    --env FLEET_ID="${FLEET_ID}" \
+    --env COS_BUCKET="${COS_BUCKET}" \
+    --env COS_PREFIX="${COS_PREFIX}" \
+    --env FILE_PREFIX="${FILE_PREFIX}" \
+    --env COS_ENDPOINT="${COS_ENDPOINT}" \
+    --env POLL_TIMEOUT="${POLL_TIMEOUT}" \
+    --env-from-secret "${SECRET_NAME}"
+else
+  ibmcloud ce fn create \
+    --name "${FN_NAME}" \
+    --build-source "${FUNCTION_DIR}" \
+    --runtime python-3.11 \
+    --maxexecutiontime "${MAX_EXECUTION_TIME}" \
+    --env FLEET_ID="${FLEET_ID}" \
+    --env COS_BUCKET="${COS_BUCKET}" \
+    --env COS_PREFIX="${COS_PREFIX}" \
+    --env FILE_PREFIX="${FILE_PREFIX}" \
+    --env COS_ENDPOINT="${COS_ENDPOINT}" \
+    --env POLL_TIMEOUT="${POLL_TIMEOUT}" \
+    --env-from-secret "${SECRET_NAME}"
+fi
+
+FN_ENDPOINT=$(ibmcloud ce fn get --name "${FN_NAME}" --output json | jq -r '.endpoint // empty' 2>/dev/null || echo "")
+
+print_success "\n=========================================="
+print_success " Function deployed successfully"
+print_success "==========================================\n"
+print_msg "Function Name: ${FN_NAME}"
+if [[ -n "${FN_ENDPOINT}" ]]; then
+  print_msg "Endpoint:      ${FN_ENDPOINT}"
+  print_msg "\nTest classification via the function:"
+  print_cmd "  ./4_test_classify_fn"
+  print_msg "\nOr test direct fleet task submission:"
+  print_cmd "  ./5_test_fleet_task_add"
+fi
