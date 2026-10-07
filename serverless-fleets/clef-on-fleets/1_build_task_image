@@ -1,0 +1,49 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Self-contained helper functions
+print_msg() { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error() { echo -e "\033[31m$1\033[0m"; }
+print_cmd() { echo -e "  $1"; }
+
+# ==============================
+# CONFIGURATION
+# ==============================
+ICR_REGISTRY="${ICR_REGISTRY:=private.de.icr.io}"
+
+if [[ -z "${ICR_NAMESPACE:-}" ]]; then
+  print_error "ICR_NAMESPACE is required. Set it to your IBM Container Registry namespace."
+  echo "  export ICR_NAMESPACE=<your-icr-namespace>"
+  exit 1
+fi
+
+FLEET_IMAGE="${FLEET_IMAGE:=${ICR_REGISTRY}/${ICR_NAMESPACE}/clef-classification-task:latest}"
+FLEET_REGISTRY_SECRET="${FLEET_REGISTRY_SECRET:=ce-auto-icr-private-eu-de}"
+BUILD_RUN_NAME="${BUILD_RUN_NAME:=clef-classification-task-buildrun-$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')}"
+TASK_CONTAINER_DIR="${SCRIPT_DIR}/task-container"
+
+print_msg "Building task container image from ${TASK_CONTAINER_DIR} using Code Engine..."
+echo ""
+echo "ibmcloud ce buildrun submit"
+echo "    --name            ${BUILD_RUN_NAME}"
+echo "    --source          ${TASK_CONTAINER_DIR}"
+echo "    --image           ${FLEET_IMAGE}"
+echo "    --registry-secret ${FLEET_REGISTRY_SECRET}"
+echo "    --strategy        dockerfile"
+echo "    --wait"
+echo ""
+
+ibmcloud ce buildrun submit \
+  --name "${BUILD_RUN_NAME}" \
+  --source "${TASK_CONTAINER_DIR}" \
+  --image "${FLEET_IMAGE}" \
+  --registry-secret "${FLEET_REGISTRY_SECRET}" \
+  --strategy dockerfile \
+  --wait
+
+print_success "\n=========================================="
+print_success " Task image built successfully: ${FLEET_IMAGE}"
+print_success "==========================================\n"

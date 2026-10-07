@@ -1,0 +1,81 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Self-contained helper functions
+print_msg() { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error() { echo -e "\033[31m$1\033[0m"; }
+print_cmd() { echo -e "  $1"; }
+
+# ==============================
+# CONFIGURATION
+# ==============================
+FLEET_ID="${FLEET_ID:=}"
+TASK_ID="${TASK_ID:=}"
+FILE_PREFIX="${FILE_PREFIX:=result}"
+INPUT_TEXT="${INPUT_TEXT:=Congratulations! You have won \$1,000,000. Click here to claim your prize!}"
+INSTRUCTIONS="${INSTRUCTIONS:=Is this email spam or a phishing attempt?}"
+POSITIVE_CRITERIA="${POSITIVE_CRITERIA:=The message is spam, unsolicited commercial content, or a phishing attempt.}"
+NEGATIVE_CRITERIA="${NEGATIVE_CRITERIA:=The message is a legitimate, non-spam email.}"
+QUESTION_NAME="${QUESTION_NAME:=is_spam}"
+THRESHOLD="${THRESHOLD:=0.5}"
+
+# Auto-discover fleet if FLEET_ID not explicitly provided
+if [[ -z "${FLEET_ID}" ]]; then
+  print_msg "FLEET_ID not set. Looking up latest clef fleet in the project..."
+  FLEET_ID=$(ibmcloud ce fleet list --output json 2>/dev/null | jq -r '([.[] | select(.name | test("clef"))] | sort_by(.created_at) | last | .id // empty) // empty' || echo "")
+fi
+
+if [[ -z "${FLEET_ID}" ]]; then
+  print_error "FLEET_ID is required. Set export FLEET_ID=<id> before running."
+  exit 1
+fi
+
+EFFECTIVE_TASK_ID="${TASK_ID:-$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')}"
+print_msg "Submitting task directly to Fleet '${FLEET_ID}' (idx: ${EFFECTIVE_TASK_ID}) via CLI..."
+
+TMP_TASK_FILE=$(mktemp /tmp/clef-task-XXXXXX.jsonl)
+jq -nc \
+  --arg idx "$EFFECTIVE_TASK_ID" \
+  --arg pfx "$FILE_PREFIX" \
+  --arg inp "$INPUT_TEXT" \
+  --arg inst "$INSTRUCTIONS" \
+  --arg pos "$POSITIVE_CRITERIA" \
+  --arg neg "$NEGATIVE_CRITERIA" \
+  --arg qname "$QUESTION_NAME" \
+  --arg th "$THRESHOLD" \
+  '{
+    "idx": $idx,
+    "args": [
+      "input_data", $inp,
+      "instructions", $inst,
+      "positive_criteria", $pos,
+      "negative_criteria", $neg,
+      "question_name", $qname,
+      "threshold", $th,
+      "prefix", $pfx
+    ]
+  }' > "${TMP_TASK_FILE}"
+
+print_msg "Task JSONL line:"
+cat "${TMP_TASK_FILE}" | jq .
+echo ""
+
+ibmcloud ce fleet task add \
+  --fleet-id "${FLEET_ID}" \
+  --tasks-from-local-file "${TMP_TASK_FILE}"
+
+rm -f "${TMP_TASK_FILE}"
+
+print_success "\n=========================================="
+print_success " Task submitted successfully to Fleet via CLI"
+print_success "==========================================\n"
+print_msg "Fleet ID: ${FLEET_ID}"
+print_msg "Task ID:  ${EFFECTIVE_TASK_ID}"
+print_msg "Output:   clef-result/${FILE_PREFIX}-${EFFECTIVE_TASK_ID}.json"
+print_msg "\nCheck task status:"
+print_cmd "  ibmcloud ce fleet task list --fleet-id \"${FLEET_ID}\""
+print_msg "\nCheck result file via Function GET (once processed):"
+print_cmd "  MODE=get TASK_ID=\"${EFFECTIVE_TASK_ID}\" ./4_test_classify_fn"

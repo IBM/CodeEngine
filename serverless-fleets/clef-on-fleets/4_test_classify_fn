@@ -1,0 +1,136 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Self-contained helper functions
+print_msg() { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error() { echo -e "\033[31m$1\033[0m"; }
+print_cmd() { echo -e "  $1"; }
+
+# ==============================
+# CONFIGURATION
+# ==============================
+FN_NAME="${FN_NAME:=clef-classify-fn}"
+FN_URL="${FN_URL:=}"
+MODE="${MODE:=classify}" # classify | get
+TASK_ID="${TASK_ID:=}"
+FILE_PREFIX="${FILE_PREFIX:=result}"
+INPUT_TEXT="${INPUT_TEXT:=Congratulations! You have won \$1,000,000. Click here to claim your prize!}"
+INSTRUCTIONS="${INSTRUCTIONS:=Is this email spam or a phishing attempt?}"
+POSITIVE_CRITERIA="${POSITIVE_CRITERIA:=The message is spam, unsolicited commercial content, or a phishing attempt.}"
+NEGATIVE_CRITERIA="${NEGATIVE_CRITERIA:=The message is a legitimate, non-spam email.}"
+QUESTION_NAME="${QUESTION_NAME:=is_spam}"
+THRESHOLD="${THRESHOLD:=0.5}"
+POLL_TIMEOUT="${POLL_TIMEOUT:=45}"
+
+# Auto-discover Function URL if not explicitly set in env
+if [[ -z "${FN_URL}" ]]; then
+  FN_URL=$(ibmcloud ce fn get --name "${FN_NAME}" --output json 2>/dev/null | jq -r '.endpoint // empty' || echo "")
+fi
+
+if [[ -z "${FN_URL}" ]]; then
+  print_error "Function URL not set and function '${FN_NAME}' was not found in Code Engine."
+  echo "Set export FN_URL=<url> or run ./3_deploy_function first."
+  exit 1
+fi
+
+if [[ "${MODE}" == "get" ]]; then
+  if [[ -z "${TASK_ID}" ]]; then
+    print_error "TASK_ID environment variable is required in get mode."
+    echo "Usage: MODE=get TASK_ID=<id> ./4_test_classify_fn"
+    exit 1
+  fi
+
+  GET_URL="${FN_URL}?task_id=${TASK_ID}&file_prefix=${FILE_PREFIX}"
+  print_msg "Retrieving result for task_id '${TASK_ID}' (prefix: '${FILE_PREFIX}') via GET: ${GET_URL}"
+
+  RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "${GET_URL}")
+
+  HTTP_BODY=$(echo "${RESPONSE}" | sed -e 's/HTTP_STATUS\:.*//g')
+  HTTP_STATUS=$(echo "${RESPONSE}" | tr -d '\n' | sed -e 's/.*HTTP_STATUS://')
+
+  if [[ "${HTTP_STATUS}" == "200" ]]; then
+    print_success "\nResult found (HTTP 200):"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+  elif [[ "${HTTP_STATUS}" == "404" ]]; then
+    print_msg "\nResult is still pending or task ID was not found (HTTP 404):"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+  else
+    print_error "\nRequest failed with HTTP status ${HTTP_STATUS}:"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+    exit 1
+  fi
+
+else
+  # Default mode: submit classification request
+  print_msg "Sending classification request to Function: ${FN_URL}"
+
+  PAYLOAD_ARGS=(
+    --arg inp "$INPUT_TEXT"
+    --arg inst "$INSTRUCTIONS"
+    --arg pos "$POSITIVE_CRITERIA"
+    --arg neg "$NEGATIVE_CRITERIA"
+    --arg qname "$QUESTION_NAME"
+    --arg pfx "$FILE_PREFIX"
+    --argjson th "$THRESHOLD"
+    --argjson pt "$POLL_TIMEOUT"
+  )
+
+  if [[ -n "${TASK_ID}" ]]; then
+    PAYLOAD_ARGS+=(--arg tid "$TASK_ID")
+    JQ_FILTER='{
+      input_data: $inp,
+      instructions: $inst,
+      positive_criteria: $pos,
+      negative_criteria: $neg,
+      question_name: $qname,
+      threshold: $th,
+      poll_timeout: $pt,
+      file_prefix: $pfx,
+      task_id: $tid
+    }'
+  else
+    JQ_FILTER='{
+      input_data: $inp,
+      instructions: $inst,
+      positive_criteria: $pos,
+      negative_criteria: $neg,
+      question_name: $qname,
+      threshold: $th,
+      file_prefix: $pfx,
+      poll_timeout: $pt
+    }'
+  fi
+
+  PAYLOAD=$(jq -n "${PAYLOAD_ARGS[@]}" "${JQ_FILTER}")
+
+  echo "Payload:"
+  echo "${PAYLOAD}" | jq .
+  echo ""
+
+  RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${FN_URL}" \
+    -H "Content-Type: application/json" \
+    -d "${PAYLOAD}")
+
+  HTTP_BODY=$(echo "${RESPONSE}" | sed -e 's/HTTP_STATUS\:.*//g')
+  HTTP_STATUS=$(echo "${RESPONSE}" | tr -d '\n' | sed -e 's/.*HTTP_STATUS://')
+
+  if [[ "${HTTP_STATUS}" == "200" ]]; then
+    print_success "\nClassification completed synchronously within timeout (HTTP 200):"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+  elif [[ "${HTTP_STATUS}" == "202" ]]; then
+    print_msg "\nClassification task accepted (HTTP 202 - Still Pending in Fleet):"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+    RET_ID=$(echo "${HTTP_BODY}" | jq -r '.task_id // empty' 2>/dev/null || echo "")
+    if [[ -n "${RET_ID}" ]]; then
+      print_msg "\nTo retrieve result later when ready:"
+      print_cmd "  MODE=get TASK_ID=\"${RET_ID}\" ./4_test_classify_fn"
+    fi
+  else
+    print_error "\nRequest failed with HTTP status ${HTTP_STATUS}:"
+    echo "${HTTP_BODY}" | jq . 2>/dev/null || echo "${HTTP_BODY}"
+    exit 1
+  fi
+fi
