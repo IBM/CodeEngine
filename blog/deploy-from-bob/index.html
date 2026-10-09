@@ -1,0 +1,286 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.0"><title>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine — The Engine Room</title><style>.post-container[data-astro-cid-zg7dkzxc]{max-width:760px;margin:0 auto;padding:4rem 2rem 6rem}.post-back[data-astro-cid-zg7dkzxc]{color:var(--accent);align-items:center;gap:.4rem;margin-bottom:2rem;font-size:.8rem;text-decoration:none;display:inline-flex}.post-back[data-astro-cid-zg7dkzxc]:hover{text-decoration:underline}.tags[data-astro-cid-zg7dkzxc]{margin-bottom:1.25rem}.post-title[data-astro-cid-zg7dkzxc]{color:var(--text);margin-bottom:1rem;font-size:clamp(1.75rem,4vw,2.75rem);font-weight:300;line-height:1.2}.post-meta[data-astro-cid-zg7dkzxc]{color:var(--text-muted);border-bottom:1px solid var(--border);gap:1.25rem;margin-bottom:2.5rem;padding-bottom:2rem;font-size:.8rem;display:flex}.author-link[data-astro-cid-zg7dkzxc]{color:inherit;text-decoration:none}.author-link[data-astro-cid-zg7dkzxc]:hover{text-decoration:underline}.post-body[data-astro-cid-zg7dkzxc]{color:var(--text-dim);font-size:1rem;line-height:1.75}.post-body[data-astro-cid-zg7dkzxc] h2,.post-body[data-astro-cid-zg7dkzxc] h3,.post-body[data-astro-cid-zg7dkzxc] h4{color:var(--text);margin:2rem 0 .75rem;font-weight:400;line-height:1.3}.post-body[data-astro-cid-zg7dkzxc] h2{font-size:1.5rem}.post-body[data-astro-cid-zg7dkzxc] h3{font-size:1.2rem}.post-body[data-astro-cid-zg7dkzxc] p{margin-bottom:1.25rem}.post-body[data-astro-cid-zg7dkzxc] a{color:var(--accent);text-decoration:none}.post-body[data-astro-cid-zg7dkzxc] a:hover{text-decoration:underline}.post-body[data-astro-cid-zg7dkzxc] ul,.post-body[data-astro-cid-zg7dkzxc] ol{margin-bottom:1.25rem;padding-left:1.5rem}.post-body[data-astro-cid-zg7dkzxc] li{margin-bottom:.4rem}.post-body[data-astro-cid-zg7dkzxc] code{font-family:var(--mono);background:var(--bg-card);color:var(--text);border-radius:2px;padding:.1em .4em;font-size:.85em}.post-body[data-astro-cid-zg7dkzxc] pre{background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);margin-bottom:1.25rem;padding:1.25rem;font-size:.85rem;line-height:1.6;overflow-x:auto}.post-body[data-astro-cid-zg7dkzxc] pre code{background:0 0;padding:0}.post-body[data-astro-cid-zg7dkzxc] blockquote{border-left:3px solid var(--accent);color:var(--text-muted);margin:1.5rem 0;padding-left:1.25rem;font-style:italic}.post-body[data-astro-cid-zg7dkzxc] img{max-width:100%;height:auto;margin:1.5rem 0;display:block}.post-body[data-astro-cid-zg7dkzxc] hr{border:none;border-top:1px solid var(--border);margin:2rem 0}.post-body[data-astro-cid-zg7dkzxc] strong{color:var(--text)}
+</style><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.BOHpBZWP.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#hero" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li></ul></nav><article class="post-container" data-astro-cid-zg7dkzxc><a href="/CodeEngine/" class="post-back" data-astro-cid-zg7dkzxc>← Back to Engine Room</a><div class="tags" data-astro-cid-zg7dkzxc><a href="/CodeEngine/blog/tag/Bob" class="tag" data-astro-cid-zg7dkzxc>Bob</a><a href="/CodeEngine/blog/tag/serverless" class="tag" data-astro-cid-zg7dkzxc>serverless</a><a href="/CodeEngine/blog/tag/code engine" class="tag" data-astro-cid-zg7dkzxc>code engine</a><a href="/CodeEngine/blog/tag/AI" class="tag" data-astro-cid-zg7dkzxc>AI</a></div><h1 class="post-title" data-astro-cid-zg7dkzxc>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine</h1><div class="post-meta" data-astro-cid-zg7dkzxc><span data-astro-cid-zg7dkzxc>Jul 2, 2026</span><span data-astro-cid-zg7dkzxc><a href="/CodeEngine/blog/author/uwefassnacht" class="author-link" data-astro-cid-zg7dkzxc>uwefassnacht</a>, <a href="/CodeEngine/blog/author/jeremiaswerner" class="author-link" data-astro-cid-zg7dkzxc>jeremiaswerner</a></span></div><div class="post-body" data-astro-cid-zg7dkzxc><p>What if deploying your application to the cloud was as simple as having a conversation? No memorizing commands, no context-switching to documentation, just you describing what you want and your AI assistant making it happen.</p>
+<p>That’s exactly what happens when you combine <a href="https://www.ibm.com/cloud/code-engine">IBM Cloud Code Engine</a> with <a href="https://www.ibm.com/products/watsonx-code-assistant">Bob</a>, your AI-powered deployment partner. Code Engine already makes serverless deployment straightforward, but Bob takes it to the next level by turning deployment into a natural conversation.</p>
+<p>In this tutorial, you’ll learn how to deploy a simple static website to Code Engine using Bob—from generating the code to seeing it live in the cloud. Let’s get started!</p>
+<h2 id="what-youll-build">What You’ll Build</h2>
+<p>By the end of this tutorial, you’ll have:</p>
+<ul>
+<li>✅ Bob’s Code Engine Specialist skill installed</li>
+<li>✅ A simple “Hello World” static website (generated by Bob)</li>
+<li>✅ Your site deployed and running on IBM Cloud Code Engine</li>
+<li>✅ A live URL you can share with anyone</li>
+</ul>
+<p><strong>Time to complete</strong>: 15-20 minutes</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before we begin, make sure you have:</p>
+<ol>
+<li><strong>An IBM Cloud account</strong> - <a href="https://cloud.ibm.com/registration">Sign up for free</a> if you don’t have one</li>
+<li><strong>Bob 2.0 (or higher) installed</strong> - Your AI coding assistant (<a href="https://www.ibm.com/products/watsonx-code-assistant">Learn more about Bob</a>)</li>
+<li><strong>IBM Cloud CLI</strong> - <a href="https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli">Installation guide</a></li>
+<li><strong>Code Engine CLI plugin</strong> - Install with: <code>ibmcloud plugin install code-engine</code></li>
+</ol>
+<p>Don’t worry if you’re new to Code Engine—Bob will guide you through everything!</p>
+<h2 id="step-1-install-the-code-engine-skill-for-bob">Step 1: Install the Code Engine Skill for Bob</h2>
+<p>Bob’s Code Engine expertise comes from a dedicated skill that you install once. This skill gives Bob deep knowledge of IBM Cloud Code Engine deployments, configurations, and troubleshooting.</p>
+<h3 id="11-open-bob-in-an-existing-or-new-folder">1.1 Open Bob in an existing or new folder</h3>
+<p>Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured). Either open an existing project folder or create a new one for Bob to work in.</p>
+<h3 id="12-install-the-code-engine-skill">1.2 Install the Code Engine Skill</h3>
+<p>In Bob, type the following command:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Install the code-engine-specialist skill in this workspace using the following command:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>npx skills add github:IBM/CodeEngine --skill code-engine-specialist -y 2&gt;&amp;1 || true</span></span></code></pre>
+<p>Bob will:</p>
+<ul>
+<li>Fetch the official IBM Code Engine skill directly from GitHub</li>
+<li>Install it in your workspace so it’s available in your projects</li>
+<li>Make the skill immediately available — no restart required</li>
+</ul>
+<blockquote>
+<p>Note: If you want to install the skill globally, make sure you have enabled <strong>Allow outside workspace tools</strong>  (In the IBM Bob chat -&gt; Settings (icon) -&gt; Chat -&gt; Allow outside workspace tool requests)</p>
+</blockquote>
+<h3 id="13-verify-the-skill-is-active">1.3 Verify the Skill is Active</h3>
+<p>Once installed, confirm the skill is available by asking Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Do you have the code-engine-specialist skill installed?</span></span></code></pre>
+<p>Bob will confirm the skill is active and ready to use.</p>
+<h2 id="step-2-authenticate-with-ibm-cloud">Step 2: Authenticate with IBM Cloud</h2>
+<p>Before deploying anything, you need to authenticate with IBM Cloud.</p>
+<h3 id="21-log-in-to-ibm-cloud">2.1 Log in to IBM Cloud</h3>
+<p>Open your terminal and run:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> login</span><span style="color:#79B8FF"> --sso</span></span></code></pre>
+<p>Or if you have an API key:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> login</span><span style="color:#79B8FF"> --apikey</span><span style="color:#9ECBFF"> YOUR_API_KEY</span></span></code></pre>
+<p>Follow the prompts to complete authentication.</p>
+<h3 id="22-target-a-resource-group">2.2 Target a Resource Group</h3>
+<p>IBM Cloud organises resources into resource groups. Every IBM Cloud account comes with a <strong>Default</strong> resource group, so that’s a safe choice if you haven’t created any others.</p>
+<p>Run the following command to target it:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> target</span><span style="color:#79B8FF"> -g</span><span style="color:#9ECBFF"> Default</span></span></code></pre>
+<p>You should see output similar to:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Targeted resource group Default</span></span></code></pre>
+<blockquote>
+<p><strong>Tip:</strong> If your account uses a different resource group, replace <code>Default</code> with its name. You can list all available resource groups with <code>ibmcloud resource groups</code>.</p>
+</blockquote>
+<h3 id="23-verify-authentication-with-bob">2.3 Verify Authentication with Bob</h3>
+<p>Now let’s have Bob verify your authentication. Tell Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Check my IBM Cloud authentication</span></span></code></pre>
+<p>Bob will run the verification and show you something like:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>🔐 Authentication Status Check</span></span>
+<span class="line"><span>---</span></span>
+<span class="line"><span>✅ Authenticated as: your-email@example.com</span></span>
+<span class="line"><span>    Account: Your IBM Cloud Account</span></span>
+<span class="line"><span>    Region: us-south</span></span>
+<span class="line"><span>    Resource Group: Default</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Ready to proceed with Code Engine deployment!</span></span></code></pre>
+<p>If you see any errors, Bob will guide you through fixing them.</p>
+<h2 id="step-3-generate-a-hello-world-website">Step 3: Generate a Hello World Website</h2>
+<p>Now for the fun part—let’s have Bob create a simple static website for us!</p>
+<h3 id="31-ask-bob-to-create-the-website">3.1 Ask Bob to Create the Website</h3>
+<p>Tell Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple hello world static website with HTML, CSS, and JavaScript</span></span></code></pre>
+<h3 id="32-review-what-bob-creates">3.2 Review What Bob Creates</h3>
+<p>Bob will generate three files:</p>
+<ul>
+<li><strong><code>index.html</code></strong> — the page structure, with a heading, a short description, and an interactive button</li>
+<li><strong><code>styles.css</code></strong> — styling that centres the content on the page and gives the button a hover effect</li>
+<li><strong><code>script.js</code></strong> — a small click handler that displays a random fun message when the button is pressed</li>
+</ul>
+<h3 id="33-test-locally-optional">3.3 Test Locally (Optional)</h3>
+<p>You can test the website locally by opening <code>index.html</code> in your browser. The button should display random messages when clicked.</p>
+<blockquote>
+<p><strong>No Dockerfile needed</strong>: When you ask Bob to deploy, it will automatically detect that this is a static website and create the appropriate Dockerfile — using nginx on port 8080 — before building and deploying the container.</p>
+</blockquote>
+<h2 id="step-4-deploy-to-code-engine-with-bob">Step 4: Deploy to Code Engine with Bob</h2>
+<p>Now comes the exciting part—deploying to the cloud!</p>
+<h3 id="41-start-the-deployment">4.1 Start the Deployment</h3>
+<p>Make sure you’re in the directory with your website files, then tell Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Deploy this website to Code Engine</span></span></code></pre>
+<h3 id="42-follow-bobs-guided-workflow">4.2 Follow Bob’s Guided Workflow</h3>
+<p>The deployment is <strong>conversational</strong> — Bob will ask you a series of questions to configure the deployment correctly. The exact wording of Bob’s responses will vary, but expect Bob to:</p>
+<ol>
+<li><strong>Verify your IBM Cloud authentication</strong> and confirm the active region</li>
+<li><strong>Analyse your files</strong> — detecting that this is a static website and auto-generating a Dockerfile (nginx on port 8080) since you don’t have one</li>
+<li><strong>Ask for a name</strong> for your application (e.g. <code>hello-world-site</code>)</li>
+<li><strong>Ask about expected traffic</strong> — choose <em>Low</em> for a demo site so it scales to zero when idle</li>
+<li><strong>Confirm resource settings</strong> — Bob will suggest sensible CPU and memory defaults for a static site</li>
+</ol>
+<p>Answer each question as it comes. Bob handles the rest.</p>
+<blockquote>
+<p><strong>Note:</strong> Bob’s output is generated dynamically — the exact phrasing, formatting, and follow-up questions you see may differ from what’s shown here. That’s normal; just follow the conversation.</p>
+</blockquote>
+<h3 id="43-watch-the-deployment-and-visit-your-site">4.3 Watch the Deployment and Visit Your Site</h3>
+<p>Once you’ve answered Bob’s questions, it will build the container, push it to IBM Container Registry, and deploy it to Code Engine — reporting progress as it goes. When finished, Bob will give you a live URL.</p>
+<blockquote>
+<p><strong>Note:</strong> Some steps (e.g. project creation or application deployment) might take a minute or two … be patient and follow the conversation</p>
+</blockquote>
+<p>Open that URL in your browser to see your Hello World site up and running.</p>
+<h3 id="44-view-application-details-in-ibm-cloud-optional">4.4 View Application Details in IBM Cloud (Optional)</h3>
+<p>If you’d like to explore the full application configuration, logs, and scaling settings in the IBM Cloud UI, ask Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Give me a link to the code engine application details in the IBM Cloud UI</span></span></code></pre>
+<p>Bob will give you a direct link to the application’s detail page in the IBM Cloud user interface.</p>
+<h2 id="step-5-understanding-what-just-happened">Step 5: Understanding What Just Happened</h2>
+<p>Let’s break down what Bob did for you:</p>
+<h3 id="51-behind-the-scenes">5.1 Behind the Scenes</h3>
+<p>Bob executed several Code Engine commands on your behalf:</p>
+<ol>
+<li><strong>Created a Code Engine project</strong> (if you didn’t have one)</li>
+<li><strong>Built your container image</strong> from the Dockerfile</li>
+<li><strong>Pushed the image</strong> to IBM Container Registry</li>
+<li><strong>Created a Code Engine application</strong> with your specified configuration</li>
+<li><strong>Deployed the container</strong> and configured auto-scaling</li>
+<li><strong>Set up health checks</strong> to ensure your app stays healthy</li>
+<li><strong>Generated a public URL</strong> for your website</li>
+</ol>
+<h3 id="52-what-you-get-with-code-engine">5.2 What You Get with Code Engine</h3>
+<p>Your website now has:</p>
+<ul>
+<li>✅ <strong>Auto-scaling</strong>: Scales up and down automatically based on traffic</li>
+<li>✅ <strong>Pay-per-use</strong>: Only pay when your site is being accessed</li>
+<li>✅ <strong>HTTPS by default</strong>: Secure connection automatically configured</li>
+<li>✅ <strong>Global availability</strong>: Accessible from anywhere in the world</li>
+<li>✅ <strong>Automatic health monitoring</strong>: Code Engine restarts if anything fails</li>
+<li>✅ <strong>Zero infrastructure management</strong>: No servers to maintain</li>
+</ul>
+<h3 id="53-cost-efficiency">5.3 Cost Efficiency</h3>
+<p>Because you chose “Low traffic” with scale-to-zero:</p>
+<ul>
+<li>When no one is visiting: <strong>$0/hour</strong> (scaled to zero)</li>
+<li>When someone visits: Minimal cost for the few seconds of compute time</li>
+<li>Perfect for demos, personal projects, and low-traffic sites</li>
+</ul>
+<h2 id="step-6-making-changes-and-redeploying">Step 6: Making Changes and Redeploying</h2>
+<p>Want to update your website? Bob makes it easy!</p>
+<h3 id="61-make-a-change">6.1 Make a Change</h3>
+<p>Edit your <code>index.html</code> file. For example, change the heading:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#E1E4E8">&lt;</span><span style="color:#85E89D">h1</span><span style="color:#E1E4E8">&gt;🚀 Hello World - Version 2!&lt;/</span><span style="color:#85E89D">h1</span><span style="color:#E1E4E8">&gt;</span></span></code></pre>
+<h3 id="62-redeploy-with-bob">6.2 Redeploy with Bob</h3>
+<p>Simply tell Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Redeploy my website to Code Engine</span></span></code></pre>
+<p>Bob will:</p>
+<ul>
+<li>Detect the changes</li>
+<li>Rebuild the container</li>
+<li>Deploy the new version</li>
+<li>Verify it’s working</li>
+</ul>
+<p>The whole process takes just a few minutes!</p>
+<h2 id="step-7-exploring-more-with-bob">Step 7: Exploring More with Bob</h2>
+<p>Now that you’ve deployed your first application, try asking Bob:</p>
+<h3 id="view-your-application-status">View Your Application Status</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the status of my Code Engine application</span></span></code></pre>
+<h3 id="check-the-logs">Check the Logs</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for hello-world-site</span></span></code></pre>
+<h3 id="scale-your-application">Scale Your Application</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I am expecting more load. Can you increase the resources and number of instances?</span></span></code></pre>
+<p>Bob may suggests different options, pick one and observe how Bob scales the application.</p>
+<h3 id="add-environment-variables">Add Environment Variables</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Add an environment variable API_KEY to my application</span></span></code></pre>
+<h3 id="set-up-a-custom-domain">Set Up a Custom Domain</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I configure a custom domain for my Code Engine app?</span></span></code></pre>
+<p>Bob will guide you through each of these tasks conversationally!</p>
+<h3 id="delete-the-application">Delete the application</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Delete the application</span></span></code></pre>
+<h2 id="what-makes-this-special">What Makes This Special</h2>
+<p>Let’s reflect on what you just experienced:</p>
+<h3 id="it-was-conversational">It Was Conversational</h3>
+<p>You didn’t need to memorize any <code>ibmcloud ce</code> commands. You just described what you wanted, and Bob handled the technical details.</p>
+<h3 id="it-was-contextual">It Was Contextual</h3>
+<p>Bob analyzed your files, understood you had a static website, and configured everything appropriately (nginx, port 8080, resource allocation).</p>
+<h3 id="it-was-educational">It Was Educational</h3>
+<p>Throughout the process, Bob explained what was happening and why. You learned about Code Engine concepts naturally.</p>
+<h3 id="it-was-fast">It Was Fast</h3>
+<p>From zero to deployed website in about 15 minutes, including the time to generate the code!</p>
+<h2 id="next-steps-where-to-go-from-here">Next Steps: Where to Go From Here</h2>
+<p>Now that you’ve deployed your first application with Bob and Code Engine, here are some ideas for what to try next:</p>
+<h3 id="1-deploy-a-backend-api">1. Deploy a Backend API</h3>
+<p>Create a Node.js Express API or Python Flask application and deploy it the same way.</p>
+<p><strong>Try this</strong>: Tell Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple REST API with Node.js and Express, then deploy it to Code Engine</span></span></code></pre>
+<h3 id="2-deploy-a-multi-service-application">2. Deploy a Multi-Service Application</h3>
+<p>Build an application with a frontend and backend, and deploy both to Code Engine.</p>
+<h3 id="3-set-up-cicd">3. Set Up CI/CD</h3>
+<p>Configure automatic deployments when you push to GitHub.</p>
+<p><strong>Ask Bob</strong>:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I set up automatic deployments from GitHub to Code Engine?</span></span></code></pre>
+<h3 id="4-explore-batch-jobs">4. Explore Batch Jobs</h3>
+<p>Code Engine isn’t just for web applications—it can run batch jobs too!</p>
+<p><strong>Ask Bob</strong>:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me how to run a batch job on Code Engine</span></span></code></pre>
+<h3 id="5-configure-event-driven-workloads">5. Configure Event-Driven Workloads</h3>
+<p>Set up your application to respond to events from Cloud Object Storage, Kafka, or cron schedules.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<h3 id="learn-more-about-code-engine">Learn More About Code Engine</h3>
+<ul>
+<li><a href="https://cloud.ibm.com/docs/codeengine">Code Engine Documentation</a> - Complete guide to all features</li>
+<li><a href="https://github.com/IBM/CodeEngine">Code Engine Samples</a> - Example applications and tutorials</li>
+<li><a href="https://www.ibm.com/cloud/code-engine/pricing">Code Engine Pricing</a> - Understand the cost model</li>
+<li><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-pricing#free-tier">Code Engine Free Tier</a> - What’s included for free</li>
+</ul>
+<h3 id="learn-more-about-bob">Learn More About Bob</h3>
+<ul>
+<li><a href="https://www.ibm.com/products/watsonx-code-assistant">Bob Documentation</a> - Full capabilities and features</li>
+<li><a href="https://www.ibm.com/docs/bob/custom-modes">Bob Custom Modes</a> - Create your own specialized modes</li>
+<li>Bob Community - Connect with other developers using Bob</li>
+</ul>
+<h3 id="helpful-tutorials">Helpful Tutorials</h3>
+<ul>
+<li><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-deploy-app-tutorial">Deploying Containerized Applications</a></li>
+<li><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-build-source">Building from Source Code</a></li>
+<li><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-app-scale">Configuring Auto-scaling</a></li>
+<li><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-configmap-secret">Working with Secrets and ConfigMaps</a></li>
+</ul>
+<h2 id="troubleshooting-tips">Troubleshooting Tips</h2>
+<p>If you run into issues, Bob is there to help! Here are some common scenarios:</p>
+<h3 id="my-deployment-failed">“My deployment failed”</h3>
+<p>Ask Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Why did my deployment fail? Can you help me troubleshoot?</span></span></code></pre>
+<p>Bob will analyze the error logs and suggest solutions.</p>
+<h3 id="my-website-is-slow-to-load">“My website is slow to load”</h3>
+<p>Ask Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>My website seems slow after being idle. How can I fix this?</span></span></code></pre>
+<p>Bob will explain cold starts and help you configure min-scale if needed.</p>
+<h3 id="i-want-to-see-whats-happening">“I want to see what’s happening”</h3>
+<p>Ask Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for my application</span></span></code></pre>
+<p>Bob will fetch and display the logs, helping you understand what’s happening.</p>
+<h3 id="i-need-to-change-the-configuration">“I need to change the configuration”</h3>
+<p>Ask Bob:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I want to increase the memory for my application to 1G</span></span></code></pre>
+<p>Bob will update the configuration and redeploy for you.</p>
+<h2 id="conclusion-deployment-made-simple">Conclusion: Deployment Made Simple</h2>
+<p>You’ve just experienced the future of cloud deployment. What traditionally required:</p>
+<ul>
+<li>Learning complex CLI commands</li>
+<li>Reading extensive documentation</li>
+<li>Trial and error with configurations</li>
+<li>Manual troubleshooting</li>
+</ul>
+<p>…now happens through a simple conversation with Bob.</p>
+<p>IBM Cloud Code Engine provides the powerful, serverless platform that scales automatically and charges only for what you use. Bob adds the conversational intelligence that makes it feel effortless. Together, they create a deployment experience where you focus on building great applications, and the cloud infrastructure just works.</p>
+<h2 id="-your-turn">🚀 Your Turn!</h2>
+<p>Ready to deploy your own application? Here’s your action plan:</p>
+<h3 id="step-1-set-up-5-minutes">Step 1: Set Up (5 minutes)</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> Ensure you have an IBM Cloud account</li>
+<li class="task-list-item"><input type="checkbox" disabled> Install IBM Cloud CLI and Code Engine plugin</li>
+<li class="task-list-item"><input type="checkbox" disabled> Install Bob’s Code Engine Expert mode</li>
+</ul>
+<h3 id="step-2-deploy-10-minutes">Step 2: Deploy (10 minutes)</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> Create or choose an application to deploy</li>
+<li class="task-list-item"><input type="checkbox" disabled> Tell Bob: “Deploy this to Code Engine”</li>
+<li class="task-list-item"><input type="checkbox" disabled> Follow Bob’s guided workflow</li>
+<li class="task-list-item"><input type="checkbox" disabled> Celebrate when you see your live URL! 🎉</li>
+</ul>
+<h3 id="step-3-explore-ongoing">Step 3: Explore (Ongoing)</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> Try deploying different types of applications</li>
+<li class="task-list-item"><input type="checkbox" disabled> Experiment with scaling configurations</li>
+<li class="task-list-item"><input type="checkbox" disabled> Ask Bob questions as you learn</li>
+<li class="task-list-item"><input type="checkbox" disabled> Share your deployed applications!</li>
+</ul>
+<hr>
+<p><strong>Remember</strong>: Deployment doesn’t have to be complicated. With Bob and Code Engine, it’s as simple as describing what you want.</p>
+<p>Your next deployment is just a conversation away. Happy deploying! 🚀</p>
+<hr>
+<p><em>Have questions or want to share what you built? Connect with the Bob and Code Engine communities—we’d love to hear about your experience!</em></p>
+</div></article><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BoiTxAdh.js"></script><div data-pf-theme="dark"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`);e&&(document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})}))}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script></body></html>

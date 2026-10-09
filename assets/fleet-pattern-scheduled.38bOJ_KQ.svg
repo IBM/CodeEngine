@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 235" font-family="-apple-system,'Segoe UI',system-ui,sans-serif" font-size="13">
+  <!-- Background -->
+  <rect width="760" height="235" fill="#f7f8fa" rx="8"/>
+
+  <!--
+    Layout: viewBox 760×235, left margin x=60, right edge x=710, total width=650px.
+    5 days × 130px each. Each day: add_tasks at day-start+5, active for ~75px, idle for ~55px.
+    Day starts: Mon=60, Tue=190, Wed=320, Thu=450, Fri=580.
+    add_tasks markers: 65, 195, 325, 455, 585.
+    Active (ramp-up 5px, flat, ramp-down 5px): 65→145 per day (80px ≈ 12h).
+    Idle: 145→190 per day (45px ≈ 7h gap before next day).
+    Day label midpoints: 125, 255, 385, 515, 645.
+  -->
+
+  <!-- Y-axis guide lines -->
+  <line x1="60" y1="50"  x2="710" y2="50"  stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="100" x2="710" y2="100" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="145" x2="710" y2="145" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="60" y1="185" x2="710" y2="185" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- Y labels -->
+  <text x="52" y="189" fill="#57606a" text-anchor="end" font-size="11">0</text>
+  <text x="52" y="51"  fill="#57606a" text-anchor="end" font-size="11">max</text>
+
+  <!-- === BATCH 1: Mon — ramp up from marker x=65, ramp down at end === -->
+  <polygon points="65,185 80,60 145,60 155,185" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="65,185 80,60 145,60 155,185" fill="none" stroke="#3b82d4" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="155" y1="185" x2="190" y2="185" stroke="#3b82d4" stroke-width="2"/>
+
+  <!-- === BATCH 2: Tue — marker at x=195 === -->
+  <polygon points="195,185 210,60 275,60 285,185" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="195,185 210,60 275,60 285,185" fill="none" stroke="#3b82d4" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="285" y1="185" x2="320" y2="185" stroke="#3b82d4" stroke-width="2"/>
+
+  <!-- === BATCH 3: Wed — marker at x=325 === -->
+  <polygon points="325,185 340,60 405,60 415,185" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="325,185 340,60 405,60 415,185" fill="none" stroke="#3b82d4" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="415" y1="185" x2="450" y2="185" stroke="#3b82d4" stroke-width="2"/>
+
+  <!-- === BATCH 4: Thu — marker at x=455 === -->
+  <polygon points="455,185 470,60 535,60 545,185" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="455,185 470,60 535,60 545,185" fill="none" stroke="#3b82d4" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="545" y1="185" x2="580" y2="185" stroke="#3b82d4" stroke-width="2"/>
+
+  <!-- === BATCH 5: Fri — marker at x=585 === -->
+  <polygon points="585,185 600,60 665,60 675,185" fill="#dbeafe" opacity="0.75"/>
+  <polyline points="585,185 600,60 665,60 675,185" fill="none" stroke="#3b82d4" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="675" y1="185" x2="710" y2="185" stroke="#3b82d4" stroke-width="2"/>
+
+  <!-- Day labels on axis -->
+  <text x="125" y="203" fill="#57606a" text-anchor="middle" font-size="11">Mon</text>
+  <text x="255" y="203" fill="#57606a" text-anchor="middle" font-size="11">Tue</text>
+  <text x="385" y="203" fill="#57606a" text-anchor="middle" font-size="11">Wed</text>
+  <text x="515" y="203" fill="#57606a" text-anchor="middle" font-size="11">Thu</text>
+  <text x="645" y="203" fill="#57606a" text-anchor="middle" font-size="11">Fri</text>
+
+  <!-- Day separator ticks -->
+  <line x1="190" y1="183" x2="190" y2="187" stroke="#d0d7de" stroke-width="1"/>
+  <line x1="320" y1="183" x2="320" y2="187" stroke="#d0d7de" stroke-width="1"/>
+  <line x1="450" y1="183" x2="450" y2="187" stroke="#d0d7de" stroke-width="1"/>
+  <line x1="580" y1="183" x2="580" y2="187" stroke="#d0d7de" stroke-width="1"/>
+
+  <!-- Fleet lifetime bar -->
+  <rect x="60" y="213" width="650" height="5" rx="2.5" fill="#7c5cd8" opacity="0.25"/>
+  <text x="385" y="228" fill="#57606a" text-anchor="middle" font-size="11">← same fleet, lives indefinitely →</text>
+
+  <!-- X-axis -->
+  <line x1="60" y1="185" x2="710" y2="185" stroke="#d0d7de" stroke-width="1.5"/>
+
+  <!-- add_tasks markers (drawn last to appear on top of blue areas) -->
+  <line x1="65"  y1="45" x2="65"  y2="188" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="195" y1="45" x2="195" y2="188" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="325" y1="45" x2="325" y2="188" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="455" y1="45" x2="455" y2="188" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="585" y1="45" x2="585" y2="188" stroke="#7c5cd8" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <text x="65"  y="37" fill="#7c5cd8" text-anchor="middle" font-size="10">add_tasks</text>
+  <text x="195" y="37" fill="#7c5cd8" text-anchor="middle" font-size="10">add_tasks</text>
+  <text x="325" y="37" fill="#7c5cd8" text-anchor="middle" font-size="10">add_tasks</text>
+  <text x="455" y="37" fill="#7c5cd8" text-anchor="middle" font-size="10">add_tasks</text>
+  <text x="585" y="37" fill="#7c5cd8" text-anchor="middle" font-size="10">add_tasks</text>
+
+  <text x="65"  y="26" fill="#7c5cd8" text-anchor="middle" font-size="10">06:00</text>
+  <text x="195" y="26" fill="#7c5cd8" text-anchor="middle" font-size="10">06:00</text>
+  <text x="325" y="26" fill="#7c5cd8" text-anchor="middle" font-size="10">06:00</text>
+  <text x="455" y="26" fill="#7c5cd8" text-anchor="middle" font-size="10">06:00</text>
+  <text x="585" y="26" fill="#7c5cd8" text-anchor="middle" font-size="10">06:00</text>
+
+  <!-- Y-axis label -->
+  <text x="42" y="110" fill="#57606a" text-anchor="middle" transform="rotate(-90,42,110)" font-size="11">Container slots</text>
+</svg>

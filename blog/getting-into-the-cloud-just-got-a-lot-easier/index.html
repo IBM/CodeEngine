@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.0"><title>IBM Cloud Code Engine GitHub Action: Getting into the Cloud just got a lot easier! — The Engine Room</title><style>.post-container[data-astro-cid-zg7dkzxc]{max-width:760px;margin:0 auto;padding:4rem 2rem 6rem}.post-back[data-astro-cid-zg7dkzxc]{color:var(--accent);align-items:center;gap:.4rem;margin-bottom:2rem;font-size:.8rem;text-decoration:none;display:inline-flex}.post-back[data-astro-cid-zg7dkzxc]:hover{text-decoration:underline}.tags[data-astro-cid-zg7dkzxc]{margin-bottom:1.25rem}.post-title[data-astro-cid-zg7dkzxc]{color:var(--text);margin-bottom:1rem;font-size:clamp(1.75rem,4vw,2.75rem);font-weight:300;line-height:1.2}.post-meta[data-astro-cid-zg7dkzxc]{color:var(--text-muted);border-bottom:1px solid var(--border);gap:1.25rem;margin-bottom:2.5rem;padding-bottom:2rem;font-size:.8rem;display:flex}.author-link[data-astro-cid-zg7dkzxc]{color:inherit;text-decoration:none}.author-link[data-astro-cid-zg7dkzxc]:hover{text-decoration:underline}.post-body[data-astro-cid-zg7dkzxc]{color:var(--text-dim);font-size:1rem;line-height:1.75}.post-body[data-astro-cid-zg7dkzxc] h2,.post-body[data-astro-cid-zg7dkzxc] h3,.post-body[data-astro-cid-zg7dkzxc] h4{color:var(--text);margin:2rem 0 .75rem;font-weight:400;line-height:1.3}.post-body[data-astro-cid-zg7dkzxc] h2{font-size:1.5rem}.post-body[data-astro-cid-zg7dkzxc] h3{font-size:1.2rem}.post-body[data-astro-cid-zg7dkzxc] p{margin-bottom:1.25rem}.post-body[data-astro-cid-zg7dkzxc] a{color:var(--accent);text-decoration:none}.post-body[data-astro-cid-zg7dkzxc] a:hover{text-decoration:underline}.post-body[data-astro-cid-zg7dkzxc] ul,.post-body[data-astro-cid-zg7dkzxc] ol{margin-bottom:1.25rem;padding-left:1.5rem}.post-body[data-astro-cid-zg7dkzxc] li{margin-bottom:.4rem}.post-body[data-astro-cid-zg7dkzxc] code{font-family:var(--mono);background:var(--bg-card);color:var(--text);border-radius:2px;padding:.1em .4em;font-size:.85em}.post-body[data-astro-cid-zg7dkzxc] pre{background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);margin-bottom:1.25rem;padding:1.25rem;font-size:.85rem;line-height:1.6;overflow-x:auto}.post-body[data-astro-cid-zg7dkzxc] pre code{background:0 0;padding:0}.post-body[data-astro-cid-zg7dkzxc] blockquote{border-left:3px solid var(--accent);color:var(--text-muted);margin:1.5rem 0;padding-left:1.25rem;font-style:italic}.post-body[data-astro-cid-zg7dkzxc] img{max-width:100%;height:auto;margin:1.5rem 0;display:block}.post-body[data-astro-cid-zg7dkzxc] hr{border:none;border-top:1px solid var(--border);margin:2rem 0}.post-body[data-astro-cid-zg7dkzxc] strong{color:var(--text)}
+</style><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.BOHpBZWP.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#hero" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li></ul></nav><article class="post-container" data-astro-cid-zg7dkzxc><a href="/CodeEngine/" class="post-back" data-astro-cid-zg7dkzxc>← Back to Engine Room</a><div class="tags" data-astro-cid-zg7dkzxc><a href="/CodeEngine/blog/tag/serverless" class="tag" data-astro-cid-zg7dkzxc>serverless</a><a href="/CodeEngine/blog/tag/code engine" class="tag" data-astro-cid-zg7dkzxc>code engine</a><a href="/CodeEngine/blog/tag/github actions" class="tag" data-astro-cid-zg7dkzxc>github actions</a></div><h1 class="post-title" data-astro-cid-zg7dkzxc>IBM Cloud Code Engine GitHub Action: Getting into the Cloud just got a lot easier!</h1><div class="post-meta" data-astro-cid-zg7dkzxc><span data-astro-cid-zg7dkzxc>Nov 26, 2025</span><span data-astro-cid-zg7dkzxc><a href="/CodeEngine/blog/author/lukeroy" class="author-link" data-astro-cid-zg7dkzxc>lukeroy</a></span></div><div class="post-body" data-astro-cid-zg7dkzxc><h2 id="introduction">Introduction</h2>
+<p><a href="https://www.ibm.com/products/code-engine">IBM Cloud Code Engine</a> is IBM’s fully managed, strategic serverless platform that lets you run container images, batch jobs, source code, and functions in the cloud — without worrying about infrastructure management or scalability. It’s designed to simplify cloud-native development so you can focus on building, your business logic, not managing infrastructure. To make the developer experience even smoother, we introduced the <a href="https://github.com/IBM/code-engine-github-action">IBM Cloud Code Engine GitHub Action</a>. This action allows you to automate the build and deployment of your apps, jobs, and functions directly to Code Engine from your GitHub workflows.</p>
+<p>And now, it just got even better!</p>
+<p>We’re excited to announce new capabilities that take automation and flexibility to the next level:</p>
+<h3 id="build-from-source-with-ease">Build from Source with Ease:</h3>
+<p>The action now supports building a container image directly from your source code and storing it in <a href="https://www.ibm.com/products/container-registry">IBM Cloud Container Registry</a> — ready for deployment.</p>
+<h3 id="multiple-build-strategies">Multiple Build Strategies:</h3>
+<ul>
+<li>Buildpacks (default): No Dockerfile required! Perfect for quick builds without extra configuration.</li>
+<li>Dockerfile: For developers who want full control over their build process.</li>
+</ul>
+<h3 id="image-support-for-apps-and-jobs">Image Support for Apps and Jobs:</h3>
+<p>Instead of building and deploying every time, you can now reference existing container images, including private ones. This opens the door to advanced workflows, such as multi-stage builds or integrating with external CI/CD pipelines.</p>
+<p>With these enhancements, getting your workloads into the cloud has never been easier — or more powerful.</p>
+<h2 id="getting-started">Getting Started</h2>
+<p>Before diving into the examples, it’s important to prepare your repository for seamless integration with IBM Cloud Code Engine. Here’s what you need to do:</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>First, enable GitHub Actions for your repository. This can be done an a per repository basis. If your repository isn’t already enabled for GitHub Actions, check your access permissions, and reach out to the administrator of the GitHub organization.</p>
+<h2 id="ibm-cloud-account-preparations">IBM Cloud account preparations</h2>
+<p>If you’re building a proof of concept or trying out the Code Engine for the first time, create an <a href="https://cloud.ibm.com/iam/apikeys">IBM Cloud API Key</a> to authenticate your workflows with IBM Cloud services. For production-grade workloads create an IBM Cloud service ID API Key to authenticate your workflows with IBM Cloud services, as described below:</p>
+<ul>
+<li>Navigate to <a href="https://cloud.ibm.com/iam/serviceids">Manage → Access (IAM) → Service IDs</a> .</li>
+<li>Click Create service ID, give it a name, assign Access policies to <code>Resource group only</code>, <code>Code Engine</code> and <code>Container Registry</code>. Then create a API key and copy the generated key for later use. See the <a href="https://cloud.ibm.com/docs/iam?topic=iam-serviceidapikeys">documentation</a> for additional information.</li>
+</ul>
+<p>Regardless whether you are using a personal API Key, or a service ID API Key, store it’s value as a GitHub secret:</p>
+<ul>
+<li>On GitHub.com, navigate to your repository and go to Settings → Secrets and variables → Actions.</li>
+<li>Create a new secret named <code>IBM_IAM_API_KEY</code> (or any name you prefer) and paste the API key you’ve generated.</li>
+</ul>
+<p>Congratulations, your repository is now ready to leverage the IBM Cloud Code Engine GitHub Action. Let’s move on to the exciting part — exploring the new functionalities with hands-on examples! This blog post, uses pretty simple hello world examples. If you’re looking for more advanced code examples and sample workflows, be sure to check out the <a href="https://github.com/IBM/CodeEngine">Code Engine Sample Repository</a>, or revisit my initial blogpost <a href="https://medium.com/@luke.roy/ibm-cloud-code-engine-deploying-apps-jobs-and-functions-using-github-actions-76de1f8352a3">IBM Cloud Code Engine: Deploying Apps, Jobs and Functions using GitHub Actions</a> that showcased the Code Engine GitHub Action.</p>
+<h2 id="building-and-pushing-a-container-image-to-ibm-container-registry-icr-using-code-engine">Building and Pushing a Container Image to IBM Container Registry (ICR) Using Code Engine:</h2>
+<p>Start by creating a directory my-ce-app containing the source code you want to build and push to ICR using Code Engine build run. Inside the my-ce-app directory create the following files which make up a simple Node.JS Web Server.</p>
+<p><code>app.js</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> express</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"express"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> app</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> express</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> port</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> 8080</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">app.</span><span style="color:#B392F0">use</span><span style="color:#E1E4E8">(express.</span><span style="color:#B392F0">urlencoded</span><span style="color:#E1E4E8">({ extended: </span><span style="color:#79B8FF">true</span><span style="color:#E1E4E8"> }));</span></span>
+<span class="line"><span style="color:#E1E4E8">app.</span><span style="color:#B392F0">use</span><span style="color:#E1E4E8">(express.</span><span style="color:#B392F0">json</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#E1E4E8">app.</span><span style="color:#B392F0">get</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"/"</span><span style="color:#E1E4E8">, (</span><span style="color:#FFAB70">req</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">res</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=&gt;</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  res.</span><span style="color:#B392F0">setHeader</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Content-Type"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"application/json"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  res.</span><span style="color:#B392F0">status</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">200</span><span style="color:#E1E4E8">).</span><span style="color:#B392F0">send</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">JSON</span><span style="color:#E1E4E8">.</span><span style="color:#B392F0">stringify</span><span style="color:#E1E4E8">({ body: </span><span style="color:#9ECBFF">"Hello from Node"</span><span style="color:#E1E4E8"> }));</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> server</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> app.</span><span style="color:#B392F0">listen</span><span style="color:#E1E4E8">(port, () </span><span style="color:#F97583">=&gt;</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`Example app listening at http://localhost:${</span><span style="color:#E1E4E8">port</span><span style="color:#9ECBFF">}`</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"><span style="color:#E1E4E8">process.</span><span style="color:#B392F0">on</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"SIGTERM"</span><span style="color:#E1E4E8">, () </span><span style="color:#F97583">=&gt;</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">info</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"SIGTERM signal received."</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  server.</span><span style="color:#B392F0">close</span><span style="color:#E1E4E8">(() </span><span style="color:#F97583">=&gt;</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">    console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Http server closed."</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  });</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span></code></pre>
+<p><code>package.json</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#79B8FF">    "dependencies"</span><span style="color:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#79B8FF">      "express"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"^4.17.1"</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<p><code>build-push.yml</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Build and Push to ICR</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#79B8FF">on</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  push</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    branches</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">      - </span><span style="color:#9ECBFF">main</span></span>
+<span class="line"><span style="color:#85E89D">jobs</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  app</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    runs-on</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">ubuntu-latest</span></span>
+<span class="line"><span style="color:#85E89D">    steps</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Check out code</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">actions/checkout@v3</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Build and Push to ICR</span></span>
+<span class="line"><span style="color:#85E89D">      id</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">build-step</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">ibm/code-engine-github-action@v1</span></span>
+<span class="line"><span style="color:#85E89D">      with</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">        api-key</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">${{ secrets.IBM_IAM_API_KEY }}</span></span>
+<span class="line"><span style="color:#85E89D">        region</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'eu-de'</span></span>
+<span class="line"><span style="color:#85E89D">        project</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'MY-PROJECT'</span></span>
+<span class="line"><span style="color:#85E89D">        component</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'build'</span></span>
+<span class="line"><span style="color:#85E89D">        name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'my-ce-app'</span></span>
+<span class="line"><span style="color:#85E89D">        image</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">private.de.icr.io/my-namespace/my-image:latest</span></span>
+<span class="line"><span style="color:#85E89D">        registry-secret</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">ce-auto-icr-private-eu-de</span></span>
+<span class="line"><span style="color:#85E89D">        build-source</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'./my-ce-app'</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Get image with digest</span></span>
+<span class="line"><span style="color:#85E89D">      run</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">|</span><span style="color:#FDAEB7;font-style:italic"> </span></span>
+<span class="line"><span style="color:#9ECBFF">        echo "Image with digest: ${{ steps.build-step.outputs.image-with-digest }}"</span></span></code></pre>
+<p>Next, inside of the <code>.github/workflows</code> create the following GitHub Action workflow YAML called <code>build-push.yml</code>. The workflow called “Build and Push to ICR” is executed when a push occurs against the main branch of the repository. Initially, it checks out the repository. In the next step, the <code>ibm/code-engine-github-action</code> will be used to build the container image (component: build) using Code Engine build run functionality and push the resulting container image to private ICR in <code>eu-de</code> using the auto generated registry secret created by Code Engine this can be omitted as this is the default value for the Code Engine GitHub Action. The build will be directed to the project <code>MY-PROJECT</code> within your default resource group in the Frankfurt region (<code>eu-de</code>). The build run will be named <code>my-ce-build</code> appended with the current timestamp the resulting image will be named <code>private.de.icr.io/my-namespace/my-image:latest</code>, utilizing the content of the <code>my-ce-app</code> directory as the source code used for the build step. The image refrerence and its digest is outputted for use in subsequent steps using <code>${{ steps.build-step.outputs.image-with-digest }}</code>. For more information about Code Engine Push see the <a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-build-standalone">Code Engine Build Docs</a>.</p>
+<p><strong>Please note</strong>: The example depicted above uses <code>my-namespace</code> as the IBM Container Registry namespace. As namespaces are unique, you’ll need to use your own one.</p>
+<h2 id="building-and-deploying-your-code-engine-app-using-the-dockerfile-build-strategy">Building and Deploying Your Code Engine App Using the Dockerfile Build Strategy</h2>
+<p>If you need more control over the build process – such as adding custom dependencies, performance optimzation, or fine-tuning configurations – the Dockerfile build strategy is the way to go. Unlike buildpacks, which handle most of the heavy lifting automatically, Dockerfile gives you full flexibility for advanced use cases.
+Start by organizing your application source (main.go) code and a Dockerfile inside the <code>my-docker-app</code> directory. This directory will contain everything needed to build your container image.</p>
+<p><code>main.go</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>package main</span></span>
+<span class="line"><span>import (</span></span>
+<span class="line"><span>    "fmt"</span></span>
+<span class="line"><span>    "net/http"</span></span>
+<span class="line"><span>    "time"</span></span>
+<span class="line"><span>)</span></span>
+<span class="line"><span>func greet(w http.ResponseWriter, r *http.Request) {</span></span>
+<span class="line"><span>    fmt.Fprintf(w, "Hello World! %s", time.Now())</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span>func main() {</span></span>
+<span class="line"><span>    http.HandleFunc("/", greet)</span></span>
+<span class="line"><span>    http.ListenAndServe(":3000", nil)</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<p><code>Dockerfile</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="dockerfile"><code><span class="line"><span style="color:#F97583">FROM</span><span style="color:#E1E4E8"> quay.io/projectquay/golang:1.24 </span><span style="color:#F97583">AS</span><span style="color:#E1E4E8"> build-env</span></span>
+<span class="line"><span style="color:#F97583">WORKDIR</span><span style="color:#E1E4E8"> /go/src/app</span></span>
+<span class="line"><span style="color:#F97583">COPY</span><span style="color:#E1E4E8"> main.go main.go</span></span>
+<span class="line"><span style="color:#F97583">RUN</span><span style="color:#E1E4E8"> CGO_ENABLED=0 go build -o /go/bin/app main.go</span></span>
+<span class="line"><span style="color:#F97583">FROM</span><span style="color:#E1E4E8"> gcr.io/distroless/static-debian12</span></span>
+<span class="line"><span style="color:#F97583">EXPOSE</span><span style="color:#E1E4E8"> 3000</span></span>
+<span class="line"><span style="color:#F97583">COPY</span><span style="color:#E1E4E8"> --from=build-env /go/bin/app /</span></span>
+<span class="line"><span style="color:#F97583">ENTRYPOINT</span><span style="color:#E1E4E8"> [</span><span style="color:#9ECBFF">"/app"</span><span style="color:#E1E4E8">]</span></span></code></pre>
+<p><code>build-dockerfile-app.yml</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Deploy App to Code Engine using Dockerfile build-strategy</span></span>
+<span class="line"><span style="color:#79B8FF">on</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  push</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    branches</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">      - </span><span style="color:#9ECBFF">main</span></span>
+<span class="line"><span style="color:#85E89D">  workflow_dispatch</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">jobs</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  deploy-app</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    runs-on</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">ubuntu-latest</span></span>
+<span class="line"><span style="color:#85E89D">    steps</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Check out code</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">actions/checkout@v3</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Deploy App to Code Engine using Dockerfile build-strategy</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">IBM/code-engine-github-action@v1</span></span>
+<span class="line"><span style="color:#85E89D">      with</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">        api-key</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">${{ secrets.IBM_IAM_API_KEY }}</span></span>
+<span class="line"><span style="color:#85E89D">        resource-group</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'Default'</span></span>
+<span class="line"><span style="color:#85E89D">        region</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'eu-de'</span></span>
+<span class="line"><span style="color:#85E89D">        project</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'MY-PROJECT'</span></span>
+<span class="line"><span style="color:#85E89D">        component</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'app'</span></span>
+<span class="line"><span style="color:#85E89D">        build-strategy</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'dockerfile'</span></span>
+<span class="line"><span style="color:#85E89D">        port</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">3000</span></span>
+<span class="line"><span style="color:#85E89D">        name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'my-docker-app'</span></span>
+<span class="line"><span style="color:#85E89D">        build-source</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'./my-docker-app'</span></span>
+<span class="line"><span style="color:#85E89D">        cpu</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">1</span></span>
+<span class="line"><span style="color:#85E89D">        memory</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">4G</span></span></code></pre>
+<p>Next, navigate to the <code>.github/workflows directory</code> and create a new GitHub Actions workflow file named <code>build-dockerfile-app.yml</code>. This workflow is responsible for automating the build and deployment process for your application. Specifically, it will use IBM Cloud Code Engine to build the application from the source code located in the my-docker-app directory, leveraging the provided Dockerfile to create the container image. Once the image is successfully built, the workflow will deploy it as a Code Engine application, ensuring a streamlined and reproducible CI/CD pipeline.</p>
+<h2 id="deploying-an-existing-container-image-to-code-engine-as-an-application">Deploying an Existing Container Image to Code Engine as an Application</h2>
+<p>If you already have a container image built elsewhere – perhaps as part of another CI/CD pipeline or stored in a private registry – you can now deploy it directly to IBM Cloud Code Engine without rebuilding. This feature is perfect for teams that want to reuse pre-built images or integrate Code Engine into existing workflows.
+Inside of the <code>.github/workflows</code> create the following GitHub Action workflow YAML called <code>my-img-app.yml</code>. Instead of specifying source code or a build strategy, you reference the container image you want to deploy. This can be an image stored in IBM Container Registry (ICR) or any other registry, including private ones. We will be using the Code Engine Hello World image: <code>icr.io/codeengine/helloworld:latest</code>. In your workflow configuration, you’ll define key parameters like the project name, region, and resource group, along with the image reference and application settings (such as CPU and memory). Once triggered – either on a push to the main branch or manually – the workflow will deploy your application to Code Engine using the specified image.</p>
+<p><code>my-img-app.yml</code></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Deploy Application to Code Engine using existing container image</span></span>
+<span class="line"><span style="color:#79B8FF">on</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  push</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    branches</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">      - </span><span style="color:#9ECBFF">main</span></span>
+<span class="line"><span style="color:#85E89D">  workflow_dispatch</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">jobs</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  deploy-app</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">    runs-on</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">ubuntu-latest</span></span>
+<span class="line"><span style="color:#85E89D">    steps</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Check out code</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">actions/checkout@v3</span></span>
+<span class="line"><span style="color:#E1E4E8">    - </span><span style="color:#85E89D">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">Deploy Application to Code Engine using existing container image</span></span>
+<span class="line"><span style="color:#85E89D">      uses</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">IBM/code-engine-github-action@v1</span></span>
+<span class="line"><span style="color:#85E89D">      with</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">        api-key</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">${{ secrets.IBM_IAM_API_KEY }}</span></span>
+<span class="line"><span style="color:#85E89D">        resource-group</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'Default'</span></span>
+<span class="line"><span style="color:#85E89D">        region</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'eu-de'</span></span>
+<span class="line"><span style="color:#85E89D">        project</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'MY-PROJECT'</span></span>
+<span class="line"><span style="color:#85E89D">        component</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'app'</span></span>
+<span class="line"><span style="color:#85E89D">        name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">'my-img-app'</span></span>
+<span class="line"><span style="color:#85E89D">        image</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">icr.io/codeengine/helloworld:latest</span></span>
+<span class="line"><span style="color:#85E89D">        cpu</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">1</span></span>
+<span class="line"><span style="color:#85E89D">        memory</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">4G</span></span></code></pre>
+<p>These examples highlight how the new GitHub Action features make it easier to automate builds, manage deployments, and create advanced workflows for your cloud-native applications.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The IBM Cloud Code Engine GitHub Action makes deploying cloud-native workloads easier, faster, and more flexible than ever before. With support for multiple build strategies, image-based deployments, and seamless integration with GitHub Actions, you can automate your entire build-and-deploy pipeline without leaving your development workflow.</p>
+<p>Whether you’re building from source using buildpacks, fine-tuning with a Dockerfile, or deploying pre-built images from your registry, these new capabilities empower you to create advanced CI/CD workflows tailored to your needs. No more manual steps — just streamlined automation that gets your applications, jobs, and functions running in the cloud with minimal effort.</p>
+<p>Getting into the cloud has never been this easy — so why wait? Start automating your deployments now!</p>
+<ul>
+<li><a href="https://www.ibm.com/products/code-engine">Code Engine</a></li>
+<li><a href="https://cloud.ibm.com/docs/codeengine">Code Engine Docs</a></li>
+<li><a href="https://github.com/IBM/CodeEngine">Example Code</a></li>
+<li><a href="https://github.com/marketplace/actions/code-engine-github-action">Code Engine Github Action</a></li>
+<li><a href="https://github.com/IBM/CodeEngine/tree/main/github-action-workflows">Example Source Code</a></li>
+<li><a href="https://medium.com/@luke.roy/ibm-cloud-code-engine-deploying-apps-jobs-and-functions-using-github-actions-76de1f8352a3">IBM Cloud Code Engine: Deploying Apps, Jobs and Functions using GitHub Actions</a></li>
+</ul>
+</div></article><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BoiTxAdh.js"></script><div data-pf-theme="dark"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`);e&&(document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})}))}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script></body></html>
