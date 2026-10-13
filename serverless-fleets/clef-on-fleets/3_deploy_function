@@ -103,7 +103,7 @@ else
   ibmcloud ce fn create \
     --name "${FN_NAME}" \
     --build-source "${FUNCTION_DIR}" \
-    --runtime python-3.11 \
+    --runtime python-3.13 \
     --maxexecutiontime "${MAX_EXECUTION_TIME}" \
     --env FLEET_ID="${FLEET_ID}" \
     --env COS_BUCKET="${COS_BUCKET}" \
