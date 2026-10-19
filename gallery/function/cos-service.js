@@ -35,9 +35,7 @@ class CosService {
     this.authenticator = new ContainerAuthenticator({
       iamProfileName: config.trustedProfileName,
     });
-    console.log(
-      `CosService init - region: '${this.config.cosRegion}', bucket: ${this.config.cosBucket}, trustedProfileName: '${this.config.trustedProfileName}'`
-    );
+    console.log("CosService initialized");
   }
 
   getContentTypeFromFileName(fileName) {

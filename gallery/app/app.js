@@ -109,7 +109,7 @@ async function handleHttpReq(req, res) {
           return sendResponse(res, 200);
         })
         .catch((err) => {
-          console.error(`Error colorizing image '${payload.imageId}'`, err);
+          console.error("Error colorizing image '%s'", payload.imageId, err);
 
           if (err.message.indexOf("Access is denied due to invalid credentials") > -1) {
             return sendResponse(res, 403, `Failed due to access permission issues`);
@@ -194,7 +194,7 @@ async function handleHttpReq(req, res) {
       const fd = await open(`${GALLERY_PATH}/${pictureId}`);
       return fd.createReadStream().pipe(res);
     } catch (err) {
-      console.error(`Error streaming gallery content '${pictureId}'`, err);
+      console.error("Error streaming gallery content '%s'", pictureId, err);
       return sendResponse(res, 503, `Error streaming gallery content: ${err}`);
     }
   }

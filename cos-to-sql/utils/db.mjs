@@ -52,12 +52,12 @@ export async function getPgClient(secretsManager, secretId) {
     return Promise.resolve(_pgPool);
   }
 
-  console.log(`Fetching secret '${secretId}' ...`);
+  console.log(`Fetching the database secret ...`);
   // Use the Secrets Manager API to get the secret using the secret ID
   const res = await secretsManager.getSecret({
     id: secretId,
   });
-  console.log(`Secret '${secretId}' fetched in ${Date.now() - startTime} ms`);
+  console.log(`Database secret fetched in ${Date.now() - startTime} ms`);
 
   console.log(
     `Connecting to the DB using SM secret '${res.result.name}' (last updated: '${res.result.updated_at}') ...`
