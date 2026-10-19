@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ibm.github.io/CodeEngine/sitemap-index.xml
+llms.txt: https://ibm.github.io/CodeEngine/llms.txt
