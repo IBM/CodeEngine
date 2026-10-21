@@ -2,37 +2,20 @@
 
 # Tutorials and Samples for IBM Cloud Code Engine
 
-This repository is split into two types of educational material: Tutorials
-and Samples.
-
-Tutorials are meant to be complete end-to-end scenarios designed
-to teach you about [Code Engine](https://ibm.com/cloud/code-engine) as if you
-have limited knowledge of Cloud Native technologies. Each provides a
-step-by-step guide walking you through the process of deploying a certain
-type of workload - explaining, in detail, each step in the process. The goal
-is to not simply have you copy-n-paste each command but rather to understand
-the "whys" of what's going on so you can apply what you've learned to one
-of your own projects.
-
-Samples are meant to be "quick-start" tasks that help developers
-perform one very specific task. They do not include extra verbose help text
-or explanations, rather they are designed for people who have a basic
-understanding of Cloud Native technologies and want a quick reminder of how
-to perform a certain task in the Code Engine environment. Most samples will
-be relatively small so that it can be re-used easily and integrated into a
-larger use-case.
+This repository contains code samples and scripts for
+[IBM Cloud Code Engine](https://ibm.com/cloud/code-engine). Many of them are
+accompanied by blog posts and in-depth walkthroughs published in the
+[Engine Room](https://ibm.github.io/CodeEngine/) — the go-to resource for
+tutorials, how-tos, and best practices built around this content.
 
 ### Getting Started
 
 Code Engine requires that you use an IBM Cloud "paid account", even if you
-don't plan on going beyond the
-[free tier](https://www.ibm.com/cloud/code-engine/pricing).
+don't plan on going beyond the [free tier](https://www.ibm.com/cloud/code-engine/pricing).
 
 #### Cloud Shell
 
-The easiest way to run these are via the
-[IBM Cloud Shell](https://cloud.ibm.com/shell) service. This is a browser based
-command line that will have all of the IBM Cloud CLI components pre-installed
+The easiest way to run these are via the [IBM Cloud Shell](https://cloud.ibm.com/shell) service. This is a browser based command line that will have all of the IBM Cloud CLI components pre-installed
 for you.
 
 To ensure you have the latest versions of each CLI plugin, run:
@@ -46,11 +29,7 @@ once you're in the shell.
 If you choose to use your own machine, then the following need to be installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
-- [Cloud Object Storage plugin (`cos`)](https://cloud.ibm.com/docs/cloud-object-storage-cli-plugin)
-- [Event Streams plugin (`es`)](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-cli#step5_es_cli)
-  for samples which use IBM Event Streams (Kafka)
-- [`docker`](https://docker.io/) if you choose to build the images yourself.
-  For novices, skip this.
+- [podman](https://podman.io/) or [`docker`](https://docker.io/) if you choose to build the images yourself. For novices, skip this.
 
 #### Let's go!
 
@@ -87,12 +66,12 @@ to get started.
 ## AI Skill for Agentic IDEs
 
 Deploy and manage Code Engine workloads directly from your AI-powered IDE like
-[IBM Bob](https://bob.ibm.com/) using the **Code Engine Specialist** skill defined in [`SKILL.md`](skills/code-engine-specialist/SKILL.md).
+[IBM Bob](https://bob.ibm.com/) using the **Code Engine Specialist** skill defined in [`SKILL.md`](ai/skills/code-engine-specialist/SKILL.md).
 
 ### Install via [skills.sh](https://www.skills.sh/)
 
 ```
-npx skills add IBM/CodeEngine/skills
+npx skills add IBM/CodeEngine/ai/skills
 ```
 
 ### Example prompts
@@ -123,9 +102,6 @@ Deploy this application to IBM Cloud.
 
 - [Batch inferencing](serverless-fleets/tutorials/inferencing)<br>
   This tutorial provides a comprehensive guide on using Serverless GPUs to perform batch inferencing which illustrates a generally applicable pattern where AI helps to extract information out of a set of unstructed data. 
-
-- [Metrics Collector](metrics-collector)<br>
-  Re-usable asset that helps to gain insights on the CPU and memory consumption of apps, jobs and builds.
 
 - [Fotobox](fotobox)
   Deploy your own Fotobox straight to the IBM Cloud access it directly from any device with browser and camera. Take pictures and view them all from your device.
