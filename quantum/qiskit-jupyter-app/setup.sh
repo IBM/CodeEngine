@@ -175,7 +175,7 @@ fi
 
 # Extract HMAC keys from the credential JSON — no manual copy needed.
 COS_KEY_TMPFILE=$(mktemp /tmp/cos-key-XXXXXX.json)
-ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output json > "$COS_KEY_TMPFILE"
+COS_HMAC_CREDENTIALS=$(ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output json)
 COS_HMAC_ACCESS_KEY_ID=$(python3 -c "
 import json, sys
 key = json.load(open('$COS_KEY_TMPFILE'))
