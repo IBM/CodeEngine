@@ -144,7 +144,8 @@ else
     "$COS_INSTANCE_NAME" \
     cloud-object-storage \
     standard \
-    global
+    global \
+    -d premium-global-deployment-iam
   info "COS instance created."
 fi
 
