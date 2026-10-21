@@ -177,12 +177,7 @@ fi
 COS_KEY_TMPFILE=$(mktemp /tmp/cos-key-XXXXXX.json)
 COS_HMAC_CREDENTIALS=$(ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output json)
 COS_HMAC_ACCESS_KEY_ID=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.access_key_id')
-COS_HMAC_SECRET_ACCESS_KEY=$(python3 -c "
-import json, sys
-key = json.load(open('$COS_KEY_TMPFILE'))
-print(key[0]['credentials']['cos_hmac_keys']['secret_access_key'])
-")
-rm -f "$COS_KEY_TMPFILE"
+COS_HMAC_SECRET_ACCESS_KEY=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.secret_access_key')
 info "HMAC keys extracted from service credential."
 
 # ── 4. COS bucket ─────────────────────────────────────────────────────────────
