@@ -72,12 +72,7 @@ When the container starts, `start.sh` does two things. First, it reads the mount
 
 ### How JupyterLab shows up as the application
 
-Code Engine applications get an HTTPS endpoint, and the platform routes traffic to the port your container listens on. Because JupyterLab is a web server, it simply is the application: the URL that Code Engine prints is the JupyterLab login page. You open it, enter your Jupyter token, and you are in a full notebook environment with `hello-world.ipynb` in the file browser and a `work` folder backed by Object Storage.
-
-<!-- Screenshot placeholder: JupyterLab opened from the Code Engine application URL, showing hello-world.ipynb in the file browser.
-     Save it next to this file as jupyterlab.png and uncomment the next line.
-![JupyterLab running as a Code Engine application, with the hello-world notebook open](jupyterlab.png)
--->
+Code Engine applications get an HTTPS endpoint, and the platform routes traffic to the port your container listens on. Because JupyterLab is a web server, it simply is the application: the URL that Code Engine prints is the JupyterLab login page. You open it, enter your Jupyter token, and you are in a full notebook environment with `hello-world.ipynb` in the file browser and a `work` folder backed by Object Storage. A screenshot of the running app follows in Step 5.
 
 ## Prerequisites
 
@@ -224,7 +219,11 @@ service = QiskitRuntimeService()                  # credentials come from the mo
 backend = service.least_busy(simulator=False, operational=True)
 ```
 
-There is no token and no CRN in the notebook. After the Bell state, the notebook scales up to a 100-qubit GHZ state, a circuit of the size people call utility scale, and plots how the correlation between distant qubits decays because of hardware noise.
+There is no token and no CRN in the notebook. The screenshot below shows JupyterLab served by the Code Engine application, with `hello-world.ipynb` and the `work` folder in the file browser. The open cell is Step 2: it picks the least busy backend and transpiles the Bell state circuit for it. The circuit drawn below the cell has been rewritten into the native gates of the selected device (`Rz`, `√X` and a two-qubit gate) and mapped onto its physical qubits.
+
+![JupyterLab running as a Code Engine application, showing step 2 of the hello-world notebook with the transpiled Bell state circuit](screenshot-jupyterlab-app.png)
+
+After the Bell state, the notebook scales up to a 100-qubit GHZ state, a circuit of the size people call utility scale, and plots how the correlation between distant qubits decays because of hardware noise.
 
 {{< alert >}}
 **Note:** Jobs on real hardware wait in the IBM Quantum queue. The notebook prints a job ID when it submits, so you can come back and retrieve the result later. To iterate without waiting, use the local testing mode with a fake backend, as described in the notebook.
