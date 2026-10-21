@@ -5,6 +5,9 @@
 #   ./setup.sh                        # sources setup.env.local automatically
 #   ENV_FILE=my.env ./setup.sh        # use a custom env file
 #   NAME_PREFIX=my-lab ./setup.sh     # override any variable from the shell
+#   NAME_SUFFIX=3fa9 ./setup.sh clean # delete the COS instance and Code Engine
+#                                     # project of that resource set (asks first;
+#                                     # add --yes to skip the confirmation)
 #
 # The script sources the env file with 'set -a' so every variable is
 # automatically exported and visible to all subprocesses.
@@ -16,8 +19,25 @@
 # the globally unique COS bucket name collision-free.
 # Every derived name (resource group, COS, Code Engine) can be overridden by
 # exporting the variable before running the script, see the section below.
+#
+# 'clean' removes the COS instance (including its service credentials and
+# buckets) and the Code Engine project of the resource set identified by
+# NAME_PREFIX and NAME_SUFFIX. The resource group itself is kept. Because the
+# suffix is random, 'clean' requires NAME_SUFFIX (or explicit name overrides).
 
 set -euo pipefail
+
+# ── parse arguments ───────────────────────────────────────────────────────────
+
+MODE=setup
+ASSUME_YES=0
+for arg in "$@"; do
+  case "$arg" in
+    clean)        MODE=clean ;;
+    -y|--yes)     ASSUME_YES=1 ;;
+    *)            echo "[setup] ✗ Unknown argument '$arg'. Usage: $0 [clean [--yes]]" >&2; exit 1 ;;
+  esac
+done
 
 # ── load configuration ────────────────────────────────────────────────────────
 
@@ -49,11 +69,15 @@ ce_exists() {
 NAME_PREFIX="${NAME_PREFIX:-ce-qiskit-jupyterlab}"
 
 # IBMCLOUD_API_KEY is optional: when it is empty, step 1 logs in with 'ibmcloud login --sso'.
-required_vars=(
-  IBMCLOUD_REGION
-  QISKIT_IBM_TOKEN QISKIT_IBM_INSTANCE
-  JUPYTER_TOKEN
-)
+if [[ "$MODE" == clean ]]; then
+  required_vars=(IBMCLOUD_REGION)
+else
+  required_vars=(
+    IBMCLOUD_REGION
+    QISKIT_IBM_TOKEN QISKIT_IBM_INSTANCE
+    JUPYTER_TOKEN
+  )
+fi
 
 for var in "${required_vars[@]}"; do
   [[ -z "${!var:-}" ]] && err "Required variable \$$var is not set. Source setup.env.local first."
@@ -83,7 +107,14 @@ info "Logged in."
 
 # Random 4-character suffix (hex), different on every run unless NAME_SUFFIX is set.
 if [[ -z "${NAME_SUFFIX:-}" ]]; then
-  printf -v NAME_SUFFIX '%04x' $(( (RANDOM << 1) | (RANDOM & 1) ))   # 16 random bits
+  if [[ "$MODE" == clean ]]; then
+    # A random suffix can never match existing resources, so the target must be explicit.
+    [[ -n "${IBMCLOUD_RESOURCE_GROUP_NAME:-}" && -n "${COS_INSTANCE_NAME:-}" && -n "${CE_PROJECT_NAME:-}" ]] \
+      || err "'clean' needs NAME_SUFFIX (and NAME_PREFIX if not the default), e.g. NAME_SUFFIX=3fa9 $0 clean"
+    NAME_SUFFIX="n/a"
+  else
+    printf -v NAME_SUFFIX '%04x' $(( (RANDOM << 1) | (RANDOM & 1) ))   # 16 random bits
+  fi
 fi
 NAME_BASE="${NAME_PREFIX}-${NAME_SUFFIX}"
 
@@ -108,6 +139,45 @@ log "  CE project     : $CE_PROJECT_NAME"
 log "  CE application : $CE_APP_NAME"
 log "  CE secrets     : $CE_HMAC_SECRET_NAME, $CE_QISKIT_SECRET_NAME"
 log "  CE data store  : $CE_PDS_NAME"
+
+# ── clean: delete the COS instance and the Code Engine project ───────────────
+
+if [[ "$MODE" == clean ]]; then
+  log "Clean mode — the following will be PERMANENTLY deleted:"
+  log "  Code Engine project : $CE_PROJECT_NAME (with its apps, secrets and data stores)"
+  log "  COS instance        : $COS_INSTANCE_NAME (with its credentials and buckets)"
+  log "  (resource group '$IBMCLOUD_RESOURCE_GROUP_NAME' is kept)"
+  if [[ "$ASSUME_YES" -ne 1 ]]; then
+    read -r -p "[setup] Continue? [y/N] " answer
+    [[ "$answer" =~ ^[Yy]$ ]] || err "Aborted."
+  fi
+
+  ibmcloud resource group "$IBMCLOUD_RESOURCE_GROUP_NAME" --output json >/dev/null 2>&1 \
+    || err "Resource group '$IBMCLOUD_RESOURCE_GROUP_NAME' does not exist — nothing to clean."
+  ibmcloud target -g "$IBMCLOUD_RESOURCE_GROUP_NAME" --quiet
+  info "Targeted resource group '$IBMCLOUD_RESOURCE_GROUP_NAME'."
+
+  ibmcloud plugin install code-engine -f --quiet 2>/dev/null || true
+
+  if ibmcloud ce project get --name "$CE_PROJECT_NAME" --output json >/dev/null 2>&1; then
+    log "Deleting Code Engine project '$CE_PROJECT_NAME'…"
+    ibmcloud ce project delete --name "$CE_PROJECT_NAME" --force --hard
+    info "Code Engine project deleted."
+  else
+    info "Code Engine project '$CE_PROJECT_NAME' not found — skipping."
+  fi
+
+  if ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json >/dev/null 2>&1; then
+    log "Deleting COS instance '$COS_INSTANCE_NAME'…"
+    ibmcloud resource service-instance-delete "$COS_INSTANCE_NAME" --force --recursive
+    info "COS instance deleted."
+  else
+    info "COS instance '$COS_INSTANCE_NAME' not found — skipping."
+  fi
+
+  info "Clean finished."
+  exit 0
+fi
 
 # ── 1b. Resource group ────────────────────────────────────────────────────────
 
