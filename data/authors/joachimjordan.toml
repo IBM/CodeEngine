@@ -1,6 +1,0 @@
-name = "Joachim Jordan"
-bio = "Tech Lead Code Engine Platform @ IBM Cloud"
-image = "joachimjordan.jpg"
-
-# Add external links (this will automatically generate clickable icons under the author name)
-[links]
