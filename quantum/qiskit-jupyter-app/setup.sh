@@ -9,10 +9,11 @@
 # The script sources the env file with 'set -a' so every variable is
 # automatically exported and visible to all subprocesses.
 #
-# Resource names are derived from NAME_PREFIX plus a 4-character suffix that is
-# a hash of the IBM Cloud account ID and NAME_PREFIX. The suffix is stable, so
-# re-running the script reuses the same resources, and it differs per account,
-# which keeps the globally unique COS bucket name collision-free.
+# Resource names are derived from NAME_PREFIX plus a random 4-character suffix.
+# The suffix is non-deterministic: every run generates a new one and therefore
+# creates a new set of resources. To reuse an existing set (e.g. to re-run the
+# script), export NAME_SUFFIX=<suffix> before running. The random suffix keeps
+# the globally unique COS bucket name collision-free.
 # Every derived name (resource group, COS, Code Engine) can be overridden by
 # exporting the variable before running the script, see the section below.
 
@@ -80,12 +81,9 @@ info "Logged in."
 
 # ── 1a. Derive resource names ─────────────────────────────────────────────────
 
-# 4-character suffix: hash of the account ID and the prefix (stable across runs).
+# Random 4-character suffix (hex), different on every run unless NAME_SUFFIX is set.
 if [[ -z "${NAME_SUFFIX:-}" ]]; then
-  ACCOUNT_GUID=$(ibmcloud target --output json \
-    | python3 -c "import sys,json; print(json.load(sys.stdin)['account']['guid'])")
-  NAME_SUFFIX=$(python3 -c "import hashlib,sys; print(hashlib.sha256(sys.argv[1].encode()).hexdigest()[:4])" \
-    "$ACCOUNT_GUID:$NAME_PREFIX")
+  printf -v NAME_SUFFIX '%04x' $(( (RANDOM << 1) | (RANDOM & 1) ))   # 16 random bits
 fi
 NAME_BASE="${NAME_PREFIX}-${NAME_SUFFIX}"
 
@@ -151,7 +149,7 @@ fi
 
 # Retrieve the COS instance CRN and configure the COS CLI plugin.
 COS_INSTANCE_CRN=$(ibmcloud resource service-instance "$COS_INSTANCE_NAME" --output json \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+  | jq -r '.[0].id')
 ibmcloud cos config crn --crn "$COS_INSTANCE_CRN" --force
 # Set the regional endpoint explicitly so the plugin never falls back to a
 # stale cached endpoint (e.g. from a previous region).
@@ -174,10 +172,9 @@ else
 fi
 
 # Extract HMAC keys from the credential JSON — no manual copy needed.
-COS_KEY_TMPFILE=$(mktemp /tmp/cos-key-XXXXXX.json)
 COS_HMAC_CREDENTIALS=$(ibmcloud resource service-key "$COS_SERVICE_KEY_NAME" --output json)
-COS_HMAC_ACCESS_KEY_ID=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.access_key_id')
-COS_HMAC_SECRET_ACCESS_KEY=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.credentials.cos_hmac_keys.secret_access_key')
+COS_HMAC_ACCESS_KEY_ID=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.[0].credentials.cos_hmac_keys.access_key_id')
+COS_HMAC_SECRET_ACCESS_KEY=$(echo "$COS_HMAC_CREDENTIALS"|jq -r '.[0].credentials.cos_hmac_keys.secret_access_key')
 info "HMAC keys extracted from service credential."
 
 # ── 4. COS bucket ─────────────────────────────────────────────────────────────
@@ -244,13 +241,10 @@ fi
 TMPFILE=$(mktemp /tmp/qiskit-ibm-XXXXXX.json)
 trap 'rm -f "$TMPFILE"' EXIT
 
-python3 -c "
-import json, os, sys
-print(json.dumps({
-  'token':    os.environ['QISKIT_IBM_TOKEN'],
-  'instance': os.environ['QISKIT_IBM_INSTANCE'],
-}))
-" > "$TMPFILE"
+jq -n \
+  --arg token    "$QISKIT_IBM_TOKEN" \
+  --arg instance "$QISKIT_IBM_INSTANCE" \
+  '{token: $token, instance: $instance}' > "$TMPFILE"
 
 log "Checking Qiskit credentials secret '$CE_QISKIT_SECRET_NAME'…"
 if ce_exists secret "$CE_QISKIT_SECRET_NAME"; then
