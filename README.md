@@ -29,14 +29,14 @@ once you're in the shell.
 If you choose to use your own machine, then the following need to be installed:
 - [IBM Cloud command line (`ibmcloud`)](https://cloud.ibm.com/docs/cli/reference/ibmcloud?topic=cloud-cli-getting-started)
 - [Code Engine plugin (`ce`)](https://cloud.ibm.com/codeengine/cli)
-- [podman](https://podman.io/) or [`docker`](https://docker.io/) if you choose to build the images yourself. For novices, skip this.
+- [`podman`](https://podman.io/) or [`docker`](https://docker.io/) if you choose to build the images yourself. For novices, skip this.
 
 #### Let's go!
 
 Once you have your environment ready, look at the README for the Tutorial
 or Sample of interest to know if you'll need to clone this git repository
 first. Most of the Samples will require it since it involves executing their
-`run` script. The tutorials will try to avoid this requirement.
+`run` script.
 
 If you need, or want, to clone this repo simple execute:
 ```
@@ -44,13 +44,13 @@ $ git clone https://github.com/IBM/CodeEngine
 ```
 and then `cd` into the `CodeEngine` directory.
 
-If you have not already specified your IBM Cloud resource group, then
-see the:
+If you have not yet targeted a resource group, use the following commands
+to list available groups and set the target. The group is often named
+`default` or `Default`.
 ```
 $ ibmcloud resource groups
 $ ibmcloud target --help
 ```
-commands for more information. Often it is called `default` or `Default`.
 
 Most of the material in here assumes you aleady have a Code Engine
 [project](https://cloud.ibm.com/docs/codeengine#term-summary) already created.
