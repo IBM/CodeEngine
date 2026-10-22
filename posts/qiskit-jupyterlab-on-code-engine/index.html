@@ -1,0 +1,236 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.8"><title>Quantum Notebooks in the Cloud: Run Qiskit in JupyterLab on IBM Cloud Code Engine — The Engine Room</title><link rel="describedby" href="/CodeEngine/llms.txt"><style>.post-container[data-astro-cid-ruv7hgo6]{max-width:760px;margin:0 auto;padding:4rem 2rem 6rem}.post-back[data-astro-cid-ruv7hgo6]{color:var(--accent);align-items:center;gap:.4rem;margin-bottom:2rem;font-size:.8rem;text-decoration:none;display:inline-flex}.post-back[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.tags[data-astro-cid-ruv7hgo6]{margin-bottom:1.25rem}.post-title[data-astro-cid-ruv7hgo6]{color:var(--text);margin-bottom:1rem;font-size:clamp(1.75rem,4vw,2.75rem);font-weight:300;line-height:1.2}.post-meta[data-astro-cid-ruv7hgo6]{color:var(--text-muted);border-bottom:1px solid var(--border);gap:1.25rem;margin-bottom:2.5rem;padding-bottom:2rem;font-size:.8rem;display:flex}.author-link[data-astro-cid-ruv7hgo6]{color:inherit;text-decoration:none}.author-link[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6]{color:var(--text-dim);font-size:1rem;line-height:1.75}.post-body[data-astro-cid-ruv7hgo6] h2,.post-body[data-astro-cid-ruv7hgo6] h3,.post-body[data-astro-cid-ruv7hgo6] h4{color:var(--text);margin:2rem 0 .75rem;font-weight:400;line-height:1.3}.post-body[data-astro-cid-ruv7hgo6] h2{font-size:1.5rem}.post-body[data-astro-cid-ruv7hgo6] h3{font-size:1.2rem}.post-body[data-astro-cid-ruv7hgo6] p{margin-bottom:1.25rem}.post-body[data-astro-cid-ruv7hgo6] a{color:var(--accent);text-decoration:none}.post-body[data-astro-cid-ruv7hgo6] a:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6] ul,.post-body[data-astro-cid-ruv7hgo6] ol{margin-bottom:1.25rem;padding-left:1.5rem}.post-body[data-astro-cid-ruv7hgo6] li{margin-bottom:.4rem}.post-body[data-astro-cid-ruv7hgo6] code{font-family:var(--mono);background:var(--bg-card);color:var(--text);border-radius:2px;padding:.1em .4em;font-size:.85em}.post-body[data-astro-cid-ruv7hgo6] pre{background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);margin-bottom:1.25rem;padding:1.25rem;font-size:.85rem;line-height:1.6;overflow-x:auto}.post-body[data-astro-cid-ruv7hgo6] pre code{background:0 0;padding:0}.post-body[data-astro-cid-ruv7hgo6] blockquote{border-left:3px solid var(--accent);color:var(--text-muted);margin:1.5rem 0;padding-left:1.25rem;font-style:italic}.post-body[data-astro-cid-ruv7hgo6] img{max-width:100%;height:auto;margin:1.5rem 0;display:block}.post-body[data-astro-cid-ruv7hgo6] hr{border:none;border-top:1px solid var(--border);margin:2rem 0}.post-body[data-astro-cid-ruv7hgo6] strong{color:var(--text)}
+</style><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.BOHpBZWP.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#hero" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/index.html#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li></ul></nav><article class="post-container" data-astro-cid-ruv7hgo6><a href="/CodeEngine/" class="post-back" data-astro-cid-ruv7hgo6>← Back to Engine Room</a><div class="tags" data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/tag/quantum" class="tag" data-astro-cid-ruv7hgo6>quantum</a><a href="/CodeEngine/posts/tag/qiskit" class="tag" data-astro-cid-ruv7hgo6>qiskit</a><a href="/CodeEngine/posts/tag/jupyterlab" class="tag" data-astro-cid-ruv7hgo6>jupyterlab</a><a href="/CodeEngine/posts/tag/code engine" class="tag" data-astro-cid-ruv7hgo6>code engine</a><a href="/CodeEngine/posts/tag/serverless" class="tag" data-astro-cid-ruv7hgo6>serverless</a><a href="/CodeEngine/posts/tag/tutorial" class="tag" data-astro-cid-ruv7hgo6>tutorial</a></div><h1 class="post-title" data-astro-cid-ruv7hgo6>Quantum Notebooks in the Cloud: Run Qiskit in JupyterLab on IBM Cloud Code Engine</h1><div class="post-meta" data-astro-cid-ruv7hgo6><span data-astro-cid-ruv7hgo6>Oct 21, 2026</span><span data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/author/jeremiaswerner" class="author-link" data-astro-cid-ruv7hgo6>jeremiaswerner</a></span></div><div class="post-body" data-astro-cid-ruv7hgo6><h2 id="introduction">Introduction</h2>
+<p>Quantum computing has an unusual shape as a workload. The quantum part runs on a quantum processing unit (QPU) that IBM operates for you. Everything around it is ordinary classical computing: you write a circuit, optimize it for a specific device, submit a job, wait in a queue, and post-process the results. That classical part usually lives in a Jupyter notebook.</p>
+<p>The notebook is where things get awkward. It runs on your laptop, so the credentials sit on your laptop, the job you submitted before closing the lid is easy to lose track of, and sharing a working setup with a colleague means walking them through a Python environment.</p>
+<p><a href="https://www.ibm.com/products/code-engine">IBM Cloud Code Engine</a> is IBM’s fully managed, serverless platform for running containerized workloads. You hand it source code or a container image. It builds, deploys, secures, and scales the workload, and you do not touch servers or clusters. That is a good fit for the classical half of a quantum workflow: a small, always-reachable environment next to the quantum service, with nothing to patch and nothing to operate.</p>
+<p>In this post, you will deploy <strong>JupyterLab with Qiskit as a Code Engine application</strong>. Your notebooks are stored in IBM Cloud Object Storage so they survive restarts, your IBM Quantum credentials are injected as a Code Engine secret, and a single script does all the provisioning.</p>
+<p><img alt="Illustration of a Bloch sphere and a Bell state circuit with the title Qiskit on Code Engine" loading="lazy" decoding="async" width="3840" height="2160" src="/CodeEngine/assets/featured.BQ8D5nut_ZRGvNu.webp" srcset=""></p>
+<h2 id="why-code-engine-for-quantum-notebooks">Why Code Engine for Quantum Notebooks?</h2>
+<p><a href="https://quantum.cloud.ibm.com/docs/en/guides/compute-services">IBM Quantum</a> is made of a few services, and the part you talk to from a notebook is <strong>IBM Quantum Compute</strong>, formerly called the Qiskit Runtime Service. The <code>qiskit-ibm-runtime</code> package is its client. It runs your circuits on IBM hardware and can apply error suppression and error mitigation to return higher-quality results. You can submit work as a single <strong>Job</strong>, as a <strong>Session</strong> for iterative workloads, or as a <strong>Batch</strong> of jobs for parallel processing. Open Plan users cannot submit session jobs.</p>
+<p>Each of those jobs waits in a queue on the QPU side, so the notebook that submitted it is mostly waiting. Here is how the Code Engine value proposition maps onto that pattern.</p>
+<h3 id="no-infrastructure-to-manage">No infrastructure to manage</h3>
+<p>Code Engine builds the container image from the <code>Dockerfile</code> in your folder, pushes it to a registry it manages for you, and runs it with an HTTPS endpoint. There is no Docker build on your laptop, no registry to set up, and no cluster to operate. You only provide the notebook environment.</p>
+<h3 id="credentials-stay-out-of-the-notebook">Credentials stay out of the notebook</h3>
+<p>Your IBM Quantum API key is a secret. In this setup it is stored as a Code Engine <strong>secret</strong> and mounted read-only into the container. At startup the container registers it with Qiskit, and notebook cells simply call <code>QiskitRuntimeService()</code> without arguments. The key never appears in a notebook, a Git repository, or a shared screen.</p>
+<h3 id="a-notebook-that-is-always-there">A notebook that is always there</h3>
+<p>The app is reachable from any browser, so you can start a job from your office, close the tab, and check the result from another machine. The hello-world notebook prints a job ID so you can retrieve results later, and the cloud-hosted notebook gives you a stable place to do that. For long-running quantum-classical workloads, <a href="https://quantum.cloud.ibm.com/docs/en/guides/compute-services">Qiskit Serverless</a> also provides tools for persisting workloads in the cloud, even if your laptop is turned off.</p>
+<h3 id="your-work-survives-restarts">Your work survives restarts</h3>
+<p>Containers are disposable by design. To keep notebooks, the app mounts an IBM Cloud Object Storage bucket through a Code Engine <strong>persistent data store</strong> at <code>/home/jovyan/work</code>. Files saved there persist across restarts and redeployments.</p>
+<h3 id="pay-for-what-the-platform-uses">Pay for what the platform uses</h3>
+<p>Code Engine bills for the resources your app consumes, and it can scale to zero. JupyterLab is a stateful application, so this tutorial pins the app to one instance (<code>--min-scale 1 --max-scale 1</code>) to keep your kernels alive between visits, with a scale-down delay of 10 minutes. If you would rather save cost and accept that running kernels are lost, change the minimum to zero:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> app</span><span style="color:#9ECBFF"> update</span><span style="color:#79B8FF"> --name</span><span style="color:#F97583"> &lt;</span><span style="color:#9ECBFF">app-nam</span><span style="color:#E1E4E8">e</span><span style="color:#F97583">&gt;</span><span style="color:#79B8FF"> --min-scale</span><span style="color:#79B8FF"> 0</span></span></code></pre>
+<p>Your notebooks are safe either way, because they live in the bucket.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p><img alt="Architecture: a browser reaches JupyterLab running as a Code Engine application. A secret supplies IBM Quantum credentials, a persistent data store mounts a Cloud Object Storage bucket, and the application calls IBM Quantum Compute over HTTPS." loading="lazy" decoding="async" width="2880" height="1620" src="/CodeEngine/assets/architecture.ypSTc0W4_Z1gaPJg.webp" srcset=""></p>
+<p>The architecture has three parts: your machine, the Code Engine project, and IBM Quantum.</p>
+<p><strong>Your machine</strong> only runs <code>setup.sh</code>, which uses the <code>ibmcloud</code> CLI to provision everything. Nothing is installed in the cloud by hand.</p>
+<p><strong>The Code Engine project</strong> is the container for the workload, and it lives in one IBM Cloud region. Inside it:</p>
+<ul>
+<li>The <strong>application</strong> is built from the <code>Dockerfile</code>. The image extends the official <code>quay.io/jupyter/base-notebook</code>, runs as the non-root user <code>jovyan</code>, installs <code>qiskit-ibm-runtime</code> and <code>matplotlib</code>, and starts through <code>start.sh</code>. It listens on port 8888 with 1 vCPU and 4 GB of memory.</li>
+<li>The <strong>secret</strong> holds your IBM Quantum token and instance CRN as a JSON file. It is mounted read-only at <code>/etc/qiskit-secret/</code>.</li>
+<li>The <strong>persistent data store</strong> points at an Object Storage bucket, using HMAC credentials that the script generates and stores as another secret. It is mounted at <code>/home/jovyan/work</code>.</li>
+</ul>
+<p><strong>IBM Quantum</strong> is the external service. Your notebook calls IBM Quantum Compute over HTTPS with your token and the CRN of the instance you want to use. IBM Quantum Platform is where instances live, and each instance has its own Cloud Resource Name (CRN), which is required to submit workloads to the available QPUs.</p>
+<p>When the container starts, <code>start.sh</code> does two things. First, it reads the mounted secret and calls <code>QiskitRuntimeService.save_account(...)</code>, so every notebook can create a service client with no arguments. Second, it launches JupyterLab.</p>
+<h3 id="how-jupyterlab-shows-up-as-the-application">How JupyterLab shows up as the application</h3>
+<p>Code Engine applications get an HTTPS endpoint, and the platform routes traffic to the port your container listens on. Because JupyterLab is a web server, it simply is the application: the URL that Code Engine prints is the JupyterLab login page. You open it, enter your Jupyter token, and you are in a full notebook environment with <code>hello-world.ipynb</code> in the file browser and a <code>work</code> folder backed by Object Storage. A screenshot of the running app follows in Step 5.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>You will need:</p>
+<ul>
+<li>
+<p>An <strong>IBM Cloud account</strong> with Code Engine and Cloud Object Storage available.</p>
+</li>
+<li>
+<p>The <a href="https://cloud.ibm.com/docs/cli">IBM Cloud CLI</a> (<code>ibmcloud</code>) with two plugins installed:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> plugin</span><span style="color:#9ECBFF"> install</span><span style="color:#9ECBFF"> code-engine</span></span>
+<span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> plugin</span><span style="color:#9ECBFF"> install</span><span style="color:#9ECBFF"> cloud-object-storage</span></span></code></pre>
+</li>
+<li>
+<p>An <strong>IBM Quantum</strong> account, an API key, and an instance CRN. The next section shows how to get them.</p>
+</li>
+</ul>
+<h2 id="step-1-onboard-to-ibm-quantum">Step 1: Onboard to IBM Quantum</h2>
+<ol>
+<li>Go to <a href="https://quantum.cloud.ibm.com/">IBM Quantum Platform</a> to log in or create an account.</li>
+<li>Generate your API key (also called an API token) on the <a href="https://quantum.cloud.ibm.com/">dashboard</a>, then copy it to a secure location.</li>
+<li>Go to the <a href="https://quantum.cloud.ibm.com/instances">Instances</a> page and find the instance you want to use. Hover over its CRN and click to copy it.</li>
+</ol>
+<p>You now have two values: the <strong>API key</strong> and the <strong>instance CRN</strong>.</p>
+<p>{{&lt; alert &gt;}}
+<strong>Note:</strong> Treat the API key like a password. Do not paste it into a notebook, a chat, or a commit. The setup below stores it only in a local file that is excluded from Git and from the Code Engine build, and in a Code Engine secret.
+{{&lt; /alert &gt;}}</p>
+<h2 id="step-2-get-the-code">Step 2: Get the code</h2>
+<p>The sample lives in the <a href="https://github.com/IBM/CodeEngine">Code Engine sample repository</a>:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">git</span><span style="color:#9ECBFF"> clone</span><span style="color:#9ECBFF"> https://github.com/IBM/CodeEngine</span></span>
+<span class="line"><span style="color:#79B8FF">cd</span><span style="color:#9ECBFF"> CodeEngine/quantum/qiskit-jupyter-app</span></span></code></pre>
+<p>The folder contains the following files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Dockerfile</code></td>
+<td>Container image: Jupyter base image plus Qiskit</td>
+</tr>
+<tr>
+<td><code>start.sh</code></td>
+<td>Registers the Qiskit account, then starts JupyterLab</td>
+</tr>
+<tr>
+<td><code>hello-world.ipynb</code></td>
+<td>A Bell state and a 100-qubit GHZ state example</td>
+</tr>
+<tr>
+<td><code>setup.env</code></td>
+<td>Configuration template</td>
+</tr>
+<tr>
+<td><code>setup.sh</code></td>
+<td>Idempotent provisioning script</td>
+</tr>
+</tbody>
+</table>
+<h2 id="step-3-create-setupenvlocal">Step 3: Create <code>setup.env.local</code></h2>
+<p><code>setup.sh</code> reads its configuration from a file called <code>setup.env.local</code>. Start from the template:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">cp</span><span style="color:#9ECBFF"> setup.env</span><span style="color:#9ECBFF"> setup.env.local</span></span></code></pre>
+<p>Open <code>setup.env.local</code> and replace every <code>&lt;placeholder&gt;</code>. The file is listed in <code>.gitignore</code> and <code>.ceignore</code>, so it is neither committed nor uploaded as part of the build.</p>
+<p>The file has only a handful of variables:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>What to put there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IBMCLOUD_API_KEY</code></td>
+<td>Optional and commented out by default. An IBM Cloud API key from <a href="https://cloud.ibm.com/iam/apikeys">Manage, API keys</a>. Without it, the script runs <code>ibmcloud login --sso</code> and asks you for a one-time passcode</td>
+</tr>
+<tr>
+<td><code>IBMCLOUD_REGION</code></td>
+<td>The region for all resources. Defaults to <code>eu-de</code>; for example <code>us-south</code></td>
+</tr>
+<tr>
+<td><code>NAME_PREFIX</code></td>
+<td>The prefix for all resource names. Defaults to <code>ce-qiskit-jupyterlab</code></td>
+</tr>
+<tr>
+<td><code>QISKIT_IBM_TOKEN</code></td>
+<td>The IBM Quantum API key from Step 1</td>
+</tr>
+<tr>
+<td><code>QISKIT_IBM_INSTANCE</code></td>
+<td>The instance CRN from Step 1</td>
+</tr>
+<tr>
+<td><code>JUPYTER_TOKEN</code></td>
+<td>The password for the JupyterLab login page</td>
+</tr>
+</tbody>
+</table>
+<p>For <code>JUPYTER_TOKEN</code>, generate a long random value rather than choosing one:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">openssl</span><span style="color:#9ECBFF"> rand</span><span style="color:#79B8FF"> -hex</span><span style="color:#79B8FF"> 32</span></span></code></pre>
+<p>Here is how the quantum-related part of the file looks, with placeholders:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#E1E4E8">QISKIT_IBM_TOKEN</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">"&lt;your-ibm-quantum-api-key&gt;"</span></span>
+<span class="line"><span style="color:#E1E4E8">QISKIT_IBM_INSTANCE</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">"&lt;your-ibm-quantum-instance-crn&gt;"</span></span>
+<span class="line"><span style="color:#E1E4E8">JUPYTER_TOKEN</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">"&lt;output-of-openssl-rand-hex-32&gt;"</span></span></code></pre>
+<p><code>IBMCLOUD_REGION</code> and <code>NAME_PREFIX</code> use the shell value if you set one, so you can also pick them on the command line, for example <code>NAME_PREFIX=my-lab ./setup.sh</code>.</p>
+<h3 id="where-the-resource-names-come-from">Where the resource names come from</h3>
+<p>You do not have to name anything yourself. The script derives every cloud resource name from <code>NAME_PREFIX</code> plus a stable 4-character suffix, which is a hash of your IBM Cloud account ID and the prefix. With the default prefix, the names look like this (the suffix <code>3fa9</code> is an example):</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resource group, Code Engine project, application</td>
+<td><code>ce-qiskit-jupyterlab-3fa9</code></td>
+</tr>
+<tr>
+<td>Object Storage instance</td>
+<td><code>ce-qiskit-jupyterlab-3fa9-cos</code></td>
+</tr>
+<tr>
+<td>Object Storage bucket</td>
+<td><code>ce-qiskit-jupyterlab-3fa9-notebooks</code></td>
+</tr>
+<tr>
+<td>Persistent data store</td>
+<td><code>ce-qiskit-jupyterlab-3fa9-notebooks-pds</code></td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td><code>ce-qiskit-jupyterlab-3fa9-qiskit</code>, <code>ce-qiskit-jupyterlab-3fa9-cos-hmac</code></td>
+</tr>
+</tbody>
+</table>
+<p>The suffix keeps the globally unique bucket name from colliding with other accounts, and because it is stable, running the script again reuses the same resources. If you need a specific name, export the variable in your shell before running the script, for example <code>CE_PROJECT_NAME=my-project ./setup.sh</code>. The same works for <code>IBMCLOUD_RESOURCE_GROUP_NAME</code>, <code>CE_APP_NAME</code>, <code>COS_BUCKET_NAME</code> and the other derived names. You also do not need to copy any Object Storage keys: the script creates the credential with HMAC enabled and reads the keys at run time.</p>
+<h2 id="step-4-run-the-setup">Step 4: Run the setup</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">./setup.sh</span></span></code></pre>
+<p>The script loads <code>setup.env.local</code> from the current directory. To use a different file, pass it through an environment variable:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#E1E4E8">ENV_FILE</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">my-other.env</span><span style="color:#B392F0"> ./setup.sh</span></span></code></pre>
+<p>It validates that the required variables are set, logs in, prints the resource names it derived, and then provisions the following resources in order:</p>
+<ol>
+<li>Creates the resource group if needed.</li>
+<li>Creates or reuses the Object Storage instance.</li>
+<li>Creates a service credential with HMAC enabled and extracts the keys.</li>
+<li>Creates or reuses the bucket.</li>
+<li>Creates or reuses the Code Engine project.</li>
+<li>Stores the HMAC keys as a Code Engine secret.</li>
+<li>Creates the persistent data store that links the bucket to Code Engine.</li>
+<li>Stores your Qiskit token and CRN as a Code Engine secret.</li>
+<li>Builds the image from the local <code>Dockerfile</code> and deploys the application, with the bucket mounted at <code>/home/jovyan/work</code>, the secret mounted at <code>/etc/qiskit-secret/</code>, and <code>JUPYTER_TOKEN</code> set as an environment variable.</li>
+<li>Prints the application URL.</li>
+</ol>
+<p>Every step checks whether the resource already exists before creating it, so it is safe to run <code>./setup.sh</code> again. When you change a notebook dependency in the <code>Dockerfile</code>, re-running the script updates the application and triggers a new build.</p>
+<p>The first run takes a few minutes because Code Engine builds the image from source.</p>
+<h2 id="step-5-open-jupyterlab-and-run-your-first-circuit">Step 5: Open JupyterLab and run your first circuit</h2>
+<p>Open the URL printed at the end of the script and enter your <code>JUPYTER_TOKEN</code> when prompted. JupyterLab opens, and <code>hello-world.ipynb</code> is ready to run.</p>
+<p>The notebook follows the four Qiskit patterns steps:</p>
+<ol>
+<li><strong>Map</strong> the problem to a quantum circuit, a Bell state that entangles two qubits.</li>
+<li><strong>Optimize</strong> the circuit for a specific device by transpiling it for the least busy backend.</li>
+<li><strong>Execute</strong> it with the <code>Estimator</code> primitive and 5,000 shots.</li>
+<li><strong>Analyze</strong> the expectation values.</li>
+</ol>
+<p>The cell that connects to IBM Quantum shows what the startup script made possible:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#F97583">from</span><span style="color:#E1E4E8"> qiskit_ibm_runtime </span><span style="color:#F97583">import</span><span style="color:#E1E4E8"> QiskitRuntimeService</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">service </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> QiskitRuntimeService()                  </span><span style="color:#6A737D"># credentials come from the mounted secret</span></span>
+<span class="line"><span style="color:#E1E4E8">backend </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> service.least_busy(</span><span style="color:#FFAB70">simulator</span><span style="color:#F97583">=</span><span style="color:#79B8FF">False</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">operational</span><span style="color:#F97583">=</span><span style="color:#79B8FF">True</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>There is no token and no CRN in the notebook. The screenshot below shows JupyterLab served by the Code Engine application, with <code>hello-world.ipynb</code> and the <code>work</code> folder in the file browser. The open cell is Step 2: it picks the least busy backend and transpiles the Bell state circuit for it. The circuit drawn below the cell has been rewritten into the native gates of the selected device (<code>Rz</code>, <code>√X</code> and a two-qubit gate) and mapped onto its physical qubits.</p>
+<p><img alt="JupyterLab running as a Code Engine application, showing step 2 of the hello-world notebook with the transpiled Bell state circuit" loading="lazy" decoding="async" width="3822" height="1962" src="/CodeEngine/assets/screenshot-jupyterlab-app.DW7ko7c6_257cXO.webp" srcset=""></p>
+<p>After the Bell state, the notebook scales up to a 100-qubit GHZ state, a circuit of the size people call utility scale, and plots how the correlation between distant qubits decays because of hardware noise.</p>
+<p>{{&lt; alert &gt;}}
+<strong>Note:</strong> Jobs on real hardware wait in the IBM Quantum queue. The notebook prints a job ID when it submits, so you can come back and retrieve the result later. To iterate without waiting, use the local testing mode with a fake backend, as described in the notebook.
+{{&lt; /alert &gt;}}</p>
+<p><code>hello-world.ipynb</code> is baked into the image in the home directory. To keep your own notebooks, save them in the <code>work</code> folder, which is the mounted bucket. Everything in <code>work</code> is written to Object Storage and is still there after a restart.</p>
+<h2 id="operating-the-app">Operating the App</h2>
+<p>Check the application and open its logs when something looks wrong. The application name is the one printed by <code>setup.sh</code>:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> app</span><span style="color:#9ECBFF"> get</span><span style="color:#79B8FF"> --name</span><span style="color:#F97583"> &lt;</span><span style="color:#9ECBFF">app-nam</span><span style="color:#E1E4E8">e</span><span style="color:#F97583">&gt;</span></span>
+<span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> app</span><span style="color:#9ECBFF"> logs</span><span style="color:#79B8FF"> --name</span><span style="color:#F97583"> &lt;</span><span style="color:#9ECBFF">app-nam</span><span style="color:#E1E4E8">e</span><span style="color:#F97583">&gt;</span></span></code></pre>
+<p>The logs include the <code>[start]</code> lines from <code>start.sh</code>, which tell you whether the Qiskit account was registered.</p>
+<p>To rotate your IBM Quantum key, change <code>QISKIT_IBM_TOKEN</code> in <code>setup.env.local</code> and run <code>./setup.sh</code> again. The script updates the secret and the application.</p>
+<p>When you are done, delete the Code Engine project and the Object Storage resources from the IBM Cloud console, or keep them around, since notebooks stay in your bucket.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Quantum programs split cleanly into a part that runs on a QPU and a part that runs around it. Code Engine is a good home for the second part. You get a managed, HTTPS-reachable notebook environment that is built from your own <code>Dockerfile</code>, holds your credentials in a secret, and keeps your work in Object Storage. You provide a config file and run one script.</p>
+<p>From here you can make it your own. Add Python packages to the <code>Dockerfile</code>, bring in the other Qiskit tutorials for VQE and QAOA, or mount a bigger bucket for datasets. The same pattern works for any browser-based tool that needs a stable home next to a cloud service. One further extension is to adjust the authentication mechanism, for example to put JupyterLab behind your organization’s identity provider instead of relying on a single shared token. The blog post <a href="https://community.ibm.com/community/user/blogs/enrico-regge/2025/12/01/code-engine-authentication-with-oidc-part3">Code Engine authentication with OIDC, part 3</a> shows how to do this.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://www.ibm.com/products/code-engine">IBM Cloud Code Engine</a></li>
+<li><a href="https://cloud.ibm.com/docs/codeengine">Code Engine documentation</a></li>
+<li><a href="https://github.com/IBM/CodeEngine">Code Engine sample repository</a>, including <code>quantum/qiskit-jupyter-app</code></li>
+<li><a href="https://quantum.cloud.ibm.com/docs/en/guides/compute-services">Introduction to IBM Quantum services</a></li>
+<li><a href="https://quantum.cloud.ibm.com/">IBM Quantum Platform</a></li>
+<li><a href="https://quantum.cloud.ibm.com/instances">IBM Quantum instances</a></li>
+<li><a href="https://cloud.ibm.com/docs/cli">IBM Cloud CLI</a></li>
+</ul>
+</div></article><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BoiTxAdh.js"></script><div data-pf-theme="dark"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`);e&&(document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})}))}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script></body></html>

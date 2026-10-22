@@ -5,6 +5,7 @@
 
 ## Blog posts
 
+- [Quantum Notebooks in the Cloud: Run Qiskit in JupyterLab on IBM Cloud Code Engine](https://ibm.github.io/CodeEngine/posts/qiskit-jupyterlab-on-code-engine/): Deploy a persistent, password-protected JupyterLab with Qiskit to IBM Cloud Code Engine and run quantum workloads on IBM Quantum hardware, with one config file and one script. (2026-10-21)
 - [IBM Cloud Code Engine Fleets Just Got More Flexible: Keep Fleets Alive and Submit Tasks Anytime](https://ibm.github.io/CodeEngine/posts/dynamic-fleets-availability/): IBM Cloud Code Engine Serverless Fleets are getting more powerful. Create a fleet once, tune it for your latency requirements, then submit tasks to it over time. Eliminated are repetitive configurations, and infrastructure overhead. (2026-09-04)
 - [Remote Bob: Run Bob Shell in IBM Cloud Code Engine](https://ibm.github.io/CodeEngine/posts/remote-bob-run-bob-shell-in-the-cloud/): Spin up a full Bob Shell terminal running autonomously in IBM Cloud Code Engine — sandboxed, persistent, and accessible from any browser in under 20 minutes. (2026-09-01)
 - [From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine](https://ibm.github.io/CodeEngine/posts/deploy-from-bob/): Using Bob to deploy an app to Code Engine (2026-07-02)
