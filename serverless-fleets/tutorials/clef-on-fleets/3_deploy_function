@@ -14,8 +14,7 @@ print_cmd() { echo -e "  $1"; }
 # ==============================
 FN_NAME="${FN_NAME:=clef-classify-fn}"
 FLEET_ID="${1:-${FLEET_ID:-}}"
-SECRET_NAME="${SECRET_NAME:=clef-fn-secrets}"
-CE_API_KEY="${CE_API_KEY:=}"
+TRUSTED_PROFILE_NAME="${TRUSTED_PROFILE_NAME:=clef-fn-access}"
 COS_PREFIX="${COS_PREFIX:=clef-result}"
 FILE_PREFIX="${FILE_PREFIX:=result}"
 PDS_NAME="${PDS_NAME:=fleet-output-store}"
@@ -51,22 +50,70 @@ if [[ -z "${FLEET_ID}" ]]; then
   exit 1
 fi
 
-# Ensure secret exists or create it if CE_API_KEY was supplied in env
-if [[ -n "${CE_API_KEY}" ]]; then
-  print_msg "Creating/updating secret '${SECRET_NAME}'..."
-  if ibmcloud ce secret get --name "${SECRET_NAME}" >/dev/null 2>&1; then
-    ibmcloud ce secret update --name "${SECRET_NAME}" --from-literal CE_API_KEY="${CE_API_KEY}"
+# ==============================
+# TRUSTED PROFILE (replaces the former CE_API_KEY secret)
+# The function exchanges its Code Engine compute resource token for an IAM
+# token of this profile. The profile is linked to the function by name and is
+# granted: Writer on the Code Engine project (add fleet tasks) and
+# Object Reader on the results bucket (poll results).
+# ==============================
+# 'project current' does not return the CRN, 'project get' does.
+CE_PROJECT_NAME=$(ibmcloud ce project current --output json | jq -r '.name')
+CE_PROJECT_JSON=$(ibmcloud ce project get --name "${CE_PROJECT_NAME}" --output json)
+CE_PROJECT_CRN=$(echo "${CE_PROJECT_JSON}" | jq -r '.crn // empty')
+CE_PROJECT_GUID=$(echo "${CE_PROJECT_JSON}" | jq -r '.guid // empty')
+if [[ -z "${CE_PROJECT_CRN}" || -z "${CE_PROJECT_GUID}" ]]; then
+  print_error "Could not determine CRN/GUID of Code Engine project '${CE_PROJECT_NAME}'."
+  exit 1
+fi
+
+# COS instance hosting the results bucket: explicit CRN, explicit name, or the
+# only COS instance in the targeted resource group.
+if [[ -z "${COS_INSTANCE_ID:-}" ]]; then
+  if [[ -n "${COS_INSTANCE_NAME:-}" ]]; then
+    COS_INSTANCE_ID=$(ibmcloud resource service-instance "${COS_INSTANCE_NAME}" --output json 2>/dev/null | jq -r '.[0].id // empty' || echo "")
   else
-    ibmcloud ce secret create --name "${SECRET_NAME}" --from-literal CE_API_KEY="${CE_API_KEY}"
+    COS_INSTANCES=$(ibmcloud resource service-instances --service-name cloud-object-storage --output json 2>/dev/null || echo "[]")
+    if [[ "$(echo "${COS_INSTANCES}" | jq 'length')" == "1" ]]; then
+      COS_INSTANCE_ID=$(echo "${COS_INSTANCES}" | jq -r '.[0].id')
+    fi
   fi
-else
-  if ! ibmcloud ce secret get --name "${SECRET_NAME}" >/dev/null 2>&1; then
-    print_error "Secret '${SECRET_NAME}' does not exist and CE_API_KEY environment variable is not set."
-    echo "Create the secret with:"
-    echo "  ibmcloud ce secret create --name ${SECRET_NAME} --from-literal CE_API_KEY=<your-ibmcloud-api-key>"
-    echo "or set export CE_API_KEY=<key> before running."
-    exit 1
-  fi
+fi
+if [[ -z "${COS_INSTANCE_ID:-}" ]]; then
+  print_error "Could not determine the COS instance of bucket '${COS_BUCKET}'."
+  echo "Set export COS_INSTANCE_NAME=<name> or COS_INSTANCE_ID=<crn>."
+  exit 1
+fi
+
+print_msg "Ensuring trusted profile '${TRUSTED_PROFILE_NAME}'..."
+if ! ibmcloud iam trusted-profile "${TRUSTED_PROFILE_NAME}" >/dev/null 2>&1; then
+  ibmcloud iam trusted-profile-create "${TRUSTED_PROFILE_NAME}"
+fi
+
+if ! ibmcloud iam trusted-profile-links "${TRUSTED_PROFILE_NAME}" --output json 2>/dev/null \
+    | jq -e --arg n "ce-fn-${FN_NAME}" '.[] | select(.name == $n)' >/dev/null 2>&1; then
+  ibmcloud iam trusted-profile-link-create "${TRUSTED_PROFILE_NAME}" \
+    --name "ce-fn-${FN_NAME}" \
+    --cr-type CE \
+    --link-crn "${CE_PROJECT_CRN}" \
+    --link-component-type function \
+    --link-component-name "${FN_NAME}"
+fi
+
+PROFILE_POLICIES=$(ibmcloud iam trusted-profile-policies "${TRUSTED_PROFILE_NAME}" --output json 2>/dev/null || echo "[]")
+if ! echo "${PROFILE_POLICIES}" | jq -e --arg s "${CE_PROJECT_GUID}" '.[] | select(.resources[]?.attributes[]? | .value == $s)' >/dev/null 2>&1; then
+  ibmcloud iam trusted-profile-policy-create "${TRUSTED_PROFILE_NAME}" \
+    --roles "Writer" \
+    --service-name codeengine \
+    --service-instance "${CE_PROJECT_GUID}"
+fi
+if ! echo "${PROFILE_POLICIES}" | jq -e --arg b "${COS_BUCKET}" '.[] | select(.resources[]?.attributes[]? | .value == $b)' >/dev/null 2>&1; then
+  ibmcloud iam trusted-profile-policy-create "${TRUSTED_PROFILE_NAME}" \
+    --roles "Object Reader" \
+    --service-name cloud-object-storage \
+    --service-instance "${COS_INSTANCE_ID}" \
+    --resource-type bucket \
+    --resource "${COS_BUCKET}"
 fi
 
 print_msg "\nDeploying Code Engine function '${FN_NAME}' from ${FUNCTION_DIR} ..."
@@ -82,7 +129,8 @@ echo "    --env             COS_PREFIX=${COS_PREFIX}"
 echo "    --env             FILE_PREFIX=${FILE_PREFIX}"
 echo "    --env             COS_ENDPOINT=${COS_ENDPOINT}"
 echo "    --env             POLL_TIMEOUT=${POLL_TIMEOUT}"
-echo "    --env-from-secret ${SECRET_NAME}"
+echo "    --env             TRUSTED_PROFILE_NAME=${TRUSTED_PROFILE_NAME}"
+echo "    --trusted-profiles-enabled=true"
 echo ""
 
 if ibmcloud ce fn get --name "${FN_NAME}" >/dev/null 2>&1; then
@@ -98,7 +146,8 @@ if ibmcloud ce fn get --name "${FN_NAME}" >/dev/null 2>&1; then
     --env FILE_PREFIX="${FILE_PREFIX}" \
     --env COS_ENDPOINT="${COS_ENDPOINT}" \
     --env POLL_TIMEOUT="${POLL_TIMEOUT}" \
-    --env-from-secret "${SECRET_NAME}"
+    --env TRUSTED_PROFILE_NAME="${TRUSTED_PROFILE_NAME}" \
+    --trusted-profiles-enabled=true
 else
   ibmcloud ce fn create \
     --name "${FN_NAME}" \
@@ -111,7 +160,8 @@ else
     --env FILE_PREFIX="${FILE_PREFIX}" \
     --env COS_ENDPOINT="${COS_ENDPOINT}" \
     --env POLL_TIMEOUT="${POLL_TIMEOUT}" \
-    --env-from-secret "${SECRET_NAME}"
+    --env TRUSTED_PROFILE_NAME="${TRUSTED_PROFILE_NAME}" \
+    --trusted-profiles-enabled=true
 fi
 
 FN_ENDPOINT=$(ibmcloud ce fn get --name "${FN_NAME}" --output json | jq -r '.endpoint // empty' 2>/dev/null || echo "")
