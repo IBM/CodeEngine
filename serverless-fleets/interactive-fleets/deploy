@@ -1,0 +1,311 @@
+#!/bin/bash
+# ---------------------------------------------------------------------------
+# deploy — interactive-fleets full setup
+#
+# Steps:
+#   1. Build the fleet task container image via CE buildrun
+#   2. Create the CE Fleet (CPU profile — no prehook needed)
+#   3. Create/update the API key secret
+#   4. Deploy the CE Function
+#
+# Prerequisites:
+#   - ibmcloud CLI logged in with Code Engine plugin installed
+#   - A Code Engine project selected (ibmcloud ce project select --name <project>)
+#   - Persistent data stores provisioned:
+#       ibmcloud ce pds create --name fleet-task-store ...
+#       ibmcloud ce pds create --name fleet-output-store ...
+#   - Subnetpool 'fleet-subnetpool' provisioned
+#   - Registry secret 'ce-auto-icr-private-eu-de' (or set FLEET_REGISTRY_SECRET)
+#   - ICR_NAMESPACE exported (your IBM Container Registry namespace)
+#   - CE_API_KEY exported (IBM Cloud API key with CE Writer + COS access)
+#
+# Usage:
+#   export ICR_NAMESPACE=<your-namespace>
+#   export CE_API_KEY=<your-api-key>
+#   ./deploy
+#
+#   # Override fleet ID for function deploy only:
+#   export FLEET_ID=<existing-fleet-id>
+#   SKIP_BUILD=1 SKIP_FLEET=1 ./deploy
+# ---------------------------------------------------------------------------
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+print_step()    { echo -e "\n\033[94m═══ $1 ═══\033[0m"; }
+print_msg()     { echo -e "\033[94m$1\033[0m"; }
+print_success() { echo -e "\033[32m$1\033[0m"; }
+print_error()   { echo -e "\033[31m$1\033[0m"; }
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+
+ICR_REGISTRY="${ICR_REGISTRY:=private.de.icr.io}"
+
+if [[ -z "${ICR_NAMESPACE:-}" ]]; then
+  print_error "ICR_NAMESPACE is required. Set it to your IBM Container Registry namespace."
+  echo "  export ICR_NAMESPACE=<your-icr-namespace>"
+  exit 1
+fi
+
+if [[ -z "${CE_API_KEY:-}" ]]; then
+  print_error "CE_API_KEY is required. Set it to your IBM Cloud API key."
+  echo "  export CE_API_KEY=<your-ibmcloud-api-key>"
+  exit 1
+fi
+
+# Image
+NAME_PREFIX="${NAME_PREFIX:=interactive-fleets}"
+FLEET_IMAGE="${FLEET_IMAGE:=${ICR_REGISTRY}/${ICR_NAMESPACE}/interactive-fleets-task:latest}"
+FLEET_REGISTRY_SECRET="${FLEET_REGISTRY_SECRET:=ce-auto-icr-private-eu-de}"
+TASK_CONTAINER_DIR="${SCRIPT_DIR}/task-container"
+FUNCTION_DIR="${SCRIPT_DIR}/function"
+
+# Fleet
+FLEET_NAME="${FLEET_NAME:=}"                          # auto-generated if empty
+FLEET_TASKS_STATE_STORE="${FLEET_TASKS_STATE_STORE:=fleet-task-store}"
+FLEET_OUTPUT_STORE="${FLEET_OUTPUT_STORE:=fleet-output-store}"
+FLEET_OUTPUT_COS_PATH="${FLEET_OUTPUT_COS_PATH:=}"   # mount entire PDS root; task writes interactive-fleet-result/ subdir
+FLEET_SUBNETPOOL="${FLEET_SUBNETPOOL:=fleet-subnetpool}"
+FLEET_MAX_SCALE="${FLEET_MAX_SCALE:=2}"
+FLEET_MIN_SCALE="${FLEET_MIN_SCALE:=0}"
+FLEET_SCALE_DOWN_DELAY="${FLEET_SCALE_DOWN_DELAY:=300}"
+FLEET_RETRYLIMIT="${FLEET_RETRYLIMIT:=2}"
+FLEET_CPU="${FLEET_CPU:=1}"
+FLEET_MEMORY="${FLEET_MEMORY:=2G}"
+
+# Function
+FN_NAME="${FN_NAME:=interactive-fleet-fn}"
+SECRET_NAME="${SECRET_NAME:=interactive-fleet-secrets}"
+COS_PREFIX="${COS_PREFIX:=interactive-fleet-result}"
+PDS_NAME="${PDS_NAME:=fleet-output-store}"
+COS_BUCKET="${COS_BUCKET:=}"
+COS_ENDPOINT="${COS_ENDPOINT:=}"
+POLL_TIMEOUT="${POLL_TIMEOUT:=90}"
+MAX_EXECUTION_TIME="${MAX_EXECUTION_TIME:=120}"
+# COS access uses the IAM token derived from CE_API_KEY — no separate COS secret needed
+
+# Skip flags
+SKIP_BUILD="${SKIP_BUILD:=0}"
+SKIP_FLEET="${SKIP_FLEET:=0}"
+SKIP_SECRET="${SKIP_SECRET:=0}"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 1 — Build the task container image
+# ══════════════════════════════════════════════════════════════════════════════
+if [[ "${SKIP_BUILD}" == "1" ]]; then
+  print_msg "\n[skip] SKIP_BUILD=1 — skipping task image build"
+else
+  print_step "1 / 4  Building task container image"
+  BUILD_RUN_NAME="${NAME_PREFIX}-buildrun-$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')"
+
+  echo ""
+  echo "ibmcloud ce buildrun submit"
+  echo "    --name            ${BUILD_RUN_NAME}"
+  echo "    --source          ${TASK_CONTAINER_DIR}"
+  echo "    --image           ${FLEET_IMAGE}"
+  echo "    --registry-secret ${FLEET_REGISTRY_SECRET}"
+  echo "    --strategy        dockerfile"
+  echo "    --wait"
+  echo ""
+
+  ibmcloud ce buildrun submit \
+    --name            "${BUILD_RUN_NAME}" \
+    --source          "${TASK_CONTAINER_DIR}" \
+    --image           "${FLEET_IMAGE}" \
+    --registry-secret "${FLEET_REGISTRY_SECRET}" \
+    --strategy        dockerfile \
+    --wait
+
+  print_success "✔  Task image built: ${FLEET_IMAGE}"
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 2 — Create the fleet
+# ══════════════════════════════════════════════════════════════════════════════
+if [[ "${SKIP_FLEET}" == "1" ]]; then
+  print_msg "\n[skip] SKIP_FLEET=1 — skipping fleet creation"
+  if [[ -z "${FLEET_ID:-}" ]]; then
+    print_error "FLEET_ID must be set when SKIP_FLEET=1"
+    exit 1
+  fi
+else
+  print_step "2 / 4  Creating CE Fleet"
+
+  GEN_FLEET_NAME="${NAME_PREFIX}-$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')"
+  FLEET_NAME="${FLEET_NAME:-${GEN_FLEET_NAME}}"
+
+  SCALE_FLAGS=(--scale-max "${FLEET_MAX_SCALE}")
+  [[ "${FLEET_MIN_SCALE}" != "0" ]] && SCALE_FLAGS+=(--scale-min "${FLEET_MIN_SCALE}")
+  [[ -n "${FLEET_SCALE_DOWN_DELAY}" ]] && SCALE_FLAGS+=(--scale-down-delay "${FLEET_SCALE_DOWN_DELAY}")
+
+  echo ""
+  echo "ibmcloud ce fleet create"
+  echo "    --name              ${FLEET_NAME}"
+  echo "    --tasks-state-store ${FLEET_TASKS_STATE_STORE}"
+  echo "    --subnetpool-name   ${FLEET_SUBNETPOOL}"
+  echo "    --image             ${FLEET_IMAGE}"
+  echo "    --registry-secret   ${FLEET_REGISTRY_SECRET}"
+  echo "    --scale-max         ${FLEET_MAX_SCALE}"
+  echo "    --scale-down-delay  ${FLEET_SCALE_DOWN_DELAY}"
+  echo "    --retrylimit        ${FLEET_RETRYLIMIT}"
+  echo "    --cpu               ${FLEET_CPU}"
+  echo "    --memory            ${FLEET_MEMORY}"
+  # Build mount-data-store value: omit subpath when FLEET_OUTPUT_COS_PATH is empty
+  if [[ -n "${FLEET_OUTPUT_COS_PATH}" ]]; then
+    MOUNT_DS="/data/results=${FLEET_OUTPUT_STORE}:${FLEET_OUTPUT_COS_PATH}"
+  else
+    MOUNT_DS="/data/results=${FLEET_OUTPUT_STORE}"
+  fi
+
+  echo "    --mount-data-store  ${MOUNT_DS}"
+  echo ""
+
+  ibmcloud ce fleet create \
+    --name              "${FLEET_NAME}" \
+    --tasks-state-store "${FLEET_TASKS_STATE_STORE}" \
+    --subnetpool-name   "${FLEET_SUBNETPOOL}" \
+    --image             "${FLEET_IMAGE}" \
+    --registry-secret   "${FLEET_REGISTRY_SECRET}" \
+    "${SCALE_FLAGS[@]}" \
+    --retrylimit        "${FLEET_RETRYLIMIT}" \
+    --cpu               "${FLEET_CPU}" \
+    --memory            "${FLEET_MEMORY}" \
+    --mount-data-store  "${MOUNT_DS}"
+
+  _FLEET_LIST=$(ibmcloud ce fleet list --output json 2>/dev/null || true)
+  if [[ -n "${_FLEET_LIST}" ]]; then
+    FLEET_ID=$(echo "${_FLEET_LIST}" | jq -r --arg name "${FLEET_NAME}" \
+      '.fleets[] | select(.name == $name) | .id // empty' 2>/dev/null || true)
+  fi
+
+  print_success "✔  Fleet created: ${FLEET_NAME}"
+  if [[ -n "${FLEET_ID}" ]]; then
+    print_msg "   Fleet ID: ${FLEET_ID}"
+  fi
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 3 — Create/update the API key secret
+# ══════════════════════════════════════════════════════════════════════════════
+if [[ "${SKIP_SECRET}" == "1" ]]; then
+  print_msg "\n[skip] SKIP_SECRET=1 — skipping secret creation"
+else
+  print_step "3 / 4  Creating API key secret '${SECRET_NAME}'"
+
+  if ibmcloud ce secret get --name "${SECRET_NAME}" >/dev/null 2>&1; then
+    print_msg "   Secret '${SECRET_NAME}' already exists — updating..."
+    ibmcloud ce secret update --name "${SECRET_NAME}" \
+      --from-literal CE_API_KEY="${CE_API_KEY}"
+  else
+    ibmcloud ce secret create --name "${SECRET_NAME}" \
+      --from-literal CE_API_KEY="${CE_API_KEY}"
+  fi
+
+  print_success "✔  Secret '${SECRET_NAME}' ready"
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 4 — Deploy the CE Function
+# ══════════════════════════════════════════════════════════════════════════════
+print_step "4 / 4  Deploying CE Function '${FN_NAME}'"
+
+# Auto-discover the real COS bucket name and endpoint from the PDS
+if [[ -z "${COS_BUCKET}" ]]; then
+  PDS_JSON=$(ibmcloud ce pds get --name "${PDS_NAME}" --output json 2>/dev/null || echo "")
+  if [[ -n "${PDS_JSON}" ]]; then
+    COS_BUCKET=$(echo "${PDS_JSON}" | jq -r '.data.bucket_name // .cos_bucket_name // .cos_bucket // empty')
+    PDS_REGION=$(echo "${PDS_JSON}" | jq -r '.data.bucket_location // .bucket_region // .region // empty')
+    if [[ -n "${PDS_REGION}" && -z "${COS_ENDPOINT}" ]]; then
+      COS_ENDPOINT="https://s3.direct.${PDS_REGION}.cloud-object-storage.appdomain.cloud"
+    fi
+  fi
+fi
+
+COS_BUCKET="${COS_BUCKET:=fleet-output-store}"
+COS_ENDPOINT="${COS_ENDPOINT:=https://s3.direct.eu-de.cloud-object-storage.appdomain.cloud}"
+
+if [[ -z "${FLEET_ID:-}" ]]; then
+  if [[ -n "${FLEET_NAME:-}" ]]; then
+    print_msg "   FLEET_ID not set — looking up fleet '${FLEET_NAME}'..."
+    _FLEET_LIST=$(ibmcloud ce fleet list --output json 2>/dev/null || true)
+    if [[ -n "${_FLEET_LIST}" ]]; then
+      FLEET_ID=$(echo "${_FLEET_LIST}" | jq -r --arg name "${FLEET_NAME}" \
+        '.fleets[] | select(.name == $name) | .id // empty' 2>/dev/null || true)
+    fi
+  else
+    print_msg "   FLEET_ID and FLEET_NAME not set — searching by name prefix '${NAME_PREFIX}'..."
+    # Fleet list output: {"fleets": [...], "limit": 0}
+    # Filter by NAME_PREFIX, sort by created_at ascending, take the last (newest).
+    _FLEET_LIST=$(ibmcloud ce fleet list --output json 2>/dev/null || true)
+    if [[ -n "${_FLEET_LIST}" ]]; then
+      FLEET_ID=$(echo "${_FLEET_LIST}" \
+        | jq -r "([.fleets[] | select(.name | test(\"${NAME_PREFIX}\"))] | sort_by(.created_at) | last | .id // empty) // empty" \
+        2>/dev/null || true)
+    fi
+  fi
+fi
+
+if [[ -z "${FLEET_ID:-}" ]]; then
+  print_error "FLEET_ID is required. Set export FLEET_ID=<fleet-id> or run without SKIP_FLEET=1."
+  exit 1
+fi
+
+echo ""
+echo "ibmcloud ce fn create/update"
+echo "    --name             ${FN_NAME}"
+echo "    --build-source     ${FUNCTION_DIR}"
+echo "    --runtime          python-3.13"
+echo "    --maxexecutiontime ${MAX_EXECUTION_TIME}"
+echo "    --env              FLEET_ID=${FLEET_ID}"
+echo "    --env              COS_BUCKET=${COS_BUCKET}"
+echo "    --env              COS_PREFIX=${COS_PREFIX}"
+echo "    --env              COS_ENDPOINT=${COS_ENDPOINT}"
+echo "    --env              POLL_TIMEOUT=${POLL_TIMEOUT}"
+echo "    --env-from-secret  ${SECRET_NAME}   # CE_API_KEY (fleet API + COS)"
+echo ""
+
+FN_ARGS=(
+  --name             "${FN_NAME}"
+  --build-source     "${FUNCTION_DIR}"
+  --runtime          python-3.13
+  --maxexecutiontime "${MAX_EXECUTION_TIME}"
+  --env              FLEET_ID="${FLEET_ID}"
+  --env              COS_BUCKET="${COS_BUCKET}"
+  --env              COS_PREFIX="${COS_PREFIX}"
+  --env              COS_ENDPOINT="${COS_ENDPOINT}"
+  --env              POLL_TIMEOUT="${POLL_TIMEOUT}"
+  --env-from-secret  "${SECRET_NAME}"
+)
+
+if ibmcloud ce fn get --name "${FN_NAME}" >/dev/null 2>&1; then
+  print_msg "   Function '${FN_NAME}' already exists — updating..."
+  ibmcloud ce fn update "${FN_ARGS[@]}"
+else
+  ibmcloud ce fn create "${FN_ARGS[@]}"
+fi
+
+FN_ENDPOINT=$(ibmcloud ce fn get --name "${FN_NAME}" --output json \
+              | jq -r '.endpoint // empty' 2>/dev/null || echo "")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Done
+# ══════════════════════════════════════════════════════════════════════════════
+print_success "\n══════════════════════════════════════════"
+print_success " interactive-fleets deployed successfully"
+print_success "══════════════════════════════════════════"
+echo ""
+print_msg "Fleet:    ${FLEET_NAME:-${FLEET_ID}}"
+[[ -n "${FLEET_ID}" ]] && print_msg "Fleet ID: ${FLEET_ID}"
+print_msg "Function: ${FN_NAME}"
+if [[ -n "${FN_ENDPOINT}" ]]; then
+  print_msg "Endpoint: ${FN_ENDPOINT}"
+  echo ""
+  print_msg "Submit a task (synchronous):"
+  echo "  curl -s -X POST ${FN_ENDPOINT} \\"
+  echo "    -H 'Content-Type: application/json' \\"
+  echo "    -d '{\"name\": \"World\", \"greeting\": \"Hello\"}' | jq ."
+  echo ""
+  print_msg "Retrieve a result:"
+  echo "  curl -s ${FN_ENDPOINT}/result/<task_id> | jq ."
+fi
