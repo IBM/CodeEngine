@@ -15,12 +15,21 @@ Features:
   6. Supports direct result retrieval when called with { "task_id": "<id>" } or
      via HTTP query parameter / POST body without submit inputs.
 
+Authentication:
+  The function authenticates with an IAM trusted profile (no API key). Code Engine
+  mounts a compute resource token into the function when it is created with
+  --trusted-profiles-enabled; that token is exchanged for an IAM access token.
+  The trusted profile needs: Code Engine Writer on the project and
+  Object Reader on the COS results bucket (see 3_deploy_function).
+
 Required environment variables (set on the CE function):
-  FLEET_ID        — UUID or name of the target fleet
-  CE_API_KEY      — IBM Cloud API key used for IAM token exchange (and COS access)
-  COS_BUCKET      — Name of the COS bucket containing results (default: fleet-output-store)
+  FLEET_ID             — UUID or name of the target fleet
+  TRUSTED_PROFILE_NAME — Name of the IAM trusted profile linked to this function
+  COS_BUCKET           — Name of the COS bucket containing results (default: fleet-output-store)
 
 Optional environment variables:
+  CR_TOKEN_FILENAME — Path of the compute resource token (default:
+                    /var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token)
   CE_API_BASE_URL — CE API base URL (injected automatically by CE runtime,
                     e.g. https://api.private.eu-de.codeengine.cloud.ibm.com)
   CE_PROJECT_ID   — CE project UUID (injected automatically by CE runtime)
@@ -51,7 +60,11 @@ CE_API_BASE_URL = os.environ.get(
 )
 CE_PROJECT_ID = os.environ.get("CE_PROJECT_ID", "")
 FLEET_ID = os.environ.get("FLEET_ID", "")
-CE_API_KEY = os.environ.get("CE_API_KEY", "")
+TRUSTED_PROFILE_NAME = os.environ.get("TRUSTED_PROFILE_NAME", "")
+CR_TOKEN_FILENAME = os.environ.get(
+    "CR_TOKEN_FILENAME",
+    "/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token",
+)
 
 # Self-URL — used to give callers a ready-made retrieve_url in async responses
 # Format: https://{CE_FUNCTION}.{CE_SUBDOMAIN}.{CE_DOMAIN}
@@ -96,11 +109,22 @@ def _decode_b64(encoded: str) -> str:
         return base64.urlsafe_b64decode(encoded).decode("utf-8")
 
 
-def _get_iam_token(api_key: str) -> str:
-    """Exchange an IBM Cloud API key for an IAM bearer token."""
+def _get_iam_token() -> str:
+    """Exchange the Code Engine compute resource token for an IAM bearer token
+    of the configured trusted profile."""
+    try:
+        with open(CR_TOKEN_FILENAME, encoding="utf-8") as fh:
+            cr_token = fh.read().strip()
+    except OSError as exc:
+        raise RuntimeError(
+            f"compute resource token not readable at {CR_TOKEN_FILENAME} "
+            f"(is the function deployed with --trusted-profiles-enabled?): {exc}"
+        ) from exc
+
     body = urllib.parse.urlencode({
-        "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": api_key,
+        "grant_type": "urn:ibm:params:oauth:grant-type:cr-token",
+        "cr_token": cr_token,
+        "profile_name": TRUSTED_PROFILE_NAME,
     })
     conn = http.client.HTTPSConnection(IAM_TOKEN_URL, timeout=15)
     conn.request(
@@ -302,14 +326,14 @@ def main(params: dict):
     ))
 
     if is_lookup_only:
-        if not CE_API_KEY:
+        if not TRUSTED_PROFILE_NAME:
             return {
                 "headers": {"Content-Type": "application/json"},
                 "statusCode": 500,
-                "body": {"error": "Missing required CE_API_KEY configuration"},
+                "body": {"error": "Missing required TRUSTED_PROFILE_NAME configuration"},
             }
         try:
-            iam_token = _get_iam_token(CE_API_KEY)
+            iam_token = _get_iam_token()
         except Exception as exc:
             return {
                 "headers": {"Content-Type": "application/json"},
@@ -416,7 +440,7 @@ def main(params: dict):
         k for k, v in {
             "FLEET_ID": fleet_id,
             "CE_PROJECT_ID": project_id,
-            "CE_API_KEY": CE_API_KEY,
+            "TRUSTED_PROFILE_NAME": TRUSTED_PROFILE_NAME,
         }.items() if not v
     ]
     if missing_config:
@@ -428,7 +452,7 @@ def main(params: dict):
 
     # 4. Obtain IAM token
     try:
-        iam_token = _get_iam_token(CE_API_KEY)
+        iam_token = _get_iam_token()
     except Exception as exc:
         return {
             "headers": {"Content-Type": "application/json"},
@@ -501,17 +525,18 @@ def main(params: dict):
             }
 
     # 8. Timeout reached or async requested — return 202 with task_id
-    if FUNCTION_URL:
-        body_202["retrieve_url"] = f"{FUNCTION_URL}?task_id={task_id}"
-    return {
-        "headers": {"Content-Type": "application/json"},
-        "statusCode": 202,
-        "body": {
+    body_202 = {
         "message": "Classification task submitted and in progress",
         "task_id": task_id,
         "status": "pending",
         "fleet_id": fleet_id,
         "question_name": question_name,
         "poll_timeout_seconds": poll_timeout_sec,
-    },
+    }
+    if FUNCTION_URL:
+        body_202["retrieve_url"] = f"{FUNCTION_URL}?task_id={task_id}"
+    return {
+        "headers": {"Content-Type": "application/json"},
+        "statusCode": 202,
+        "body": body_202,
     }
