@@ -20,7 +20,7 @@ flowchart TD
     CallerGet["Caller (Poll/Get)  ·  HTTPS GET\n?task_id=uuid"]
     CallerCLI["Caller  ·  ibmcloud ce fleet task add\n--tasks-from-local-file\n{idx: task_id, args: [key, val, ...]}"]
 
-    Fn["Code Engine Function  ·  function/__main__.py\n──────────────────────────────────\nGenerates / receives task_id\nValidates + assembles task spec\nGets IAM token via CE_API_KEY\nSubmits task to CE Fleet\nPolls COS (up to poll_timeout e.g. 60s)\nReturns 200 (completed) or 202 (pending with task_id)\nAlso handles GET/POST {task_id} to fetch result"]
+    Fn["Code Engine Function  ·  function/__main__.py\n──────────────────────────────────\nGenerates / receives task_id\nValidates + assembles task spec\nGets IAM token via trusted profile (CR token)\nSubmits task to CE Fleet\nPolls COS (up to poll_timeout e.g. 60s)\nReturns 200 (completed) or 202 (pending with task_id)\nAlso handles GET/POST {task_id} to fetch result"]
 
     subgraph Fleet["Code Engine Fleet  ·  gx3-16x80x1l4  (16 vCPU · 80 GiB · 1× L4 GPU)"]
         Prehook["Worker Prehook  (runs once at startup)\n──────────────────────────────────\npodman run ollama  (GPU-aware)\nskip if container already exists/stopped\nollama pull clef  (skip if present)\nverify in /api/tags via jq\nwarm-up /v1/systemone → VRAM loaded"]
@@ -69,7 +69,7 @@ flowchart TD
   `ibmcloud ce pds create --name fleet-output-store ...`
 - Subnetpool `fleet-subnetpool` provisioned
 - Container registry secret `ce-auto-icr-private-eu-de` (or set `FLEET_REGISTRY_SECRET`)
-- An IBM Cloud API key with Code Engine Writer and COS access (set as `CE_API_KEY` or stored in `clef-fn-secrets`)
+- Permission to create IAM trusted profiles and policies (used by `3_deploy_function`; no API key is needed)
 - Your IBM Container Registry namespace exported:
   `export ICR_NAMESPACE=<your-icr-namespace>`
 
@@ -108,14 +108,24 @@ export FLEET_ID=<uuid-printed-by-script>
 ### 3 — Deploy the Code Engine function
 
 ```bash
-# Set your API key if the secret doesn't exist yet
-export CE_API_KEY="<your-ibmcloud-api-key>"
-
 # Pass FLEET_ID as $1 or set via environment variable:
 ./3_deploy_function "${FLEET_ID}"
 ```
 
 *(If `FLEET_ID` is not supplied as `$1` or exported in the environment, `3_deploy_function` attempts to auto-discover the latest clef fleet in the project.)*
+
+The function authenticates with an [IAM trusted profile](../../../trusted-profiles/README.md)
+instead of an API key. `3_deploy_function` idempotently:
+
+1. creates the trusted profile `clef-fn-access` (`TRUSTED_PROFILE_NAME`),
+2. links it to the function (`--cr-type CE --link-component-type function`),
+3. grants it **Writer** on the Code Engine project (to add fleet tasks) and **Object Reader** on the results bucket,
+4. deploys the function with `--trusted-profiles-enabled=true` and `TRUSTED_PROFILE_NAME` as env var.
+
+At runtime the function reads the compute resource token mounted by Code Engine and exchanges it
+at IAM (`grant_type=urn:ibm:params:oauth:grant-type:cr-token`) for a bearer token used for both
+the Code Engine and COS calls. The COS instance is auto-discovered if it is the only one in the
+targeted resource group; otherwise set `COS_INSTANCE_NAME` or `COS_INSTANCE_ID` (CRN).
 
 ---
 
@@ -278,8 +288,9 @@ Results will be stored in the COS bucket under `clef-result/result-task-001.json
 | `FLEET_CPU` | `4` | vCPUs per task container |
 | `FLEET_MEMORY` | `5G` | Memory per task container |
 | `FN_NAME` | `clef-classify-fn` | Code Engine Function name |
-| `SECRET_NAME` | `clef-fn-secrets` | Secret holding `CE_API_KEY` |
-| `CE_API_KEY` | `""` | IBM Cloud API key for IAM & COS |
+| `TRUSTED_PROFILE_NAME` | `clef-fn-access` | IAM trusted profile used by the function (no API key) |
+| `COS_INSTANCE_NAME` | auto-discovered | COS instance hosting the results bucket (for the profile's policy); auto-discovered if it is the only one in the resource group |
+| `COS_INSTANCE_ID` | auto-discovered | Optional CRN override of `COS_INSTANCE_NAME` |
 | `COS_BUCKET` | `fleet-output-store` | Bucket where task results are stored |
 | `COS_PREFIX` | `clef-result` | Folder in COS bucket for results |
 | `FILE_PREFIX` | `result` | Filename prefix before `<idx>.json` |
