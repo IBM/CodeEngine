@@ -9,14 +9,14 @@ PREHOOK=$(cat <<'EOF'
 
 if nvidia-smi >/dev/null 2>&1; then
   echo "NVIDIA GPU detected"
-  podman run -d --device nvidia.com/gpu=all -v ollama:/root/.ollama  -p 11434:11434  --name ollama  docker.io/ollama/ollama
+  podman run --detach --device nvidia.com/gpu=all --volume ollama:/root/.ollama --publish 11434:11434 --name ollama docker.io/ollama/ollama:latest
 else
   echo "No NVIDIA GPU detected"
-  podman run -d  -v ollama:/root/.ollama -p 11434:11434 --name ollama docker.io/ollama/ollama:latest
+  podman run --detach --volume ollama:/root/.ollama --publish 11434:11434 --name ollama docker.io/ollama/ollama:latest
 fi
 
 # pull the model into ollama
-podman exec -it ollama ollama pull granite4:350m
+podman exec ollama ollama pull granite4:350m
 EOF
 )
 
@@ -29,8 +29,8 @@ echo "  "--command="curl"
 echo "  "--arg "http://host.containers.internal:11434/api/tags" 
 echo "  "--tasks 1 
 echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
-echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
-echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=10m
+echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
+echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=30m
 echo "  "--cpu 2 
 echo "  "--memory 4G
 
