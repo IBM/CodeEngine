@@ -179,9 +179,19 @@ ibmcloud ce jobrun submit \
 
 The metrics collector scrapes CPU/Memory metrics from your Code Engine applications, jobs, and builds. Metrics of all running instances are scraped every 30 seconds.
 
-Once, metrics are ingested into an IBM Cloud Monitoring instance, the pre-populated dashboard "IBM Cloud Code Engine - Component Resource Overview" appears in Dashboard Manager.
+Once, metrics are ingested into an IBM Cloud Monitoring instance, the pre-populated dashboard "Code Engine - Component Resource Overview" appears in Dashboard Manager. No manual dashboard upload is required. Allow a few minutes for the first data to arrive.
 
 ![](./images/monitoring-dashboard-library.png)
+
+The dashboard provides the following panels. Use the `code_engine_project_name`, `component_type` and `component_name` scope filters to narrow them down.
+
+- **Components with Running Instances** / **Running Instances** - Number of components and instances currently running
+- **Total Available CPUs** / **Total Used CPUs** / **Total CPU Utilization %** - Aggregated CPU capacity, usage and utilization
+- **Total Available Memory** / **Total Used Memory** / **Total Memory Utilization %** - Aggregated memory capacity, usage and utilization
+- **CPU Utilization % (by Component)** - CPU utilization per component
+- **CPU Usage (per Instance)** - Raw CPU usage per instance
+- **Memory Utilization % (by Component)** - Memory utilization per component
+- **Memory Usage (per Instance)** - Raw memory usage per instance
 
 #### Exposed Metrics
 
@@ -395,6 +405,12 @@ app:"codeengine" AND message.metric:"instance-resources"
 **Explicit Secret Authentication Failures:**
 - **Missing `/etc/secrets/monitoring-apikey` file**: Ensure the secret is created and properly mounted
 - **Invalid API key**: Regenerate the monitoring API key and update the secret
+
+**Dashboard Not Showing Data:**
+- Verify the metrics collector is running with `METRICS_ENABLED=true`
+- Check that metrics are being sent to IBM Cloud Monitoring
+- Ensure the Prometheus remote write configuration is correct
+- Wait a few minutes for data to appear (initial scrape interval)
 
 **General Issues:**
 - **Missing or wrong `METRICS_REMOTE_WRITE_FQDN`**: Verify the endpoint matches your region's ingestion endpoint
