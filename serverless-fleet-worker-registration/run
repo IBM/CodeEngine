@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -e
+
+uuid=$(uuidgen | tr '[:upper:]' '[:lower:]' | awk -F- '{print $1}')
+
+APP_URL="$(ibmcloud ce app get --name fleet-workers -o url)"
+
+PREHOOK=$(cat <<EOF
+#!/bin/bash
+
+curl -X POST ${APP_URL}/register \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"worker_name\": \"\${CE_WORKER_NAME}\",
+    \"worker_ip\": \"\${CE_WORKER_IP}\"
+  }"
+
+EOF
+)
+
+
+POSTHOOK=$(cat <<EOF
+#!/bin/bash
+curl -X POST ${APP_URL}/deregister \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"worker_name\": \"\${CE_WORKER_NAME}\",
+    \"worker_ip\": \"\${CE_WORKER_IP}\"
+  }"
+EOF
+)
+
+
+echo code-engine fleet create --name "fleet-${uuid}-1"
+echo "  "--tasks-state-store fleet-task-store 
+echo "  "--subnetpool-name fleet-subnetpool 
+echo "  "--image registry.access.redhat.com/ubi10/ubi-minimal 
+echo "  "--max-scale 100 
+echo "  "--command="sleep" 
+echo "  "--arg "30" 
+echo "  "--tasks 100 
+echo "  "--env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}"
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3
+echo "  "__CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=10m
+echo "  "--env __CE_INTERNAL_HOOK_BEFORE_SHUTDOWN="${POSTHOOK}"
+echo "  "__CE_INTERNAL_HOOK_BEFORE_SHUTDOWN_RETRY_LIMIT=3
+echo "  "__CE_INTERNAL_HOOK_BEFORE_SHUTDOWN_MAX_EXECUTION_TIME=10m
+echo "  "--cpu 2 
+echo "  "--memory 4G
+
+ibmcloud code-engine fleet create --name "fleet-${uuid}-1" \
+    --tasks-state-store fleet-task-store \
+    --subnetpool-name fleet-subnetpool \
+    --image registry.access.redhat.com/ubi10/ubi-minimal \
+    --max-scale 100 \
+    --command="sleep" \
+    --arg "30" \
+    --tasks 100 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP="${PREHOOK}" \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_RETRY_LIMIT=3 \
+    --env __CE_INTERNAL_HOOK_AFTER_STARTUP_MAX_EXECUTION_TIME=30m \
+    --env __CE_INTERNAL_HOOK_BEFORE_SHUTDOWN="${POSTHOOK}" \
+    --env __CE_INTERNAL_HOOK_BEFORE_SHUTDOWN_RETRY_LIMIT=3 \
+    --env __CE_INTERNAL_HOOK_BEFORE_SHUTDOWN_MAX_EXECUTION_TIME=30m \
+    --cpu 2 \
+    --memory 4G
