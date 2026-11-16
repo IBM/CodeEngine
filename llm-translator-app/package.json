@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@carbon/react": "^1.48.1",
-    "next": "^16.4.1",
+    "next": "^16.4.5",
     "react": "^19.0.0"
   },
   "devDependencies": {
