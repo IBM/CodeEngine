@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Optional: builds your own receiver code bundle and consumer image and pushes them to your registry.
+# Deploy them with: RECEIVER_REGISTRY=<your registry>/<namespace> CONSUMER_REGISTRY=<your registry>/<namespace> WEBHOOK_SECRET=... ./run
+#
+# Env Vars:
+# RECEIVER_REGISTRY: image registry and namespace to push the receiver code bundle to
+# CONSUMER_REGISTRY: image registry and namespace to push the consumer image to
+# NOCACHE: set this to "--no-cache" to turn off the Docker build cache
+
+set -ex
+cd "$(dirname "$0")"
+CONSUMER_REGISTRY=${CONSUMER_REGISTRY:-icr.io/codeengine/webhook-sample}
+RECEIVER_REGISTRY=${RECEIVER_REGISTRY:-icr.io/codeengine/webhook-sample}
+
+docker build ${NOCACHE:-} -t "$CONSUMER_REGISTRY/consumer" src/consumer --platform linux/amd64
+docker build ${NOCACHE:-} -t "$RECEIVER_REGISTRY/receiver" src/receiver --platform linux/amd64
+
+docker push "$CONSUMER_REGISTRY/consumer"
+docker push "$RECEIVER_REGISTRY/receiver"

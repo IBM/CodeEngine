@@ -1,0 +1,17 @@
+{
+  "name": "webhook-receiver",
+  "version": "1.0.0",
+  "description": "Code Engine function that receives webhooks and stores them in a COS bucket",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "test": "node --test main.test.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "ibm-cloud-sdk-core": "5.9.5",
+    "ibm-cos-sdk": "1.15.2"
+  }
+}

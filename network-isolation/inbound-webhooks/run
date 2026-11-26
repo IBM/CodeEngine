@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+
+# Deploys the webhook sample: a public receiver, a COS bucket and a network-isolated consumer (see README.md).
+#   WEBHOOK_SECRET=... ./run     deploy
+#   ./run clean                  delete everything again (except the resource group)
+#
+# Env Vars (use the same values for ./run clean):
+# WEBHOOK_SECRET: secret that your webhook sender signs its deliveries with (required, no default)
+# REGION: region of all resources (default: the region that your IBM Cloud CLI targets, see 'ibmcloud target')
+# RESOURCE_GROUP: resource group that holds the COS instance (default: webhook-sample)
+# COS_INSTANCE: name of the Cloud Object Storage instance (default: webhook-sample-cos)
+# PROJECT_PUBLIC: name of the public Code Engine project with the receiver (default: webhook-public)
+# PROJECT_ISOLATED: name of the network-isolated Code Engine project with the consumer (default: webhook-isolated)
+# FUNCTION_NAME_PUBLIC: name of the receiver function (default: webhook-receiver)
+# APP_NAME_ISOLATED: name of the consumer app (default: webhook-consumer)
+# RECEIVER_REGISTRY: image registry and namespace of the receiver code bundle (default: icr.io/codeengine/webhook-sample)
+# CONSUMER_REGISTRY: image registry and namespace of the consumer image (default: icr.io/codeengine/webhook-sample)
+
+set -euo pipefail
+
+REGION=${REGION:-$(ibmcloud target --output json | jq -r '.region.name // empty')}
+: "${REGION:?Set REGION or target a region with: ibmcloud target -r <region>}"
+RESOURCE_GROUP=${RESOURCE_GROUP:-webhook-sample}
+COS_INSTANCE=${COS_INSTANCE:-webhook-sample-cos}
+PROJECT_PUBLIC=${PROJECT_PUBLIC:-webhook-public}
+PROJECT_ISOLATED=${PROJECT_ISOLATED:-webhook-isolated}
+FUNCTION_NAME_PUBLIC=${FUNCTION_NAME_PUBLIC:-webhook-receiver}
+APP_NAME_ISOLATED=${APP_NAME_ISOLATED:-webhook-consumer}
+CONSUMER_REGISTRY=${CONSUMER_REGISTRY:-icr.io/codeengine/webhook-sample}
+RECEIVER_REGISTRY=${RECEIVER_REGISTRY:-icr.io/codeengine/webhook-sample}
+
+COS_ENDPOINT=https://s3.direct.$REGION.cloud-object-storage.appdomain.cloud
+IBM_AUTH_ENDPOINT=https://private.iam.cloud.ibm.com
+PROFILE_PUBLIC=webhook-public-cos-writer
+PROFILE_ISOLATED=webhook-isolated-cos-reader
+
+clean() {
+  set +e
+  set -x
+
+  ibmcloud target -r "$REGION" -g "$RESOURCE_GROUP"
+  guid=$(ibmcloud ce project get --name "$PROJECT_ISOLATED" --output json | jq -r '.guid')
+  for id in $(ibmcloud cbr rules --service-name codeengine --service-instance "$guid" --output json | jq -r '.rules[]?.id'); do
+    ibmcloud cbr rule-delete "$id"
+  done
+  for id in $(ibmcloud iam authorization-policies --output json \
+      | jq -r --arg s "$guid" '(if type == "array" then . else .policies end)[] | select(any(.subjects[]?.attributes[]?; .value == $s)) | .id'); do
+    ibmcloud iam authorization-policy-delete "$id" --force
+  done
+  ibmcloud ce project delete --name "$PROJECT_PUBLIC" --force --hard
+  ibmcloud ce project delete --name "$PROJECT_ISOLATED" --force --hard
+  ibmcloud iam trusted-profile-delete "$PROFILE_PUBLIC" --force
+  ibmcloud iam trusted-profile-delete "$PROFILE_ISOLATED" --force
+  for crn in $(ibmcloud resource service-instances --service-name cloud-object-storage --output json \
+      | jq -r --arg n "$COS_INSTANCE" '.[] | select(.name == $n) | .crn'); do
+    ibmcloud resource service-instance-delete "$crn" --force --recursive
+  done
+}
+
+if [ "${1:-}" = clean ]; then
+  clean
+  exit
+fi
+: "${WEBHOOK_SECRET:?Set WEBHOOK_SECRET to the secret that your webhook sender signs with}"
+
+# Resource group, COS instance and bucket (bucket names are globally unique, so the name contains part of the instance GUID)
+ibmcloud target -r "$REGION"
+ibmcloud resource group "$RESOURCE_GROUP" > /dev/null 2>&1 || ibmcloud resource group-create "$RESOURCE_GROUP" # kept by ./run clean
+ibmcloud target -g "$RESOURCE_GROUP"
+COS_CRN=$(ibmcloud resource service-instance-create "$COS_INSTANCE" cloud-object-storage standard global -d premium-global-deployment-iam \
+  -g "$RESOURCE_GROUP" | awk '/^ID:/ {print $2}')
+COS_GUID=$(echo "$COS_CRN" | cut -d: -f8)
+BUCKET=webhook-sample-${COS_GUID:0:8}
+ibmcloud cos config crn --crn "$COS_CRN" --force
+ibmcloud cos config region --region "$REGION"
+ibmcloud cos config endpoint-url --url "https://s3.$REGION.cloud-object-storage.appdomain.cloud"
+ibmcloud cos config auth --method iam
+ibmcloud cos bucket-create --bucket "$BUCKET" --region "$REGION"
+
+# Code Engine projects. The public project may not call any external address. Calls to IBM Cloud services over their private
+# endpoints (COS, IAM) are always allowed, so removing the default "allow-all" rule is enough.
+ibmcloud ce project create --name "$PROJECT_PUBLIC"
+ibmcloud ce connectivity outbound delete --name allow-all --force
+
+# The isolated project accepts no inbound traffic at all: a rule without any context denies the public and the private endpoint.
+# The COS event subscription is not affected, because the Code Engine platform delivers the events.
+ibmcloud ce project create --name "$PROJECT_ISOLATED"
+ISOLATED_GUID=$(ibmcloud ce project get --name "$PROJECT_ISOLATED" --output json | jq -r '.guid')
+ibmcloud cbr rule-create --description "Block all inbound traffic to $PROJECT_ISOLATED" \
+  --service-name codeengine --service-instance "$ISOLATED_GUID" \
+  --api-types crn:v1:bluemix:public:context-based-restrictions::::api-type:data-plane \
+  --empty-context-list
+
+# Trusted profiles: the receiver may only write to the bucket, the consumer may only read from it
+PUBLIC_TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profile-create "$PROFILE_PUBLIC" --output json | jq -r '.id')
+ISOLATED_TRUSTED_PROFILE_ID=$(ibmcloud iam trusted-profile-create "$PROFILE_ISOLATED" --output json | jq -r '.id')
+ibmcloud iam trusted-profile-policy-create "$PROFILE_PUBLIC" --roles "Object Writer" --service-name cloud-object-storage \
+  --service-instance "$COS_GUID" --resource-type bucket --resource "$BUCKET"
+ibmcloud iam trusted-profile-policy-create "$PROFILE_ISOLATED" --roles "Object Reader" --service-name cloud-object-storage \
+  --service-instance "$COS_GUID" --resource-type bucket --resource "$BUCKET"
+
+# Receiver (public project), a function that runs the code bundle image built from src/receiver (see src/receiver/Dockerfile).
+# The secret goes through a private temporary file, so it does not show up in the process list. Function runtimes start fast,
+# so no always-running instance is needed for senders such as GitHub that time out quickly.
+secret_file=$(mktemp)
+trap 'rm -f "$secret_file"' EXIT
+printf '%s' "$WEBHOOK_SECRET" > "$secret_file"
+ibmcloud ce project select --name "$PROJECT_PUBLIC"
+ibmcloud ce secret create --name webhook-secret --from-file "WEBHOOK_SECRET=$secret_file"
+ibmcloud ce function create --name "$FUNCTION_NAME_PUBLIC" --runtime nodejs-24 --code-bundle "$RECEIVER_REGISTRY/receiver" \
+  --trusted-profiles-enabled=true --env-from-secret webhook-secret \
+  --env "COS_BUCKET=$BUCKET" --env "COS_ENDPOINT=$COS_ENDPOINT" --env "IBM_AUTH_ENDPOINT=$IBM_AUTH_ENDPOINT" --env "TRUSTED_PROFILE_ID=$PUBLIC_TRUSTED_PROFILE_ID"
+PUBLIC_CRN=$(ibmcloud resource service-instance "$PROJECT_PUBLIC" --location "$REGION" --crn | grep ':codeengine:')
+ibmcloud iam trusted-profile-link-create "$PROFILE_PUBLIC" --name receiver --cr-type CE --link-crn "$PUBLIC_CRN" \
+  --link-component-type function --link-component-name "$FUNCTION_NAME_PUBLIC"
+
+# Consumer (isolated project), triggered for every object that is written to the bucket
+ibmcloud ce project select --name "$PROJECT_ISOLATED"
+ibmcloud ce app create --name "$APP_NAME_ISOLATED" --image "$CONSUMER_REGISTRY/consumer" \
+  --trusted-profiles-enabled=true \
+  --env "COS_BUCKET=$BUCKET" --env "COS_ENDPOINT=$COS_ENDPOINT" --env "IBM_AUTH_ENDPOINT=$IBM_AUTH_ENDPOINT" --env "COS_REGION=$REGION" --env "TRUSTED_PROFILE_ID=$ISOLATED_TRUSTED_PROFILE_ID"
+ISOLATED_CRN=$(ibmcloud resource service-instance "$PROJECT_ISOLATED" --location "$REGION" --crn | grep ':codeengine:')
+ibmcloud iam trusted-profile-link-create "$PROFILE_ISOLATED" --name consumer --cr-type CE --link-crn "$ISOLATED_CRN" \
+  --link-component-type application --link-component-name "$APP_NAME_ISOLATED"
+# Code Engine needs the permission to manage the notifications of the bucket
+ibmcloud iam authorization-policy-create codeengine cloud-object-storage "Notifications Manager" \
+  --source-service-instance-id "$ISOLATED_GUID" --target-service-instance-id "$COS_GUID"
+ibmcloud ce sub cos create --name webhook-sub --destination "$APP_NAME_ISOLATED" --bucket "$BUCKET" --event-type write
+
+ibmcloud ce project select --name "$PROJECT_PUBLIC"
+echo "Webhook URL: $(ibmcloud ce function get --name "$FUNCTION_NAME_PUBLIC" --output jsonpath="{.endpoint}")"
