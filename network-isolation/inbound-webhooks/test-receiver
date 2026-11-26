@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+# Manual smoke test for the deployed webhook-receiver function: sends one correctly signed webhook and
+# several invalid requests with curl and checks the HTTP status codes.
+#
+# Prerequisites:
+#   - ./run completed
+#   - WEBHOOK_SECRET set in the environment (same value used for deployment)
+#   - curl, openssl, uuidgen; ibmcloud and jq (only to look up the function URL, skipped if RECEIVER_URL is set)
+#
+# The valid request stores one object in the bucket; the invalid requests must store nothing.
+# Note: the secret is passed to openssl on the command line, so only use this for a test secret
+# or on a machine you trust.
+
+set -euo pipefail
+
+PROJECT_PUBLIC=${PROJECT_PUBLIC:-webhook-public}
+FUNCTION_NAME_PUBLIC=${FUNCTION_NAME_PUBLIC:-webhook-receiver}
+PROJECT_PRIVATE=${PROJECT_PRIVATE:-webhook-isolated}
+APP_NAME_PRIVATE=${APP_NAME_PRIVATE:-webhook-consumer}
+
+
+echo "=== Checking prerequisites ==="
+
+if [ -z "${WEBHOOK_SECRET:-}" ]; then
+  echo "ERROR: WEBHOOK_SECRET is not set in the environment."
+  exit 1
+fi
+
+for tool in curl openssl uuidgen; do
+  command -v "$tool" >/dev/null || { echo "ERROR: '$tool' is missing."; exit 1; }
+done
+
+if [ -z "${RECEIVER_URL:-}" ]; then
+  ibmcloud ce project select --name "$PROJECT_PUBLIC"
+  RECEIVER_URL=$(ibmcloud ce function get --name "$FUNCTION_NAME_PUBLIC" --output json | jq -r '.endpoint')
+fi
+echo "Receiver URL: $RECEIVER_URL"
+
+
+echo
+echo "=== Preparing payload ==="
+
+work_dir=$(mktemp -d)
+trap 'rm -rf "$work_dir"' EXIT
+
+# the payload is sent byte for byte (--data-binary), so the signature matches
+printf '%s' '{"zen":"Keep it logically awesome.","repository":{"full_name":"octo/test"},"sender":{"login":"curl-test"}}' > "$work_dir/payload.json"
+
+SIGNATURE=$(openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" "$work_dir/payload.json" | awk '{print $NF}')
+WRONG_SIGNATURE=$(printf '%064d' 0)
+
+FAILURES=0
+
+# post EXPECTED_STATUS DESCRIPTION CURL_OPTION...
+# Sends the payload with the given extra curl options, prints status and response body,
+# and counts a failure if the status is not the expected one.
+post() {
+  expected=$1
+  description=$2
+  shift 2
+
+  status=$(curl -sS -o "$work_dir/response.txt" -w '%{http_code}' -X POST "$RECEIVER_URL" \
+    -H "Content-Type: application/json" --data-binary @"$work_dir/payload.json" "$@")
+
+  if [ "$status" = "$expected" ]; then
+    echo "OK    $description: $status (expected $expected)"
+  else
+    echo "FAIL  $description: $status (expected $expected)"
+    FAILURES=$((FAILURES + 1))
+  fi
+  echo "      response: $(cat "$work_dir/response.txt")"
+}
+
+
+echo
+echo "=== Valid request ==="
+
+DELIVERY_ID=$(uuidgen)
+echo "Delivery ID: $DELIVERY_ID"
+post 202 "valid signature" \
+  -H "X-GitHub-Event: ping" -H "X-GitHub-Delivery: $DELIVERY_ID" -H "X-Hub-Signature-256: sha256=$SIGNATURE"
+
+
+echo
+echo "=== Invalid requests (nothing must be stored) ==="
+
+post 403 "wrong signature" \
+  -H "X-GitHub-Event: ping" -H "X-GitHub-Delivery: $(uuidgen)" -H "X-Hub-Signature-256: sha256=$WRONG_SIGNATURE"
+
+post 403 "missing signature" \
+  -H "X-GitHub-Event: ping" -H "X-GitHub-Delivery: $(uuidgen)"
+
+post 400 "valid signature, missing X-GitHub-Delivery" \
+  -H "X-GitHub-Event: ping" -H "X-Hub-Signature-256: sha256=$SIGNATURE"
+
+post 400 "valid signature, unsafe X-GitHub-Delivery" \
+  -H "X-GitHub-Event: ping" -H "X-GitHub-Delivery: ../evil" -H "X-Hub-Signature-256: sha256=$SIGNATURE"
+
+status=$(curl -sS -o "$work_dir/response.txt" -w '%{http_code}' "$RECEIVER_URL")
+if [ "$status" = "405" ]; then
+  echo "OK    GET: $status (expected 405)"
+else
+  echo "FAIL  GET: $status (expected 405)"
+  FAILURES=$((FAILURES + 1))
+fi
+
+
+echo
+echo "=== Result ==="
+
+if [ "$FAILURES" -gt 0 ]; then
+  echo "$FAILURES check(s) failed. The CLI cannot show function logs, open the logs of function $FUNCTION_NAME_PUBLIC in IBM Cloud Logs."
+  exit 1
+fi
+
+echo "All checks passed."
+echo
+echo "To see the consumer processing delivery $DELIVERY_ID:"
+echo "  ibmcloud ce project select --name $PROJECT_PRIVATE && ibmcloud ce app logs --name $APP_NAME_PRIVATE"
