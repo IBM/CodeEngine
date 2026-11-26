@@ -1,5 +1,12 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.3.3"><title>The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions — The Engine Room</title><link rel="describedby" href="/CodeEngine/llms.txt"><style>.post-container[data-astro-cid-ruv7hgo6]{max-width:760px;margin:0 auto;padding:4rem 2rem 6rem}.post-back[data-astro-cid-ruv7hgo6]{color:var(--accent);align-items:center;gap:.4rem;margin-bottom:2rem;font-size:.8rem;text-decoration:none;display:inline-flex}.post-back[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.tags[data-astro-cid-ruv7hgo6]{margin-bottom:1.25rem}.post-title[data-astro-cid-ruv7hgo6]{color:var(--text);margin-bottom:1rem;font-size:clamp(1.75rem,4vw,2.75rem);font-weight:300;line-height:1.2}.post-meta[data-astro-cid-ruv7hgo6]{color:var(--text-muted);border-bottom:1px solid var(--border);gap:1.25rem;margin-bottom:2.5rem;padding-bottom:2rem;font-size:.8rem;display:flex}.author-link[data-astro-cid-ruv7hgo6]{color:inherit;text-decoration:none}.author-link[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6]{color:var(--text-dim);font-size:1rem;line-height:1.75}.post-body[data-astro-cid-ruv7hgo6] h2,.post-body[data-astro-cid-ruv7hgo6] h3,.post-body[data-astro-cid-ruv7hgo6] h4{color:var(--text);margin:2rem 0 .75rem;font-weight:400;line-height:1.3}.post-body[data-astro-cid-ruv7hgo6] h2{font-size:1.5rem}.post-body[data-astro-cid-ruv7hgo6] h3{font-size:1.2rem}.post-body[data-astro-cid-ruv7hgo6] p{margin-bottom:1.25rem}.post-body[data-astro-cid-ruv7hgo6] a{color:var(--accent);text-decoration:none}.post-body[data-astro-cid-ruv7hgo6] a:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6] ul,.post-body[data-astro-cid-ruv7hgo6] ol{margin-bottom:1.25rem;padding-left:1.5rem}.post-body[data-astro-cid-ruv7hgo6] li{margin-bottom:.4rem}.post-body[data-astro-cid-ruv7hgo6] code{font-family:var(--mono);background:var(--bg-card);color:var(--text);border-radius:2px;padding:.1em .4em;font-size:.85em}.post-body[data-astro-cid-ruv7hgo6] pre{background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);margin-bottom:1.25rem;padding:1.25rem;font-size:.85rem;line-height:1.6;overflow-x:auto}.post-body[data-astro-cid-ruv7hgo6] pre code{background:0 0;padding:0}.post-body[data-astro-cid-ruv7hgo6] blockquote{border-left:3px solid var(--accent);color:var(--text-muted);margin:1.5rem 0;padding-left:1.25rem;font-style:italic}.post-body[data-astro-cid-ruv7hgo6] img{max-width:100%;height:auto;margin:1.5rem 0;display:block}.post-body[data-astro-cid-ruv7hgo6] hr{border:none;border-top:1px solid var(--border);margin:2rem 0}.post-body[data-astro-cid-ruv7hgo6] strong{color:var(--text)}
-</style><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.44zLPu0Q.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li></ul></nav><article class="post-container" data-astro-cid-ruv7hgo6><a href="/CodeEngine/" class="post-back" data-astro-cid-ruv7hgo6>← Back to Engine Room</a><div class="tags" data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/tag/serverless" class="tag" data-astro-cid-ruv7hgo6>serverless</a><a href="/CodeEngine/posts/tag/code engine" class="tag" data-astro-cid-ruv7hgo6>code engine</a><a href="/CodeEngine/posts/tag/functions" class="tag" data-astro-cid-ruv7hgo6>functions</a><a href="/CodeEngine/posts/tag/spa" class="tag" data-astro-cid-ruv7hgo6>spa</a><a href="/CodeEngine/posts/tag/react" class="tag" data-astro-cid-ruv7hgo6>react</a><a href="/CodeEngine/posts/tag/angular" class="tag" data-astro-cid-ruv7hgo6>angular</a><a href="/CodeEngine/posts/tag/svelte" class="tag" data-astro-cid-ruv7hgo6>svelte</a></div><h1 class="post-title" data-astro-cid-ruv7hgo6>The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions</h1><div class="post-meta" data-astro-cid-ruv7hgo6><span data-astro-cid-ruv7hgo6>Jun 8, 2026</span><span data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/author/lukeroy" class="author-link" data-astro-cid-ruv7hgo6>lukeroy</a>, <a href="/CodeEngine/posts/author/josip-ledic" class="author-link" data-astro-cid-ruv7hgo6>josip-ledic</a></span></div><div class="post-body" data-astro-cid-ruv7hgo6><h1 id="the-serverless-way-to-auto-build-and-deploy-react-angular-and-any-spa-with-ibm-cloud-code-engine-functions">The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions</h1>
+<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.3.3"><title>The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions — The Engine Room</title><script>
+      (function () {
+        var stored = localStorage.getItem('theme');
+        var theme = stored === 'light' || stored === 'dark'
+          ? stored
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script><link rel="describedby" href="/CodeEngine/llms.txt"><link rel="stylesheet" href="/CodeEngine/assets/_slug_.D4RF8IVd.css"><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.9mMtGkCT.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li><li class="nav-theme-menu" data-astro-cid-z4jru4n3><button class="nav-theme-btn" id="theme-menu-btn" aria-label="Colour theme" title="Colour theme" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu-list" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M15 2H17V7H15z"/><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.147 7.853)"/><path d="M25 15H30V17H25z"/><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.147 24.146)"/><path d="M15 25H17V30H15z"/><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.853 24.146)"/><path d="M2 15H7V17H2z"/><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.854 7.853)"/><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z"/></svg><span class="theme-sep" aria-hidden="true" data-astro-cid-z4jru4n3>/</span><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/></svg></button><ul class="theme-menu-list" id="theme-menu-list" role="menu" hidden data-astro-cid-z4jru4n3><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="light" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M15 2H17V7H15z"/><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.147 7.853)"/><path d="M25 15H30V17H25z"/><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.147 24.146)"/><path d="M15 25H17V30H15z"/><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.853 24.146)"/><path d="M2 15H7V17H2z"/><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.854 7.853)"/><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z"/></svg>Light mode<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="dark" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/></svg>Dark mode<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="system" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M10,30H4a2,2,0,0,1-2-2V16a2,2,0,0,1,2-2h6a2,2,0,0,1,2,2V28A2,2,0,0,1,10,30ZM4,16V28h6V16Z"/><path d="M28,4H6A2,2,0,0,0,4,6v6H6V6H28V20H14v2h2v4H14v2h9V26H18V22H28a2,2,0,0,0,2-2V6A2,2,0,0,0,28,4Z"/></svg>Use system settings<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li></ul></li></ul></nav><article class="post-container" data-astro-cid-ruv7hgo6><a href="/CodeEngine/" class="post-back" data-astro-cid-ruv7hgo6>← Back to Engine Room</a><div class="tags" data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/tag/serverless" class="tag" data-astro-cid-ruv7hgo6>serverless</a><a href="/CodeEngine/posts/tag/code engine" class="tag" data-astro-cid-ruv7hgo6>code engine</a><a href="/CodeEngine/posts/tag/functions" class="tag" data-astro-cid-ruv7hgo6>functions</a><a href="/CodeEngine/posts/tag/spa" class="tag" data-astro-cid-ruv7hgo6>spa</a><a href="/CodeEngine/posts/tag/react" class="tag" data-astro-cid-ruv7hgo6>react</a><a href="/CodeEngine/posts/tag/angular" class="tag" data-astro-cid-ruv7hgo6>angular</a><a href="/CodeEngine/posts/tag/svelte" class="tag" data-astro-cid-ruv7hgo6>svelte</a></div><h1 class="post-title" data-astro-cid-ruv7hgo6>The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions</h1><div class="post-meta" data-astro-cid-ruv7hgo6><span data-astro-cid-ruv7hgo6>Jun 8, 2026</span><span data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/author/lukeroy" class="author-link" data-astro-cid-ruv7hgo6>lukeroy</a>, <a href="/CodeEngine/posts/author/josip-ledic" class="author-link" data-astro-cid-ruv7hgo6>josip-ledic</a></span></div><div class="post-body" data-astro-cid-ruv7hgo6><h1 id="the-serverless-way-to-auto-build-and-deploy-react-angular-and-any-spa-with-ibm-cloud-code-engine-functions">The Serverless Way to Auto-Build and Deploy React, Angular, and Any SPA with IBM Cloud Code Engine Functions</h1>
 <p><a href="https://www.ibm.com/products/code-engine">IBM Cloud Code Engine</a> is IBM’s serverless platform that allows developers to run applications, batch jobs, and functions at scale, without the hassle of managing infrastructure. It automatically handles provisioning, scaling, networking, and security, letting you focus on writing code instead of managing servers.</p>
 <p>Among its workload types are <strong><a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-cefunctions">functions</a></strong>, which provide a lightweight, event-driven execution model. Code Engine functions currently support Node.js and Python <a href="https://cloud.ibm.com/docs/codeengine?topic=codeengine-fun-runtime">runtimes</a>, making them ideal for serving APIs, processing events or, as we’ll explore in this post serving static web content.</p>
 <p>When deploying Single Page Applications (SPAs) to the cloud, you typically face a choice: use a full application server with all its overhead, or manually build your frontend and figure out how to serve static files. What if you could skip both the complexity and the manual steps?</p>
@@ -18,16 +25,16 @@
 <h2 id="a-better-approach-build-during-deployment">A Better Approach: Build During Deployment</h2>
 <p>What if the build happened automatically during deployment, using the exact source code you’re deploying? That’s the approach this solution takes.</p>
 <p>Here’s the complete deployment flow:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D"># Create a new function</span></span>
-<span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> function</span><span style="color:#9ECBFF"> create</span><span style="color:#79B8FF"> \</span></span>
-<span class="line"><span style="color:#79B8FF">  --name</span><span style="color:#9ECBFF"> my-static-app</span><span style="color:#79B8FF"> \</span></span>
-<span class="line"><span style="color:#79B8FF">  --runtime</span><span style="color:#9ECBFF"> nodejs-24</span><span style="color:#79B8FF"> \</span></span>
-<span class="line"><span style="color:#79B8FF">  --build-source</span><span style="color:#9ECBFF"> .</span></span>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D;--shiki-light:#6A737D"># Create a new function</span></span>
+<span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> ce</span><span style="color:#9ECBFF;--shiki-light:#032F62"> function</span><span style="color:#9ECBFF;--shiki-light:#032F62"> create</span><span style="color:#79B8FF;--shiki-light:#005CC5"> \</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  --name</span><span style="color:#9ECBFF;--shiki-light:#032F62"> my-static-app</span><span style="color:#79B8FF;--shiki-light:#005CC5"> \</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  --runtime</span><span style="color:#9ECBFF;--shiki-light:#032F62"> nodejs-24</span><span style="color:#79B8FF;--shiki-light:#005CC5"> \</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  --build-source</span><span style="color:#9ECBFF;--shiki-light:#032F62"> .</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#6A737D"># Or update an existing one</span></span>
-<span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> function</span><span style="color:#9ECBFF"> update</span><span style="color:#79B8FF"> \</span></span>
-<span class="line"><span style="color:#79B8FF">  --name</span><span style="color:#9ECBFF"> my-static-app</span><span style="color:#79B8FF"> \</span></span>
-<span class="line"><span style="color:#79B8FF">  --build-source</span><span style="color:#9ECBFF"> .</span></span></code></pre>
+<span class="line"><span style="color:#6A737D;--shiki-light:#6A737D"># Or update an existing one</span></span>
+<span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> ce</span><span style="color:#9ECBFF;--shiki-light:#032F62"> function</span><span style="color:#9ECBFF;--shiki-light:#032F62"> update</span><span style="color:#79B8FF;--shiki-light:#005CC5"> \</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  --name</span><span style="color:#9ECBFF;--shiki-light:#032F62"> my-static-app</span><span style="color:#79B8FF;--shiki-light:#005CC5"> \</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  --build-source</span><span style="color:#9ECBFF;--shiki-light:#032F62"> .</span></span></code></pre>
 <p>That’s it. No separate build step. No manual file copying. Just point Code Engine at your repository, and it handles the rest.</p>
 <h2 id="how-it-works">How It Works</h2>
 <h3 id="prerequisites">Prerequisites</h3>
@@ -47,7 +54,7 @@
 </ol>
 <p>When you deploy to Code Engine, you’re actually deploying this function wrapper alongside your SPA source code. The wrapper handles everything: building your frontend, serving the files, routing requests, and setting cache headers.</p>
 <p>From a development perspective, your repository structure looks like this:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>your-repo/</span></span>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>your-repo/</span></span>
 <span class="line"><span>├── main.js              # As provided from the Repo (serves static files)</span></span>
 <span class="line"><span>├── package.json         # As provided from the Repo (with postinstall hook)</span></span>
 <span class="line"><span>├── build-spa.sh         # As provided from the Repo (runs during deployment)</span></span>
@@ -58,14 +65,14 @@
 <p>The root contains the function wrapper files (<a href="https://github.com/IBM/CodeEngine/blob/main/function-spa/main.js">main.js</a>, <a href="https://github.com/IBM/CodeEngine/blob/main/function-spa/package.json">package.json</a> and <a href="https://github.com/IBM/CodeEngine/blob/main/function-spa/build-spa.sh">build-spa.sh</a>), and your SPA lives in a subdirectory. During deployment, the build script automatically detects your frontend folder, builds it, and places the output in the root <code>dist/</code> directory.</p>
 <p><strong>These three function wrapper files (<code>main.js</code>, <code>package.json</code>, and <code>build-spa.sh</code>) can be directly copied and used for your own SPA projects without modification.</strong> They’re designed to be framework-agnostic and work out of the box with any frontend that builds to static files. If you have specific requirements—such as custom routing logic, additional MIME types, or different build output locations—you can adapt these files to suit your needs while maintaining the core deployment workflow.</p>
 <p>The secret is in the <code>package.json</code> postinstall hook:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#E1E4E8">{</span></span>
-<span class="line"><span style="color:#79B8FF">  "name"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"static-content-function"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#79B8FF">  "version"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"1.0.0"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#79B8FF">  "main"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"main.js"</span><span style="color:#E1E4E8">,</span></span>
-<span class="line"><span style="color:#79B8FF">  "scripts"</span><span style="color:#E1E4E8">: {</span></span>
-<span class="line"><span style="color:#79B8FF">    "postinstall"</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"./build-spa.sh"</span></span>
-<span class="line"><span style="color:#E1E4E8">  }</span></span>
-<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#E1E4E8;--shiki-light:#24292E">{</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  "name"</span><span style="color:#E1E4E8;--shiki-light:#24292E">: </span><span style="color:#9ECBFF;--shiki-light:#032F62">"static-content-function"</span><span style="color:#E1E4E8;--shiki-light:#24292E">,</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  "version"</span><span style="color:#E1E4E8;--shiki-light:#24292E">: </span><span style="color:#9ECBFF;--shiki-light:#032F62">"1.0.0"</span><span style="color:#E1E4E8;--shiki-light:#24292E">,</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  "main"</span><span style="color:#E1E4E8;--shiki-light:#24292E">: </span><span style="color:#9ECBFF;--shiki-light:#032F62">"main.js"</span><span style="color:#E1E4E8;--shiki-light:#24292E">,</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">  "scripts"</span><span style="color:#E1E4E8;--shiki-light:#24292E">: {</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">    "postinstall"</span><span style="color:#E1E4E8;--shiki-light:#24292E">: </span><span style="color:#9ECBFF;--shiki-light:#032F62">"./build-spa.sh"</span></span>
+<span class="line"><span style="color:#E1E4E8;--shiki-light:#24292E">  }</span></span>
+<span class="line"><span style="color:#E1E4E8;--shiki-light:#24292E">}</span></span></code></pre>
 <p>When Code Engine builds your function, it runs <code>npm install</code>. After installation completes, the postinstall hook triggers <code>build-spa.sh</code>, which:</p>
 <ol>
 <li><strong>Detects your frontend</strong> - Finds the first non-hidden directory (excluding <code>node_modules</code> and <code>dist</code>)</li>
@@ -76,7 +83,7 @@
 <li><strong>Cleans up</strong> - Removes the source frontend directory to keep the function package small</li>
 </ol>
 <p>The final function package contains only three things:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>function-package/</span></span>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>function-package/</span></span>
 <span class="line"><span>├── main.js         # Function entrypoint</span></span>
 <span class="line"><span>├── package.json    # Function definition</span></span>
 <span class="line"><span>└── dist/           # Your built frontend</span></span>
@@ -91,8 +98,8 @@
 <ol>
 <li>
 <p><strong>Clone the repository</strong></p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">git</span><span style="color:#9ECBFF"> clone</span><span style="color:#9ECBFF"> https://github.com/IBM/CodeEngine.git</span></span>
-<span class="line"><span style="color:#79B8FF">cd</span><span style="color:#9ECBFF"> CodeEngine/function-spa</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">git</span><span style="color:#9ECBFF;--shiki-light:#032F62"> clone</span><span style="color:#9ECBFF;--shiki-light:#032F62"> https://github.com/IBM/CodeEngine.git</span></span>
+<span class="line"><span style="color:#79B8FF;--shiki-light:#005CC5">cd</span><span style="color:#9ECBFF;--shiki-light:#032F62"> CodeEngine/function-spa</span></span></code></pre>
 </li>
 <li>
 <p><strong>Add your SPA to a subdirectory</strong></p>
@@ -103,14 +110,14 @@
 </li>
 <li>
 <p><strong>Deploy to Code Engine</strong></p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> ce</span><span style="color:#9ECBFF"> function</span><span style="color:#9ECBFF"> create</span><span style="color:#79B8FF"> --name</span><span style="color:#9ECBFF"> my-app</span><span style="color:#79B8FF"> --runtime</span><span style="color:#9ECBFF"> nodejs-24</span><span style="color:#79B8FF"> --build-source</span><span style="color:#9ECBFF"> .</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> ce</span><span style="color:#9ECBFF;--shiki-light:#032F62"> function</span><span style="color:#9ECBFF;--shiki-light:#032F62"> create</span><span style="color:#79B8FF;--shiki-light:#005CC5"> --name</span><span style="color:#9ECBFF;--shiki-light:#032F62"> my-app</span><span style="color:#79B8FF;--shiki-light:#005CC5"> --runtime</span><span style="color:#9ECBFF;--shiki-light:#032F62"> nodejs-24</span><span style="color:#79B8FF;--shiki-light:#005CC5"> --build-source</span><span style="color:#9ECBFF;--shiki-light:#032F62"> .</span></span></code></pre>
 </li>
 </ol>
 <p><strong>Or use the included quick-start scripts:</strong></p>
 <p>The repository includes three quick-start scripts demonstrating the workflow:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">./run-angular</span><span style="color:#6A737D">  # Creates Angular project (SSR disabled, routing enabled, standalone components)</span></span>
-<span class="line"><span style="color:#B392F0">./run-react</span><span style="color:#6A737D">    # Creates React project with Vite (TypeScript, fast builds, modern tooling)</span></span>
-<span class="line"><span style="color:#B392F0">./run-svelte</span><span style="color:#6A737D">   # Creates Svelte project with Vite (minimal bundle, reactive components)</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">./run-angular</span><span style="color:#6A737D;--shiki-light:#6A737D">  # Creates Angular project (SSR disabled, routing enabled, standalone components)</span></span>
+<span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">./run-react</span><span style="color:#6A737D;--shiki-light:#6A737D">    # Creates React project with Vite (TypeScript, fast builds, modern tooling)</span></span>
+<span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">./run-svelte</span><span style="color:#6A737D;--shiki-light:#6A737D">   # Creates Svelte project with Vite (minimal bundle, reactive components)</span></span></code></pre>
 <p>Each script creates a new project in a subdirectory, checks if the function already exists, runs either <code>function create</code> or <code>function update</code>, and waits for deployment to complete. These examples show that whether you’re using Angular, React, Svelte, Vue, Solid, Qwik, or any other framework, the deployment process is identical.</p>
 <p>To use your own frontend, it must meet these requirements:</p>
 <ol>
@@ -138,4 +145,72 @@ Simply develop locally as usual, test that <code>npm run build</code> produces s
 Now its your turn try it out and see how simple SPA deployment can be.</p>
 <hr>
 <p><em>This approach works with any frontend framework that builds to static files. The examples use Angular, React, and Svelte, but Vue, Solid, Qwik, and others work just as well.</em></p>
-</div></article><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BcEatxSm.js"></script><div data-pf-theme="dark"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`);e&&(document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})}))}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script></body></html>
+</div></article><script>
+    (function () {
+      // Carbon icons (32px set): copy, checkmark
+      var svg = function (d) {
+        return '<svg viewBox="0 0 32 32" aria-hidden="true">' + d + '</svg>';
+      };
+      var ICON_COPY = svg('<path d="M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z"/><path d="M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z"/>');
+      var ICON_CHECK = svg('<path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/>');
+      var ICON_FAIL = svg('<path d="M24 9.4 22.6 8 16 14.6 9.4 8 8 9.4 14.6 16 8 22.6 9.4 24 16 17.4 22.6 24 24 22.6 17.4 16 24 9.4z"/>');
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy') ? resolve() : reject();
+          } catch (e) {
+            reject(e);
+          } finally {
+            document.body.removeChild(ta);
+          }
+        });
+      }
+
+      document.querySelectorAll('.post-body pre').forEach(function (pre) {
+        var wrap = document.createElement('div');
+        wrap.className = 'code-block';
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.innerHTML = ICON_COPY;
+        btn.setAttribute('aria-label', 'Copy code to clipboard');
+        btn.title = 'Copy code';
+        wrap.appendChild(btn);
+
+        btn.addEventListener('click', function () {
+          var code = pre.querySelector('code');
+          var text = (code || pre).innerText.replace(/\n$/, '');
+          copyText(text).then(function () {
+            btn.innerHTML = ICON_CHECK;
+            btn.title = 'Copied';
+            btn.classList.add('copied');
+            setTimeout(function () {
+              btn.innerHTML = ICON_COPY;
+              btn.title = 'Copy code';
+              btn.classList.remove('copied');
+            }, 2000);
+          }, function () {
+            btn.innerHTML = ICON_FAIL;
+            btn.title = 'Copy failed';
+            setTimeout(function () {
+              btn.innerHTML = ICON_COPY;
+              btn.title = 'Copy code';
+            }, 2000);
+          });
+        });
+      });
+    })();
+  </script><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BcEatxSm.js"></script><div id="pf-wrapper"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`),t=document.getElementById(`pf-wrapper`);if(!e||!t)return;function n(){let e=document.documentElement.getAttribute(`data-theme`)||`dark`;t.setAttribute(`data-pf-theme`,e)}n(),new MutationObserver(n).observe(document.documentElement,{attributes:!0,attributeFilter:[`data-theme`]}),document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})})}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script><script type="module">(function(){var e=document.getElementById(`theme-menu-btn`),t=document.getElementById(`theme-menu-list`),n=Array.from(document.querySelectorAll(`.theme-option`)),r=window.matchMedia(`(prefers-color-scheme: dark)`);function i(){var e=localStorage.getItem(`theme`);return e===`light`||e===`dark`?e:`system`}function a(e){e===`system`?localStorage.removeItem(`theme`):localStorage.setItem(`theme`,e);var t=e===`system`?r.matches?`dark`:`light`:e;document.documentElement.setAttribute(`data-theme`,t),n.forEach(function(t){t.setAttribute(`aria-checked`,String(t.dataset.themePref===e))})}function o(n){t&&e&&(t.toggleAttribute(`hidden`,!n),e.setAttribute(`aria-expanded`,String(n)))}var s=i();n.forEach(function(e){e.setAttribute(`aria-checked`,String(e.dataset.themePref===s))}),e?.addEventListener(`click`,function(e){e.stopPropagation(),o(!!t&&t.hasAttribute(`hidden`))}),n.forEach(function(t){t.addEventListener(`click`,function(){a(t.dataset.themePref),o(!1),e?.focus()})}),document.addEventListener(`click`,function(e){t&&!t.hasAttribute(`hidden`)&&!t.contains(e.target)&&o(!1)}),document.addEventListener(`keydown`,function(n){n.key===`Escape`&&t&&!t.hasAttribute(`hidden`)&&(o(!1),e?.focus())}),r.addEventListener(`change`,function(){i()===`system`&&document.documentElement.setAttribute(`data-theme`,r.matches?`dark`:`light`)})})();</script></body></html>

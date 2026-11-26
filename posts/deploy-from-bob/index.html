@@ -1,5 +1,12 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.3.3"><title>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine — The Engine Room</title><link rel="describedby" href="/CodeEngine/llms.txt"><style>.post-container[data-astro-cid-ruv7hgo6]{max-width:760px;margin:0 auto;padding:4rem 2rem 6rem}.post-back[data-astro-cid-ruv7hgo6]{color:var(--accent);align-items:center;gap:.4rem;margin-bottom:2rem;font-size:.8rem;text-decoration:none;display:inline-flex}.post-back[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.tags[data-astro-cid-ruv7hgo6]{margin-bottom:1.25rem}.post-title[data-astro-cid-ruv7hgo6]{color:var(--text);margin-bottom:1rem;font-size:clamp(1.75rem,4vw,2.75rem);font-weight:300;line-height:1.2}.post-meta[data-astro-cid-ruv7hgo6]{color:var(--text-muted);border-bottom:1px solid var(--border);gap:1.25rem;margin-bottom:2.5rem;padding-bottom:2rem;font-size:.8rem;display:flex}.author-link[data-astro-cid-ruv7hgo6]{color:inherit;text-decoration:none}.author-link[data-astro-cid-ruv7hgo6]:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6]{color:var(--text-dim);font-size:1rem;line-height:1.75}.post-body[data-astro-cid-ruv7hgo6] h2,.post-body[data-astro-cid-ruv7hgo6] h3,.post-body[data-astro-cid-ruv7hgo6] h4{color:var(--text);margin:2rem 0 .75rem;font-weight:400;line-height:1.3}.post-body[data-astro-cid-ruv7hgo6] h2{font-size:1.5rem}.post-body[data-astro-cid-ruv7hgo6] h3{font-size:1.2rem}.post-body[data-astro-cid-ruv7hgo6] p{margin-bottom:1.25rem}.post-body[data-astro-cid-ruv7hgo6] a{color:var(--accent);text-decoration:none}.post-body[data-astro-cid-ruv7hgo6] a:hover{text-decoration:underline}.post-body[data-astro-cid-ruv7hgo6] ul,.post-body[data-astro-cid-ruv7hgo6] ol{margin-bottom:1.25rem;padding-left:1.5rem}.post-body[data-astro-cid-ruv7hgo6] li{margin-bottom:.4rem}.post-body[data-astro-cid-ruv7hgo6] code{font-family:var(--mono);background:var(--bg-card);color:var(--text);border-radius:2px;padding:.1em .4em;font-size:.85em}.post-body[data-astro-cid-ruv7hgo6] pre{background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);margin-bottom:1.25rem;padding:1.25rem;font-size:.85rem;line-height:1.6;overflow-x:auto}.post-body[data-astro-cid-ruv7hgo6] pre code{background:0 0;padding:0}.post-body[data-astro-cid-ruv7hgo6] blockquote{border-left:3px solid var(--accent);color:var(--text-muted);margin:1.5rem 0;padding-left:1.25rem;font-style:italic}.post-body[data-astro-cid-ruv7hgo6] img{max-width:100%;height:auto;margin:1.5rem 0;display:block}.post-body[data-astro-cid-ruv7hgo6] hr{border:none;border-top:1px solid var(--border);margin:2rem 0}.post-body[data-astro-cid-ruv7hgo6] strong{color:var(--text)}
-</style><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.44zLPu0Q.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li></ul></nav><article class="post-container" data-astro-cid-ruv7hgo6><a href="/CodeEngine/" class="post-back" data-astro-cid-ruv7hgo6>← Back to Engine Room</a><div class="tags" data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/tag/Bob" class="tag" data-astro-cid-ruv7hgo6>Bob</a><a href="/CodeEngine/posts/tag/serverless" class="tag" data-astro-cid-ruv7hgo6>serverless</a><a href="/CodeEngine/posts/tag/code engine" class="tag" data-astro-cid-ruv7hgo6>code engine</a><a href="/CodeEngine/posts/tag/AI" class="tag" data-astro-cid-ruv7hgo6>AI</a></div><h1 class="post-title" data-astro-cid-ruv7hgo6>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine</h1><div class="post-meta" data-astro-cid-ruv7hgo6><span data-astro-cid-ruv7hgo6>Jul 2, 2026</span><span data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/author/uwefassnacht" class="author-link" data-astro-cid-ruv7hgo6>uwefassnacht</a>, <a href="/CodeEngine/posts/author/jeremiaswerner" class="author-link" data-astro-cid-ruv7hgo6>jeremiaswerner</a></span></div><div class="post-body" data-astro-cid-ruv7hgo6><p>What if deploying your application to the cloud was as simple as having a conversation? No memorizing commands, no context-switching to documentation, just you describing what you want and your AI assistant making it happen.</p>
+<!DOCTYPE html><html lang="en" data-astro-cid-z4jru4n3><head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/CodeEngine/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.3.3"><title>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine — The Engine Room</title><script>
+      (function () {
+        var stored = localStorage.getItem('theme');
+        var theme = stored === 'light' || stored === 'dark'
+          ? stored
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script><link rel="describedby" href="/CodeEngine/llms.txt"><link rel="stylesheet" href="/CodeEngine/assets/_slug_.D4RF8IVd.css"><link rel="stylesheet" href="/CodeEngine/assets/BaseLayout.9mMtGkCT.css"></head><body data-astro-cid-z4jru4n3><nav data-astro-cid-z4jru4n3><a href="/CodeEngine/" class="nav-brand" data-astro-cid-z4jru4n3>The Engine Room</a><ul class="nav-links" data-astro-cid-z4jru4n3><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#samples" data-astro-cid-z4jru4n3><span class="link-out" data-astro-cid-z4jru4n3>Samples</span></a></li><li data-astro-cid-z4jru4n3><a href="/CodeEngine/#blog" data-astro-cid-z4jru4n3>Blog posts</a></li><li data-astro-cid-z4jru4n3><button class="nav-search-btn" id="search-open-btn" data-astro-cid-z4jru4n3>Search</button></li><li data-astro-cid-z4jru4n3><a href="https://github.com/IBM/CodeEngine" target="_blank" data-astro-cid-z4jru4n3>GitHub repo</a></li><li class="nav-theme-menu" data-astro-cid-z4jru4n3><button class="nav-theme-btn" id="theme-menu-btn" aria-label="Colour theme" title="Colour theme" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu-list" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M15 2H17V7H15z"/><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.147 7.853)"/><path d="M25 15H30V17H25z"/><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.147 24.146)"/><path d="M15 25H17V30H15z"/><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.853 24.146)"/><path d="M2 15H7V17H2z"/><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.854 7.853)"/><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z"/></svg><span class="theme-sep" aria-hidden="true" data-astro-cid-z4jru4n3>/</span><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/></svg></button><ul class="theme-menu-list" id="theme-menu-list" role="menu" hidden data-astro-cid-z4jru4n3><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="light" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M15 2H17V7H15z"/><path d="M21.668 6.854H26.625999999999998V8.854H21.668z" transform="rotate(-45 24.147 7.853)"/><path d="M25 15H30V17H25z"/><path d="M23.147 21.668H25.147V26.625999999999998H23.147z" transform="rotate(-45 24.147 24.146)"/><path d="M15 25H17V30H15z"/><path d="M5.375 23.147H10.333V25.147H5.375z" transform="rotate(-45 7.853 24.146)"/><path d="M2 15H7V17H2z"/><path d="M6.854 5.375H8.854V10.333H6.854z" transform="rotate(-45 7.854 7.853)"/><path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z"/></svg>Light mode<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="dark" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/></svg>Dark mode<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li><li role="none" data-astro-cid-z4jru4n3><button class="theme-option" role="menuitemradio" aria-checked="false" data-theme-pref="system" data-astro-cid-z4jru4n3><svg class="theme-ico" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M10,30H4a2,2,0,0,1-2-2V16a2,2,0,0,1,2-2h6a2,2,0,0,1,2,2V28A2,2,0,0,1,10,30ZM4,16V28h6V16Z"/><path d="M28,4H6A2,2,0,0,0,4,6v6H6V6H28V20H14v2h2v4H14v2h9V26H18V22H28a2,2,0,0,0,2-2V6A2,2,0,0,0,28,4Z"/></svg>Use system settings<svg class="theme-ico theme-check" viewBox="0 0 32 32" aria-hidden="true" data-astro-cid-z4jru4n3><path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/></svg></button></li></ul></li></ul></nav><article class="post-container" data-astro-cid-ruv7hgo6><a href="/CodeEngine/" class="post-back" data-astro-cid-ruv7hgo6>← Back to Engine Room</a><div class="tags" data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/tag/Bob" class="tag" data-astro-cid-ruv7hgo6>Bob</a><a href="/CodeEngine/posts/tag/serverless" class="tag" data-astro-cid-ruv7hgo6>serverless</a><a href="/CodeEngine/posts/tag/code engine" class="tag" data-astro-cid-ruv7hgo6>code engine</a><a href="/CodeEngine/posts/tag/AI" class="tag" data-astro-cid-ruv7hgo6>AI</a></div><h1 class="post-title" data-astro-cid-ruv7hgo6>From Laptop to Cloud in Minutes: Deploying with Bob and Code Engine</h1><div class="post-meta" data-astro-cid-ruv7hgo6><span data-astro-cid-ruv7hgo6>Jul 2, 2026</span><span data-astro-cid-ruv7hgo6><a href="/CodeEngine/posts/author/uwefassnacht" class="author-link" data-astro-cid-ruv7hgo6>uwefassnacht</a>, <a href="/CodeEngine/posts/author/jeremiaswerner" class="author-link" data-astro-cid-ruv7hgo6>jeremiaswerner</a></span></div><div class="post-body" data-astro-cid-ruv7hgo6><p>What if deploying your application to the cloud was as simple as having a conversation? No memorizing commands, no context-switching to documentation, just you describing what you want and your AI assistant making it happen.</p>
 <p>That’s exactly what happens when you combine <a href="https://www.ibm.com/cloud/code-engine">IBM Cloud Code Engine</a> with <a href="https://www.ibm.com/products/watsonx-code-assistant">Bob</a>, your AI-powered deployment partner. Code Engine already makes serverless deployment straightforward, but Bob takes it to the next level by turning deployment into a natural conversation.</p>
 <p>In this tutorial, you’ll learn how to deploy a simple static website to Code Engine using Bob—from generating the code to seeing it live in the cloud. Let’s get started!</p>
 <h2 id="what-youll-build">What You’ll Build</h2>
@@ -26,7 +33,7 @@
 <p>Open Bob in your development environment (VS Code, terminal, or wherever you have Bob configured). Either open an existing project folder or create a new one for Bob to work in.</p>
 <h3 id="12-install-the-code-engine-skill">1.2 Install the Code Engine Skill</h3>
 <p>In Bob, type the following command:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Install the code-engine-specialist skill in this workspace using the following command:</span></span>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Install the code-engine-specialist skill in this workspace using the following command:</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>npx skills add github:IBM/CodeEngine --skill code-engine-specialist -y 2&gt;&amp;1 || true</span></span></code></pre>
 <p>Bob will:</p>
@@ -40,30 +47,30 @@
 </blockquote>
 <h3 id="13-verify-the-skill-is-active">1.3 Verify the Skill is Active</h3>
 <p>Once installed, confirm the skill is available by asking Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Do you have the code-engine-specialist skill installed?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Do you have the code-engine-specialist skill installed?</span></span></code></pre>
 <p>Bob will confirm the skill is active and ready to use.</p>
 <h2 id="step-2-authenticate-with-ibm-cloud">Step 2: Authenticate with IBM Cloud</h2>
 <p>Before deploying anything, you need to authenticate with IBM Cloud.</p>
 <h3 id="21-log-in-to-ibm-cloud">2.1 Log in to IBM Cloud</h3>
 <p>Open your terminal and run:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> login</span><span style="color:#79B8FF"> --sso</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> login</span><span style="color:#79B8FF;--shiki-light:#005CC5"> --sso</span></span></code></pre>
 <p>Or if you have an API key:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> login</span><span style="color:#79B8FF"> --apikey</span><span style="color:#9ECBFF"> YOUR_API_KEY</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> login</span><span style="color:#79B8FF;--shiki-light:#005CC5"> --apikey</span><span style="color:#9ECBFF;--shiki-light:#032F62"> YOUR_API_KEY</span></span></code></pre>
 <p>Follow the prompts to complete authentication.</p>
 <h3 id="22-target-a-resource-group">2.2 Target a Resource Group</h3>
 <p>IBM Cloud organises resources into resource groups. Every IBM Cloud account comes with a <strong>Default</strong> resource group, so that’s a safe choice if you haven’t created any others.</p>
 <p>Run the following command to target it:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0">ibmcloud</span><span style="color:#9ECBFF"> target</span><span style="color:#79B8FF"> -g</span><span style="color:#9ECBFF"> Default</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#B392F0;--shiki-light:#6F42C1">ibmcloud</span><span style="color:#9ECBFF;--shiki-light:#032F62"> target</span><span style="color:#79B8FF;--shiki-light:#005CC5"> -g</span><span style="color:#9ECBFF;--shiki-light:#032F62"> Default</span></span></code></pre>
 <p>You should see output similar to:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Targeted resource group Default</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Targeted resource group Default</span></span></code></pre>
 <blockquote>
 <p><strong>Tip:</strong> If your account uses a different resource group, replace <code>Default</code> with its name. You can list all available resource groups with <code>ibmcloud resource groups</code>.</p>
 </blockquote>
 <h3 id="23-verify-authentication-with-bob">2.3 Verify Authentication with Bob</h3>
 <p>Now let’s have Bob verify your authentication. Tell Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Check my IBM Cloud authentication</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Check my IBM Cloud authentication</span></span></code></pre>
 <p>Bob will run the verification and show you something like:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>🔐 Authentication Status Check</span></span>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>🔐 Authentication Status Check</span></span>
 <span class="line"><span>---</span></span>
 <span class="line"><span>✅ Authenticated as: your-email@example.com</span></span>
 <span class="line"><span>    Account: Your IBM Cloud Account</span></span>
@@ -76,7 +83,7 @@
 <p>Now for the fun part—let’s have Bob create a simple static website for us!</p>
 <h3 id="31-ask-bob-to-create-the-website">3.1 Ask Bob to Create the Website</h3>
 <p>Tell Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple hello world static website with HTML, CSS, and JavaScript</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple hello world static website with HTML, CSS, and JavaScript</span></span></code></pre>
 <h3 id="32-review-what-bob-creates">3.2 Review What Bob Creates</h3>
 <p>Bob will generate three files:</p>
 <ul>
@@ -93,7 +100,7 @@
 <p>Now comes the exciting part—deploying to the cloud!</p>
 <h3 id="41-start-the-deployment">4.1 Start the Deployment</h3>
 <p>Make sure you’re in the directory with your website files, then tell Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Deploy this website to Code Engine</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Deploy this website to Code Engine</span></span></code></pre>
 <h3 id="42-follow-bobs-guided-workflow">4.2 Follow Bob’s Guided Workflow</h3>
 <p>The deployment is <strong>conversational</strong> — Bob will ask you a series of questions to configure the deployment correctly. The exact wording of Bob’s responses will vary, but expect Bob to:</p>
 <ol>
@@ -115,7 +122,7 @@
 <p>Open that URL in your browser to see your Hello World site up and running.</p>
 <h3 id="44-view-application-details-in-ibm-cloud-optional">4.4 View Application Details in IBM Cloud (Optional)</h3>
 <p>If you’d like to explore the full application configuration, logs, and scaling settings in the IBM Cloud UI, ask Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Give me a link to the code engine application details in the IBM Cloud UI</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Give me a link to the code engine application details in the IBM Cloud UI</span></span></code></pre>
 <p>Bob will give you a direct link to the application’s detail page in the IBM Cloud user interface.</p>
 <h2 id="step-5-understanding-what-just-happened">Step 5: Understanding What Just Happened</h2>
 <p>Let’s break down what Bob did for you:</p>
@@ -151,10 +158,10 @@
 <p>Want to update your website? Bob makes it easy!</p>
 <h3 id="61-make-a-change">6.1 Make a Change</h3>
 <p>Edit your <code>index.html</code> file. For example, change the heading:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#E1E4E8">&lt;</span><span style="color:#85E89D">h1</span><span style="color:#E1E4E8">&gt;🚀 Hello World - Version 2!&lt;/</span><span style="color:#85E89D">h1</span><span style="color:#E1E4E8">&gt;</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#E1E4E8;--shiki-light:#24292E">&lt;</span><span style="color:#85E89D;--shiki-light:#22863A">h1</span><span style="color:#E1E4E8;--shiki-light:#24292E">&gt;🚀 Hello World - Version 2!&lt;/</span><span style="color:#85E89D;--shiki-light:#22863A">h1</span><span style="color:#E1E4E8;--shiki-light:#24292E">&gt;</span></span></code></pre>
 <h3 id="62-redeploy-with-bob">6.2 Redeploy with Bob</h3>
 <p>Simply tell Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Redeploy my website to Code Engine</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Redeploy my website to Code Engine</span></span></code></pre>
 <p>Bob will:</p>
 <ul>
 <li>Detect the changes</li>
@@ -166,19 +173,19 @@
 <h2 id="step-7-exploring-more-with-bob">Step 7: Exploring More with Bob</h2>
 <p>Now that you’ve deployed your first application, try asking Bob:</p>
 <h3 id="view-your-application-status">View Your Application Status</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the status of my Code Engine application</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the status of my Code Engine application</span></span></code></pre>
 <h3 id="check-the-logs">Check the Logs</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for hello-world-site</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for hello-world-site</span></span></code></pre>
 <h3 id="scale-your-application">Scale Your Application</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I am expecting more load. Can you increase the resources and number of instances?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I am expecting more load. Can you increase the resources and number of instances?</span></span></code></pre>
 <p>Bob may suggests different options, pick one and observe how Bob scales the application.</p>
 <h3 id="add-environment-variables">Add Environment Variables</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Add an environment variable API_KEY to my application</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Add an environment variable API_KEY to my application</span></span></code></pre>
 <h3 id="set-up-a-custom-domain">Set Up a Custom Domain</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I configure a custom domain for my Code Engine app?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I configure a custom domain for my Code Engine app?</span></span></code></pre>
 <p>Bob will guide you through each of these tasks conversationally!</p>
 <h3 id="delete-the-application">Delete the application</h3>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Delete the application</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Delete the application</span></span></code></pre>
 <h2 id="what-makes-this-special">What Makes This Special</h2>
 <p>Let’s reflect on what you just experienced:</p>
 <h3 id="it-was-conversational">It Was Conversational</h3>
@@ -194,17 +201,17 @@
 <h3 id="1-deploy-a-backend-api">1. Deploy a Backend API</h3>
 <p>Create a Node.js Express API or Python Flask application and deploy it the same way.</p>
 <p><strong>Try this</strong>: Tell Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple REST API with Node.js and Express, then deploy it to Code Engine</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Create a simple REST API with Node.js and Express, then deploy it to Code Engine</span></span></code></pre>
 <h3 id="2-deploy-a-multi-service-application">2. Deploy a Multi-Service Application</h3>
 <p>Build an application with a frontend and backend, and deploy both to Code Engine.</p>
 <h3 id="3-set-up-cicd">3. Set Up CI/CD</h3>
 <p>Configure automatic deployments when you push to GitHub.</p>
 <p><strong>Ask Bob</strong>:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I set up automatic deployments from GitHub to Code Engine?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>How do I set up automatic deployments from GitHub to Code Engine?</span></span></code></pre>
 <h3 id="4-explore-batch-jobs">4. Explore Batch Jobs</h3>
 <p>Code Engine isn’t just for web applications—it can run batch jobs too!</p>
 <p><strong>Ask Bob</strong>:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me how to run a batch job on Code Engine</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me how to run a batch job on Code Engine</span></span></code></pre>
 <h3 id="5-configure-event-driven-workloads">5. Configure Event-Driven Workloads</h3>
 <p>Set up your application to respond to events from Cloud Object Storage, Kafka, or cron schedules.</p>
 <h2 id="additional-resources">Additional Resources</h2>
@@ -232,19 +239,19 @@
 <p>If you run into issues, Bob is there to help! Here are some common scenarios:</p>
 <h3 id="my-deployment-failed">“My deployment failed”</h3>
 <p>Ask Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Why did my deployment fail? Can you help me troubleshoot?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Why did my deployment fail? Can you help me troubleshoot?</span></span></code></pre>
 <p>Bob will analyze the error logs and suggest solutions.</p>
 <h3 id="my-website-is-slow-to-load">“My website is slow to load”</h3>
 <p>Ask Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>My website seems slow after being idle. How can I fix this?</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>My website seems slow after being idle. How can I fix this?</span></span></code></pre>
 <p>Bob will explain cold starts and help you configure min-scale if needed.</p>
 <h3 id="i-want-to-see-whats-happening">“I want to see what’s happening”</h3>
 <p>Ask Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for my application</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>Show me the logs for my application</span></span></code></pre>
 <p>Bob will fetch and display the logs, helping you understand what’s happening.</p>
 <h3 id="i-need-to-change-the-configuration">“I need to change the configuration”</h3>
 <p>Ask Bob:</p>
-<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I want to increase the memory for my application to 1G</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-dark github-light" style="background-color:#24292e;--shiki-light-bg:#fff;color:#e1e4e8;--shiki-light:#24292e; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line"><span>I want to increase the memory for my application to 1G</span></span></code></pre>
 <p>Bob will update the configuration and redeploy for you.</p>
 <h2 id="conclusion-deployment-made-simple">Conclusion: Deployment Made Simple</h2>
 <p>You’ve just experienced the future of cloud deployment. What traditionally required:</p>
@@ -283,4 +290,72 @@
 <p>Your next deployment is just a conversation away. Happy deploying! 🚀</p>
 <hr>
 <p><em>Have questions or want to share what you built? Connect with the Bob and Code Engine communities—we’d love to hear about your experience!</em></p>
-</div></article><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BcEatxSm.js"></script><div data-pf-theme="dark"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`);e&&(document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})}))}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script></body></html>
+</div></article><script>
+    (function () {
+      // Carbon icons (32px set): copy, checkmark
+      var svg = function (d) {
+        return '<svg viewBox="0 0 32 32" aria-hidden="true">' + d + '</svg>';
+      };
+      var ICON_COPY = svg('<path d="M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z"/><path d="M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z"/>');
+      var ICON_CHECK = svg('<path d="M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z"/>');
+      var ICON_FAIL = svg('<path d="M24 9.4 22.6 8 16 14.6 9.4 8 8 9.4 14.6 16 8 22.6 9.4 24 16 17.4 22.6 24 24 22.6 17.4 16 24 9.4z"/>');
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy') ? resolve() : reject();
+          } catch (e) {
+            reject(e);
+          } finally {
+            document.body.removeChild(ta);
+          }
+        });
+      }
+
+      document.querySelectorAll('.post-body pre').forEach(function (pre) {
+        var wrap = document.createElement('div');
+        wrap.className = 'code-block';
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.innerHTML = ICON_COPY;
+        btn.setAttribute('aria-label', 'Copy code to clipboard');
+        btn.title = 'Copy code';
+        wrap.appendChild(btn);
+
+        btn.addEventListener('click', function () {
+          var code = pre.querySelector('code');
+          var text = (code || pre).innerText.replace(/\n$/, '');
+          copyText(text).then(function () {
+            btn.innerHTML = ICON_CHECK;
+            btn.title = 'Copied';
+            btn.classList.add('copied');
+            setTimeout(function () {
+              btn.innerHTML = ICON_COPY;
+              btn.title = 'Copy code';
+              btn.classList.remove('copied');
+            }, 2000);
+          }, function () {
+            btn.innerHTML = ICON_FAIL;
+            btn.title = 'Copy failed';
+            setTimeout(function () {
+              btn.innerHTML = ICON_COPY;
+              btn.title = 'Copy code';
+            }, 2000);
+          });
+        });
+      });
+    })();
+  </script><pagefind-config bundle-path="/CodeEngine/pagefind/"></pagefind-config><script type="module" src="/CodeEngine/assets/PagefindConfig.astro_astro_type_script_index_0_lang.BcEatxSm.js"></script><div id="pf-wrapper"><pagefind-modal></pagefind-modal></div><script type="module">async function e(){await customElements.whenDefined(`pagefind-modal`);let e=document.querySelector(`pagefind-modal`),t=document.getElementById(`pf-wrapper`);if(!e||!t)return;function n(){let e=document.documentElement.getAttribute(`data-theme`)||`dark`;t.setAttribute(`data-pf-theme`,e)}n(),new MutationObserver(n).observe(document.documentElement,{attributes:!0,attributeFilter:[`data-theme`]}),document.getElementById(`search-open-btn`)?.addEventListener(`click`,()=>{e.open()}),new MutationObserver(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)}).observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`open`]}),document.addEventListener(`keydown`,t=>{t.key===`Escape`&&requestAnimationFrame(()=>{let t=e.querySelector(`dialog`);document.body.classList.toggle(`search-open`,!!t?.open)})})}document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e();</script><script type="module">(function(){var e=document.getElementById(`theme-menu-btn`),t=document.getElementById(`theme-menu-list`),n=Array.from(document.querySelectorAll(`.theme-option`)),r=window.matchMedia(`(prefers-color-scheme: dark)`);function i(){var e=localStorage.getItem(`theme`);return e===`light`||e===`dark`?e:`system`}function a(e){e===`system`?localStorage.removeItem(`theme`):localStorage.setItem(`theme`,e);var t=e===`system`?r.matches?`dark`:`light`:e;document.documentElement.setAttribute(`data-theme`,t),n.forEach(function(t){t.setAttribute(`aria-checked`,String(t.dataset.themePref===e))})}function o(n){t&&e&&(t.toggleAttribute(`hidden`,!n),e.setAttribute(`aria-expanded`,String(n)))}var s=i();n.forEach(function(e){e.setAttribute(`aria-checked`,String(e.dataset.themePref===s))}),e?.addEventListener(`click`,function(e){e.stopPropagation(),o(!!t&&t.hasAttribute(`hidden`))}),n.forEach(function(t){t.addEventListener(`click`,function(){a(t.dataset.themePref),o(!1),e?.focus()})}),document.addEventListener(`click`,function(e){t&&!t.hasAttribute(`hidden`)&&!t.contains(e.target)&&o(!1)}),document.addEventListener(`keydown`,function(n){n.key===`Escape`&&t&&!t.hasAttribute(`hidden`)&&(o(!1),e?.focus())}),r.addEventListener(`change`,function(){i()===`system`&&document.documentElement.setAttribute(`data-theme`,r.matches?`dark`:`light`)})})();</script></body></html>
